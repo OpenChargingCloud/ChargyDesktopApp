@@ -1,0 +1,551 @@
+﻿{
+
+    "@id":              "fr98ghe089wgrh0ejh5g",
+    "@context":         "https://open.charging.cloud/contexts/CTR+json",
+
+    "begin":            "2018-11-01T00:00:00Z",
+    "end":              "2018-11-30T00:00:00Z",
+
+    "description": {
+        "de":               "Alle Ladevorgänge im November 2018"
+    },
+
+    "contract": {
+        "@id":          "1323545",
+        "username":     "Maria Mustermann",
+        "email":        "maria@mustermann.de"
+    },
+
+    "chargingStationOperators": [
+        {
+
+            "@id":                      "GraphDefinedCSO",
+            "eMobilityIds":             [ "DE*GEF" ],
+            "description": {
+                "de":                   "Charging Station Operator Services"
+            },
+
+            "contact": {
+                "email":                    "mail@graphdefined.com",
+                "web":                      "https://open.charging.cloud",
+                "logoUrl":                  "...",
+                "publicKeys": [
+                    {
+                        "algorithm":        "secp192r1",
+                        "format":           "DER",
+                        "value":            "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
+                        "signatures": [
+                            {
+                                "keyId":      "...",
+                                "algorithm":  "secp192r1",
+                                "format":     "DER",
+                                "value":      "????"
+                            }
+                        ]
+                    },
+                    {
+                        "algorithm":        "secp256k1",
+                        "format":           "DER",
+                        "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                        "signatures":       [ ]
+                    }
+                ]
+            },
+
+            "support": {
+                "hotline":                  "+49 555 149345-5",
+                "email":                    "support@graphdefined.com",
+                "web":                      "https://open.charging.cloud/issues",
+                "mediationServices":        [ "GraphDefined Mediation" ],
+                "publicKeys": [
+                    {
+                        "algorithm":        "secp256k1",
+                        "format":           "DER",
+                        "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                        "signatures":       [ ]
+                    }
+                ]
+            },
+
+            "tariffs": [
+                {
+                }
+            ]
+
+        }
+    ],
+
+    "chargingPools": [
+        {
+            "@id":                      "DE*GEF*POOL*CI*TESTS*3",
+            "gps":                      { "lat": 50.387945, "lng": 10.4304 },
+            "address": {
+                "street":               "Biberweg",
+                "houseNumber":          "18",
+                "postalCode":           "07749",
+                "city":                 "Jena",
+                "country":              "Deutschland"
+            },
+            "description": {
+                "de":                   "GraphDefined Charging Pool - CI-Tests 3"
+            },
+            "chargingStations": [
+            ]
+        }
+    ],
+
+    "chargingStations": [
+
+        {
+            "@id":                      "DE*GEF*STATION*CI*TESTS*1*A",
+            "description": {
+                "de":                   "GraphDefined Charging Station - CI-Tests 1-A"
+            },
+            "gps":                      { "lat": 50.387945, "lng": 10.4304 },
+            "address": {
+                "street":               "Biberweg",
+                "houseNumber":          "18",
+                "postalCode":           "07749",
+                "city":                 "Jena",
+                "country":              "Deutschland"
+            },
+            "EVSEs": [
+                {
+                    "@id":                      "DE*GEF*EVSE*CI*TESTS*1*A*1",
+                    "description": {
+                        "de":                   "GraphDefined EVSE - CI-Tests 1-A-1"
+                    },
+                    "sockets":                  [ { } ],
+                    "meters": [
+                        {
+                            "@id":                      "GDF00000001",
+                            "type":                     "Virtual Energy Meter v1.0",
+                            "manufacturer":             "GraphDefined",
+                            "firmwareVersion":          "v2.1",
+                            "publicKeys": [
+                                {
+                                    "algorithm":        "secp192r1",
+                                    "format":           "DER",
+                                    "value":            "049a88ac54fb4fc8f9d1d5bc5707b4d8ac04dc4a88f4ff1fa11d4c70a9632ab080b07a2815d940fc7ef61ee217fa464da0",
+                                    "signatures":       [ ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "publicKeys": [
+                {
+                    "algorithm":        "secp192r1",
+                    "format":           "DER",
+                    "value":            "049a88ac54fb4fc8f9d1d5bc5707b4d8ac04dc4a88f4ff1fa11d4c70a9632ab080b07a2815d940fc7ef61ee217fa464da0",
+                    "signatures":       [ ]
+                }
+            ]
+        },
+
+        {
+            "@id":                      "DE*GEF*STATION*CI*TESTS*2*A",
+            "description": {
+                "de":                   "GraphDefined Charging Station - CI-Tests 2-A"
+            },
+            "gps":                      { "lat": 50.397945, "lng": 10.4404 },
+            "address": {
+                "street":               "Biberweg",
+                "houseNumber":          "18",
+                "postalCode":           "07749",
+                "city":                 "Jena",
+                "country":              "Deutschland"
+            },
+            "EVSEs": [
+                {
+                    "@id":                      "DE*GEF*EVSE*CI*TESTS*2*A*1",
+                    "description": {
+                        "de":                   "GraphDefined EVSE - CI-Tests 2-A-1"
+                    },
+                    "sockets":                  [ { } ],
+                    "meters": [
+                        {
+                            "@id":                      "GDF00000001",
+                            "type":                     "Virtual Energy Meter v1.0",
+                            "manufacturer":             "GraphDefined",
+                            "firmwareVersion":          "v2.1",
+                            "publicKeys": [
+                                {
+                                    "algorithm":        "secp192r1",
+                                    "format":           "DER",
+                                    "value":            "049a88ac54fb4fc8f9d1d5bc5707b4d8ac04dc4a88f4ff1fa11d4c70a9632ab080b07a2815d940fc7ef61ee217fa464da0",
+                                    "signatures":       [ ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "publicKeys": [
+                {
+                    "algorithm":        "secp192r1",
+                    "format":           "DER",
+                    "value":            "049a88ac54fb4fc8f9d1d5bc5707b4d8ac04dc4a88f4ff1fa11d4c70a9632ab080b07a2815d940fc7ef61ee217fa464da0",
+                    "signatures":       [ ]
+                }
+            ]
+        }
+
+    ],
+
+    "electricVehicles": {
+        "@id":                      "$VIN...",
+        "meters": [
+            {
+                "@id":                      "GDF00230001",
+                "type":                     "Virtual Charging Energy Meter v1.0",
+                "manufacturer":             "GraphDefined",
+                "firmwareVersion":          "v2.1",
+                "publicKeys": [
+                    {
+                        "algorithm":        "secp192r1",
+                        "format":           "DER",
+                        "value":            "049a88ac54fb4fc8f9d1d5bc5707b4d8ac04dc4a88f4ff1fa11d4c70a9632ab080b07a2815d940fc7ef61ee217fa464da0",
+                        "signatures":       [ ]
+                    }
+                ]
+            }
+        ],
+        "publicKeys": [
+            {
+                "algorithm":        "secp192r1",
+                "format":           "DER",
+                "value":            "049a88ac54fb4fc8f9d1d5bc5707b4d8ac04dc4a88f4ff1fa11d4c70a9632ab080b07a2815d940fc7ef61ee217fa464da0",
+                "signatures":       [ ]
+            }
+        ]
+    },
+
+    "eMobilityProviders": [
+        {
+
+            "@id":                      "GraphDefinedEMP",
+            "eMobilityIds":             [ "DE*GDF" ],
+            "description": {
+                "de":                   "E-Mobility Provider"
+            },
+
+            "contact": {
+                "email":                    "mail@graphdefined.com",
+                "web":                      "https://open.charging.cloud",
+                "logoUrl":                  "...",
+                "publicKeys": [
+                    {
+                        "algorithm":        "secp256k1",
+                        "format":           "DER",
+                        "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                        "signatures":       [ ]
+                    }
+                ]
+            },
+
+            "support": {
+                "hotline":                  "+49 555 149345-5",
+                "email":                    "support@graphdefined.com",
+                "web":                      "https://open.charging.cloud/issues",
+                "mediationServices":        [ "GraphDefined Mediation" ],
+                "publicKeys": [
+                    {
+                        "algorithm":        "secp256k1",
+                        "format":           "DER",
+                        "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                        "signatures":       [ ]
+                    }
+                ]
+            },
+
+            "tariffs": [
+                {
+                }
+            ]
+
+        }
+    ],
+
+    "mediationServices": [
+        {
+            "@id":                      "GraphDefined Mediation",
+            "description": {
+                "de":                   "Mediation Services"
+            },
+            "email":                    "mail@graphdefined.com",
+            "web":                      "https://open.charging.cloud",
+            "logoUrl":                  "...",
+            "publicKeys": [
+                {
+                    "algorithm":        "secp256k1",
+                    "format":           "DER",
+                    "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                    "signatures":       [ ]
+                }
+            ]
+        }
+    ],
+
+    "chargingSessions": [
+
+        {
+
+            "@id":                          "2ab541f0-74e0-4e01-93b6-90d7845d3cb8",
+            "@context":                     "https://open.charging.cloud/contexts/CTR/unverified+json",
+            "begin":                        "2018-11-04T16:47:01Z",
+            "end":                          "2018-11-04T17:13:13Z",
+            "EVSEId":                       "DE*GEF*EVSE*CI*TESTS*1*A*1",
+
+            "authorization": {
+                "@id":                      "8022E582844804",
+                "type":                     "RFID_UID",
+                "timestamp":                "2018-11-04T16:47:01Z",
+                "chargingStationOperator":  "GraphDefinedCSO",
+                "roamingNetwork":           "Hubject_Prod",
+                "eMobilityProvider":        "GraphDefinedEMP"
+            },
+
+            "measurements": [
+
+                {
+
+                    "energyMeterId":            "GDF00000001",
+                    "name":                     "ENERGY_TOTAL",
+                    "obis":                     "0100011100FF",
+                    "unit":                     "WATT_HOUR",
+                    "unitEncoded":              30,
+                    "valueType":                "Integer64",
+                    "scale":                    1,
+                    "verifyChain":              true,
+
+                    "values": [
+
+                            {
+                                "timestamp":        "2018-11-04T16:47:01Z",
+                                "paginationId":     "1",
+                                "value":            "0",
+                                "signatures": [
+                                    {
+                                        "algorithm":             "secp192r1",
+                                        "format":                "DER",
+                                        "value":                 "1EAB0AA198198B5803358A2A91624DC012D0EF3EE72B3DE820AA91624DC012D0B5803358A21EAB0AA9EF460F8410BB26"
+                                    }
+                                ]
+                            },
+
+                            {
+                                "timestamp":          "2018-11-04T17:13:13Z",
+                                "paginationId":       "2",
+                                "value":              "22000",
+                                "signatures": [
+                                    {
+                                        "algorithm":             "secp192r1",
+                                        "format":                "DER",
+                                        "value":                 "AB9F84ADDA460F8410BB26061016D6C8258689CAA73B0BFD1EAB0AA198B5803358A2A91624DC012D0EF3EE72B3DE820A"
+                                    }
+                                ]
+                            }
+
+                        ]
+
+                }
+
+            ]
+
+        },
+
+        {
+
+            "@id":                          "463563465-74e0-4e01-93b6-90d7845d3cb8",
+            "@context":                     "https://open.charging.cloud/contexts/CTR/unverified+json",
+            "begin":                        "2018-11-08T14:17:05Z",
+            "end":                          "2018-11-08T19:15:23Z",
+            "chargingStationId":            "DE*GEF*STATION*CI*TESTS*1*A",
+
+            "authorization": {
+                "@id":                      "8022E582844804",
+                "type":                     "RFID_UID",
+                "timestamp":                "2018-11-04T16:47:01Z",
+                "chargingStationOperator":  "GraphDefinedCSO",
+                "roamingNetwork":           "Hubject_Prod",
+                "eMobilityProvider":        "GraphDefinedEMP"
+            },
+
+            "measurements": [
+
+                {
+
+                    "energyMeterId":            "GDF00000001",
+                    "name":                     "ENERGY_TOTAL",
+                    "obis":                     "0100011100FF",
+                    "unit":                     "WATT_HOUR",
+                    "unitEncoded":              30,
+                    "valueType":                "Integer64",
+                    "scale":                    1,
+
+                    "values": [
+
+                            {
+                                "timestamp":        "2018-11-04T16:47:00Z",
+                                "paginationId":     "1",
+                                "value":            "0",
+                                "signatures": [
+                                    {
+                                        "algorithm":  "secp192r1",
+                                        "format":     "DER",
+                                        "value":      "AB9F84ADDA460F8410BB26061016D6C8258689CAA73B0BFD1EAB0AA198B5803358A2A91624DC012D0EF3EE72B3DE820A"
+                                    }
+                                ]
+                            },
+
+                            {
+                                "timestamp":          "2018-11-04T16:48:00Z",
+                                "paginationId":       "2",
+                                "value":              "10000",
+                                "prevSignatures": [
+                                    {
+                                        "algorithm":  "secp192r1",
+                                        "format":     "DER",
+                                        "value":      "AB9F84ADDA460F8410BB26061016D6C8258689CAA73B0BFD1EAB0AA198B5803358A2A91624DC012D0EF3EE72B3DE820A"
+                                    }
+                                ],
+                                "signatures": [
+                                    {
+                                        "format":     "rs",
+                                        "r":          "AB9F84ADDA460F8410BB26061016D6C8258689CAA73B0BFD",
+                                        "s":          "1EAB0AA198B5803358A2A91624DC012D0EF3EE72B3DE820A"
+                                    }
+                                ]
+                            }
+
+                        ]
+
+                }
+
+            ]
+
+        },
+
+        {
+
+            "@id":                          "753747647-74e0-4e01-93b6-90d7845d3cb8",
+            "@context":                     "https://open.charging.cloud/contexts/CTR/unverified+json",
+            "begin":                        "2018-11-14T22:17:05Z",
+            "end":                          "2018-11-16T06:05:23Z",
+            "chargingPoolId":               "DE*GEF*POOL*CI*TESTS*3",
+
+            "authorization": {
+                "@id":                      "8022E582845666",
+                "type":                     "RFID_UID",
+                "timestamp":                "2018-11-14T22:17:01Z",
+                "chargingStationOperator":  "GraphDefinedCSO",
+                "roamingNetwork":           "Hubject_Prod",
+                "eMobilityProvider":        "GraphDefinedEMP"
+            },
+
+            "measurements": [
+
+                {
+
+                    "energyMeterId":            "GDF00000003",
+                    "name":                     "ENERGY_TOTAL",
+                    "obis":                     "0100011100FF",
+                    "unit":                     "WATT_HOUR",
+                    "unitEncoded":              30,
+                    "valueType":                "Integer64",
+                    "scale":                    1,
+                    "verifyChain":              true,
+
+                    "values": [
+
+                            {
+                                "timestamp":        "2018-11-14T22:17:05Z",
+                                "paginationId":     "1",
+                                "value":            "0",
+                                "signatures": [
+                                    {
+                                        "algorithm":  "secp192r1",
+                                        "format":     "DER",
+                                        "value":      "AB9F84ADDA460F8410BB26061016D6C8258689CAA73B0BFD1EAB0AA198B5803358A2A91624DC012D0EF3EE72B3DE820A"
+                                    }
+                                ]
+                            },
+
+                            {
+                                "timestamp":          "2018-11-14T23:17:05Z",
+                                "paginationId":       "2",
+                                "value":              "11000",
+                                "signatures": [
+                                    {
+                                        "algorithm":  "secp192r1",
+                                        "format":     "DER",
+                                        "value":      "AB9F84ADDA460F8410BB26061016D6C8258689CAA73B0BFD1EAB0AA198B5803358A2A91624DC012D0EF3EE72B3DE820A"
+                                    }
+                                ]
+                            },
+
+                            {
+                                "timestamp":          "2018-11-15T00:17:05Z",
+                                "paginationId":       "3",
+                                "value":              "22000",
+                                "signatures": [
+                                    {
+                                        "algorithm":  "secp192r1",
+                                        "format":     "DER",
+                                        "value":      "AB9F84ADDA460F8410BB26061016D6C8258689CAA73B0BFD1EAB0AA198B5803358A2A91624DC012D0EF3EE72B3DE820A"
+                                    }
+                                ]
+                            },
+
+                            {
+                                "timestamp":          "2018-11-15T01:17:05Z",
+                                "paginationId":       "4",
+                                "value":              "33000",
+                                "signatures": [
+                                    {
+                                        "algorithm":  "secp192r1",
+                                        "format":     "DER",
+                                        "value":      "AB9F84ADDA460F8410BB26061016D6C8258689CAA73B0BFD1EAB0AA198B5803358A2A91624DC012D0EF3EE72B3DE820A"
+                                    }
+                                ]
+                            },
+
+                            {
+                                "timestamp":          "2018-11-15T02:17:05Z",
+                                "paginationId":       "5",
+                                "value":              "44000",
+                                "signatures": [
+                                    {
+                                        "algorithm":  "secp192r1",
+                                        "format":     "DER",
+                                        "value":      "AB9F84ADDA460F8410BB26061016D6C8258689CAA73B0BFD1EAB0AA198B5803358A2A91624DC012D0EF3EE72B3DE820A"
+                                    }
+                                ]
+                            },
+
+                            {
+                                "timestamp":          "2018-11-15T06:05:23Z",
+                                "paginationId":       "6",
+                                "value":              "44000",
+                                "signatures": [
+                                    {
+                                        "algorithm":  "secp192r1",
+                                        "format":     "DER",
+                                        "value":      "AB9F84ADDA460F8410BB26061016D6C8258689CAA73B0BFD1EAB0AA198B5803358A2A91624DC012D0EF3EE72B3DE820A"
+                                    }
+                                ]
+                            }
+
+                        ]
+
+                }
+
+            ]
+
+        }
+
+    ]
+
+}

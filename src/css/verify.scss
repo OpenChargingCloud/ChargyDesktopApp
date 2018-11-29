@@ -1,0 +1,378 @@
+﻿
+body {
+
+    margin:             0;
+    padding:            0;
+    background-color:   #bac5ce;
+    overflow:           hidden;
+
+    #outerframe {
+
+        width:              80vw;
+        height:             80vh;
+        margin:             auto;
+        margin-top:         10vh;
+        background-color:   #87cafa;
+        border-radius:      8px;
+        display:            flex;
+        flex-direction:     column;
+
+        #headline {
+
+            padding:            4px 8px 2px 8px;
+            font-family:        Arial;
+            font-size:          110%;
+            display:            flex;
+
+            #name {
+                display:        inline-block;
+                padding:        10px 15px;
+                font-weight:    bold;
+                align-self:     center;
+            }
+
+            #text {
+                display:        inline-block;
+                align-self:     center;
+            }
+
+            #windowButtons {
+
+                display:            flex;
+                justify-content:    flex-end;
+                flex-grow:          1;
+
+                button {
+                    border:             0;
+                    background:         0;
+                    outline:            0;
+                    font-size:          110%;
+                }
+
+                button:hover {
+                    color:              #f7f7f7;
+                }
+
+            }
+
+        }
+
+        #verifyframe {
+
+            height:             100%;
+            display:            flex;
+
+            #leftbar {
+
+                width:              50%;
+                display:            flex;
+                flex-direction:     column;
+
+                #input {
+
+                    display:            flex;
+                    position:           relative;
+                    margin:             0px 15px 15px 15px;
+                    padding:            10px 15px;
+                    border:             0;
+                    border-radius:      6px;
+                    background-color:   rgb(231, 245, 255);
+                    font-family:        monospace;
+                    width:              calc(100% - 60px);
+                    flex-grow:          1;
+
+                    #inputInfos {
+
+                        display:            flex;
+                        flex-direction:     column;
+                        justify-content:    space-evenly;
+                        width:              100%;
+
+                        #text {
+                            display:            none;
+                            font-size:          110%;
+                        }
+
+                        #buttonsDiv {
+
+                            padding:            8px 0px 15px 0px;
+                            display:            flex;
+                            width:              100%;
+                            justify-content:    space-evenly;
+        
+                            button {
+
+                                font-size:          1.1vw;
+                                width:              10vw;
+                                height:             10vw;
+                                padding:            0;
+                                margin:             0;
+                                outline:            0;
+                                border:             0;
+                                border-radius:      50%;
+                                background-color:   #aeddff;
+                                box-shadow:         none;
+                                align-self:         center;
+
+                                i {
+                                    font-size:          150%;
+                                    padding-bottom:     7px;
+                                }
+
+                            }
+
+                            button:hover {
+                                color:              #f7f7f7;
+                                background-color:   #519ad0;
+                            }
+    
+                        }
+
+                        #loadingErrors {
+                           
+                            min-height:         7vh;
+                            font-family:        Arial;
+                            font-size:          120%;
+                            text-align:         center;
+
+                            #errorText {
+                                
+                                display:            none;
+                                padding:            10px 30px 17px 30px;
+                                background-color:   #e46464a6;
+                                border-radius:      6px;
+
+                                i {
+                                    position:           relative;
+                                    font-size:          160%;
+                                    top:                5px;
+                                    padding-right:      3px;
+                                }
+
+                            }
+
+                        }
+
+                    }
+                    
+                    #chargingSessionReport {
+
+                        display:            none;
+                        flex-direction:     column;
+                        width:              100%;
+
+                        #description {
+                            padding:        0px 0px 5px 0px;
+                            font-size:      120%;
+                            font-weight:    bold;
+                        }
+
+                        #chargingSessions {
+
+                            padding:            0px 0px 0px 10px;
+                            height:             100%;
+                            // overflow:           hidden scroll;
+                            overflow-y:         scroll;
+                            margin-top:         10px;
+
+                            .chargingSessions {
+
+                                position:           relative;
+                                margin-bottom:      4px;
+                                padding:            5px 9px;
+                                background-color:   #d6e4ef;
+                                border-radius:      6px;
+
+                                .date {
+                                    font-weight:        bold;
+                                    padding:            2px 0px 3px 0px;
+                                    font-size:          110%;
+                                }
+
+                                .table {
+
+                                    display:            table;
+                                    border-collapse:    separate;
+                                    border-spacing:     4px 4px;
+
+                                    .productInfos {
+
+                                        display:            table-row;
+
+                                        .productIcon {
+                                            display:            table-cell;
+                                            padding:            6px 7px 0px 3px;
+                                            text-align:         center;
+                                            vertical-align:     top;
+                                        }
+
+                                    }
+
+                                    .locationInfos {
+
+                                        display:            table-row;
+
+                                        .locationIcon {
+                                            display:            table-cell;
+                                            padding:            6px 7px 0px 3px;
+                                            text-align:         center;
+                                            vertical-align:     top;
+                                        }
+
+                                    }
+
+                                }
+
+                                .verificationStatus {
+
+                                    position:           absolute;
+                                    top:                10px;
+                                    right:              10px;
+                                    text-align:         center;
+                                    font-size:          80%;
+
+                                    i {
+                                        display:            block;
+                                        font-size:          200%;
+                                        padding-bottom:     4px;
+                                    }
+
+                                }
+
+                            }
+
+                            .chargingSessions:hover {
+                                background-color:       #b8cdde;
+                            }
+
+                        }
+
+                        #chargingSessions::-webkit-scrollbar {
+                            display:            none;
+                        }
+
+                    }
+
+                    #resetButtonDiv {
+
+                        display:        none;
+                        position:       absolute;
+                        left:           0px;
+                        bottom:         0px;
+
+                        #resetButton {
+                            border:             0;
+                            background-color: #cce5f7;
+                            padding:            7px 14px 8px 13px;
+                            border-radius:      50%;
+                            margin:             4px;
+                            font-size:          180%;
+                        }
+
+                        #resetButton:hover {
+                            background-color:   #519ad0;
+                        }
+
+
+                    }
+
+                }
+
+                #input::-webkit-scrollbar {
+                    display:            none;
+                }
+
+                .over {
+                    background-color:   cornflowerblue !important;
+                    /*border:             1px solid #2c4a60 !important;*/
+                }
+
+                #buttonsDiv {
+
+                    padding:            8px 17px 15px 15px;
+                    text-align:         right;
+
+                    button {
+                        border:             0;
+                        padding:            8px 15px;
+                        /*font-size:          120%;*/
+                        border-radius:      4px;
+                        box-shadow:         2px 2px 6px #999;
+                    }
+
+                }
+
+            }
+
+            #rightbar {
+
+                width:              50%;
+                background-color:   #c7e1f3;
+                border-radius:      8px 8px 8px 0px;
+
+                #map {
+                    width:              100%;
+                    min-height:         33%;
+                    border-radius:      8px 8px 0px 0px;
+                }
+
+                #evseTarifInfos {
+
+                    width:              100%;
+                    min-height:         33%;
+                    background-color:   #b3d6ef;
+                    padding:            20px 20px;
+                    width:              calc(100% - 40px);
+                    font-family:        Arial;
+                    color:              #2c4a60;
+
+                    #headline {
+                        color:              #2e71a2;
+                        font-weight:        bold;
+                        padding-bottom:     20px;
+                    }
+
+                }
+
+                #results {
+
+                    width:              100%;
+                    min-height:         34%;
+                    padding:            20px 20px;
+                    width:              calc(100% - 40px);
+                    font-family:        Arial;
+                    font-weight:        bold;
+
+                    i {
+                        /*color:              #5ab337;*/
+                        font-size:          400%;
+                        position:           relative;
+                        top:                18px;
+                        padding-right:      15px;
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
+    .fullScreen {
+        width:              100vw !important;
+        height:             100vh !important;
+        margin-top:         0     !important;
+        border-radius:      0     !important;
+    }
+
+
+    .fa-check-circle {
+        color:          #5ab337;
+    }
+
+    .fa-times-circle {
+        color:          #CC0000;
+    }
+
+}

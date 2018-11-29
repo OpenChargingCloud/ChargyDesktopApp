@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    
+	<meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Chargy - Transparenzsoftware für die Elektromobilität</title>
+
+    <meta name="description" content="Transparenzsoftware für die Elektromobilität">
+    <meta name="author"      content="Open Charging Cloud by GraphDefined GmbH">
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://*; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+
+    <!--<link rel="icon"       href="/favicon.png"                 type="image/png" />-->
+    <link rel="stylesheet" href="css/fontawesome-all.min.css"  type="text/css" />
+    <link rel="stylesheet" href="js/leaflet/leaflet.css"       type="text/css" />
+    <link rel="stylesheet" href="css/verify.css"               type="text/css" />
+
+    <script type="text/javascript" src="js/leaflet/leaflet.js"></script>
+    <script type="text/javascript" src="js/crypto/sha256.js"></script>
+    <script type="text/javascript" src="js/crypto/elliptic.js"></script>
+    <script type="text/javascript" src="js/moment/moment-with-locales.min.js"></script>
+    <script type="text/javascript" src="js/verifyInterfaces.js"></script>
+    <script type="text/javascript" src="js/verifyLib.js"></script>
+    <script type="text/javascript" src="js/verify.js"></script>
+	
+  </head>
+  <body>
+
+    <div id="outerframe">
+
+        <div id="headline">
+            <div id="name">Chargy v0.8</div>
+            <div id="text">Transparenzsoftware für die Elektromobilität</div>
+            <div id="windowButtons">
+                <button id="fullScreenButton" onclick="toggleFullscreen()"><i class="fas fa-expand"></i></button>
+                <button id="appQuitButton" onclick="window.close()"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+
+        <div id="verifyframe">
+
+            <div id="leftbar">
+
+                <div id="input">
+                    
+                    <div id="inputInfos">
+
+                        <div id="text">Bitte geben Sie hier die signierten Ladeinformationen ein...</div>
+
+                        <div id="buttonsDiv">
+                            <button id="fileInputButton"><i class="far fa-folder-open"></i><br />Datei laden</button>
+                            <input id="fileInput" type="file" style="display: none"/>
+                            <button id="pasteButton"><i class="fas fa-paste"></i><br />Einfügen</button>
+                        </div>
+
+                        <div id="loadingErrors">
+                            <div id="errorText"></div>
+                        </div>
+
+                    </div>
+
+                    <div id="chargingSessionReport"></div>
+
+                    <div id="resetButtonDiv">
+                        <button id="resetButton">&#129092;</button>
+                    </div>
+
+                </div>
+
+              <!--   <div id="buttonsDiv">
+                    <button id="fileInputButton"><i class="far fa-folder-open"></i> Datei laden</button>
+                    <input id="fileInput" type="file" style="display: none"/>
+                    <button id="pasteButton"><i class="fas fa-paste"></i> Einfügen</button>
+                </div> -->
+
+            </div>
+
+            <div id="rightbar">
+
+                <div id="map"></div>
+
+                <div id="evseTarifInfos">
+                    <div id="headline">Ladestations- und Tarifinformationen</div>
+                    Keine Ladestations- oder Tarifinformationen verfügbar!<br /><br />
+                    We are using Node.js <script>document.write(process.versions.node)</script>,
+                    Chromium <script>document.write(process.versions.chrome)</script>,
+                    and Electron <script>document.write(process.versions.electron)</script>.
+                </div>
+
+                <div id="results">
+                    <!--<i class="fas fa-check-circle"></i> Korrekte Signatur-->
+                </div>
+
+            </div>
+
+            <div id="clear" style="clear:both;"></div>
+
+        </div>
+
+    </div>
+
+<script type="text/javascript">
+
+    var ACCESS_TOKEN = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
+
+    leaflet = L;
+    map     = L.map('map').setView([49.7325504,10.1424442], 13);
+
+    L.tileLayer('https://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + ACCESS_TOKEN, {
+        maxZoom: 18,
+        attribution: '<a href="http://openstreetmap.org">OSM</a> contr., ' +
+        '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+        'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        id: 'ahzf.nc811hb2'
+    }).addTo(map);
+
+
+    var ec         = new elliptic.ec('p192');
+    //var pubkey     = ec.keyFromPublic("047abeaeed8ccba945656975006da20a1c68d0951fd981c436b8f40e90c7a9f78214a76804fcd53d94473811b23cb38c4d", 'hex');
+    //var signature  = "3034021875fd505ed6901d8a16977b0d324e01ec4276308fa228058002184763f148e3a93237388cc2a77be743f8b213e9faab0b770a";
+    //
+    //var text1      = "Hello world!";
+    //verify(text1, signature, pubkey).then(console.log);
+
+    // var text2      = "Damn it!";
+    // var hash2      = new jsSHA('SHA-256', 'TEXT');
+    // hash2.update(text2);
+    // console.log(pubkey.verify(hash2.getHash("HEX"), signature));
+  
+    var test = new StartDashboard();
+
+</script>
+	
+  </body>
+</html>
