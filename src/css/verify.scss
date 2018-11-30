@@ -319,12 +319,13 @@ body {
                 #evseTarifInfos {
 
                     width:              100%;
-                    min-height:         33%;
+                    height:             35%;
                     background-color:   #b3d6ef;
                     padding:            20px 20px;
                     width:              calc(100% - 40px);
                     font-family:        Arial;
                     color:              #2c4a60;
+                    overflow-y:         scroll;
 
                     #headline {
                         color:              #2e71a2;
@@ -332,6 +333,106 @@ body {
                         padding-bottom:     20px;
                     }
 
+                    .measurementInfo {
+
+                        display:            table;
+                        font-size:          105%;
+
+                        .meter {
+
+                            display:            table-row;
+
+                            .meterId {
+                                display:            table-cell;
+                                padding-right:      20px;
+                            }
+
+                            .meterIdValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                        .meterType {
+
+                            display:            table-row;
+
+                            .meterTypeId {
+                                display:            table-cell;
+                                padding-right:      20px;
+                            }
+
+                            .meterTypeValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                        .measurement {
+
+                            display:            table-row;
+
+                            .measurementId {
+                                display:            table-cell;
+                                padding-right:      30px;
+                            }
+
+                            .measurementIdValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                    }
+
+                    .measurementValues {
+
+                        display:            table;
+                        margin-top:         5px;
+                        width:              100%;
+
+                        .measurementValue {
+
+                            display:            table-row;
+                            padding:            3px 4px;
+                            border-radius:      3px;
+
+                            .timestamp {
+                                display:            table-cell;
+                                padding:            2px 16px 2px 6px;
+                                border-radius:      4px 0px 0px 4px;
+                            }
+
+                            .value {
+                                display:            table-cell;
+                                text-align:         right;
+                                padding-right:      5px;
+                            }
+
+                            .unit {
+                                display:            table-cell;
+                                padding-right:      10px;
+                            }
+
+                            .verificationStatus {
+                                display:            table-cell;
+                                padding:            2px 6px;
+                                border-radius:      0px 4px 4px 0px;
+                                width:              100%;
+                            }
+
+                        }
+
+                        .measurementValue:hover {
+                            background-color:     #72b3e2;
+                        }                        
+
+                    }
+
+                }
+
+                #evseTarifInfos::-webkit-scrollbar {
+                    display:            none;
                 }
 
                 #results {

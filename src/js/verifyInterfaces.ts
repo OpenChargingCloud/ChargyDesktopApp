@@ -58,6 +58,7 @@ interface IChargingStation
     chargingPool:               IChargingPool,
     EVSEs:                      Array<IEVSE>,
     EVSEIds:                    Array<string>,
+    meters:                     Array<IMeter>,
     tariffs:                    Array<ITariff>
 }
 
@@ -68,7 +69,23 @@ interface IEVSE
     description:                {},
     chargingStation:            IChargingStation,
     chargingStationId:          string,
+    meters:                     Array<IMeter>,
     tariffs:                    Array<ITariff>
+}
+
+interface IMeter
+{
+    "@id":                      string,
+    "@context":                 string,
+    description:                {},
+    type:                       string,
+    manufacturer:               string,
+    firmwareVersion:            string,
+    chargingStation:            IChargingStation,
+    chargingStationId:          string,
+    EVSE:                       IEVSE,
+    EVSEId:                     string,
+    publicKeys:                 Array<IPublicKey>
 }
 
 interface ITariff
@@ -142,6 +159,14 @@ interface IMeasurementValue
     paginationId:               string,
     value:                      string,
     signatures:                 Array<ISignature>
+}
+
+interface IPublicKey
+{
+    algorithm:                  string,
+    format:                     string,
+    previousValue:              string,
+    value:                      string
 }
 
 interface ISignature

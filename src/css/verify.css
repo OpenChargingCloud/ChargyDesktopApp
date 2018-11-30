@@ -236,17 +236,88 @@ body #outerframe #verifyframe #rightbar #map {
 }
 body #outerframe #verifyframe #rightbar #evseTarifInfos {
   width: 100%;
-  min-height: 33%;
+  height: 35%;
   background-color: #b3d6ef;
   padding: 20px 20px;
   width: calc(100% - 40px);
   font-family: Arial;
   color: #2c4a60;
+  overflow-y: scroll;
 }
 body #outerframe #verifyframe #rightbar #evseTarifInfos #headline {
   color: #2e71a2;
   font-weight: bold;
   padding-bottom: 20px;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo {
+  display: table;
+  font-size: 105%;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meter {
+  display: table-row;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meter .meterId {
+  display: table-cell;
+  padding-right: 20px;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meter .meterIdValue {
+  display: table-cell;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meterType {
+  display: table-row;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meterType .meterTypeId {
+  display: table-cell;
+  padding-right: 20px;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meterType .meterTypeValue {
+  display: table-cell;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .measurement {
+  display: table-row;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .measurement .measurementId {
+  display: table-cell;
+  padding-right: 30px;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .measurement .measurementIdValue {
+  display: table-cell;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues {
+  display: table;
+  margin-top: 5px;
+  width: 100%;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues .measurementValue {
+  display: table-row;
+  padding: 3px 4px;
+  border-radius: 3px;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues .measurementValue .timestamp {
+  display: table-cell;
+  padding: 2px 16px 2px 6px;
+  border-radius: 4px 0px 0px 4px;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues .measurementValue .value {
+  display: table-cell;
+  text-align: right;
+  padding-right: 5px;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues .measurementValue .unit {
+  display: table-cell;
+  padding-right: 10px;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues .measurementValue .verificationStatus {
+  display: table-cell;
+  padding: 2px 6px;
+  border-radius: 0px 4px 4px 0px;
+  width: 100%;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues .measurementValue:hover {
+  background-color: #72b3e2;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos::-webkit-scrollbar {
+  display: none;
 }
 body #outerframe #verifyframe #rightbar #results {
   width: 100%;

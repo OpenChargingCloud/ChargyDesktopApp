@@ -115,6 +115,14 @@ function SetText(dv, text, offset) {
         dv.setUint8(offset + i, bytes[i]);
     }
 }
+function Clone(obj) {
+    if (obj == null || typeof (obj) != 'object')
+        return obj;
+    var temp = new obj.constructor();
+    for (var key in obj)
+        temp[key] = Clone(obj[key]);
+    return temp;
+}
 function toggleFullscreen() {
     var d = document;
     var fullScreenButton = document.getElementById('fullScreenButton');

@@ -172,7 +172,16 @@ function SetText(dv, text, offset)
 }
 
 
+function Clone(obj){
+    if(obj == null || typeof(obj) != 'object')
+        return obj;
 
+    var temp = new obj.constructor(); 
+    for(var key in obj)
+        temp[key] = Clone(obj[key]);
+
+    return temp;
+}
 
 
 function toggleFullscreen() {

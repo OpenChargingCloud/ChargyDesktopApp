@@ -449,7 +449,7 @@
 
                 {
 
-                    "energyMeterId":            "GDF00000003",
+                    "energyMeterId":            "GDF00000001",
                     "name":                     "ENERGY_TOTAL",
                     "obis":                     "0100011100FF",
                     "unit":                     "WATT_HOUR",

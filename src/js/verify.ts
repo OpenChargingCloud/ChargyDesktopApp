@@ -6,6 +6,7 @@ var chargingStationOperators  = new Array<IChargingStationOperator>();
 var chargingPools             = new Array<IChargingPool>();
 var chargingStations          = new Array<IChargingStation>();
 var EVSEs                     = new Array<IEVSE>();
+var meters                    = new Array<IMeter>();
 var eMobilityProviders        = new Array<IEMobilityProvider>();
 var mediationServices         = new Array<IMediationService>();
 var chargingSessions          = new Array<IChargingSession>();
@@ -219,6 +220,19 @@ function StartDashboard() {
 
     }
 
+    function GetMeter(Id: String): IMeter
+    {
+
+        for (var meter of meters)
+        {
+            if (meter["@id"] == Id)
+                return meter;
+        }
+
+        return null;
+
+    }
+
 
     function detectCTRFormat(CTR: ICTR) {
 
@@ -240,6 +254,133 @@ function StartDashboard() {
 
     }
 
+    function ShowMeasurementDetails(measurement: IMeasurement)
+    {
+    }
+
+    function ShowChargingSessionDetails(chargingSession: IChargingSession)
+    {
+
+        try
+        {
+
+            evseTarifInfosDiv.innerHTML = "";
+
+            if (chargingSession.measurements)
+            {
+                for (var measurement of chargingSession.measurements)
+                {
+
+                    let MeasurementInfoDiv = evseTarifInfosDiv.appendChild(document.createElement('div'));
+                    MeasurementInfoDiv.className    = "measurementInfo";
+
+                    let MeterDiv                    = MeasurementInfoDiv.appendChild(document.createElement('div'));
+                    MeterDiv.className              = "meter";
+
+                    let MeterIdDiv                  = MeterDiv.appendChild(document.createElement('div'));
+                    MeterIdDiv.className            = "meterId";
+                    MeterIdDiv.innerHTML            = "Zähler";
+
+                    let MeterIdValueDiv             = MeterDiv.appendChild(document.createElement('div'));
+                    MeterIdValueDiv.className       = "meterIdValue";
+                    MeterIdValueDiv.innerHTML       = measurement.energyMeterId;
+
+                    
+                    var meter = GetMeter(measurement.energyMeterId);
+
+                    if (meter != null)
+                    {
+
+                        let MeterTypeDiv                = MeasurementInfoDiv.appendChild(document.createElement('div'));
+                        MeterTypeDiv.className          = "meterType";
+
+                        let MeterTypeIdDiv              = MeterTypeDiv.appendChild(document.createElement('div'));
+                        MeterTypeIdDiv.className        = "meterTypeId";
+                        MeterTypeIdDiv.innerHTML        = "Zählertyp";
+
+                        let MeterTypeValueDiv           = MeterTypeDiv.appendChild(document.createElement('div'));
+                        MeterTypeValueDiv.className     = "meterTypeIdValue";
+                        MeterTypeValueDiv.innerHTML     = meter.manufacturer + " " + meter.type;
+
+                    }
+
+                    let MeasurementDiv               = MeasurementInfoDiv.appendChild(document.createElement('div'));
+                    MeasurementDiv.className         = "measurement";
+
+                    let MeasurementIdDiv             = MeasurementDiv.appendChild(document.createElement('div'));
+                    MeasurementIdDiv.className       = "measurementId";
+                    MeasurementIdDiv.innerHTML       = "Messung";
+
+                    let MeasurementIdValueDiv        = MeasurementDiv.appendChild(document.createElement('div'));
+                    MeasurementIdValueDiv.className  = "measurementIdValue";
+                    MeasurementIdValueDiv.innerHTML  = measurement.name + " (OBIS: " + measurement.obis + ")";
+
+
+                    let MeasurementValuesDiv         = evseTarifInfosDiv.appendChild(document.createElement('div'));
+                    MeasurementValuesDiv.className   = "measurementValues";
+
+
+                    //<i class="far fa-chart-bar"></i>
+                    if (measurement.values && measurement.values.length > 0)
+                    {
+                        for (var value of measurement.values)
+                        {
+
+                            let MeasurementValueDiv          = MeasurementValuesDiv.appendChild(document.createElement('div'));
+                            MeasurementValueDiv.className    = "measurementValue";
+
+                            var timestamp                    = parseUTC(value.timestamp);
+
+                            let timestampDiv                 = MeasurementValueDiv.appendChild(document.createElement('div'));
+                            timestampDiv.className           = "timestamp";
+                            timestampDiv.innerHTML           = timestamp.format('HH:mm:ss');
+
+                            var _value                       = parseInt(value.value);
+
+                            switch (measurement.unit)
+                            {
+
+                                case "KILO_WATT_HOURS":
+                                    break;
+
+                                // "WATT_HOURS"
+                                default:
+                                    _value = _value / 1000;
+                                    break;
+
+                            }
+
+                            let valueDiv                     = MeasurementValueDiv.appendChild(document.createElement('div'));
+                            valueDiv.className               = "value";
+                            valueDiv.innerHTML               = _value.toString();
+
+                            let unitDiv                      = MeasurementValueDiv.appendChild(document.createElement('div'));
+                            unitDiv.className                = "unit";
+                            unitDiv.innerHTML                = "kWh";
+
+                            let verificationStatusDiv        = MeasurementValueDiv.appendChild(document.createElement('div'));
+                            verificationStatusDiv.className  = "verificationStatus";
+                            verificationStatusDiv.innerHTML  = '<i class="fas fa-times-circle"></i> Ungültiger Messwert';
+
+                        }
+
+                    }
+
+                }
+            }
+
+        }
+        catch (exception)
+        { }
+
+    }
+
+    function captureChargingSession(cs) {
+        return function(this: HTMLDivElement, ev: MouseEvent) {
+                   ShowChargingSessionDetails(cs);
+               };
+    }
+
     function processOpenChargingCloudFormat(CTR: ICTR)
     {
 
@@ -247,15 +388,16 @@ function StartDashboard() {
         chargingPools             = [];
         chargingStations          = [];
         EVSEs                     = [];
+        meters                    = [];
         eMobilityProviders        = [];
         mediationServices         = [];
         chargingSessions          = [];
 
         //#region Prepare View
 
-        chargingSessionReportDiv.style.display = "flex";
-        chargingSessionReportDiv.innerText = "";
-        resetButtonDiv.style.display = "block";
+        chargingSessionReportDiv.style.display  = "flex";
+        chargingSessionReportDiv.innerText      = "";
+        resetButtonDiv.style.display            = "block";
 
         //#endregion
 
@@ -290,6 +432,8 @@ function StartDashboard() {
         }
 
         //#endregion
+
+        //#region Process CSOs, pools, stations, ...
 
         if (CTR.chargingStationOperators)
         {
@@ -424,6 +568,37 @@ function StartDashboard() {
 
                         EVSEs.push(EVSE);
 
+                        if (EVSE.meters) {
+
+                            for (var meter of EVSE.meters)
+                            {
+
+                                meter.EVSE               = EVSE;
+                                meter.EVSEId             = EVSE["@id"];
+
+                                meter.chargingStation    = chargingStation;
+                                meter.chargingStationId  = chargingStation["@id"];
+
+                                meters.push(meter);
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                if (chargingStation.meters) {
+
+                    for (var meter of chargingStation.meters)
+                    {
+
+                        meter.chargingStation    = chargingStation;
+                        meter.chargingStationId  = chargingStation["@id"];
+
+                        meters.push(meter);
+
                     }
 
                 }
@@ -432,7 +607,10 @@ function StartDashboard() {
 
         }
 
+        //#endregion
 
+
+        //#region Process charging sessions...
 
         if (CTR.chargingSessions) {
 
@@ -444,6 +622,8 @@ function StartDashboard() {
 
                 let chargingSessionDiv = chargingSessionsDiv.appendChild(document.createElement('div'));
                 chargingSessionDiv.className = "chargingSessions";
+                // Will capture the correct charging session!
+                chargingSessionDiv.onclick = captureChargingSession(chargingSession);
 
                 //#region Show session time
 
@@ -474,6 +654,8 @@ function StartDashboard() {
 
                 //#endregion
 
+                //#region Show energy infos
+
                 var tableDiv                   = chargingSessionDiv.appendChild(document.createElement('div'));
                     tableDiv.className         = "table";
 
@@ -502,21 +684,24 @@ function StartDashboard() {
                             if (measurement.values && measurement.values.length > 0)
                             {
 
-                                var first = parseInt(measurement.values[0].value);
-                                var last  = parseInt(measurement.values[measurement.values.length-1].value);
+                                var first  = parseInt(measurement.values[0].value);
+                                var last   = parseInt(measurement.values[measurement.values.length-1].value);
+                                var amount = last - first;
 
-                                //let MeasurementDiv = chargingSessionDiv.appendChild(document.createElement('div'));
-                                //MeasurementDiv.id          = "MeasurementOverview";
-                                //MeasurementDiv.innerHTML   =
-
-                                productDiv.innerHTML += "<br />" + ((last - first)/1000).toString() + " kWh " + measurement.name + " (" + measurement.values.length + " Messwerte)";
-
-                                for (var value of measurement.values)
+                                switch (measurement.unit)
                                 {
 
+                                    case "KILO_WATT_HOURS":
+                                        break;
 
+                                    // "WATT_HOURS"
+                                    default:
+                                        amount = amount / 1000;
+                                        break;
 
                                 }
+
+                                productDiv.innerHTML += "<br />" + amount.toString() + " kWh " + measurement.name + " (" + measurement.values.length + " Messwerte)";
 
                             }
 
@@ -527,6 +712,7 @@ function StartDashboard() {
                 catch (Exception)
                 { }
 
+                //#endregion
 
                 //#region Show location infos...
 
@@ -621,12 +807,8 @@ function StartDashboard() {
 
                 //#endregion
 
-                //#endregion
 
-                
-
-
-                //#regin Verification Status
+                //#region Verification Status
 
                 let verificationStatusDiv = chargingSessionDiv.appendChild(document.createElement('div'));
                 verificationStatusDiv.className = "verificationStatus";
@@ -638,10 +820,13 @@ function StartDashboard() {
 
         }
 
+        //#endregion
+
 
         //resultsDiv.innerHTML = VerificationResult[result].toString();
 
     }
+
 
     function doError(text: String)
     {
@@ -764,6 +949,7 @@ function StartDashboard() {
     }
 
     var rightbar                  = <HTMLDivElement>      document.getElementById('rightbar');
+    var evseTarifInfosDiv         = <HTMLDivElement>      document.getElementById('evseTarifInfos');
     var resultsDiv                = <HTMLDivElement>      document.getElementById('results');
     
     
