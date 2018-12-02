@@ -1,11 +1,8 @@
-# ChargyElectronApp
+# Chargy Desktop App
 ## Transparenzsoftware für die Elektromobilität
 
-
-
 ### Technologie
-Based on Electron for Windows, Mac OS X and Linux.    
-https://github.com/electron-userland/electron-forge/tree/5.x    
+Based on Electron https://github.com/electron-userland/electron-forge/tree/5.x    
 
 ### Zielplattformen
  - Microsoft Windows
