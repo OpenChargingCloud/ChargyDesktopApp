@@ -32,11 +32,12 @@
     <div id="outerframe">
 
         <div id="headline">
-            <div id="name">Chargy v0.8</div>
+            <div id="name">Chargy v<script>document.write(require('electron').remote.app.getVersion())</script></div>
             <div id="text">Transparenzsoftware für die Elektromobilität</div>
             <div id="windowButtons">
-                <button id="fullScreenButton" onclick="toggleFullscreen()"><i class="fas fa-expand"></i></button>
-                <button id="appQuitButton" onclick="window.close()"><i class="fas fa-times"></i></button>
+                <button id="aboutButton"     ><i class="far fa-question-circle"></i></button>
+                <button id="fullScreenButton"><i class="fas fa-expand"         ></i></button>
+                <button id="appQuitButton"    onclick="window.close()"    ><i class="fas fa-times"          ></i></button>
             </div>
         </div>
 
@@ -62,19 +63,28 @@
 
                     </div>
 
+                    <div id="aboutScreen">
+                        Diese Software ist Open Source und basiert auf den folgenden Open Source Software Bibliotheken:<br />
+                        <br />
+                        <ul>
+                            <li>Chargy <script>document.write(require('electron').remote.app.getVersion())</script>, <button class="linkButton" href="https://github.com/OpenChargingCloud/ChargyDesktopApp/blob/master/LICENSE">AGPL v3 License</button></li>
+                            <li>Electron <script>document.write(process.versions.electron)</script>,                 <button class="linkButton" href="https://github.com/electron/electron/blob/master/LICENSE">MIT License</button></li>
+                            <li>Electron Forge,                                                                      <button class="linkButton" href="https://github.com/electron-userland/electron-forge/blob/master/LICENSE">MIT License</button></li>
+                            <li>Chromium <script>document.write(process.versions.chrome)</script>,                   <button class="linkButton" href="https://github.com/chromium/chromium/blob/master/LICENSE">MIT License</button></li>
+                            <li>Node.js <script>document.write(process.versions.node)</script>,                      <button class="linkButton" href="https://github.com/nodejs/node/blob/master/LICENSE">MIT License</button></li>
+                            <li>OpenSSL <script>document.write(process.versions.openssl)</script>,                   <button class="linkButton" href="https://github.com/openssl/openssl/blob/master/LICENSE">Apache License v2.0</button></li>
+                        </ul>
+                        <br />
+                        SHA256: 0x93849385938598534<br />
+                    </div>
+
                     <div id="chargingSessionReport"></div>
 
-                    <div id="resetButtonDiv">
-                        <button id="resetButton">&#129092;</button>
+                    <div id="backButtonDiv">
+                        <button id="backButton">&#129092;</button>
                     </div>
 
                 </div>
-
-              <!--   <div id="buttonsDiv">
-                    <button id="fileInputButton"><i class="far fa-folder-open"></i> Datei laden</button>
-                    <input id="fileInput" type="file" style="display: none"/>
-                    <button id="pasteButton"><i class="fas fa-paste"></i> Einfügen</button>
-                </div> -->
 
             </div>
 
@@ -85,9 +95,6 @@
                 <div id="evseTarifInfos">
                     <div id="headline">Ladestations- und Tarifinformationen</div>
                     Keine Ladestations- oder Tarifinformationen verfügbar!<br /><br />
-                    We are using Node.js <script>document.write(process.versions.node)</script>,
-                    Chromium <script>document.write(process.versions.chrome)</script>,
-                    and Electron <script>document.write(process.versions.electron)</script>.
                 </div>
 
                 <div id="results">

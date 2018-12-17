@@ -184,28 +184,6 @@ function Clone(obj){
 }
 
 
-function toggleFullscreen() {
-
-    var d                 = document as any;
-    var fullScreenButton  = <HTMLButtonElement>  document.getElementById('fullScreenButton');
-    var outerframe        = <HTMLDivElement>     document.getElementById('outerframe');
-
-    if (d.fullScreen || d.mozFullScreen || d.webkitIsFullScreen)
-    {
-        outerframe.classList.remove("fullScreen");
-        closeFullscreen();
-        fullScreenButton.innerHTML = '<i class="fas fa-expand"></i>';
-    }
-
-    else
-    {
-        outerframe.classList.add("fullScreen");
-        openFullscreen();
-        fullScreenButton.innerHTML = '<i class="fas fa-compress"></i>';
-    }
-
-}
-
 function openFullscreen() {
 
   var elem = document.documentElement as any;

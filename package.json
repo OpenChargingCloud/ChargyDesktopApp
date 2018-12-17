@@ -1,7 +1,7 @@
 {
   "name": "chargyapp",
   "productName": "ChargyApp",
-  "version": "1.0.0",
+  "version": "0.8.0",
   "description": "Transparenzsoftware für die Elektromobilität",
   "main": "src/index.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "publish": "electron-forge publish",
     "lint": "eslint src --color"
   },
-  "keywords": ["Transparenzsoftware", "Eichrecht", "Elektromobilität", "PTB", "Transparenz"],
+  "keywords": ["Transparenzsoftware", "Eichrecht", "Elektromobilität", "Ladestationen", "PTB", "Transparenz"],
   "author": "Achim Friedland <achim.friedland@graphdefined.com>",
   "license": "AGPL",
   "config": {

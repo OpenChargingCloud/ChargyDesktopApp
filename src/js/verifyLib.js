@@ -123,21 +123,6 @@ function Clone(obj) {
         temp[key] = Clone(obj[key]);
     return temp;
 }
-function toggleFullscreen() {
-    var d = document;
-    var fullScreenButton = document.getElementById('fullScreenButton');
-    var outerframe = document.getElementById('outerframe');
-    if (d.fullScreen || d.mozFullScreen || d.webkitIsFullScreen) {
-        outerframe.classList.remove("fullScreen");
-        closeFullscreen();
-        fullScreenButton.innerHTML = '<i class="fas fa-expand"></i>';
-    }
-    else {
-        outerframe.classList.add("fullScreen");
-        openFullscreen();
-        fullScreenButton.innerHTML = '<i class="fas fa-compress"></i>';
-    }
-}
 function openFullscreen() {
     var elem = document.documentElement;
     if (elem.requestFullscreen) {

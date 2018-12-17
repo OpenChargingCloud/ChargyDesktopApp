@@ -251,7 +251,7 @@ function StartDashboard() {
         //#region Prepare View
         chargingSessionReportDiv.style.display = "flex";
         chargingSessionReportDiv.innerText = "";
-        resetButtonDiv.style.display = "block";
+        backButtonDiv.style.display = "block";
         //#endregion
         //#region Show CTR infos
         if (CTR.description) {
@@ -578,11 +578,33 @@ function StartDashboard() {
         });
     }
     //#endregion
+    var d = document;
     var input = document.getElementById('input');
     input.addEventListener('dragenter', handleDragEnter, false);
     input.addEventListener('dragover', handleDragOver, false);
     input.addEventListener('dragleave', handleDragLeave, false);
     input.addEventListener('drop', handleDroppedFile, false);
+    var outerframe = document.getElementById('outerframe');
+    var aboutButton = document.getElementById('aboutButton');
+    aboutButton.onclick = function (ev) {
+        inputInfosDiv.style.display = "none";
+        aboutScreenDiv.style.display = "block";
+        chargingSessionReportDiv.style.display = "none";
+        backButtonDiv.style.display = "block";
+    };
+    var fullScreenButton = document.getElementById('fullScreenButton');
+    fullScreenButton.onclick = function (ev) {
+        if (d.fullScreen || d.mozFullScreen || d.webkitIsFullScreen) {
+            outerframe.classList.remove("fullScreen");
+            closeFullscreen();
+            fullScreenButton.innerHTML = '<i class="fas fa-expand"></i>';
+        }
+        else {
+            outerframe.classList.add("fullScreen");
+            openFullscreen();
+            fullScreenButton.innerHTML = '<i class="fas fa-compress"></i>';
+        }
+    };
     var inputInfosDiv = document.getElementById('inputInfos');
     var loadingErrorsDiv = document.getElementById('loadingErrors');
     var errorTextDiv = document.getElementById('errorText');
@@ -592,15 +614,32 @@ function StartDashboard() {
     fileInput.onchange = readFileFromDisk;
     var pasteButton = document.getElementById('pasteButton');
     pasteButton.onclick = PasteFile;
+    var aboutScreenDiv = document.getElementById('aboutScreen');
     var chargingSessionReportDiv = document.getElementById('chargingSessionReport');
-    var resetButtonDiv = document.getElementById('resetButtonDiv');
-    resetButtonDiv.onclick = function (ev) {
+    var backButtonDiv = document.getElementById('backButtonDiv');
+    backButtonDiv.onclick = function (ev) {
         inputInfosDiv.style.display = 'flex';
+        aboutScreenDiv.style.display = "none";
         chargingSessionReportDiv.style.display = "none";
-        resetButtonDiv.style.display = "none";
+        backButtonDiv.style.display = "none";
         fileInput.value = "";
     };
     var rightbar = document.getElementById('rightbar');
     var evseTarifInfosDiv = document.getElementById('evseTarifInfos');
     var resultsDiv = document.getElementById('results');
+    var shell = require('electron').shell;
+    var linkButtons = document.getElementsByClassName('linkButton');
+    var _loop_1 = function () {
+        var linkButton = linkButtons[i];
+        linkButton.onclick = function (ev) {
+            event.preventDefault();
+            var link = linkButton.attributes["href"].nodeValue;
+            if (link.startsWith("http://") || link.startsWith("https://")) {
+                shell.openExternal(link);
+            }
+        };
+    };
+    for (var i = 0; i < linkButtons.length; i++) {
+        _loop_1();
+    }
 }
