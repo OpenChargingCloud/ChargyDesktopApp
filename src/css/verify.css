@@ -36,6 +36,7 @@ body #outerframe #headline #windowButtons {
   flex-grow: 1;
 }
 body #outerframe #headline #windowButtons button {
+  padding: 0px 5px;
   border: 0;
   background: 0;
   outline: 0;
@@ -120,6 +121,22 @@ body #outerframe #verifyframe #leftbar #input #inputInfos #loadingErrors #errorT
   top: 5px;
   padding-right: 3px;
 }
+body #outerframe #verifyframe #leftbar #input #aboutScreen {
+  display: none;
+  width: 100%;
+}
+body #outerframe #verifyframe #leftbar #input #aboutScreen .linkButton {
+  border: 0;
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-top: 1px;
+  background-color: #b9dbf5;
+  font-size: 75%;
+}
+body #outerframe #verifyframe #leftbar #input #aboutScreen .linkButton:hover {
+  color: #aad0ec;
+  background-color: #3c75a0;
+}
 body #outerframe #verifyframe #leftbar #input #chargingSessionReport {
   display: none;
   flex-direction: column;
@@ -189,13 +206,13 @@ body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSe
 body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSessions::-webkit-scrollbar {
   display: none;
 }
-body #outerframe #verifyframe #leftbar #input #resetButtonDiv {
+body #outerframe #verifyframe #leftbar #input #backButtonDiv {
   display: none;
   position: absolute;
   left: 0px;
   bottom: 0px;
 }
-body #outerframe #verifyframe #leftbar #input #resetButtonDiv #resetButton {
+body #outerframe #verifyframe #leftbar #input #backButtonDiv #backButton {
   border: 0;
   background-color: #cce5f7;
   padding: 7px 14px 8px 13px;
@@ -203,7 +220,7 @@ body #outerframe #verifyframe #leftbar #input #resetButtonDiv #resetButton {
   margin: 4px;
   font-size: 180%;
 }
-body #outerframe #verifyframe #leftbar #input #resetButtonDiv #resetButton:hover {
+body #outerframe #verifyframe #leftbar #input #backButtonDiv #backButton:hover {
   background-color: #519ad0;
 }
 body #outerframe #verifyframe #leftbar #input::-webkit-scrollbar {

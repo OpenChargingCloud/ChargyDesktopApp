@@ -181,6 +181,7 @@ function StartDashboard() {
     }
 
 
+
     function GetChargingPool(Id: String): IChargingPool
     {
 
@@ -397,7 +398,7 @@ function StartDashboard() {
 
         chargingSessionReportDiv.style.display  = "flex";
         chargingSessionReportDiv.innerText      = "";
-        resetButtonDiv.style.display            = "block";
+        backButtonDiv.style.display             = "block";
 
         //#endregion
 
@@ -920,12 +921,39 @@ function StartDashboard() {
 
     //#endregion
 
+    var d                         = document as any;
 
     var input                     = <HTMLDivElement> document.getElementById('input');
     input.addEventListener('dragenter', handleDragEnter,   false);
     input.addEventListener('dragover',  handleDragOver,    false);
     input.addEventListener('dragleave', handleDragLeave,   false);
     input.addEventListener('drop',      handleDroppedFile, false);
+
+    var outerframe                = <HTMLDivElement>      document.getElementById('outerframe');
+
+    var aboutButton               = <HTMLButtonElement>   document.getElementById('aboutButton');
+    aboutButton.onclick = function (this: HTMLElement, ev: MouseEvent) {
+        inputInfosDiv.style.display             = "none";
+        aboutScreenDiv.style.display            = "block";
+        chargingSessionReportDiv.style.display  = "none";
+        backButtonDiv.style.display             = "block";
+    }
+
+    var fullScreenButton          = <HTMLButtonElement>   document.getElementById('fullScreenButton');
+    fullScreenButton.onclick = function (this: HTMLElement, ev: MouseEvent) {
+        if (d.fullScreen || d.mozFullScreen || d.webkitIsFullScreen)
+        {
+            outerframe.classList.remove("fullScreen");
+            closeFullscreen();
+            fullScreenButton.innerHTML = '<i class="fas fa-expand"></i>';
+        }
+        else
+        {
+            outerframe.classList.add("fullScreen");
+            openFullscreen();
+            fullScreenButton.innerHTML = '<i class="fas fa-compress"></i>';
+        }
+    }
 
     var inputInfosDiv             = <HTMLDivElement>      document.getElementById('inputInfos');
     var loadingErrorsDiv          = <HTMLDivElement>      document.getElementById('loadingErrors');
@@ -939,12 +967,14 @@ function StartDashboard() {
     var pasteButton               = <HTMLButtonElement>   document.getElementById('pasteButton');
     pasteButton.onclick           = PasteFile;
 
+    var aboutScreenDiv            = <HTMLDivElement>      document.getElementById('aboutScreen');
     var chargingSessionReportDiv  = <HTMLDivElement>      document.getElementById('chargingSessionReport');
-    var resetButtonDiv            = <HTMLDivElement>      document.getElementById('resetButtonDiv');
-    resetButtonDiv.onclick = function (this: HTMLElement, ev: MouseEvent) {
+    var backButtonDiv             = <HTMLDivElement>      document.getElementById('backButtonDiv');
+    backButtonDiv.onclick = function (this: HTMLElement, ev: MouseEvent) {
         inputInfosDiv.style.display             = 'flex';
+        aboutScreenDiv.style.display            = "none";
         chargingSessionReportDiv.style.display  = "none";
-        resetButtonDiv.style.display            = "none";
+        backButtonDiv.style.display             = "none";
         fileInput.value                         = "";
     }
 
@@ -952,5 +982,21 @@ function StartDashboard() {
     var evseTarifInfosDiv         = <HTMLDivElement>      document.getElementById('evseTarifInfos');
     var resultsDiv                = <HTMLDivElement>      document.getElementById('results');
     
-    
+
+    var shell        = require('electron').shell;
+    let linkButtons  = document.getElementsByClassName('linkButton') as HTMLCollectionOf<HTMLButtonElement>;
+    for (var i = 0; i < linkButtons.length; i++) {
+
+        let linkButton = linkButtons[i];
+
+        linkButton.onclick = function (this: HTMLElement, ev: MouseEvent) {
+            event.preventDefault();
+            var link = linkButton.attributes["href"].nodeValue;
+            if (link.startsWith("http://") || link.startsWith("https://")) {
+                shell.openExternal(link);
+            }
+        }
+
+    }
+
 }

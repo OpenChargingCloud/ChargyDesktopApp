@@ -43,6 +43,7 @@ body {
                 flex-grow:          1;
 
                 button {
+                    padding:            0px 5px;
                     border:             0;
                     background:         0;
                     outline:            0;
@@ -155,6 +156,27 @@ body {
 
                     }
                     
+                    #aboutScreen {
+
+                        display:            none;
+                        width:              100%;
+
+                        .linkButton {
+                            border:             0;
+                            border-radius:      4px;
+                            padding:            2px 4px;
+                            margin-top:         1px;
+                            background-color:   #b9dbf5;
+                            font-size:          75%;
+                        }
+
+                        .linkButton:hover {
+                            color:              #aad0ec;
+                            background-color:   #3c75a0;
+                        }
+
+                    }
+
                     #chargingSessionReport {
 
                         display:            none;
@@ -253,23 +275,23 @@ body {
 
                     }
 
-                    #resetButtonDiv {
+                    #backButtonDiv {
 
                         display:        none;
                         position:       absolute;
                         left:           0px;
                         bottom:         0px;
 
-                        #resetButton {
+                        #backButton {
                             border:             0;
-                            background-color: #cce5f7;
+                            background-color:   #cce5f7;
                             padding:            7px 14px 8px 13px;
                             border-radius:      50%;
                             margin:             4px;
                             font-size:          180%;
                         }
 
-                        #resetButton:hover {
+                        #backButton:hover {
                             background-color:   #519ad0;
                         }
 
