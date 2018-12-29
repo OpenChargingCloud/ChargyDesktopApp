@@ -1,5 +1,5 @@
 ﻿
-interface ICTR
+interface IChargeTransparencyRecord
 {
     "@id":                      string,
     "@context":                 string,
@@ -7,11 +7,11 @@ interface ICTR
     end:                        string,
     description:                {},
     contract:                   IContract,
-    chargingStationOperators:   Array<IChargingStationOperator>
-    chargingPools:              Array<IChargingPool>
-    chargingStations:           Array<IChargingStation>
-    chargingSessions:           Array<IChargingSession>
-    eMobilityProviders:         Array<IEMobilityProvider>
+    chargingStationOperators:   Array<IChargingStationOperator>,
+    chargingPools:              Array<IChargingPool>,
+    chargingStations:           Array<IChargingStation>,
+    chargingSessions:           Array<IChargingSession>,
+    eMobilityProviders:         Array<IEMobilityProvider>,
     mediationServices:          Array<IMediationService>
 }
 
@@ -88,19 +88,19 @@ interface IMeter
     publicKeys:                 Array<IPublicKey>
 }
 
-interface ITariff
-{
-    "@id":                      string,
-    "@context":                 string,
-    description:                {}
-}
-
 interface IEMobilityProvider
 {
     "@id":                      string,
     "@context":                 string,
     description:                {},
     tariffs:                    Array<ITariff>
+}
+
+interface ITariff
+{
+    "@id":                      string,
+    "@context":                 string,
+    description:                {}
 }
 
 interface IMediationService
@@ -141,23 +141,25 @@ interface IAuthorization
 
 interface IMeasurement
 {
+    "@context":                 string,
+    chargingSession:            IChargingSession;
     energyMeterId:              string,
     name:                       string,
     obis:                       string,
     unit:                       string,
-    unitEncoded:                string,
+    unitEncoded:                number,
     valueType:                  string,
-    scale:                      string,
+    scale:                      number,
     verifyChain:                boolean,
     values:                     Array<IMeasurementValue>
 }
 
-
 interface IMeasurementValue
 {
+    measurement:                IMeasurement;
     timestamp:                  string,
-    paginationId:               string,
-    value:                      string,
+    paginationId:               number,
+    value:                      number,
     signatures:                 Array<ISignature>
 }
 
@@ -178,14 +180,14 @@ interface ISignature
 }
 
 interface IAddress {
-    "@context":       string,
-    city:             any;
-    street:           string;
-    houseNumber:      string;
-    floorLevel:       string;
-    postalCode:       string;
-    country:          string;
-    comment:          any;
+    "@context":         	    string,
+    city:                       any;
+    street:                     string;
+    houseNumber:                string;
+    floorLevel:                 string;
+    postalCode:                 string;
+    country:                    string;
+    comment:                    any;
 }
 
 

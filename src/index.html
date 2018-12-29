@@ -75,7 +75,7 @@
                             <li>OpenSSL <script>document.write(process.versions.openssl)</script>,                   <button class="linkButton" href="https://github.com/openssl/openssl/blob/master/LICENSE">Apache License v2.0</button></li>
                         </ul>
                         <br />
-                        SHA256: 0x93849385938598534<br />
+                        SHA256: 0x938493859385985342<br />
                     </div>
 
                     <div id="chargingSessionReport"></div>
@@ -105,6 +105,41 @@
 
             <div id="clear" style="clear:both;"></div>
 
+        </div>
+
+        <div id="overlay" style="display: none">
+            <div id="overlayText">
+
+                <div id="info"></div>
+
+                <div id="buffer" class="infoblock">
+                    <div class="description">Puffer</div>
+                    <div class="value"></div>
+                </div>
+
+                <div id="hashedBuffer" class="infoblock">
+                    <div class="description">Hashed Puffer</div>
+                    <div class="value">00000000000000000000000000000000000000000000000000000000000000000</div>
+                </div>
+
+                <div id="publicKey" class="infoblock">
+                    <div class="description">Public Key</div>
+                    <div class="value">00000000000000000000000000000000000000000000000000000000000000000</div>
+                </div>
+
+                <div id="signatureExpected" class="infoblock">
+                    <div class="description">Erwartete Signatur</div>
+                    <div class="value">0000000000000000000000000000000000000000000000</div>
+                </div>
+
+                <div id="signatureCalculated" class="infoblock">
+                    <div class="description">Berechnete Signatur</div>
+                    <div class="value">0000000000000000000000000000000000000000000000</div>
+                </div>
+
+                <button id="overlayOkButton">Ok</button>
+
+            </div>
         </div>
 
     </div>

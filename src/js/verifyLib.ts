@@ -54,7 +54,7 @@ function hex32(val) {
     return ("00000000" + hex).slice(-8);
 }
 
-function parseHexString(str) {
+function parseHexString(str: string) {
 
     var result = [];
 
@@ -84,7 +84,7 @@ function buf2hex(buffer) {
     return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
 }
 
-function intFromBytes( x ){
+function intFromBytes(x ){
     var val = 0;
     for (var i = 0; i < x.length; ++i) {
         val += x[i];
@@ -95,92 +95,120 @@ function intFromBytes( x ){
     return val;
 }
 
-function getInt64Bytes( x ){
+function getInt64Bytes(x) {
+
     var bytes = [];
     var i = 8;
+
     do {
-    bytes[--i] = x & (255);
-    x = x>>8;
+        bytes[--i] = x & (255);
+        x = x>>8;
     } while ( i )
+
     return bytes;
+
 }
 
-//function SetHex(dv, hex, offset)
-//{
-//    return SetHex(dv, hex, offset, false);
-//}
-
-function SetHex(dv, hex, offset, reverse)
+function SetHex(dv: DataView, hex: string, offset: number, reverse?: boolean): string
 {
 
-    var bytes = parseHexString(hex);
-
+    var bytes   = parseHexString(hex);
+    var buffer  = new ArrayBuffer(bytes.length);
+    var tv      = new DataView(buffer);
+    
     if (reverse)
         bytes.reverse();
 
     for (var i = 0; i < bytes.length; i++) {
         dv.setUint8(offset + i, bytes[i]);
+        tv.setUint8(i,          bytes[i]);
     }
+
+    return buf2hex(buffer);
 
 }
 
-function SetTimestamp(dv, timestamp, offset)
+function SetTimestamp(dv: DataView, timestamp: any, offset: number): string
 {
 
-    var bytes = getInt64Bytes(timestamp);
+    if (typeof timestamp === 'string')
+        timestamp = parseUTC(timestamp);
+
+    var bytes   = getInt64Bytes(timestamp);
+    var buffer  = new ArrayBuffer(bytes.length);
+    var tv      = new DataView(buffer);
 
     for (var i = 4; i < bytes.length; i++) {
         dv.setUint8(offset + (bytes.length - i - 1), bytes[i]);
+        tv.setUint8(bytes.length - i - 1,            bytes[i]);
     }
 
+    return buf2hex(buffer);
+
 }
 
-function SetInt8(dv, value, offset)
+function SetInt8(dv: DataView, value: number, offset: number): string
 {
+
+    var buffer  = new ArrayBuffer(1);
+    var tv      = new DataView(buffer);
+
     dv.setInt8(offset, value);
+    tv.setInt8(0,      value);
+
+    return buf2hex(buffer);
+
 }
 
-//function SetUInt64(dv, value, offset)
-//{
-//    return SetUInt64(dv, value, offset, false);
-//}
-
-function SetUInt64(dv, value, offset, reverse)
+function SetUInt64(dv: DataView, value: number, offset: number, reverse?: boolean): string
 {
 
-    var bytes = getInt64Bytes(value);
+    var bytes   = getInt64Bytes(value);
+    var buffer  = new ArrayBuffer(bytes.length);
+    var tv      = new DataView(buffer);
 
     if (reverse)
         bytes.reverse();
 
     for (var i = 0; i < bytes.length; i++) {
         dv.setUint8(offset + i, bytes[i]);
+        tv.setUint8(i,          bytes[i]);
     }
+
+    return buf2hex(buffer);
 
 }
 
-function SetText(dv, text, offset)
+function SetText(dv: DataView, text: string, offset: number): string
 {
 
     //var bytes = new TextEncoder("utf-8").encode(text);
-    var bytes = new TextEncoder().encode(text);
+    var bytes   = new TextEncoder().encode(text);
+    var buffer  = new ArrayBuffer(bytes.length);
+    var tv      = new DataView(buffer);
 
     for (var i = 0; i < bytes.length; i++) {
         dv.setUint8(offset + i, bytes[i]);
+        tv.setUint8(i,          bytes[i]);
     }
+
+    return buf2hex(buffer);
 
 }
 
 
-function Clone(obj){
+function Clone(obj) {
+
     if(obj == null || typeof(obj) != 'object')
         return obj;
 
-    var temp = new obj.constructor(); 
+    var temp = new obj.constructor();
+
     for(var key in obj)
         temp[key] = Clone(obj[key]);
 
     return temp;
+
 }
 
 
@@ -190,31 +218,52 @@ function openFullscreen() {
 
   if (elem.requestFullscreen) {
       elem.requestFullscreen();
-  } 
-  else if (elem.mozRequestFullScreen) { /* Firefox */
+
+  } else if (elem.mozRequestFullScreen) { /* Firefox */
       elem.mozRequestFullScreen();
+
   } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
       elem.webkitRequestFullscreen();
+
   } else if (elem.msRequestFullscreen) { /* IE/Edge */
       elem.msRequestFullscreen();
   }
 
 }
 
-/* Close fullscreen */
 function closeFullscreen() {
 
   var d = document as any;
 
   if (d.exitFullscreen) {
       d.exitFullscreen();
-  }
-  else if (d.mozCancelFullScreen) { /* Firefox */
+
+  } else if (d.mozCancelFullScreen) { /* Firefox */
       d.mozCancelFullScreen();
+
   } else if (d.webkitExitFullscreen) { /* Chrome, Safari and Opera */
       d.webkitExitFullscreen();
+
   } else if (d.msExitFullscreen) { /* IE/Edge */
       d.msExitFullscreen();
   }
 
+}
+
+
+function CreateDiv(ParentDiv:   HTMLDivElement,
+                   ClassName?:  string,
+                   InnerHTML?:  string) : HTMLDivElement
+{
+
+    let childDiv            = ParentDiv.appendChild(document.createElement('div'));
+
+    if (ClassName != null)
+        childDiv.className  = ClassName;
+
+    if (InnerHTML != null)
+        childDiv.innerHTML  = InnerHTML;
+
+    return childDiv;
+    
 }

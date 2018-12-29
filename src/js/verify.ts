@@ -1,6 +1,10 @@
 ﻿///<reference path="verifyInterfaces.ts" />
 ///<reference path="verifyLib.ts" />
 
+import { debug } from "util";
+import * as crypto from "crypto";
+
+//const { randomBytes } = require('crypto')
 
 var chargingStationOperators  = new Array<IChargingStationOperator>();
 var chargingPools             = new Array<IChargingPool>();
@@ -13,7 +17,11 @@ var chargingSessions          = new Array<IChargingSession>();
 
 function StartDashboard() {
 
-    var ec = new elliptic.ec('p192');
+    //var ec = new elliptic.ec('p192');
+    var el      = require('elliptic');
+    var ec      = new el.ec('p192');
+
+    const crypt = require('electron').remote.require('crypto');
 
     //async function verify2(text, signature, pubkey) : VerificationResult
     //{
@@ -235,7 +243,7 @@ function StartDashboard() {
     }
 
 
-    function detectCTRFormat(CTR: ICTR) {
+    function detectCTRFormat(CTR: IChargeTransparencyRecord) {
 
         inputInfosDiv.style.display  = 'none';
         errorTextDiv.style.display   = 'none';
@@ -255,8 +263,192 @@ function StartDashboard() {
 
     }
 
-    function ShowMeasurementDetails(measurement: IMeasurement)
+    function AddToBuffer(text:         string,
+                         bufferValue:  HTMLDivElement,
+                         infoDiv:      HTMLDivElement) 
     {
+
+        let newText = CreateDiv(bufferValue, "entry", text);
+
+        newText.onmouseenter = function(this: GlobalEventHandlers, ev: MouseEvent) {
+            infoDiv.children[0].classList.add("overEntry");
+            infoDiv.children[1].classList.add("overEntry");
+        }
+
+        newText.onmouseleave = function(this: GlobalEventHandlers, ev: MouseEvent) {
+            infoDiv.children[0].classList.remove("overEntry");
+            infoDiv.children[1].classList.remove("overEntry");
+        }
+
+        infoDiv.onmouseenter = function(this: GlobalEventHandlers, ev: MouseEvent) {
+            newText.classList.add("overEntry");
+        }
+
+        infoDiv.onmouseleave = function(this: GlobalEventHandlers, ev: MouseEvent) {
+            newText.classList.remove("overEntry");
+        }
+
+    }
+
+    function ViewGDFCrypt01(measurementValue:          IMeasurementValue,
+                            infoDiv:                   HTMLDivElement,
+                            bufferValue:               HTMLDivElement,
+                            hashedBufferValue:         HTMLDivElement,
+                            publicKeyValue:            HTMLDivElement,
+                            signatureExpectedValue:    HTMLDivElement,
+                            signatureCalculatedValue:  HTMLDivElement)
+    {
+
+        var buffer             = new ArrayBuffer(320);
+        var view               = new DataView(buffer);
+
+        var cryptoDiv          = CreateDiv(infoDiv,       "row");
+        var cryptoIdDiv        = CreateDiv(cryptoDiv,     "id",     "Kryptoverfahren");
+        var cryptoValueDiv     = CreateDiv(cryptoDiv,     "value",  "GDFCrypt01 (ECC secp256r1)");
+
+        hashedBufferValue.parentElement.children[0].innerHTML += " (SHA256)";
+
+        var meterIdDiv         = CreateDiv(infoDiv,       "row");
+        var meterIdIdDiv       = CreateDiv(meterIdDiv,    "id",     "Zählernummer");
+        var meterIdValueDiv    = CreateDiv(meterIdDiv,    "value",  measurementValue.measurement.energyMeterId);
+        AddToBuffer(SetText     (view, measurementValue.measurement.energyMeterId,                             0),        bufferValue, meterIdDiv);
+
+        var timestampDiv       = CreateDiv(infoDiv,       "row");
+        var timestampIdDiv     = CreateDiv(timestampDiv,  "id",     "Zeitstempel");
+        var timestampValueDiv  = CreateDiv(timestampDiv,  "value",  measurementValue.timestamp);
+        AddToBuffer(SetTimestamp(view, measurementValue.timestamp,                                            10),        bufferValue, timestampDiv);
+
+        // var addInfoStatusDiv       = CreateDiv(infoDiv,           "row");
+        // var addInfoStatusIdDiv     = CreateDiv(addInfoStatusDiv,  "id",     "Zusatzinfo Status");
+        // var addInfoStatusValueDiv  = CreateDiv(addInfoStatusDiv,  "value",  measurementValue["additionalInfo"]["status"]);
+        // AddToBuffer(SetHex      (view, measurementValue["additionalInfo"]["status"],            14, false),   bufferValue, addInfoStatusDiv);
+
+        // SetTimestamp(view, meterValue.additionalInfo.indexes.timer,     15);
+        // SetHex      (view, meterValue.measurementId/paginationId,                    19, true);
+
+        var obisDiv              = CreateDiv(infoDiv,         "row");
+        var obisIdDiv            = CreateDiv(obisDiv,         "id",     "OBIS-Kennzahl");
+        var obisValueDiv         = CreateDiv(obisDiv,         "value",  measurementValue.measurement.obis);
+        AddToBuffer(SetHex      (view, measurementValue.measurement.obis,                                     23, false), bufferValue, obisDiv);
+
+        var unitEncodedDiv       = CreateDiv(infoDiv,         "row");
+        var unitEncodedIdDiv     = CreateDiv(unitEncodedDiv,  "id",     "Einheit (codiert)");
+        var unitEncodedValueDiv  = CreateDiv(unitEncodedDiv,  "value",  measurementValue.measurement.unitEncoded.toString());
+        AddToBuffer(SetInt8     (view, measurementValue.measurement.unitEncoded,                              29),        bufferValue, unitEncodedDiv);
+
+        var scaleDiv             = CreateDiv(infoDiv,         "row");
+        var scaleIdDiv           = CreateDiv(scaleDiv,        "id",     "Skalierung");
+        var scaleValueDiv        = CreateDiv(scaleDiv,        "value",  measurementValue.measurement.scale.toString());
+        AddToBuffer(SetInt8     (view, measurementValue.measurement.scale,                                    30),        bufferValue, scaleDiv);
+
+        var valueDiv             = CreateDiv(infoDiv,         "row");
+        var valueIdDiv           = CreateDiv(valueDiv,        "id",     "Messwert");
+        var valueValueDiv        = CreateDiv(valueDiv,        "value",  measurementValue.value.toString() + " Wh");
+        AddToBuffer(SetUInt64   (view, measurementValue.value,                                                31, true),  bufferValue, valueDiv);
+
+        // SetHex      (view, meterValue.additionalInfo.indexes.logBook,   39, true);
+
+        var contractIdDiv                = CreateDiv(infoDiv,                "row");
+        var contractIdIdDiv              = CreateDiv(contractIdDiv,          "id",     "Autorisierung");
+        var contractIdValueDiv           = CreateDiv(contractIdDiv,          "value",  measurementValue.measurement.chargingSession.authorization["@id"]);
+        AddToBuffer(SetHex      (view, measurementValue.measurement.chargingSession.authorization["@id"],     41),        bufferValue, contractIdDiv);
+
+        var contractIdTimestampDiv       = CreateDiv(infoDiv,                "row");
+        var contractIdTimestampIdDiv     = CreateDiv(contractIdTimestampDiv, "id",     "Zeitstempel Autorisierung");
+        var contractIdTimestampValueDiv  = CreateDiv(contractIdTimestampDiv, "value",  measurementValue.measurement.chargingSession.authorization.timestamp);
+        AddToBuffer(SetTimestamp(view, measurementValue.measurement.chargingSession.authorization.timestamp, 169),        bufferValue, contractIdTimestampDiv);
+
+
+        var signatureExpected = measurementValue.signatures[0] as ISignature;
+        if (signatureExpected != null)
+        {
+            signatureExpectedValue.innerHTML = signatureExpected.value.toLowerCase();
+        }
+
+        // var sha256lib    = require('electron').remote.require(__dirname + '\\js\\crypto\\sha256.js');
+        // var sha256hash   = new sha256lib('SHA-256', 'TEXT');
+        // sha256hash.update(buf2hex(buffer));
+        var sha256value  = crypt.createHash('sha256').update(buf2hex(buffer), 'utf8').digest('hex');//sha256hash.getHash("HEX");
+        hashedBufferValue.innerHTML = "0x" + sha256value;
+
+        var meter = GetMeter(measurementValue.measurement.energyMeterId);
+        if (meter != null)
+        {
+
+            var publicKey = meter.publicKeys[0] as IPublicKey;
+            if (publicKey != null)
+            {
+
+                var key     = ec.genKeyPair();
+
+                publicKey.value = key.getPublic();
+                publicKeyValue.innerHTML = key.getPublic().encode('hex').toLowerCase();
+
+                var signature = key.sign(sha256value);
+                signatureExpected.value          = signature.toDER('hex');
+                signatureExpectedValue.innerHTML = signatureExpected.value;
+
+                try
+                {
+                    var result  = ec.keyFromPublic(publicKey.value).verify(sha256value, signatureExpected.value);
+                    signatureCalculatedValue.innerHTML = result;
+                }
+                catch (exception)
+                {
+                    signatureCalculatedValue.innerHTML = "Ungültige Signatur!";
+                }
+
+                console.log(result);
+
+            }
+
+            else
+                publicKeyValue.innerHTML = "Kein PublicKey gefunden!";
+
+        }
+
+        else
+            publicKeyValue.innerHTML = "Unbekannter Energiezähler!";
+
+        // var hexbuf = buf2hex(buffer);
+        // console.log(hexbuf);
+
+    }
+
+    function ShowMeasurementCryptoDetails(measurementValue: IMeasurementValue)
+    {
+
+        overlayDiv.style.display = 'block';
+
+        let infoDiv                   = overlayDiv.querySelector('#info')                       as HTMLDivElement;
+        let bufferValue               = overlayDiv.querySelector('#buffer .value')              as HTMLDivElement;
+        let hashedBufferValue         = overlayDiv.querySelector('#hashedBuffer .value')        as HTMLDivElement;
+        let publicKeyValue            = overlayDiv.querySelector('#publicKey .value')           as HTMLDivElement;
+        let signatureExpectedValue    = overlayDiv.querySelector('#signatureExpected .value')   as HTMLDivElement;
+        let signatureCalculatedValue  = overlayDiv.querySelector('#signatureCalculated .value') as HTMLDivElement;
+
+        infoDiv.innerHTML                   = '';
+        bufferValue.innerHTML               = '';
+        hashedBufferValue.innerHTML         = '0x00000000000000000000000000000000000';
+        publicKeyValue.innerHTML            = '0x00000000000000000000000000000000000';
+        signatureExpectedValue.innerHTML    = '0x00000000000000000000000000000000000';
+        signatureCalculatedValue.innerHTML  = '0x00000000000000000000000000000000000';
+
+        ViewGDFCrypt01(measurementValue,
+                       infoDiv,
+                       bufferValue,
+                       hashedBufferValue,
+                       publicKeyValue,
+                       signatureExpectedValue,
+                       signatureCalculatedValue);
+
+    }
+
+    // Will capture the correct measurement value and its context!
+    function captureMeasurementCryptoDetails(mv: IMeasurementValue) {
+        return function(this: HTMLDivElement, ev: MouseEvent) {
+                   ShowMeasurementCryptoDetails(mv);
+               };
     }
 
     function ShowChargingSessionDetails(chargingSession: IChargingSession)
@@ -272,71 +464,75 @@ function StartDashboard() {
                 for (var measurement of chargingSession.measurements)
                 {
 
-                    let MeasurementInfoDiv = evseTarifInfosDiv.appendChild(document.createElement('div'));
-                    MeasurementInfoDiv.className    = "measurementInfo";
+                    measurement.chargingSession     = chargingSession;
 
-                    let MeterDiv                    = MeasurementInfoDiv.appendChild(document.createElement('div'));
-                    MeterDiv.className              = "meter";
+                    let MeasurementInfoDiv          = CreateDiv(evseTarifInfosDiv,  "measurementInfo");
 
-                    let MeterIdDiv                  = MeterDiv.appendChild(document.createElement('div'));
-                    MeterIdDiv.className            = "meterId";
-                    MeterIdDiv.innerHTML            = "Zähler";
+                    //#region Show Meter infos
 
-                    let MeterIdValueDiv             = MeterDiv.appendChild(document.createElement('div'));
-                    MeterIdValueDiv.className       = "meterIdValue";
-                    MeterIdValueDiv.innerHTML       = measurement.energyMeterId;
+                    let MeterDiv                    = CreateDiv(MeasurementInfoDiv,  "meter");
 
+                    let MeterIdDiv                  = CreateDiv(MeterDiv,            "meterId",
+                                                                "Zähler");
+
+                    let MeterIdValueDiv             = CreateDiv(MeterDiv,            "meterIdValue",
+                                                                measurement.energyMeterId);
+
+                    //#endregion
                     
-                    var meter = GetMeter(measurement.energyMeterId);
+                    //#region Show Meter vendor infos
+
+                    var meter                        = GetMeter(measurement.energyMeterId);
 
                     if (meter != null)
                     {
 
-                        let MeterTypeDiv                = MeasurementInfoDiv.appendChild(document.createElement('div'));
-                        MeterTypeDiv.className          = "meterType";
+                        let MeterTypeDiv             = CreateDiv(MeasurementInfoDiv,  "meterType");
 
-                        let MeterTypeIdDiv              = MeterTypeDiv.appendChild(document.createElement('div'));
-                        MeterTypeIdDiv.className        = "meterTypeId";
-                        MeterTypeIdDiv.innerHTML        = "Zählertyp";
+                        let MeterTypeIdDiv           = CreateDiv(MeterTypeDiv,        "meterTypeId",
+                                                                 "Zählertyp");
 
-                        let MeterTypeValueDiv           = MeterTypeDiv.appendChild(document.createElement('div'));
-                        MeterTypeValueDiv.className     = "meterTypeIdValue";
-                        MeterTypeValueDiv.innerHTML     = meter.manufacturer + " " + meter.type;
+                        let MeterTypeValueDiv        = CreateDiv(MeterTypeDiv,        "meterTypeIdValue",
+                                                                 meter.manufacturer + " " + meter.type);
 
                     }
 
-                    let MeasurementDiv               = MeasurementInfoDiv.appendChild(document.createElement('div'));
-                    MeasurementDiv.className         = "measurement";
+                    //#endregion
 
-                    let MeasurementIdDiv             = MeasurementDiv.appendChild(document.createElement('div'));
-                    MeasurementIdDiv.className       = "measurementId";
-                    MeasurementIdDiv.innerHTML       = "Messung";
+                    //#region Show Measurement infos
 
-                    let MeasurementIdValueDiv        = MeasurementDiv.appendChild(document.createElement('div'));
-                    MeasurementIdValueDiv.className  = "measurementIdValue";
-                    MeasurementIdValueDiv.innerHTML  = measurement.name + " (OBIS: " + measurement.obis + ")";
+                    let MeasurementDiv               = CreateDiv(MeasurementInfoDiv, "measurement");
 
+                    let MeasurementIdDiv             = CreateDiv(MeasurementDiv,     "measurementId",
+                                                                 "Messung");
 
-                    let MeasurementValuesDiv         = evseTarifInfosDiv.appendChild(document.createElement('div'));
-                    MeasurementValuesDiv.className   = "measurementValues";
+                    let MeasurementIdValueDiv        = CreateDiv(MeasurementDiv,     "measurementIdValue",
+                                                                 measurement.name + " (OBIS: " + measurement.obis + ")");
 
+                    //#endregion
+
+                    //#region Show Measurement values...
 
                     //<i class="far fa-chart-bar"></i>
                     if (measurement.values && measurement.values.length > 0)
                     {
-                        for (var value of measurement.values)
+
+                        let MeasurementValuesDiv         = CreateDiv(evseTarifInfosDiv, "measurementValues");
+
+                        for (var measurementValue of measurement.values)
                         {
 
-                            let MeasurementValueDiv          = MeasurementValuesDiv.appendChild(document.createElement('div'));
-                            MeasurementValueDiv.className    = "measurementValue";
+                            measurementValue.measurement     = measurement;
 
-                            var timestamp                    = parseUTC(value.timestamp);
+                            let MeasurementValueDiv          = CreateDiv(MeasurementValuesDiv, "measurementValue");
+                            MeasurementValueDiv.onclick      = captureMeasurementCryptoDetails(measurementValue);
 
-                            let timestampDiv                 = MeasurementValueDiv.appendChild(document.createElement('div'));
-                            timestampDiv.className           = "timestamp";
-                            timestampDiv.innerHTML           = timestamp.format('HH:mm:ss');
+                            var timestamp                    = parseUTC(measurementValue.timestamp);
 
-                            var _value                       = parseInt(value.value);
+                            let timestampDiv                 = CreateDiv(MeasurementValueDiv, "timestamp",
+                                                                         timestamp.format('HH:mm:ss'));
+
+                            var _value                       = measurementValue.value;
 
                             switch (measurement.unit)
                             {
@@ -351,38 +547,40 @@ function StartDashboard() {
 
                             }
 
-                            let valueDiv                     = MeasurementValueDiv.appendChild(document.createElement('div'));
-                            valueDiv.className               = "value";
-                            valueDiv.innerHTML               = _value.toString();
+                            let valueDiv                     = CreateDiv(MeasurementValueDiv, "value",
+                                                                         _value.toString());
 
-                            let unitDiv                      = MeasurementValueDiv.appendChild(document.createElement('div'));
-                            unitDiv.className                = "unit";
-                            unitDiv.innerHTML                = "kWh";
+                            let unitDiv                      = CreateDiv(MeasurementValueDiv, "unit",
+                                                                         "kWh");
 
-                            let verificationStatusDiv        = MeasurementValueDiv.appendChild(document.createElement('div'));
-                            verificationStatusDiv.className  = "verificationStatus";
-                            verificationStatusDiv.innerHTML  = '<i class="fas fa-times-circle"></i> Ungültiger Messwert';
+                            let verificationStatusDiv        = CreateDiv(MeasurementValueDiv, "verificationStatus",
+                                                                         '<i class="fas fa-times-circle"></i> Ungültiger Messwert');
 
                         }
 
                     }
+
+                    //#endregion
 
                 }
             }
 
         }
         catch (exception)
-        { }
+        { 
+            console.log(exception);
+        }
 
     }
 
-    function captureChargingSession(cs) {
+    // Will capture the correct charging session and its context!
+    function captureChargingSession(cs: IChargingSession) {
         return function(this: HTMLDivElement, ev: MouseEvent) {
                    ShowChargingSessionDetails(cs);
                };
     }
 
-    function processOpenChargingCloudFormat(CTR: ICTR)
+    function processOpenChargingCloudFormat(CTR: IChargeTransparencyRecord)
     {
 
         chargingStationOperators  = [];
@@ -615,16 +813,14 @@ function StartDashboard() {
 
         if (CTR.chargingSessions) {
 
-            let chargingSessionsDiv = chargingSessionReportDiv.appendChild(document.createElement('div'));
-            chargingSessionsDiv.id  = "chargingSessions";
+            let chargingSessionsDiv  = chargingSessionReportDiv.appendChild(document.createElement('div'));
+            chargingSessionsDiv.id   = "chargingSessions";
 
             for (var chargingSession of CTR.chargingSessions)
             {
 
-                let chargingSessionDiv = chargingSessionsDiv.appendChild(document.createElement('div'));
-                chargingSessionDiv.className = "chargingSessions";
-                // Will capture the correct charging session!
-                chargingSessionDiv.onclick = captureChargingSession(chargingSession);
+                let chargingSessionDiv      = CreateDiv(chargingSessionsDiv, "chargingSessions");               
+                chargingSessionDiv.onclick  = captureChargingSession(chargingSession);
 
                 //#region Show session time
 
@@ -685,8 +881,8 @@ function StartDashboard() {
                             if (measurement.values && measurement.values.length > 0)
                             {
 
-                                var first  = parseInt(measurement.values[0].value);
-                                var last   = parseInt(measurement.values[measurement.values.length-1].value);
+                                var first  = measurement.values[0].value;
+                                var last   = measurement.values[measurement.values.length-1].value;
                                 var amount = last - first;
 
                                 switch (measurement.unit)
@@ -944,12 +1140,14 @@ function StartDashboard() {
         if (d.fullScreen || d.mozFullScreen || d.webkitIsFullScreen)
         {
             outerframe.classList.remove("fullScreen");
+            overlayDiv.classList.remove("fullScreen");
             closeFullscreen();
             fullScreenButton.innerHTML = '<i class="fas fa-expand"></i>';
         }
         else
         {
             outerframe.classList.add("fullScreen");
+            overlayDiv.classList.add("fullScreen");
             openFullscreen();
             fullScreenButton.innerHTML = '<i class="fas fa-compress"></i>';
         }
@@ -958,6 +1156,10 @@ function StartDashboard() {
     var inputInfosDiv             = <HTMLDivElement>      document.getElementById('inputInfos');
     var loadingErrorsDiv          = <HTMLDivElement>      document.getElementById('loadingErrors');
     var errorTextDiv              = <HTMLDivElement>      document.getElementById('errorText');
+
+    var overlayDiv                = <HTMLDivElement>      document.getElementById('overlay');
+    var overlayOkButton           = <HTMLButtonElement>   document.getElementById('overlayOkButton');
+    overlayOkButton.onclick = function (this: HTMLElement, ev: MouseEvent) { overlayDiv.style.display = 'none'; }
 
     var fileInputButton           = <HTMLButtonElement>   document.getElementById('fileInputButton');
     var fileInput                 = <HTMLInputElement>    document.getElementById('fileInput');

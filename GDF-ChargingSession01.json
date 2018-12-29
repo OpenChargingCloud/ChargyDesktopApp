@@ -166,9 +166,9 @@
                     "sockets":                  [ { } ],
                     "meters": [
                         {
-                            "@id":                      "GDF00000001",
+                            "@id":                      "EMH00000001",
                             "type":                     "Virtual Energy Meter v1.0",
-                            "manufacturer":             "GraphDefined",
+                            "manufacturer":             "EMH metering",
                             "firmwareVersion":          "v2.1",
                             "publicKeys": [
                                 {
@@ -377,7 +377,7 @@
 
                 {
 
-                    "energyMeterId":            "GDF00000001",
+                    "energyMeterId":            "EMH00000001",
                     "name":                     "ENERGY_TOTAL",
                     "obis":                     "0100011100FF",
                     "unit":                     "WATT_HOUR",
@@ -389,8 +389,15 @@
 
                             {
                                 "timestamp":        "2018-11-04T16:47:00Z",
-                                "paginationId":     "1",
                                 "value":            "0",
+                                "paginationId":     "1",
+								"additionalInfo": {
+									"status":       "01",
+									"indexes": {
+                                        "logBook":  "01AE",
+                                        "timer":    "03DEFFEE"
+									}
+								},								
                                 "signatures": [
                                     {
                                         "algorithm":  "secp192r1",
@@ -402,8 +409,8 @@
 
                             {
                                 "timestamp":          "2018-11-04T16:48:00Z",
-                                "paginationId":       "2",
                                 "value":              "10000",
+                                "paginationId":       "2",
                                 "prevSignatures": [
                                     {
                                         "algorithm":  "secp192r1",
@@ -481,7 +488,7 @@
                                     {
                                         "algorithm":  "secp192r1",
                                         "format":     "DER",
-                                        "value":      "AB9F84ADDA460F8410BB26061016D6C8258689CAA73B0BFD1EAB0AA198B5803358A2A91624DC012D0EF3EE72B3DE820A"
+                                        "value":      "30360219009d16507c57f2b36391d3405b3f1072e78315e0fab842e7db021900bcd7e8817c0e173bfdd1d5bd5015fcd958be635ae5bf9462"
                                     }
                                 ]
                             },

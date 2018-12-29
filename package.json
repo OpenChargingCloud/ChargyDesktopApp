@@ -11,17 +11,26 @@
     "publish": "electron-forge publish",
     "lint": "eslint src --color"
   },
-  "keywords": ["Transparenzsoftware", "Eichrecht", "Elektromobilität", "Ladestationen", "PTB", "Transparenz"],
+  "keywords": [
+    "Transparenzsoftware",
+    "Eichrecht",
+    "Elektromobilität",
+    "Ladestationen",
+    "PTB",
+    "Transparenz"
+  ],
   "author": "Achim Friedland <achim.friedland@graphdefined.com>",
-  "license": "AGPL",
+  "license": "AGPL-3.0-or-later",
   "config": {
     "forge": {
       "make_targets": {
         "win32": [
-          "squirrel", "zip"
+          "squirrel",
+          "zip"
         ],
         "darwin": [
-          "zip", "dmg"
+          "zip",
+          "dmg"
         ],
         "linux": [
           "deb",
@@ -50,14 +59,16 @@
   },
   "dependencies": {
     "electron-compile": "^6.4.3",
-    "electron-squirrel-startup": "^1.0.0"
+    "electron-squirrel-startup": "^1.0.0",
+    "elliptic": "^6.4.1"
   },
   "devDependencies": {
     "babel-plugin-transform-async-to-generator": "^6.24.1",
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
+    "electron": "^4.0.0",
     "electron-forge": "^5.2.3",
-    "electron-prebuilt-compile": "3.0.10",
+    "electron-prebuilt-compile": "3.0.13",
     "eslint": "^3.19.0",
     "eslint-config-airbnb": "^15.1.0",
     "eslint-plugin-import": "^2.14.0",

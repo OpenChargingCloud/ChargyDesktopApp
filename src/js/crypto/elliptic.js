@@ -7325,11 +7325,14 @@ if (typeof self === 'object') {
 } else {
   // Node.js or Web worker with no crypto support
   try {
+
     var crypto = require('crypto');
+    //var crypto = require('electron').remote.require('crypto');
 
     Rand.prototype._rand = function _rand(n) {
       return crypto.randomBytes(n);
     };
+    
   } catch (e) {
     // Emulate crypto API using randy
     Rand.prototype._rand = function _rand(n) {
