@@ -480,6 +480,138 @@ body {
 
         }
 
+        #overlay {
+
+            position:               absolute;
+            font-family:            sans-serif;
+            font-size:              90%;
+            background-color:     rgba(0, 0, 0, 0.3);
+            width:                  80%;
+            height:                 80vh;
+            margin:                 auto;
+            border-radius:          8px;
+
+            #overlayText {
+
+                position:               relative;
+                top:                    5%;
+                width:                  calc(90% - 20px);
+                height:                 calc(90% - 30px);                
+                margin:                 auto;
+                padding:                10px 15px;
+                background-color:     #f5f5f5;
+                border-radius:          6px;
+                box-shadow:             2px 0 16px 0 rgba(0,0,0,.3);
+                z-index:                9000;
+
+                #info {
+
+                    display: table;
+
+                    .row {
+
+                        display: table-row;
+
+                        .id {
+                            display:        table-cell;
+                            padding:        2px 10px 1px 8px;
+                            font-weight:    bold;
+                            border-radius:  4px 0px 0px 4px;
+                        }
+
+                        .value {
+                            display:        table-cell;
+                            padding:        2px 8px 1px 0px;
+                            border-radius:  0px 4px 4px 0px;
+                        }
+
+                    }
+
+                    .row:hover {
+                        background-color: orange;        
+                    }
+
+                    .overEntry {
+                        background-color: orange;        
+                    }
+
+                }
+
+                .infoblock {
+
+                    font-family:            monospace;
+                    font-size:              110%;
+                    margin-bottom:          10px;
+
+                    .description {
+                        position:               relative;
+                        top:                    8px;
+                        left:                   10px;
+                        background-color:     #98c3e2;
+                        display:                inline-block;
+                        padding:                1px 6px;
+                        border-radius:          4px;
+                        font-size:              80%;
+                    }
+
+                    .value {
+                        overflow-wrap:          break-word;
+                        background-color:     #E1E1E1;
+                        border-radius:          4px;
+                        padding:                9px 10px 6px 10px;
+                        width:                  calc(100% - 20px);
+                    }
+                    
+                }
+
+                #buffer {
+                    .value {
+
+                        .entry {
+                            display:            inline-block;
+                            padding:            1px 4px 1px 4px;
+                            margin-left:        -4px;
+                            border-radius:      4px;
+                        }
+
+                        .entry:hover {
+                            background-color: orange;        
+                        }
+
+                        .overEntry {
+                            background-color: orange;        
+                        }
+
+                    }
+                }
+
+                #signatureCheck {
+
+                    margin-top:     30px;
+                    text-align:     center;
+                    font-size:      150%;
+                    
+                    i {
+                        font-size: 200%;
+                    }
+
+                    #description {
+                        position: relative;
+                        line-height: 200%;
+                    }
+     
+                }
+
+            }
+
+        }
+
+        .fullScreen {
+            width:              100vw !important;
+            height:             100vh !important;
+            border-radius:      0     !important;
+        }
+
     }
 
     .fullScreen {
