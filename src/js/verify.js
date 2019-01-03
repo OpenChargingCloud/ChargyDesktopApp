@@ -242,7 +242,7 @@ function StartDashboard() {
                     var publicKey = meter.publicKeys[0];
                     if (publicKey != null) {
                         try {
-                            // Fake it!
+                            // Fake it... for the moment!
                             var key = ec.genKeyPair();
                             publicKey.value = key.getPublic();
                             publicKeyValue.innerHTML = key.getPublic().encode('hex').toLowerCase();
