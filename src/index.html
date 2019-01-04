@@ -21,6 +21,9 @@
     <script type="text/javascript" src="js/leaflet/leaflet.js"></script>
     <script type="text/javascript" src="js/verifyInterfaces.js"></script>
     <script type="text/javascript" src="js/verifyLib.js"></script>
+    <script type="text/javascript" src="js/ACrypt.js"></script>
+    <script type="text/javascript" src="js/GDFCrypt01.js"></script>
+    <script type="text/javascript" src="js/EMHCrypt01.js"></script>
     <script type="text/javascript" src="js/verify.js"></script>
 	
   </head>
@@ -88,8 +91,8 @@
                 <div id="map"></div>
 
                 <div id="evseTarifInfos">
-                    <div id="headline">Ladestations- und Tarifinformationen</div>
-                    Keine Ladestations- oder Tarifinformationen verfügbar!<br /><br />
+                   <!--  <div id="headline">Ladestations- und Tarifinformationen</div>
+                    Keine Ladestations- oder Tarifinformationen verfügbar!<br /><br /> -->
                 </div>
 
                 <div id="results">
@@ -136,37 +139,38 @@
 
     </div>
 
-<script type="text/javascript">
-
-    var ACCESS_TOKEN = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
-
-    leaflet = L;
-    map     = L.map('map').setView([49.7325504,10.1424442], 13);
-
-    L.tileLayer('https://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + ACCESS_TOKEN, {
-        maxZoom: 18,
-        attribution: '<a href="http://openstreetmap.org">OSM</a> contr., ' +
-        '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-        'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-        id: 'ahzf.nc811hb2'
-    }).addTo(map);
+    <script type="text/javascript">
 
 
-    //var ec         = new elliptic.ec('p192');
-    //var pubkey     = ec.keyFromPublic("047abeaeed8ccba945656975006da20a1c68d0951fd981c436b8f40e90c7a9f78214a76804fcd53d94473811b23cb38c4d", 'hex');
-    //var signature  = "3034021875fd505ed6901d8a16977b0d324e01ec4276308fa228058002184763f148e3a93237388cc2a77be743f8b213e9faab0b770a";
-    //
-    //var text1      = "Hello world!";
-    //verify(text1, signature, pubkey).then(console.log);
+        var ACCESS_TOKEN = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
 
-    // var text2      = "Damn it!";
-    // var hash2      = new jsSHA('SHA-256', 'TEXT');
-    // hash2.update(text2);
-    // console.log(pubkey.verify(hash2.getHash("HEX"), signature));
-  
-    var test = new StartDashboard();
+        leaflet = L;
+        map     = L.map('map').setView([49.7325504,10.1424442], 13);
 
-</script>
+        L.tileLayer('https://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + ACCESS_TOKEN, {
+            maxZoom: 18,
+            attribution: '<a href="http://openstreetmap.org">OSM</a> contr., ' +
+            '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+            'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+            id: 'ahzf.nc811hb2'
+        }).addTo(map);
+
+
+        //var ec         = new elliptic.ec('p192');
+        //var pubkey     = ec.keyFromPublic("047abeaeed8ccba945656975006da20a1c68d0951fd981c436b8f40e90c7a9f78214a76804fcd53d94473811b23cb38c4d", 'hex');
+        //var signature  = "3034021875fd505ed6901d8a16977b0d324e01ec4276308fa228058002184763f148e3a93237388cc2a77be743f8b213e9faab0b770a";
+        //
+        //var text1      = "Hello world!";
+        //verify(text1, signature, pubkey).then(console.log);
+
+        // var text2      = "Damn it!";
+        // var hash2      = new jsSHA('SHA-256', 'TEXT');
+        // hash2.update(text2);
+        // console.log(pubkey.verify(hash2.getHash("HEX"), signature));
+    
+        var test = new StartDashboard();
+
+    </script>
 	
   </body>
 </html>

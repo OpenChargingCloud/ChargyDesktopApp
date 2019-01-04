@@ -16,6 +16,10 @@
         "email":        "maria@mustermann.de"
     },
 
+    "certificates": [
+
+    ],
+
     "chargingStationOperators": [
         {
 
@@ -99,7 +103,7 @@
         {
             "@id":                      "DE*GEF*STATION*CI*TESTS*1*A",
             "description": {
-                "de":                   "GraphDefined Charging Station - CI-Tests 1-A"
+                "de":                   "GraphDefined Charging Station - CI-Tests Pool 1 / Station A"
             },
             "gps":                      { "lat": 50.387945, "lng": 10.4304 },
             "address": {
@@ -113,20 +117,21 @@
                 {
                     "@id":                      "DE*GEF*EVSE*CI*TESTS*1*A*1",
                     "description": {
-                        "de":                   "GraphDefined EVSE - CI-Tests 1-A-1"
+                        "de":                   "GraphDefined EVSE - CI-Tests Pool 1 / Station A / EVSE 1"
                     },
                     "sockets":                  [ { } ],
                     "meters": [
                         {
                             "@id":                      "GDF00000001",
-                            "type":                     "Virtual Energy Meter v1.0",
-                            "manufacturer":             "GraphDefined",
-                            "firmwareVersion":          "v2.1",
+                            "vendor":                   "GraphDefined",
+                            "model":                    "Virtual Energy Meter",
+                            "firmwareVersion":          "1.0",
+                            "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/GDFCrypt01",
                             "publicKeys": [
                                 {
-                                    "algorithm":        "secp192r1",
+                                    "algorithm":        "secp256r1",
                                     "format":           "DER",
-                                    "value":            "049a88ac54fb4fc8f9d1d5bc5707b4d8ac04dc4a88f4ff1fa11d4c70a9632ab080b07a2815d940fc7ef61ee217fa464da0",
+                                    "value":            "04ec279c5ca58b117ca2b674cffad798958950e0125d97849fc5c2162d251087406d44729d55f46ca4f0322e041b4896e98f2e9fc44be76a3179a546a7ef183da8",
                                     "signatures":       [ ]
                                 }
                             ]
@@ -136,7 +141,7 @@
             ],
             "publicKeys": [
                 {
-                    "algorithm":        "secp192r1",
+                    "algorithm":        "secp256r1",
                     "format":           "DER",
                     "value":            "049a88ac54fb4fc8f9d1d5bc5707b4d8ac04dc4a88f4ff1fa11d4c70a9632ab080b07a2815d940fc7ef61ee217fa464da0",
                     "signatures":       [ ]
@@ -147,7 +152,7 @@
         {
             "@id":                      "DE*GEF*STATION*CI*TESTS*2*A",
             "description": {
-                "de":                   "GraphDefined Charging Station - CI-Tests 2-A"
+                "de":                   "GraphDefined Charging Station - CI-Tests Pool 2 / Station A"
             },
             "gps":                      { "lat": 50.397945, "lng": 10.4404 },
             "address": {
@@ -161,20 +166,22 @@
                 {
                     "@id":                      "DE*GEF*EVSE*CI*TESTS*2*A*1",
                     "description": {
-                        "de":                   "GraphDefined EVSE - CI-Tests 2-A-1"
+                        "de":                   "GraphDefined EVSE - CI-Tests Pool 2 / Station A / EVSE 1"
                     },
                     "sockets":                  [ { } ],
                     "meters": [
                         {
                             "@id":                      "EMH00000001",
-                            "type":                     "Virtual Energy Meter v1.0",
-                            "manufacturer":             "EMH metering",
-                            "firmwareVersion":          "v2.1",
+                            "vendor":                   "EMH metering",
+                            "model":                    "Energy Meter",
+                            "hardwareVersion":          "1.0",
+                            "firmwareVersion":          "1.0",
+                            "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
                             "publicKeys": [
                                 {
                                     "algorithm":        "secp192r1",
                                     "format":           "DER",
-                                    "value":            "049a88ac54fb4fc8f9d1d5bc5707b4d8ac04dc4a88f4ff1fa11d4c70a9632ab080b07a2815d940fc7ef61ee217fa464da0",
+                                    "value":            "040479235ec46a03db778b94f36873221e3206e37fa472c30198224a9ec823ceac7e15888db034845a26acdd48210865eb",
                                     "signatures":       [ ]
                                 }
                             ]
@@ -200,7 +207,7 @@
             {
                 "@id":                      "GDF00230001",
                 "type":                     "Virtual Charging Energy Meter v1.0",
-                "manufacturer":             "GraphDefined",
+                "vendor":             "GraphDefined",
                 "firmwareVersion":          "v2.1",
                 "publicKeys": [
                     {
@@ -293,7 +300,7 @@
         {
 
             "@id":                          "2ab541f0-74e0-4e01-93b6-90d7845d3cb8",
-            "@context":                     "https://open.charging.cloud/contexts/CTR/unverified+json",
+            "@context":                     "https://open.charging.cloud/contexts/CTR/chargingSession+json",
             "begin":                        "2018-11-04T16:47:01Z",
             "end":                          "2018-11-04T17:13:13Z",
             "EVSEId":                       "DE*GEF*EVSE*CI*TESTS*1*A*1",
@@ -312,6 +319,7 @@
                 {
 
                     "energyMeterId":            "GDF00000001",
+                    "@context":                 "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/GDFCrypt01+json",
                     "name":                     "ENERGY_TOTAL",
                     "obis":                     "0100011100FF",
                     "unit":                     "WATT_HOUR",
@@ -378,6 +386,7 @@
                 {
 
                     "energyMeterId":            "EMH00000001",
+                    "@context":                 "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
                     "name":                     "ENERGY_TOTAL",
                     "obis":                     "0100011100FF",
                     "unit":                     "WATT_HOUR",
@@ -457,6 +466,7 @@
                 {
 
                     "energyMeterId":            "GDF00000001",
+                    "@context":                 "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/GDFCrypt01+json",
                     "name":                     "ENERGY_TOTAL",
                     "obis":                     "0100011100FF",
                     "unit":                     "WATT_HOUR",

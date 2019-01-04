@@ -8,12 +8,12 @@ body {
 
     #outerframe {
 
-        width:              80vw;
-        height:             80vh;
+        width:              100vw;
+        height:             100vh;
         margin:             auto;
-        margin-top:         10vh;
+        //margin-top:         10vh;
         background-color:   #87cafa;
-        border-radius:      8px;
+        //border-radius:      8px;
         display:            flex;
         flex-direction:     column;
 
@@ -375,16 +375,31 @@ body {
 
                         }
 
-                        .meterType {
+                        .meterVendor {
 
                             display:            table-row;
 
-                            .meterTypeId {
+                            .meterVendorId {
                                 display:            table-cell;
                                 padding-right:      20px;
                             }
 
-                            .meterTypeValue {
+                            .meterVendorValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                        .meterModel {
+
+                            display:            table-row;
+
+                            .meterModelId {
+                                display:            table-cell;
+                                padding-right:      20px;
+                            }
+
+                            .meterModelValue {
                                 display:            table-cell;
                             }
 
@@ -486,10 +501,10 @@ body {
             font-family:            sans-serif;
             font-size:              90%;
             background-color:     rgba(0, 0, 0, 0.3);
-            width:                  80%;
-            height:                 80vh;
+            width:                  100vw;
+            height:                 100vh;
             margin:                 auto;
-            border-radius:          8px;
+            //border-radius:          8px;
 
             #overlayText {
 
@@ -553,14 +568,14 @@ body {
                         display:                inline-block;
                         padding:                1px 6px;
                         border-radius:          4px;
-                        font-size:              80%;
+                        font-size:              85%;
                     }
 
                     .value {
                         overflow-wrap:          break-word;
                         background-color:     #E1E1E1;
                         border-radius:          4px;
-                        padding:                9px 10px 6px 10px;
+                        padding:                11px 10px 6px 10px;
                         width:                  calc(100% - 20px);
                     }
                     

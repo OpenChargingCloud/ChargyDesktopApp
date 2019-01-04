@@ -1,7 +1,7 @@
 ﻿
-declare var jsSHA:    any;
-declare var elliptic: any;
-declare var moment:   any;
+// declare var jsSHA:    any;
+// declare var elliptic: any;
+// declare var moment:   any;
 
 function ParseJSON_LD<T>(Text:    string,
     Context: string = null): T {
@@ -43,12 +43,12 @@ function bufferToHex(buffer) : string {
 
 }
 
-function sha256_(text)
-{
-    var hash = new jsSHA('SHA-256', 'TEXT');
-    hash.update(text);
-    return hash.getHash("HEX");
-}
+// function sha256_(text)
+// {
+//     var hash = new jsSHA('SHA-256', 'TEXT');
+//     hash.update(text);
+//     return hash.getHash("HEX");
+// }
 
 function hex32(val) {
     val &= 0xFFFFFFFF;

@@ -78,14 +78,18 @@ interface IMeter
     "@id":                      string,
     "@context":                 string,
     description:                {},
-    type:                       string,
-    manufacturer:               string,
+    model:                       string,
+    vendor:                     string,
     firmwareVersion:            string,
     chargingStation:            IChargingStation,
     chargingStationId:          string,
     EVSE:                       IEVSE,
     EVSEId:                     string,
     publicKeys:                 Array<IPublicKey>
+}
+
+interface GetMeterFunc {
+    (Id: String): IMeter;
 }
 
 interface IEMobilityProvider
@@ -158,9 +162,17 @@ interface IMeasurementValue
 {
     measurement:                IMeasurement;
     timestamp:                  string,
-    paginationId:               number,
+    //paginationId:               number,
     value:                      number,
     signatures:                 Array<ISignature>
+}
+
+interface ICryptoResult
+{
+    status:                     string
+    //privateKey?:                string,
+    publicKey?:                 string,
+    signature?:                 string
 }
 
 interface IPublicKey

@@ -1,3 +1,6 @@
+// declare var jsSHA:    any;
+// declare var elliptic: any;
+// declare var moment:   any;
 function ParseJSON_LD(Text, Context) {
     if (Context === void 0) { Context = null; }
     var JObject = JSON.parse(Text);
@@ -24,11 +27,12 @@ function bufferToHex(buffer) {
     //    .join("");
     return Array.prototype.map.call(new Uint8Array(buffer), function (x) { return ('00' + x.toString(16)).slice(-2); }).join('');
 }
-function sha256_(text) {
-    var hash = new jsSHA('SHA-256', 'TEXT');
-    hash.update(text);
-    return hash.getHash("HEX");
-}
+// function sha256_(text)
+// {
+//     var hash = new jsSHA('SHA-256', 'TEXT');
+//     hash.update(text);
+//     return hash.getHash("HEX");
+// }
 function hex32(val) {
     val &= 0xFFFFFFFF;
     var hex = val.toString(16).toUpperCase();

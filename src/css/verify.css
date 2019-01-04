@@ -5,12 +5,10 @@ body {
   overflow: hidden;
 }
 body #outerframe {
-  width: 80vw;
-  height: 80vh;
+  width: 100vw;
+  height: 100vh;
   margin: auto;
-  margin-top: 10vh;
   background-color: #87cafa;
-  border-radius: 8px;
   display: flex;
   flex-direction: column;
 }
@@ -280,14 +278,24 @@ body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meter 
 body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meter .meterIdValue {
   display: table-cell;
 }
-body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meterType {
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meterVendor {
   display: table-row;
 }
-body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meterType .meterTypeId {
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meterVendor .meterVendorId {
   display: table-cell;
   padding-right: 20px;
 }
-body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meterType .meterTypeValue {
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meterVendor .meterVendorValue {
+  display: table-cell;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meterModel {
+  display: table-row;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meterModel .meterModelId {
+  display: table-cell;
+  padding-right: 20px;
+}
+body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .meterModel .meterModelValue {
   display: table-cell;
 }
 body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementInfo .measurement {
@@ -356,10 +364,9 @@ body #outerframe #overlay {
   font-family: sans-serif;
   font-size: 90%;
   background-color: rgba(0, 0, 0, 0.3);
-  width: 80%;
-  height: 80vh;
+  width: 100vw;
+  height: 100vh;
   margin: auto;
-  border-radius: 8px;
 }
 body #outerframe #overlay #overlayText {
   position: relative;
@@ -411,13 +418,13 @@ body #outerframe #overlay #overlayText .infoblock .description {
   display: inline-block;
   padding: 1px 6px;
   border-radius: 4px;
-  font-size: 80%;
+  font-size: 85%;
 }
 body #outerframe #overlay #overlayText .infoblock .value {
   overflow-wrap: break-word;
   background-color: #E1E1E1;
   border-radius: 4px;
-  padding: 9px 10px 6px 10px;
+  padding: 11px 10px 6px 10px;
   width: calc(100% - 20px);
 }
 body #outerframe #overlay #overlayText #buffer .value .entry {
