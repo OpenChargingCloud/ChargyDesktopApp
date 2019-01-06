@@ -14,7 +14,9 @@ interface IGDFCrypt01Result extends ICryptoResult
     scale?:                     string,
     value?:                     string,
     authorization?:             string,
-    authorizationTimestamp?:    string
+    authorizationTimestamp?:    string,
+    publicKey?:                 string,
+    signature?:                 IECCSignature
 }
 
 class GDFCrypt01 extends ACrypt {
@@ -94,18 +96,24 @@ class GDFCrypt01 extends ACrypt {
                                 }
 
                                 else
-                                    return { status: "invalid signature" };
+                                {
+                                    cryptoData.status = "invalid signature";
+                                    return cryptoData;
+                                }
+
 
                             }
                             catch (exception)
                             {
-                                return { status: "invalid signature" };
+                                cryptoData.status = "invalid signature";
+                                return cryptoData;
                             }
 
                         }
                         catch (exception)
                         {
-                            return { status: "invalid public key" };
+                            cryptoData.status = "invalid public key";
+                            return cryptoData;
                         }
 
                     }
@@ -141,7 +149,7 @@ class GDFCrypt01 extends ACrypt {
 
         var cryptoDiv                       = CreateDiv(infoDiv,                "row");
         var cryptoIdDiv                     = CreateDiv(cryptoDiv,              "id",     "Kryptoverfahren");
-        var cryptoValueDiv                  = CreateDiv(cryptoDiv,              "value",  GDFCrypt01.name + " (" + this.description + ")");
+        var cryptoValueDiv                  = CreateDiv(cryptoDiv,              "value",  "GDFCrypt01 (" + this.description + ")");
 
         hashedBufferValue.parentElement.children[0].innerHTML = "Hashed Puffer (SHA256)";
 

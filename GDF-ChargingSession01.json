@@ -197,6 +197,56 @@
                     "signatures":       [ ]
                 }
             ]
+        },
+
+        {
+            "@id":                      "DE*GEF*STATION*CI*TESTS*3*A",
+            "description": {
+                "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
+            },
+            "gps":                      { "lat": 50.397945, "lng": 10.4404 },
+            "address": {
+                "street":               "Biberweg",
+                "houseNumber":          "18",
+                "postalCode":           "07749",
+                "city":                 "Jena",
+                "country":              "Deutschland"
+            },
+            "EVSEs": [
+                {
+                    "@id":                      "DE*GEF*EVSE*CI*TESTS*3*A*1",
+                    "description": {
+                        "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
+                    },
+                    "sockets":                  [ { } ],
+                    "meters": [
+                        {
+                            "@id":                      "0901454D4800007F9EBE",
+                            "vendor":                   "EMH metering",
+                            "model":                    "eHZ IW8E EMH",
+                            "hardwareVersion":          "1.0",
+                            "firmwareVersion":          "123",
+                            "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+                            "publicKeys": [
+                                {
+                                    "algorithm":        "secp192r1",
+                                    "format":           "DER",
+                                    "value":            "04F99A474439424226D63470D9E400D39B00228437D39EC8657295772314B6B832CDA08DF4BC3A1DC05DA5DC398312681C",
+                                    "signatures":       [ ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "publicKeys": [
+                {
+                    "algorithm":        "secp192r1",
+                    "format":           "DER",
+                    "value":            "04...",
+                    "signatures":       [ ]
+                }
+            ]
         }
 
     ],
@@ -310,7 +360,7 @@
                 "type":                     "RFID_UID",
                 "timestamp":                "2018-11-04T16:47:01Z",
                 "chargingStationOperator":  "GraphDefinedCSO",
-                "roamingNetwork":           "Hubject_Prod",
+                "roamingNetwork":           "HubjectProd",
                 "eMobilityProvider":        "GraphDefinedEMP"
             },
 
@@ -377,7 +427,7 @@
                 "type":                     "RFID_UID",
                 "timestamp":                "2018-11-04T16:47:01Z",
                 "chargingStationOperator":  "GraphDefinedCSO",
-                "roamingNetwork":           "Hubject_Prod",
+                "roamingNetwork":           "HubjectProd",
                 "eMobilityProvider":        "GraphDefinedEMP"
             },
 
@@ -446,6 +496,79 @@
 
         {
 
+            "@id":                          "1544702812148:9043942080760213223:1",
+            "@context":                     "https://open.charging.cloud/contexts/CTR/unverified+json",
+            "begin":                        "2018-06-06T00:06:27+02:00",
+            "end":                          "2018-06-06T00:15:25+02:00",
+            "chargingStationId":            "DE*GEF*EVSE*CI*TESTS*3*A",
+
+            "authorization": {
+                "@id":                      "8022E582582A04",
+                "type":                     "RFID_UID",
+                "timestamp":                "2018-06-06T00:06:27-02:00",
+                "chargingStationOperator":  "GraphDefinedCSO",
+                "roamingNetwork":           "HubjectProd",
+                "eMobilityProvider":        "GraphDefinedEMP"
+            },
+
+            "measurements": [
+
+                {
+
+                    "energyMeterId":            "0901454D4800007F9EBE",
+                    "@context":                 "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
+                    "name":                     "ENERGY_TOTAL",
+                    "obis":                     "0100011100FF",
+                    "unit":                     "WATT_HOUR",
+                    "unitEncoded":              30,
+                    "valueType":                "Integer64",
+                    "scale":                    -1,
+
+                    "values": [
+
+                            {
+                                "timestamp":        "2018-06-06T00:06:27-02:00",
+                                "value":            "84573",
+							    "infoStatus":       "08",
+                                "secondsIndex":     3179932,
+                                "paginationId":     "00000013",
+								"logBookIndex":     "008D",
+                                "signatures": [
+                                    {
+                                        "algorithm":  "secp192r1",
+                                        "format":     "DER",
+                                        "r":          "8E6AFA612DD127DE37E33DAE220C87690D15261011C4C98A",
+                                        "s":          "FB06ACF1C78795539B33D0DF046755F12559EDA61C44172D"
+                                    }
+                                ]
+                            },
+
+                            {
+                                "timestamp":        "2018-06-06T00:15:25-02:00",
+                                "value":            "84573",
+                                "infoStatus":       "08",
+                                "secondsIndex":     3180470,
+                                "paginationId":     "00000014",
+								"logBookIndex":     "008D",
+                                "signatures": [
+                                    {
+                                        "algorithm":  "secp192r1",
+                                        "format":     "DER",
+                                        "value":      "C60AF33A5E4C00B166702ABFB7B6857AB873758AE0B866C95CDA0563E5059F4685D2EDFC1911BECA11B7422964B25D"
+                                    }
+                                ]
+                            }
+
+                        ]
+
+                }
+
+            ]
+
+        },
+
+        {
+
             "@id":                          "753747647-74e0-4e01-93b6-90d7845d3cb8",
             "@context":                     "https://open.charging.cloud/contexts/CTR/unverified+json",
             "begin":                        "2018-11-14T22:17:05Z",
@@ -457,7 +580,7 @@
                 "type":                     "RFID_UID",
                 "timestamp":                "2018-11-14T22:17:01Z",
                 "chargingStationOperator":  "GraphDefinedCSO",
-                "roamingNetwork":           "Hubject_Prod",
+                "roamingNetwork":           "HubjectProd",
                 "eMobilityProvider":        "GraphDefinedEMP"
             },
 

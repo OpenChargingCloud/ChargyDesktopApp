@@ -71,6 +71,15 @@ function intFromBytes(x) {
     }
     return val;
 }
+function getInt32Bytes(x) {
+    var bytes = [];
+    var i = 4;
+    do {
+        bytes[--i] = x & (255);
+        x = x >> 8;
+    } while (i);
+    return bytes;
+}
 function getInt64Bytes(x) {
     var bytes = [];
     var i = 8;
@@ -95,8 +104,22 @@ function SetHex(dv, hex, offset, reverse) {
 function SetTimestamp(dv, timestamp, offset) {
     if (typeof timestamp === 'string')
         timestamp = parseUTC(timestamp);
-    var bytes = getInt64Bytes(timestamp);
-    var buffer = new ArrayBuffer(bytes.length);
+    var unixtime = timestamp.unix();
+    var bytes = getInt64Bytes(unixtime);
+    var buffer = new ArrayBuffer(8);
+    var tv = new DataView(buffer);
+    for (var i = 4; i < bytes.length; i++) {
+        dv.setUint8(offset + (bytes.length - i - 1), bytes[i]);
+        tv.setUint8(bytes.length - i - 1, bytes[i]);
+    }
+    return buf2hex(buffer);
+}
+function SetTimestamp32(dv, timestamp, offset) {
+    if (typeof timestamp === 'string')
+        timestamp = parseUTC(timestamp);
+    var unixtime = timestamp.unix();
+    var bytes = getInt64Bytes(unixtime);
+    var buffer = new ArrayBuffer(4);
     var tv = new DataView(buffer);
     for (var i = 4; i < bytes.length; i++) {
         dv.setUint8(offset + (bytes.length - i - 1), bytes[i]);
@@ -109,6 +132,18 @@ function SetInt8(dv, value, offset) {
     var tv = new DataView(buffer);
     dv.setInt8(offset, value);
     tv.setInt8(0, value);
+    return buf2hex(buffer);
+}
+function SetUInt32(dv, value, offset, reverse) {
+    var bytes = getInt32Bytes(value);
+    var buffer = new ArrayBuffer(bytes.length);
+    var tv = new DataView(buffer);
+    if (reverse)
+        bytes.reverse();
+    for (var i = 0; i < bytes.length; i++) {
+        dv.setUint8(offset + i, bytes[i]);
+        tv.setUint8(i, bytes[i]);
+    }
     return buf2hex(buffer);
 }
 function SetUInt64(dv, value, offset, reverse) {

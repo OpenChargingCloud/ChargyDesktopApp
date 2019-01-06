@@ -162,7 +162,6 @@ interface IMeasurementValue
 {
     measurement:                IMeasurement;
     timestamp:                  string,
-    //paginationId:               number,
     value:                      number,
     signatures:                 Array<ISignature>
 }
@@ -170,9 +169,6 @@ interface IMeasurementValue
 interface ICryptoResult
 {
     status:                     string
-    //privateKey?:                string,
-    publicKey?:                 string,
-    signature?:                 string
 }
 
 interface IPublicKey
@@ -187,8 +183,18 @@ interface ISignature
 {
     algorithm:                  string,
     format:                     string,
-    previousValue:              string,
-    value:                      string
+    previousValue?:             string,
+    value?:                     string
+}
+
+interface IECCSignature extends ISignature
+{
+    algorithm:                  string,
+    format:                     string,
+    previousValue?:             string,
+    value?:                     string,
+    r?:                         string,
+    s?:                         string
 }
 
 interface IAddress {

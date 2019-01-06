@@ -62,15 +62,19 @@ var GDFCrypt01 = /** @class */ (function (_super) {
                                     cryptoData.status = "verified";
                                     return cryptoData;
                                 }
-                                else
-                                    return { status: "invalid signature" };
+                                else {
+                                    cryptoData.status = "invalid signature";
+                                    return cryptoData;
+                                }
                             }
                             catch (exception) {
-                                return { status: "invalid signature" };
+                                cryptoData.status = "invalid signature";
+                                return cryptoData;
                             }
                         }
                         catch (exception) {
-                            return { status: "invalid public key" };
+                            cryptoData.status = "invalid public key";
+                            return cryptoData;
                         }
                     }
                     else
@@ -87,7 +91,7 @@ var GDFCrypt01 = /** @class */ (function (_super) {
     GDFCrypt01.prototype.View = function (measurementValue, result, infoDiv, bufferValue, hashedBufferValue, publicKeyValue, signatureExpectedValue, signatureCheckValue) {
         var cryptoDiv = CreateDiv(infoDiv, "row");
         var cryptoIdDiv = CreateDiv(cryptoDiv, "id", "Kryptoverfahren");
-        var cryptoValueDiv = CreateDiv(cryptoDiv, "value", GDFCrypt01.name + " (" + this.description + ")");
+        var cryptoValueDiv = CreateDiv(cryptoDiv, "value", "GDFCrypt01 (" + this.description + ")");
         hashedBufferValue.parentElement.children[0].innerHTML = "Hashed Puffer (SHA256)";
         var meterIdDiv = CreateDiv(infoDiv, "row");
         var meterIdIdDiv = CreateDiv(meterIdDiv, "id", "Zählernummer");

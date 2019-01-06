@@ -22,55 +22,64 @@ var EMHCrypt01 = /** @class */ (function (_super) {
         return _this;
     }
     EMHCrypt01.prototype.Calc = function (measurementValue) {
-        var keypair = this.curve.genKeyPair();
-        var privateKey = keypair.getPrivate();
-        var privateKeyHEX = privateKey.toString('hex').toLowerCase();
-        var publicKey = keypair.getPublic();
-        var publicKeyHEX = publicKey.encode('hex').toLowerCase();
         var buffer = new ArrayBuffer(320);
         var cryptoBuffer = new DataView(buffer);
         var cryptoData = {
             status: "unknown",
-            meterId: SetText(cryptoBuffer, measurementValue.measurement.energyMeterId, 0),
-            timestamp: SetTimestamp(cryptoBuffer, measurementValue.timestamp, 10),
+            meterId: SetHex(cryptoBuffer, measurementValue.measurement.energyMeterId, 0),
+            timestamp: SetTimestamp32(cryptoBuffer, measurementValue.timestamp, 10),
+            infoStatus: SetHex(cryptoBuffer, measurementValue.infoStatus, 14, false),
+            secondsIndex: SetUInt32(cryptoBuffer, measurementValue.secondsIndex, 15, true),
+            paginationId: SetHex(cryptoBuffer, measurementValue.paginationId, 19, true),
             obis: SetHex(cryptoBuffer, measurementValue.measurement.obis, 23, false),
             unitEncoded: SetInt8(cryptoBuffer, measurementValue.measurement.unitEncoded, 29),
             scale: SetInt8(cryptoBuffer, measurementValue.measurement.scale, 30),
             value: SetUInt64(cryptoBuffer, measurementValue.value, 31, true),
-            authorization: SetHex(cryptoBuffer, measurementValue.measurement.chargingSession.authorization["@id"], 41),
-            authorizationTimestamp: SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorization.timestamp, 169)
+            logBookIndex: SetHex(cryptoBuffer, measurementValue.logBookIndex, 39, false),
+            authorization: SetText(cryptoBuffer, measurementValue.measurement.chargingSession.authorization["@id"], 41),
+            authorizationTimestamp: SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorization.timestamp, 169)
         };
         var signatureExpected = measurementValue.signatures[0];
         if (signatureExpected != null) {
+            cryptoData.signature = {
+                algorithm: signatureExpected.algorithm,
+                format: signatureExpected.format,
+                r: signatureExpected.r,
+                s: signatureExpected.s
+            };
             try {
-                cryptoData.sha256value = this.crypt.createHash('sha256').update(buf2hex(buffer), 'utf8').digest('hex');
+                var entireHash = this.crypt.createHash('sha256').
+                    update(cryptoBuffer).
+                    digest('hex');
+                // Only the first 24 bytes/192 bits are used!
+                cryptoData.sha256value = entireHash.substring(0, 48);
                 var meter = this.GetMeter(measurementValue.measurement.energyMeterId);
                 if (meter != null) {
                     cryptoData.meter = meter;
                     var iPublicKey = meter.publicKeys[0];
                     if (iPublicKey != null) {
                         try {
-                            // FAKE IT!
-                            iPublicKey.value = publicKeyHEX;
-                            //cryptoData.privateKey   = privateKey.toString('hex').toLowerCase();
                             cryptoData.publicKey = iPublicKey.value.toLowerCase();
-                            // FAKE IT!
-                            cryptoData.signature = this.curve.keyFromPrivate(privateKeyHEX).sign(cryptoData.sha256value).toDER('hex');
                             try {
-                                var result = this.curve.keyFromPublic(cryptoData.publicKey, 'hex').verify(cryptoData.sha256value, cryptoData.signature);
+                                var result = this.curve.keyFromPublic(cryptoData.publicKey, 'hex').
+                                    verify(cryptoData.sha256value, cryptoData.signature);
                                 if (result) {
                                     cryptoData.status = "verified";
                                     return cryptoData;
                                 }
-                                else
-                                    return { status: "invalid signature" };
+                                else {
+                                    cryptoData.status = "invalid signature";
+                                    return cryptoData;
+                                }
                             }
                             catch (exception) {
-                                return { status: "invalid signature" };
+                                cryptoData.status = "invalid signature";
+                                return cryptoData;
                             }
                         }
                         catch (exception) {
-                            return { status: "invalid public key" };
+                            cryptoData.status = "invalid public key";
+                            return cryptoData;
                         }
                     }
                     else
@@ -86,48 +95,21 @@ var EMHCrypt01 = /** @class */ (function (_super) {
     };
     EMHCrypt01.prototype.View = function (measurementValue, result, infoDiv, bufferValue, hashedBufferValue, publicKeyValue, signatureExpectedValue, signatureCheckValue) {
         var cryptoDiv = CreateDiv(infoDiv, "row");
-        var cryptoIdDiv = CreateDiv(cryptoDiv, "id", "Kryptoverfahren");
-        var cryptoValueDiv = CreateDiv(cryptoDiv, "value", "EMHCrypt01 (ECC secp256r1)");
-        hashedBufferValue.parentElement.children[0].innerHTML = "Hashed Puffer (SHA256)";
-        var meterIdDiv = CreateDiv(infoDiv, "row");
-        var meterIdIdDiv = CreateDiv(meterIdDiv, "id", "Zählernummer");
-        var meterIdValueDiv = CreateDiv(meterIdDiv, "value", measurementValue.measurement.energyMeterId);
-        this.AddToBuffer(result.meterId, bufferValue, meterIdDiv);
-        var timestampDiv = CreateDiv(infoDiv, "row");
-        var timestampIdDiv = CreateDiv(timestampDiv, "id", "Zeitstempel");
-        var timestampValueDiv = CreateDiv(timestampDiv, "value", measurementValue.timestamp);
-        this.AddToBuffer(result.timestamp, bufferValue, timestampDiv);
-        // var addInfoStatusDiv       = CreateDiv(infoDiv,           "row");
-        // var addInfoStatusIdDiv     = CreateDiv(addInfoStatusDiv,  "id",     "Zusatzinfo Status");
-        // var addInfoStatusValueDiv  = CreateDiv(addInfoStatusDiv,  "value",  measurementValue["additionalInfo"]["status"]);
-        // AddToBuffer(SetHex      (view, measurementValue["additionalInfo"]["status"],            14, false),   bufferValue, addInfoStatusDiv);
-        // SetTimestamp(view, meterValue.additionalInfo.indexes.timer,     15);
-        // SetHex      (view, meterValue.measurementId/paginationId,                    19, true);
-        var obisDiv = CreateDiv(infoDiv, "row");
-        var obisIdDiv = CreateDiv(obisDiv, "id", "OBIS-Kennzahl");
-        var obisValueDiv = CreateDiv(obisDiv, "value", measurementValue.measurement.obis);
-        this.AddToBuffer(result.obis, bufferValue, obisDiv);
-        var unitEncodedDiv = CreateDiv(infoDiv, "row");
-        var unitEncodedIdDiv = CreateDiv(unitEncodedDiv, "id", "Einheit (codiert)");
-        var unitEncodedValueDiv = CreateDiv(unitEncodedDiv, "value", measurementValue.measurement.unitEncoded.toString());
-        this.AddToBuffer(result.unitEncoded, bufferValue, unitEncodedDiv);
-        var scaleDiv = CreateDiv(infoDiv, "row");
-        var scaleIdDiv = CreateDiv(scaleDiv, "id", "Skalierung");
-        var scaleValueDiv = CreateDiv(scaleDiv, "value", measurementValue.measurement.scale.toString());
-        this.AddToBuffer(result.scale, bufferValue, scaleDiv);
-        var valueDiv = CreateDiv(infoDiv, "row");
-        var valueIdDiv = CreateDiv(valueDiv, "id", "Messwert");
-        var valueValueDiv = CreateDiv(valueDiv, "value", measurementValue.value.toString() + " Wh");
-        this.AddToBuffer(result.value, bufferValue, valueDiv);
-        // SetHex      (view, meterValue.additionalInfo.indexes.logBook,   39, true);
-        var contractIdDiv = CreateDiv(infoDiv, "row");
-        var contractIdIdDiv = CreateDiv(contractIdDiv, "id", "Autorisierung");
-        var contractIdValueDiv = CreateDiv(contractIdDiv, "value", measurementValue.measurement.chargingSession.authorization["@id"]);
-        this.AddToBuffer(result.authorization, bufferValue, contractIdDiv);
-        var authorizationTimestampDiv = CreateDiv(infoDiv, "row");
-        var authorizationTimestampIdDiv = CreateDiv(authorizationTimestampDiv, "id", "Zeitstempel Autorisierung");
-        var authorizationTimestampValueDiv = CreateDiv(authorizationTimestampDiv, "value", measurementValue.measurement.chargingSession.authorization.timestamp);
-        this.AddToBuffer(result.authorizationTimestamp, bufferValue, authorizationTimestampDiv);
+        CreateDiv(cryptoDiv, "id", "Kryptoverfahren");
+        CreateDiv(cryptoDiv, "value", "EMHCrypt01 (" + this.description + ")");
+        hashedBufferValue.parentElement.children[0].innerHTML = "Hashed Puffer (SHA256, 24 bytes)";
+        this.CreateLine("Zählernummer", measurementValue.measurement.energyMeterId, result.meterId, infoDiv, bufferValue);
+        this.CreateLine("Zeitstempel", measurementValue.timestamp, result.timestamp, infoDiv, bufferValue);
+        this.CreateLine("Status", measurementValue.infoStatus, result.infoStatus, infoDiv, bufferValue);
+        this.CreateLine("Sekundenindex", measurementValue.secondsIndex, result.secondsIndex, infoDiv, bufferValue);
+        this.CreateLine("Paginierung", measurementValue.paginationId, result.paginationId, infoDiv, bufferValue);
+        this.CreateLine("OBIS-Kennzahl", measurementValue.measurement.obis, result.obis, infoDiv, bufferValue);
+        this.CreateLine("Einheit (codiert)", measurementValue.measurement.unitEncoded, result.unitEncoded, infoDiv, bufferValue);
+        this.CreateLine("Skalierung", measurementValue.measurement.scale, result.scale, infoDiv, bufferValue);
+        this.CreateLine("Messwert", measurementValue.value + " Wh", result.value, infoDiv, bufferValue);
+        this.CreateLine("Logbuchindex", measurementValue.logBookIndex, result.logBookIndex, infoDiv, bufferValue);
+        this.CreateLine("Autorisierung", measurementValue.measurement.chargingSession.authorization["@id"], result.authorization, infoDiv, bufferValue);
+        this.CreateLine("Zeitstempel Autorisierung", measurementValue.measurement.chargingSession.authorization.timestamp, result.authorizationTimestamp, infoDiv, bufferValue);
         hashedBufferValue.innerHTML = "0x" + result.sha256value;
         publicKeyValue.innerHTML = "0x" + result.publicKey;
         signatureExpectedValue.innerHTML = "0x" + result.signature;

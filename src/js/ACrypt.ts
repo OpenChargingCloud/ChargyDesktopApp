@@ -19,28 +19,45 @@ abstract class ACrypt {
 
     }
 
-    AddToBuffer(text:         string,
-                bufferValue:  HTMLDivElement,
-                infoDiv:      HTMLDivElement) 
+
+    CreateLine(id:         string,
+               value:      string|number,
+               valueHEX:   string,
+               infoDiv:    HTMLDivElement,
+               bufferDiv:  HTMLDivElement)
     {
 
-        let newText = CreateDiv(bufferValue, "entry", text);
+        var lineDiv = CreateDiv(infoDiv, "row");
+                      CreateDiv(lineDiv, "id",    id);
+                      CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value.toString()));
+
+        this.AddToBuffer(valueHEX, bufferDiv, lineDiv);
+
+    }
+
+
+    AddToBuffer(valueHEX:   string,
+                bufferDiv:  HTMLDivElement,
+                lineDiv:    HTMLDivElement) 
+    {
+
+        let newText = CreateDiv(bufferDiv, "entry", valueHEX);
 
         newText.onmouseenter = function(this: GlobalEventHandlers, ev: MouseEvent) {
-            infoDiv.children[0].classList.add("overEntry");
-            infoDiv.children[1].classList.add("overEntry");
+            lineDiv.children[0].classList.add("overEntry");
+            lineDiv.children[1].classList.add("overEntry");
         }
 
         newText.onmouseleave = function(this: GlobalEventHandlers, ev: MouseEvent) {
-            infoDiv.children[0].classList.remove("overEntry");
-            infoDiv.children[1].classList.remove("overEntry");
+            lineDiv.children[0].classList.remove("overEntry");
+            lineDiv.children[1].classList.remove("overEntry");
         }
 
-        infoDiv.onmouseenter = function(this: GlobalEventHandlers, ev: MouseEvent) {
+        lineDiv.onmouseenter = function(this: GlobalEventHandlers, ev: MouseEvent) {
             newText.classList.add("overEntry");
         }
 
-        infoDiv.onmouseleave = function(this: GlobalEventHandlers, ev: MouseEvent) {
+        lineDiv.onmouseleave = function(this: GlobalEventHandlers, ev: MouseEvent) {
             newText.classList.remove("overEntry");
         }
 

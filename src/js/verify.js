@@ -222,7 +222,7 @@ function StartDashboard() {
                 case "verified":
                     return '<i class="fas fa-check-circle"></i> Gültige Signatur';
                 default:
-                    return '<i class="fas fa-times-circle"></i> ' + result;
+                    return '<i class="fas fa-times-circle"></i> ' + result.status;
             }
         }
         try {

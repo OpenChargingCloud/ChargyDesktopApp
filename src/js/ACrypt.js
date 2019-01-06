@@ -9,20 +9,26 @@ var ACrypt = /** @class */ (function () {
         this.description = description;
         this.GetMeter = GetMeter;
     }
-    ACrypt.prototype.AddToBuffer = function (text, bufferValue, infoDiv) {
-        var newText = CreateDiv(bufferValue, "entry", text);
+    ACrypt.prototype.CreateLine = function (id, value, valueHEX, infoDiv, bufferDiv) {
+        var lineDiv = CreateDiv(infoDiv, "row");
+        CreateDiv(lineDiv, "id", id);
+        CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value.toString()));
+        this.AddToBuffer(valueHEX, bufferDiv, lineDiv);
+    };
+    ACrypt.prototype.AddToBuffer = function (valueHEX, bufferDiv, lineDiv) {
+        var newText = CreateDiv(bufferDiv, "entry", valueHEX);
         newText.onmouseenter = function (ev) {
-            infoDiv.children[0].classList.add("overEntry");
-            infoDiv.children[1].classList.add("overEntry");
+            lineDiv.children[0].classList.add("overEntry");
+            lineDiv.children[1].classList.add("overEntry");
         };
         newText.onmouseleave = function (ev) {
-            infoDiv.children[0].classList.remove("overEntry");
-            infoDiv.children[1].classList.remove("overEntry");
+            lineDiv.children[0].classList.remove("overEntry");
+            lineDiv.children[1].classList.remove("overEntry");
         };
-        infoDiv.onmouseenter = function (ev) {
+        lineDiv.onmouseenter = function (ev) {
             newText.classList.add("overEntry");
         };
-        infoDiv.onmouseleave = function (ev) {
+        lineDiv.onmouseleave = function (ev) {
             newText.classList.remove("overEntry");
         };
     };

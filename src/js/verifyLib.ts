@@ -86,7 +86,7 @@ function buf2hex(buffer) {
     return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
 }
 
-function intFromBytes(x ){
+function intFromBytes(x){
     var val = 0;
     for (var i = 0; i < x.length; ++i) {
         val += x[i];
@@ -97,6 +97,20 @@ function intFromBytes(x ){
     return val;
 }
 
+function getInt32Bytes(x) {
+
+    var bytes = [];
+    var i = 4;
+
+    do {
+        bytes[--i] = x & (255);
+        x = x>>8;
+    } while (i)
+
+    return bytes;
+
+}
+
 function getInt64Bytes(x) {
 
     var bytes = [];
@@ -105,7 +119,7 @@ function getInt64Bytes(x) {
     do {
         bytes[--i] = x & (255);
         x = x>>8;
-    } while ( i )
+    } while (i)
 
     return bytes;
 
@@ -136,9 +150,30 @@ function SetTimestamp(dv: DataView, timestamp: any, offset: number): string
     if (typeof timestamp === 'string')
         timestamp = parseUTC(timestamp);
 
-    var bytes   = getInt64Bytes(timestamp);
-    var buffer  = new ArrayBuffer(bytes.length);
-    var tv      = new DataView(buffer);
+    var unixtime  = timestamp.unix();
+    var bytes     = getInt64Bytes(unixtime);
+    var buffer    = new ArrayBuffer(8);
+    var tv        = new DataView(buffer);
+
+    for (var i = 4; i < bytes.length; i++) {
+        dv.setUint8(offset + (bytes.length - i - 1), bytes[i]);
+        tv.setUint8(bytes.length - i - 1,            bytes[i]);
+    }
+
+    return buf2hex(buffer);
+
+}
+
+function SetTimestamp32(dv: DataView, timestamp: any, offset: number): string
+{
+
+    if (typeof timestamp === 'string')
+        timestamp = parseUTC(timestamp);
+
+    var unixtime  = timestamp.unix();
+    var bytes     = getInt64Bytes(unixtime);
+    var buffer    = new ArrayBuffer(4);
+    var tv        = new DataView(buffer);
 
     for (var i = 4; i < bytes.length; i++) {
         dv.setUint8(offset + (bytes.length - i - 1), bytes[i]);
@@ -157,6 +192,25 @@ function SetInt8(dv: DataView, value: number, offset: number): string
 
     dv.setInt8(offset, value);
     tv.setInt8(0,      value);
+
+    return buf2hex(buffer);
+
+}
+
+function SetUInt32(dv: DataView, value: number, offset: number, reverse?: boolean): string
+{
+
+    var bytes   = getInt32Bytes(value);
+    var buffer  = new ArrayBuffer(bytes.length);
+    var tv      = new DataView(buffer);
+
+    if (reverse)
+        bytes.reverse();
+
+    for (var i = 0; i < bytes.length; i++) {
+        dv.setUint8(offset + i, bytes[i]);
+        tv.setUint8(i,          bytes[i]);
+    }
 
     return buf2hex(buffer);
 
