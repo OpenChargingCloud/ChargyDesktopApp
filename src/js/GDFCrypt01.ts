@@ -5,18 +5,18 @@
 
 interface IGDFCrypt01Result extends ICryptoResult
 {
-    sha256value?:               any,
-    meterId?:                   string,
-    meter?:                     IMeter,
-    timestamp?:                 string,
-    obis?:                      string,
-    unitEncoded?:               string,
-    scale?:                     string,
-    value?:                     string,
-    authorization?:             string,
-    authorizationTimestamp?:    string,
-    publicKey?:                 string,
-    signature?:                 IECCSignature
+    sha256value?:                   any,
+    meterId?:                       string,
+    meter?:                         IMeter,
+    timestamp?:                     string,
+    obis?:                          string,
+    unitEncoded?:                   string,
+    scale?:                         string,
+    value?:                         string,
+    authorizationStart?:            string,
+    authorizationStartTimestamp?:   string,
+    publicKey?:                     string,
+    signature?:                     IECCSignature
 }
 
 class GDFCrypt01 extends ACrypt {
@@ -44,14 +44,14 @@ class GDFCrypt01 extends ACrypt {
 
         var cryptoData:IGDFCrypt01Result = {
             status:                       "unknown",
-            meterId:                      SetText     (cryptoBuffer, measurementValue.measurement.energyMeterId,                             0),
-            timestamp:                    SetTimestamp(cryptoBuffer, measurementValue.timestamp,                                            10),
-            obis:                         SetHex      (cryptoBuffer, measurementValue.measurement.obis,                                     23, false),
-            unitEncoded:                  SetInt8     (cryptoBuffer, measurementValue.measurement.unitEncoded,                              29),
-            scale:                        SetInt8     (cryptoBuffer, measurementValue.measurement.scale,                                    30),
-            value:                        SetUInt64   (cryptoBuffer, measurementValue.value,                                                31, true),
-            authorization:                SetHex      (cryptoBuffer, measurementValue.measurement.chargingSession.authorization["@id"],     41),
-            authorizationTimestamp:       SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorization.timestamp, 169)
+            meterId:                      SetText     (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
+            timestamp:                    SetTimestamp(cryptoBuffer, measurementValue.timestamp,                                                 10),
+            obis:                         SetHex      (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
+            unitEncoded:                  SetInt8     (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
+            scale:                        SetInt8     (cryptoBuffer, measurementValue.measurement.scale,                                         30),
+            value:                        SetUInt64   (cryptoBuffer, measurementValue.value,                                                     31, true),
+            authorizationStart:           SetHex      (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
+            authorizationStartTimestamp:  SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
         };
 
         var signatureExpected = measurementValue.signatures[0] as ISignature;
@@ -187,13 +187,13 @@ class GDFCrypt01 extends ACrypt {
 
         var contractIdDiv                   = CreateDiv(infoDiv,                "row");
         var contractIdIdDiv                 = CreateDiv(contractIdDiv,          "id",     "Autorisierung");
-        var contractIdValueDiv              = CreateDiv(contractIdDiv,          "value",  measurementValue.measurement.chargingSession.authorization["@id"]);
-        this.AddToBuffer(result.authorization,           bufferValue, contractIdDiv);
+        var contractIdValueDiv              = CreateDiv(contractIdDiv,          "value",  measurementValue.measurement.chargingSession.authorizationStart["@id"]);
+        this.AddToBuffer(result.authorizationStart,           bufferValue, contractIdDiv);
 
         var authorizationTimestampDiv       = CreateDiv(infoDiv,                "row");
         var authorizationTimestampIdDiv     = CreateDiv(authorizationTimestampDiv, "id",     "Zeitstempel Autorisierung");
-        var authorizationTimestampValueDiv  = CreateDiv(authorizationTimestampDiv, "value",  measurementValue.measurement.chargingSession.authorization.timestamp);
-        this.AddToBuffer(result.authorizationTimestamp,  bufferValue, authorizationTimestampDiv);
+        var authorizationTimestampValueDiv  = CreateDiv(authorizationTimestampDiv, "value",  measurementValue.measurement.chargingSession.authorizationStart.timestamp);
+        this.AddToBuffer(result.authorizationStartTimestamp,  bufferValue, authorizationTimestampDiv);
 
 
         hashedBufferValue.innerHTML      = "0x" + result.sha256value;

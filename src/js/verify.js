@@ -19,114 +19,6 @@ function StartDashboard() {
     var moment = require('moment');
     // variable 'crypto' is already defined differently in Google Chrome!
     var crypt = require('electron').remote.require('crypto');
-    //async function verify2(text, signature, pubkey) : VerificationResult
-    //{
-    //    var sha256hash = await window.crypto.subtle.digest({ name: "SHA-256" },
-    //                                                       new TextEncoder().encode(text)).then(function (hash) { return bufferToHex(hash); } );
-    //    try
-    //    {
-    //        var result = pubkey.verify(sha256hash, signature);
-    //        return result
-    //            ? VerificationResult.True
-    //            : VerificationResult.False;
-    //    }
-    //    catch (e)
-    //    {
-    //        //console.log(e);
-    //    }
-    //    if (typeof signature === 'string')
-    //    {
-    //        var result = pubkey.verify(sha256hash,
-    //                                   {
-    //                                       r: signature.substring(0, signature.length / 2),
-    //                                       s: signature.substring(   signature.length / 2)
-    //                                   });
-    //        return result
-    //            ? VerificationResult.True
-    //            : VerificationResult.False;
-    //    }
-    //    return VerificationResult.Failed;
-    //}
-    function verify1(text, signature, pubkey) {
-        var sha256hash = ""; //sha256_(text);
-        try {
-            var result = pubkey.verify(sha256hash, signature);
-            return result
-                ? VerificationResult.ValidSignature
-                : VerificationResult.InvalidSignature;
-        }
-        catch (e) {
-            //console.log(e);
-        }
-        if (typeof signature === 'string') {
-            var result = pubkey.verify(sha256hash, {
-                r: signature.substring(0, signature.length / 2),
-                s: signature.substring(signature.length / 2)
-            });
-            return result
-                ? VerificationResult.ValidSignature
-                : VerificationResult.InvalidSignature;
-        }
-        return VerificationResult.VerificationFailed;
-    }
-    function verifyMeterValue(meterValue) {
-        var ec192 = new el.ec('p192');
-        var buffer = new ArrayBuffer(320);
-        var view = new DataView(buffer);
-        SetHex(view, meterValue.meterInfo.meterId, 0, false);
-        SetTimestamp(view, meterValue.timestamp, 10);
-        SetHex(view, meterValue.additionalInfo.status, 14, false);
-        SetTimestamp(view, meterValue.additionalInfo.indexes.timer, 15);
-        SetHex(view, meterValue.measurementId, 19, true);
-        SetHex(view, meterValue.measurand.id, 23, false);
-        SetInt8(view, meterValue.measuredValue.unitEncoded, 29);
-        SetInt8(view, meterValue.measuredValue.scale, 30);
-        SetUInt64(view, meterValue.measuredValue.value, 31, true);
-        SetHex(view, meterValue.additionalInfo.indexes.logBook, 39, true);
-        SetText(view, meterValue.contract.id, 41);
-        SetTimestamp(view, meterValue.contract.timestamp, 169);
-        var hexbuf = buf2hex(buffer);
-        console.log(hexbuf);
-        var result = verify1(hexbuf, meterValue.signature, ec192.keyFromPublic("04" + meterValue.meterInfo.publicKey, 'hex'));
-        console.log(VerificationResult[result]);
-        return result;
-    }
-    this.verifyMeterValue = function (meterValue) {
-        verifyMeterValue(meterValue);
-    };
-    function verifyMeterValues(meterValues) {
-        var ec192 = new el.ec('p192');
-        var buffer = new ArrayBuffer(320);
-        var view = new DataView(buffer);
-        var results = [];
-        for (var i = 0; i < meterValues.measuredValues.length; i++) {
-            var meterValue = meterValues.measuredValues[i];
-            SetHex(view, meterValues.meterInfo.meterId, 0, false);
-            SetTimestamp(view, meterValue.timestamp, 10);
-            SetHex(view, meterValue.additionalInfo.status, 14, false);
-            SetTimestamp(view, meterValue.additionalInfo.indexes.timer, 15);
-            SetHex(view, meterValue.measurementId, 19, true);
-            SetHex(view, meterValues.measurand.id, 23, false);
-            SetInt8(view, meterValues.measuredValue.unitEncoded, 29);
-            SetInt8(view, meterValues.measuredValue.scale, 30);
-            SetUInt64(view, meterValue.measuredValue.value, 31, true);
-            SetHex(view, meterValue.additionalInfo.indexes.logBook, 39, true);
-            SetText(view, meterValues.contract.id, 41);
-            SetTimestamp(view, meterValues.contract.timestamp, 169);
-            var hexbuf = buf2hex(buffer);
-            console.log(hexbuf);
-            var result = verify1(hexbuf, meterValue.signature, ec192.keyFromPublic("04" + meterValues.meterInfo.publicKey, 'hex'));
-            console.log(VerificationResult[result]);
-            if (result == VerificationResult.ValidSignature)
-                results.push([meterValue, result]);
-            else
-                return result;
-        }
-        return VerificationResult.ValidSignature;
-    }
-    this.verifyMeterValues = function (meterValues) {
-        verifyMeterValues(meterValues);
-    };
     function GetChargingPool(Id) {
         for (var _i = 0, chargingPools_1 = chargingPools; _i < chargingPools_1.length; _i++) {
             var chargingPool = chargingPools_1[_i];
@@ -267,10 +159,11 @@ function StartDashboard() {
                             var _value = measurementValue.value;
                             switch (measurement.unit) {
                                 case "KILO_WATT_HOURS":
+                                    _value = _value * Math.pow(10, measurementValue.measurement.scale);
                                     break;
                                 // "WATT_HOURS"
                                 default:
-                                    _value = _value / 1000;
+                                    _value = _value / 1000 * Math.pow(10, measurementValue.measurement.scale);
                                     break;
                             }
                             var valueDiv = CreateDiv(MeasurementValueDiv, "value", _value.toString());
@@ -465,7 +358,7 @@ function StartDashboard() {
                         productIconDiv.className = "productIcon";
                         productIconDiv.innerHTML = '<i class="fas fa-chart-pie"></i>';
                         var productDiv = productInfoDiv.appendChild(document.createElement('div'));
-                        productDiv.innerHTML = "Green Power" + "<br />";
+                        productDiv.innerHTML = chargingSession.product != null ? chargingSession.product["@id"] + "<br />" : "";
                         if (Math.floor(duration.asDays()) > 1)
                             productDiv.innerHTML += duration.days() + " Tage " + duration.hours() + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
                         else if (Math.floor(duration.asDays()) > 0)
@@ -483,7 +376,7 @@ function StartDashboard() {
                                 if (measurement.values && measurement.values.length > 0) {
                                     var first = measurement.values[0].value;
                                     var last = measurement.values[measurement.values.length - 1].value;
-                                    var amount = last - first;
+                                    var amount = (last - first) * Math.pow(10, measurement.scale);
                                     switch (measurement.unit) {
                                         case "KILO_WATT_HOURS":
                                             break;
@@ -501,63 +394,74 @@ function StartDashboard() {
                     //#endregion
                     //#region Show location infos...
                     try {
-                        var address = null;
-                        var locationInfoDiv = tableDiv.appendChild(document.createElement('div'));
-                        locationInfoDiv.className = "locationInfos";
-                        var locationIconDiv = locationInfoDiv.appendChild(document.createElement('div'));
-                        locationIconDiv.className = "locationIcon";
-                        locationIconDiv.innerHTML = '<i class="fas fa-map-marker-alt"></i>';
-                        var locationDiv = locationInfoDiv.appendChild(document.createElement('div'));
-                        if (chargingSession.EVSEId || chargingSession.EVSE) {
-                            if (chargingSession.EVSE == null || typeof chargingSession.EVSE !== 'object')
-                                chargingSession.EVSE = GetEVSE(chargingSession.EVSEId);
-                            locationDiv.className = "EVSE";
-                            locationDiv.innerHTML = (chargingSession.EVSE != null && chargingSession.EVSE.description != null
-                                ? firstValue(chargingSession.EVSE.description) + "<br />"
-                                : "") +
-                                (chargingSession.EVSEId != null
-                                    ? chargingSession.EVSEId
-                                    : chargingSession.EVSE["@id"]);
-                            chargingSession.chargingStation = chargingSession.EVSE.chargingStation;
-                            chargingSession.chargingStationId = chargingSession.EVSE.chargingStationId;
-                            chargingSession.chargingPool = chargingSession.EVSE.chargingStation.chargingPool;
-                            chargingSession.chargingPoolId = chargingSession.EVSE.chargingStation.chargingPoolId;
-                            address = chargingSession.EVSE.chargingStation.address;
+                        if (chargingSession.EVSEId || chargingSession.EVSE ||
+                            chargingSession.chargingStationId || chargingSession.chargingStation ||
+                            chargingSession.chargingPoolId || chargingSession.chargingPool) {
+                            var address = null;
+                            var locationInfoDiv = tableDiv.appendChild(document.createElement('div'));
+                            locationInfoDiv.className = "locationInfos";
+                            var locationIconDiv = locationInfoDiv.appendChild(document.createElement('div'));
+                            locationIconDiv.className = "locationIcon";
+                            locationIconDiv.innerHTML = '<i class="fas fa-map-marker-alt"></i>';
+                            var locationDiv = locationInfoDiv.appendChild(document.createElement('div'));
+                            if (chargingSession.EVSEId || chargingSession.EVSE) {
+                                if (chargingSession.EVSE == null || typeof chargingSession.EVSE !== 'object')
+                                    chargingSession.EVSE = GetEVSE(chargingSession.EVSEId);
+                                locationDiv.className = "EVSE";
+                                locationDiv.innerHTML = (chargingSession.EVSE != null && chargingSession.EVSE.description != null
+                                    ? firstValue(chargingSession.EVSE.description) + "<br />"
+                                    : "") +
+                                    (chargingSession.EVSEId != null
+                                        ? chargingSession.EVSEId
+                                        : chargingSession.EVSE["@id"]);
+                                chargingSession.chargingStation = chargingSession.EVSE.chargingStation;
+                                chargingSession.chargingStationId = chargingSession.EVSE.chargingStationId;
+                                chargingSession.chargingPool = chargingSession.EVSE.chargingStation.chargingPool;
+                                chargingSession.chargingPoolId = chargingSession.EVSE.chargingStation.chargingPoolId;
+                                address = chargingSession.EVSE.chargingStation.address;
+                            }
+                            else if (chargingSession.chargingStationId || chargingSession.chargingStation) {
+                                if (chargingSession.chargingStation == null || typeof chargingSession.chargingStation !== 'object')
+                                    chargingSession.chargingStation = GetChargingStation(chargingSession.chargingStationId);
+                                if (chargingSession.chargingStation != null) {
+                                    locationDiv.className = "chargingStation";
+                                    locationDiv.innerHTML = (chargingSession.chargingStation != null && chargingSession.chargingStation.description != null
+                                        ? firstValue(chargingSession.chargingStation.description) + "<br />"
+                                        : "") +
+                                        (chargingSession.chargingStationId != null
+                                            ? chargingSession.chargingStationId
+                                            : chargingSession.chargingStation["@id"]);
+                                    chargingSession.chargingPool = chargingSession.chargingStation.chargingPool;
+                                    chargingSession.chargingPoolId = chargingSession.chargingStation.chargingPoolId;
+                                    address = chargingSession.chargingStation.address;
+                                }
+                                else
+                                    locationInfoDiv.remove();
+                            }
+                            else if (chargingSession.chargingPoolId || chargingSession.chargingPool) {
+                                if (chargingSession.chargingPool == null || typeof chargingSession.chargingPool !== 'object')
+                                    chargingSession.chargingPool = GetChargingPool(chargingSession.chargingPoolId);
+                                if (chargingSession.chargingPool != null) {
+                                    locationDiv.className = "chargingPool";
+                                    locationDiv.innerHTML = (chargingSession.chargingPool != null && chargingSession.chargingPool.description != null
+                                        ? firstValue(chargingSession.chargingPool.description) + "<br />"
+                                        : "") +
+                                        (chargingSession.chargingPoolId != null
+                                            ? chargingSession.chargingPoolId
+                                            : chargingSession.chargingPool["@id"]);
+                                    address = GetChargingPool(chargingSession.chargingPool["@id"]).address;
+                                }
+                                else
+                                    locationInfoDiv.remove();
+                            }
+                            if (address != null)
+                                locationDiv.innerHTML += "<br />" +
+                                    (address.street != null ? " " + address.street : "") +
+                                    (address.houseNumber != null ? " " + address.houseNumber : "") +
+                                    (address.postalCode != null || address.city != null ? "," : "") +
+                                    (address.postalCode != null ? " " + address.postalCode : "") +
+                                    (address.city != null ? " " + address.city : "");
                         }
-                        else if (chargingSession.chargingStationId || chargingSession.chargingStation) {
-                            if (chargingSession.chargingStation == null || typeof chargingSession.chargingStation !== 'object')
-                                chargingSession.chargingStation = GetChargingStation(chargingSession.chargingStationId);
-                            locationDiv.className = "chargingStation";
-                            locationDiv.innerHTML = (chargingSession.chargingStation != null && chargingSession.chargingStation.description != null
-                                ? firstValue(chargingSession.chargingStation.description) + "<br />"
-                                : "") +
-                                (chargingSession.chargingStationId != null
-                                    ? chargingSession.chargingStationId
-                                    : chargingSession.chargingStation["@id"]);
-                            chargingSession.chargingPool = chargingSession.chargingStation.chargingPool;
-                            chargingSession.chargingPoolId = chargingSession.chargingStation.chargingPoolId;
-                            address = chargingSession.chargingStation.address;
-                        }
-                        else if (chargingSession.chargingPoolId || chargingSession.chargingPool) {
-                            if (chargingSession.chargingPool == null || typeof chargingSession.chargingPool !== 'object')
-                                chargingSession.chargingPool = GetChargingPool(chargingSession.chargingPoolId);
-                            locationDiv.className = "chargingPool";
-                            locationDiv.innerHTML = (chargingSession.chargingPool != null && chargingSession.chargingPool.description != null
-                                ? firstValue(chargingSession.chargingPool.description) + "<br />"
-                                : "") +
-                                (chargingSession.chargingPoolId != null
-                                    ? chargingSession.chargingPoolId
-                                    : chargingSession.chargingPool["@id"]);
-                            address = GetChargingPool(chargingSession.chargingPool["@id"]).address;
-                        }
-                        locationDiv.innerHTML += address != null
-                            ? "<br />" +
-                                (address.street != null ? " " + address.street : "") +
-                                (address.houseNumber != null ? " " + address.houseNumber : "") +
-                                (address.postalCode != null || address.city != null ? "," : "") +
-                                (address.postalCode != null ? " " + address.postalCode : "") +
-                                (address.city != null ? " " + address.city : "")
-                            : "";
                     }
                     catch (exception) {
                         console.log("Could not show location infos of charging session '" + chargingSession["@id"] + "':" + exception);
@@ -568,10 +472,367 @@ function StartDashboard() {
                     verificationStatusDiv.className = "verificationStatus";
                     verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Ungültig';
                     //#endregion
+                    // If there is only one charging session show its details at once...
+                    if (CTR.chargingSessions.length == 1)
+                        chargingSessionDiv.click();
                 }
             }
             //#endregion
             //resultsDiv.innerHTML = VerificationResult[result].toString();
+        }
+        // e.g. the current chargeIT mobility does not provide any format identifiers
+        function tryToParseAnonymousFormat(SomeJSON) {
+            if (Array.isArray(SomeJSON)) {
+                var JSONArray = SomeJSON;
+                // [{
+                //     "timestamp": 1550533285,
+                //     "meterInfo": {
+                //        "firmwareVersion": "123",
+                //        "publicKey": "08A56CF3B51DABA44F38607BB884F62FB8BE84B4EF39D09624AB9E0910354398590DC59A5B40F43FE68A9F416F65EC76",
+                //        "meterId": "0901454D4800007F9F3E",
+                //        "type": "eHZ IW8E EMH",
+                //        "manufacturer": "EMH"
+                //     },
+                //     "transactionId": "1546933282548:-7209653592192971037:1",
+                //     "contract": {
+                //        "type": "RFID_TAG_ID",
+                //        "timestampLocal": {
+                //           "timestamp": 1546933284,
+                //           "localOffset": 60,
+                //           "seasonOffset": 0
+                //        },
+                //        "timestamp": 1550533284,
+                //        "id": "235DD5BB"
+                //     },
+                //     "measurementId": "00000007",
+                //     "measuredValue": {
+                //        "timestampLocal": {
+                //           "timestamp": 1546933285,
+                //           "localOffset": 60,
+                //           "seasonOffset": 0
+                //        },
+                //        "value": "60077",
+                //        "unit": "WATT_HOUR",
+                //        "scale": -1,
+                //        "valueType": "Integer64",
+                //        "unitEncoded": 30
+                //     },
+                //     "measurand": {
+                //        "id": "0100011100FF",
+                //        "name": "ENERGY_TOTAL"
+                //     },
+                //     "additionalInfo": {
+                //        "indexes": {
+                //           "timer": 1730275,
+                //           "logBook": "0004"
+                //        },
+                //        "status": "88"
+                //     },
+                //     "signature": "13493BBB43DA1E26C88B21ADB7AA53A7AE4FC7F6F6B916E67AD3E168421D180F021D6DD458612C53FF167781892A9DF3"
+                //  }]
+                try {
+                    var CTRArray = [];
+                    for (var i = 0; i < JSONArray.length; i++) {
+                        var JSONValue = JSONArray[i];
+                        var _timestamp = JSONValue["timestamp"];
+                        if (_timestamp == null || typeof _timestamp !== 'number')
+                            throw "Missing or invalid timestamp[" + i + "]!";
+                        var timestamp = parseUTC(_timestamp);
+                        var _meterInfo = JSONValue["meterInfo"];
+                        if (_meterInfo == null || typeof _meterInfo !== 'object')
+                            throw "Missing or invalid meterInfo[" + i + "]!";
+                        var _meterInfo_firmwareVersion = _meterInfo["firmwareVersion"];
+                        if (_meterInfo_firmwareVersion == null || typeof _meterInfo_firmwareVersion !== 'string')
+                            throw "Missing or invalid meterInfo firmwareVersion[" + i + "]!";
+                        var _meterInfo_publicKey = _meterInfo["publicKey"];
+                        if (_meterInfo_publicKey == null || typeof _meterInfo_publicKey !== 'string')
+                            throw "Missing or invalid meterInfo publicKey[" + i + "]!";
+                        var _meterInfo_meterId = _meterInfo["meterId"];
+                        if (_meterInfo_meterId == null || typeof _meterInfo_meterId !== 'string')
+                            throw "Missing or invalid meterInfo meterId[" + i + "]!";
+                        var _meterInfo_type = _meterInfo["type"];
+                        if (_meterInfo_type == null || typeof _meterInfo_type !== 'string')
+                            throw "Missing or invalid meterInfo type[" + i + "]!";
+                        var _meterInfo_manufacturer = _meterInfo["manufacturer"];
+                        if (_meterInfo_manufacturer == null || typeof _meterInfo_manufacturer !== 'string')
+                            throw "Missing or invalid meterInfo manufacturer[" + i + "]!";
+                        var _transactionId = JSONValue["transactionId"];
+                        if (_transactionId == null || typeof _transactionId !== 'string')
+                            throw "Missing or invalid transactionId[" + i + "]!";
+                        var _contract = JSONValue["contract"];
+                        if (_contract == null || typeof _contract !== 'object')
+                            throw "Missing or invalid contract[" + i + "]!";
+                        var _contract_type = _contract["type"];
+                        if (_contract_type == null || typeof _contract_type !== 'string')
+                            throw "Missing or invalid contract type[" + i + "]!";
+                        var _contract_timestampLocal = _contract["timestampLocal"];
+                        if (_contract_timestampLocal == null || typeof _contract_timestampLocal !== 'object')
+                            throw "Missing or invalid contract timestampLocal[" + i + "]!";
+                        var _contract_timestampLocal_timestamp = _contract_timestampLocal["timestamp"];
+                        if (_contract_timestampLocal_timestamp == null || typeof _contract_timestampLocal_timestamp !== 'number')
+                            throw "Missing or invalid contract timestampLocal timestamp[" + i + "]!";
+                        var _contract_timestampLocal_localOffset = _contract_timestampLocal["localOffset"];
+                        if (_contract_timestampLocal_localOffset == null || typeof _contract_timestampLocal_localOffset !== 'number')
+                            throw "Missing or invalid contract timestampLocal localOffset[" + i + "]!";
+                        var _contract_timestampLocal_seasonOffset = _contract_timestampLocal["seasonOffset"];
+                        if (_contract_timestampLocal_seasonOffset == null || typeof _contract_timestampLocal_seasonOffset !== 'number')
+                            throw "Missing or invalid contract timestampLocal seasonOffset[" + i + "]!";
+                        var _contract_timestamp = _contract["timestamp"];
+                        if (_contract_timestamp == null || typeof _contract_timestamp !== 'number')
+                            throw "Missing or invalid contract timestamp[" + i + "]!";
+                        var _contract_id = _contract["id"];
+                        if (_contract_id == null || typeof _contract_id !== 'string')
+                            throw "Missing or invalid contract type[" + i + "]!";
+                        var _measurementId = JSONValue["measurementId"];
+                        if (_measurementId == null || typeof _measurementId !== 'string')
+                            throw "Missing or invalid measurementId[" + i + "]!";
+                        var _measuredValue = JSONValue["measuredValue"];
+                        if (_measuredValue == null || typeof _measuredValue !== 'object')
+                            throw "Missing or invalid measuredValue[" + i + "]!";
+                        var _measuredValue_timestampLocal = _measuredValue["timestampLocal"];
+                        if (_measuredValue_timestampLocal == null || typeof _measuredValue_timestampLocal !== 'object')
+                            throw "Missing or invalid measuredValue timestampLocal[" + i + "]!";
+                        var _measuredValue_timestampLocal_timestamp = _measuredValue_timestampLocal["timestamp"];
+                        if (_measuredValue_timestampLocal_timestamp == null || typeof _measuredValue_timestampLocal_timestamp !== 'number')
+                            throw "Missing or invalid measuredValue timestampLocal timestamp[" + i + "]!";
+                        var _measuredValue_timestampLocal_localOffset = _measuredValue_timestampLocal["localOffset"];
+                        if (_measuredValue_timestampLocal_localOffset == null || typeof _measuredValue_timestampLocal_localOffset !== 'number')
+                            throw "Missing or invalid measuredValue timestampLocal localOffset[" + i + "]!";
+                        var _measuredValue_timestampLocal_seasonOffset = _measuredValue_timestampLocal["seasonOffset"];
+                        if (_measuredValue_timestampLocal_seasonOffset == null || typeof _measuredValue_timestampLocal_seasonOffset !== 'number')
+                            throw "Missing or invalid measuredValue timestampLocal seasonOffset[" + i + "]!";
+                        var _measuredValue_value = _measuredValue["value"];
+                        if (_measuredValue_value == null || typeof _measuredValue_value !== 'string')
+                            throw "Missing or invalid measuredValue value[" + i + "]!";
+                        var _measuredValue_unit = _measuredValue["unit"];
+                        if (_measuredValue_unit == null || typeof _measuredValue_unit !== 'string')
+                            throw "Missing or invalid measuredValue unit[" + i + "]!";
+                        var _measuredValue_scale = _measuredValue["scale"];
+                        if (_measuredValue_scale == null || typeof _measuredValue_scale !== 'number')
+                            throw "Missing or invalid measuredValue scale[" + i + "]!";
+                        var _measuredValue_valueType = _measuredValue["valueType"];
+                        if (_measuredValue_valueType == null || typeof _measuredValue_valueType !== 'string')
+                            throw "Missing or invalid measuredValue valueType[" + i + "]!";
+                        var _measuredValue_unitEncoded = _measuredValue["unitEncoded"];
+                        if (_measuredValue_unitEncoded == null || typeof _measuredValue_unitEncoded !== 'number')
+                            throw "Missing or invalid measuredValue unitEncoded[" + i + "]!";
+                        var _measurand = JSONValue["measurand"];
+                        if (_measurand == null || typeof _measurand !== 'object')
+                            throw "Missing or invalid measurand[" + i + "]!";
+                        var _measurand_id = _measurand["id"];
+                        if (_measurand_id == null || typeof _measurand_id !== 'string')
+                            throw "Missing or invalid measurand id[" + i + "]!";
+                        var _measurand_name = _measurand["name"];
+                        if (_measurand_name == null || typeof _measurand_name !== 'string')
+                            throw "Missing or invalid measurand name[" + i + "]!";
+                        var _additionalInfo = JSONValue["additionalInfo"];
+                        if (_additionalInfo == null || typeof _additionalInfo !== 'object')
+                            throw "Missing or invalid additionalInfo[" + i + "]!";
+                        var _additionalInfo_indexes = _additionalInfo["indexes"];
+                        if (_additionalInfo_indexes == null || typeof _additionalInfo_indexes !== 'object')
+                            throw "Missing or invalid additionalInfo indexes[" + i + "]!";
+                        var _additionalInfo_indexes_timer = _additionalInfo_indexes["timer"];
+                        if (_additionalInfo_indexes_timer == null || typeof _additionalInfo_indexes_timer !== 'number')
+                            throw "Missing or invalid additionalInfo indexes timer[" + i + "]!";
+                        var _additionalInfo_indexes_logBook = _additionalInfo_indexes["logBook"];
+                        if (_additionalInfo_indexes_logBook == null || typeof _additionalInfo_indexes_logBook !== 'string')
+                            throw "Missing or invalid additionalInfo indexes logBook[" + i + "]!";
+                        var _additionalInfo_status = _additionalInfo["status"];
+                        if (_additionalInfo_status == null || typeof _additionalInfo_status !== 'string')
+                            throw "Missing or invalid additionalInfo status[" + i + "]!";
+                        var _signature = JSONValue["signature"];
+                        if (_signature == null || typeof _signature !== 'string')
+                            throw "Missing or invalid signature[" + i + "]!";
+                        var aaa = moment.unix(_contract_timestampLocal_timestamp).utc();
+                        CTRArray.push({
+                            "timestamp": _timestamp,
+                            "meterInfo": {
+                                "firmwareVersion": _meterInfo_firmwareVersion,
+                                "publicKey": _meterInfo_publicKey,
+                                "meterId": _meterInfo_meterId,
+                                "type": _meterInfo_type,
+                                "manufacturer": _meterInfo_manufacturer
+                            },
+                            "transactionId": _transactionId,
+                            "contract": {
+                                "type": _contract_type,
+                                "timestampLocal": {
+                                    "timestamp": _contract_timestampLocal_timestamp,
+                                    "localOffset": _contract_timestampLocal_localOffset,
+                                    "seasonOffset": _contract_timestampLocal_seasonOffset
+                                },
+                                "timestamp": _contract_timestamp,
+                                "id": _contract_id
+                            },
+                            "measurementId": _measurementId,
+                            "measuredValue": {
+                                "timestampLocal": {
+                                    "timestamp": _measuredValue_timestampLocal_timestamp,
+                                    "localOffset": _measuredValue_timestampLocal_localOffset,
+                                    "seasonOffset": _measuredValue_timestampLocal_seasonOffset
+                                },
+                                "value": _measuredValue_value,
+                                "unit": _measuredValue_unit,
+                                "scale": _measuredValue_scale,
+                                "valueType": _measuredValue_valueType,
+                                "unitEncoded": _measuredValue_unitEncoded
+                            },
+                            "measurand": {
+                                "id": _measurand_id,
+                                "name": _measurand_name
+                            },
+                            "additionalInfo": {
+                                "indexes": {
+                                    "timer": _additionalInfo_indexes_timer,
+                                    "logBook": _additionalInfo_indexes_logBook
+                                },
+                                "status": _additionalInfo_status
+                            },
+                            "signature": _signature
+                        });
+                    }
+                    var n = CTRArray.length - 1;
+                    var _CTR = {
+                        "@id": _transactionId,
+                        "@context": "https://open.charging.cloud/contexts/CTR+json",
+                        "begin": moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                        "end": moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                        "description": {
+                            "de": "Alle Ladevorgänge"
+                        },
+                        "contract": {
+                            "@id": _contract_id,
+                            "username": "",
+                            "email": ""
+                        },
+                        "chargingStations": [
+                            {
+                                "@id": "DE*GEF*STATION*CI*TESTS*3*A",
+                                "description": {
+                                    "de": "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
+                                },
+                                "gps": { "lat": 50.397945, "lng": 10.4404 },
+                                "address": {
+                                    "street": "Biberweg",
+                                    "houseNumber": "18",
+                                    "postalCode": "07749",
+                                    "city": "Jena",
+                                    "country": "Deutschland"
+                                },
+                                "EVSEs": [
+                                    {
+                                        "@id": "DE*GEF*EVSE*CI*TESTS*3*A*1",
+                                        "description": {
+                                            "de": "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
+                                        },
+                                        "sockets": [{}],
+                                        "meters": [
+                                            {
+                                                "@id": CTRArray[0]["meterInfo"]["meterId"],
+                                                "vendor": CTRArray[0]["meterInfo"]["manufacturer"],
+                                                "vendorURL": "http://www.emh-metering.de",
+                                                "model": CTRArray[0]["meterInfo"]["type"],
+                                                "hardwareVersion": "1.0",
+                                                "firmwareVersion": CTRArray[0]["meterInfo"]["firmwareVersion"],
+                                                "signatureFormat": "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+                                                "publicKeys": [
+                                                    {
+                                                        "algorithm": "secp192r1",
+                                                        "format": "DER",
+                                                        "value": "04" + CTRArray[0]["meterInfo"]["publicKey"]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ],
+                        "chargingSessions": [
+                            {
+                                "@id": _transactionId,
+                                "@context": "https://open.charging.cloud/contexts/CTR/unverified+json",
+                                "begin": moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                                "end": moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                                "chargingStationId": "DE*GEF*EVSE*CI*TESTS*3*A",
+                                "authorizationStart": {
+                                    "@id": CTRArray[0]["contract"]["id"],
+                                    "type": CTRArray[0]["contract"]["type"],
+                                    "timestamp": moment.unix(CTRArray[0]["contract"]["timestampLocal"]["timestamp"]).utc().zone(-1 *
+                                        CTRArray[0]["contract"]["timestampLocal"]["localOffset"] +
+                                        CTRArray[0]["contract"]["timestampLocal"]["seasonOffset"]).format()
+                                },
+                                "signatureInfos": {
+                                    "hash": "SHA256",
+                                    "hashTruncation": "24",
+                                    "algorithm": "ECC",
+                                    "curve": "secp192r1",
+                                    "format": "rs"
+                                },
+                                "measurements": [
+                                    {
+                                        "energyMeterId": CTRArray[0]["meterInfo"]["meterId"],
+                                        "@context": "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
+                                        "name": CTRArray[0]["measurand"]["name"],
+                                        "obis": CTRArray[0]["measurand"]["id"],
+                                        "unit": CTRArray[0]["measuredValue"]["unit"],
+                                        "unitEncoded": CTRArray[0]["measuredValue"]["unitEncoded"],
+                                        "valueType": CTRArray[0]["measuredValue"]["valueType"],
+                                        "scale": CTRArray[0]["measuredValue"]["scale"],
+                                        "signatureInfos": {
+                                            "hash": "SHA256",
+                                            "hashTruncation": "24",
+                                            "algorithm": "ECC",
+                                            "curve": "secp192r1",
+                                            "format": "rs"
+                                        },
+                                        "values": [
+                                            {
+                                                "timestamp": moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().zone(-1 *
+                                                    CTRArray[0]["measuredValue"]["timestampLocal"]["localOffset"] +
+                                                    CTRArray[0]["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
+                                                "value": CTRArray[0]["measuredValue"]["value"],
+                                                "infoStatus": CTRArray[0]["additionalInfo"]["status"],
+                                                "secondsIndex": CTRArray[0]["additionalInfo"]["indexes"]["timer"],
+                                                "paginationId": CTRArray[0]["measurementId"],
+                                                "logBookIndex": CTRArray[0]["additionalInfo"]["indexes"]["logBook"],
+                                                "signatures": [
+                                                    {
+                                                        "r": CTRArray[0]["signature"].substring(0, 48),
+                                                        "s": CTRArray[0]["signature"].substring(48)
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "timestamp": moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().zone(-1 *
+                                                    CTRArray[0]["measuredValue"]["timestampLocal"]["localOffset"] +
+                                                    CTRArray[0]["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
+                                                "value": CTRArray[n]["measuredValue"]["value"],
+                                                "infoStatus": CTRArray[n]["additionalInfo"]["status"],
+                                                "secondsIndex": CTRArray[n]["additionalInfo"]["indexes"]["timer"],
+                                                "paginationId": CTRArray[n]["measurementId"],
+                                                "logBookIndex": CTRArray[n]["additionalInfo"]["indexes"]["logBook"],
+                                                "signatures": [
+                                                    {
+                                                        "r": CTRArray[n]["signature"].substring(0, 48),
+                                                        "s": CTRArray[n]["signature"].substring(48)
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    };
+                    processOpenChargingCloudFormat(_CTR);
+                    return true;
+                }
+                catch (exception) {
+                    console.log("chargeIT mobility legacy CTR format: " + exception);
+                }
+            }
+            return false;
         }
         if (Content == null)
             return;
@@ -582,13 +843,16 @@ function StartDashboard() {
                 processOpenChargingCloudFormat(Content);
                 break;
             default:
-                doGlobalError("Unbekanntes Transparenzdatensatzformat!");
+                if (!tryToParseAnonymousFormat(Content))
+                    doGlobalError("Unbekanntes Transparenzdatensatzformat!");
                 break;
         }
     }
     //#endregion
     function doGlobalError(text) {
         inputInfosDiv.style.display = 'flex';
+        chargingSessionReportDiv.style.display = 'none';
+        chargingSessionReportDiv.innerHTML = '';
         errorTextDiv.style.display = 'inline-block';
         errorTextDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + text;
     }
@@ -689,6 +953,9 @@ function StartDashboard() {
     pasteButton.onclick = PasteFile;
     var aboutScreenDiv = document.getElementById('aboutScreen');
     var chargingSessionReportDiv = document.getElementById('chargingSessionReport');
+    var rightbar = document.getElementById('rightbar');
+    var evseTarifInfosDiv = document.getElementById('evseTarifInfos');
+    var resultsDiv = document.getElementById('results');
     var backButtonDiv = document.getElementById('backButtonDiv');
     backButtonDiv.onclick = function (ev) {
         inputInfosDiv.style.display = 'flex';
@@ -696,10 +963,8 @@ function StartDashboard() {
         chargingSessionReportDiv.style.display = "none";
         backButtonDiv.style.display = "none";
         fileInput.value = "";
+        evseTarifInfosDiv.innerHTML = "";
     };
-    var rightbar = document.getElementById('rightbar');
-    var evseTarifInfosDiv = document.getElementById('evseTarifInfos');
-    var resultsDiv = document.getElementById('results');
     var shell = require('electron').shell;
     var linkButtons = document.getElementsByClassName('linkButton');
     var _loop_1 = function () {

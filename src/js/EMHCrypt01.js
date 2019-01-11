@@ -36,14 +36,14 @@ var EMHCrypt01 = /** @class */ (function (_super) {
             scale: SetInt8(cryptoBuffer, measurementValue.measurement.scale, 30),
             value: SetUInt64(cryptoBuffer, measurementValue.value, 31, true),
             logBookIndex: SetHex(cryptoBuffer, measurementValue.logBookIndex, 39, false),
-            authorization: SetText(cryptoBuffer, measurementValue.measurement.chargingSession.authorization["@id"], 41),
-            authorizationTimestamp: SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorization.timestamp, 169)
+            authorizationStart: SetText(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"], 41),
+            authorizationStartTimestamp: SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
         };
         var signatureExpected = measurementValue.signatures[0];
         if (signatureExpected != null) {
             cryptoData.signature = {
-                algorithm: signatureExpected.algorithm,
-                format: signatureExpected.format,
+                algorithm: measurementValue.measurement.signatureInfos.algorithm,
+                format: measurementValue.measurement.signatureInfos.format,
                 r: signatureExpected.r,
                 s: signatureExpected.s
             };
@@ -60,6 +60,7 @@ var EMHCrypt01 = /** @class */ (function (_super) {
                     if (iPublicKey != null) {
                         try {
                             cryptoData.publicKey = iPublicKey.value.toLowerCase();
+                            cryptoData.publicKeyFormat = iPublicKey.format;
                             try {
                                 var result = this.curve.keyFromPublic(cryptoData.publicKey, 'hex').
                                     verify(cryptoData.sha256value, cryptoData.signature);
@@ -108,11 +109,23 @@ var EMHCrypt01 = /** @class */ (function (_super) {
         this.CreateLine("Skalierung", measurementValue.measurement.scale, result.scale, infoDiv, bufferValue);
         this.CreateLine("Messwert", measurementValue.value + " Wh", result.value, infoDiv, bufferValue);
         this.CreateLine("Logbuchindex", measurementValue.logBookIndex, result.logBookIndex, infoDiv, bufferValue);
-        this.CreateLine("Autorisierung", measurementValue.measurement.chargingSession.authorization["@id"], result.authorization, infoDiv, bufferValue);
-        this.CreateLine("Zeitstempel Autorisierung", measurementValue.measurement.chargingSession.authorization.timestamp, result.authorizationTimestamp, infoDiv, bufferValue);
+        this.CreateLine("Autorisierung (Start)", measurementValue.measurement.chargingSession.authorizationStart["@id"], result.authorizationStart, infoDiv, bufferValue);
+        this.CreateLine("Autorisierungszeitpunkt", measurementValue.measurement.chargingSession.authorizationStart.timestamp, result.authorizationStartTimestamp, infoDiv, bufferValue);
+        // Buffer
+        bufferValue.parentElement.children[0].innerHTML = "Puffer (320 Bytes)";
         hashedBufferValue.innerHTML = "0x" + result.sha256value;
+        // Public Key
+        publicKeyValue.parentElement.children[0].innerHTML = "Public Key";
+        if (result.publicKeyFormat)
+            publicKeyValue.parentElement.children[0].innerHTML += " (" + result.publicKeyFormat + ")";
         publicKeyValue.innerHTML = "0x" + result.publicKey;
-        signatureExpectedValue.innerHTML = "0x" + result.signature;
+        // Signature
+        signatureExpectedValue.parentElement.children[0].innerHTML = "Erwartete Signatur (" + result.signature.format + ")";
+        if (result.signature.r && result.signature.s)
+            signatureExpectedValue.innerHTML = "r: 0x" + result.signature.r.toLowerCase() + "<br />" + "s: 0x" + result.signature.s.toLowerCase();
+        else if (result.signature.value)
+            signatureExpectedValue.innerHTML = "0x" + result.signature.value.toLowerCase();
+        // Result
         switch (result.status) {
             case "verified":
                 signatureCheckValue.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';

@@ -22,13 +22,15 @@ function firstValue(obj) {
 for (var a in obj) return obj[a];
 }
 
-function parseUTC(UTCString: string): any {
+function parseUTC(UTCString: string|number): any {
 
     var moment = require('moment');
 
     moment.locale(window.navigator.language);
 
-    return moment.utc(UTCString).local();
+    return typeof UTCString === 'string'
+               ? moment.utc(UTCString).local()
+               : moment.utc(UTCString.toString()).local()
 
 }
 
@@ -170,7 +172,7 @@ function SetTimestamp32(dv: DataView, timestamp: any, offset: number): string
     if (typeof timestamp === 'string')
         timestamp = parseUTC(timestamp);
 
-    var unixtime  = timestamp.unix();
+    var unixtime  = timestamp.unix() + 60 * timestamp.utcOffset(); // Usage of utcOffset() is afaik EMH specific!
     var bytes     = getInt64Bytes(unixtime);
     var buffer    = new ArrayBuffer(4);
     var tv        = new DataView(buffer);

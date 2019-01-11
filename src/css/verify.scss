@@ -295,7 +295,6 @@ body {
                             background-color:   #519ad0;
                         }
 
-
                     }
 
                 }
@@ -617,6 +616,27 @@ body {
                         line-height: 200%;
                     }
      
+                }
+
+                #overlayOkButtonDiv {
+
+                    position:       absolute;
+                    left:           0px;
+                    bottom:         0px;
+
+                    #overlayOkButton {
+                        border:             0;
+                        background-color:   #cce5f7;
+                        padding:            7px 14px 8px 13px;
+                        border-radius:      50%;
+                        margin:             4px;
+                        font-size:          180%;
+                    }
+
+                    #overlayOkButton:hover {
+                        background-color:   #519ad0;
+                    }
+
                 }
 
             }

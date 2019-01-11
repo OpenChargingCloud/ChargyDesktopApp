@@ -451,6 +451,22 @@ body #outerframe #overlay #overlayText #signatureCheck #description {
   position: relative;
   line-height: 200%;
 }
+body #outerframe #overlay #overlayText #overlayOkButtonDiv {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+}
+body #outerframe #overlay #overlayText #overlayOkButtonDiv #overlayOkButton {
+  border: 0;
+  background-color: #cce5f7;
+  padding: 7px 14px 8px 13px;
+  border-radius: 50%;
+  margin: 4px;
+  font-size: 180%;
+}
+body #outerframe #overlay #overlayText #overlayOkButtonDiv #overlayOkButton:hover {
+  background-color: #519ad0;
+}
 body #outerframe #overlay #overlayText::-webkit-scrollbar {
   display: none;
 }

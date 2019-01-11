@@ -128,8 +128,16 @@ interface IChargingSession
     EVSEId:                     string,
     EVSE:                       IEVSE,
     tariff:                     ITariff,
-    authorization:              IAuthorization
+    authorizationStart:         IAuthorization,
+    authorizationStop:          IAuthorization,
+    product:                    IChargingProduct,
     measurements:               Array<IMeasurement>
+}
+
+interface IChargingProduct
+{
+    "@id":                      string,
+    "@context":                 string
 }
 
 interface IAuthorization
@@ -155,7 +163,16 @@ interface IMeasurement
     valueType:                  string,
     scale:                      number,
     verifyChain:                boolean,
+    signatureInfos:             ISignatureInfos,
     values:                     Array<IMeasurementValue>
+}
+
+interface ISignatureInfos {
+    hash:                       string,
+    hashTruncation:             number,
+    algorithm:                  string,
+    curve:                      string,
+    format:                     string,
 }
 
 interface IMeasurementValue

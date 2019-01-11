@@ -18,7 +18,9 @@ function firstValue(obj) {
 function parseUTC(UTCString) {
     var moment = require('moment');
     moment.locale(window.navigator.language);
-    return moment.utc(UTCString).local();
+    return typeof UTCString === 'string'
+        ? moment.utc(UTCString).local()
+        : moment.utc(UTCString.toString()).local();
 }
 function bufferToHex(buffer) {
     //return Array
@@ -117,7 +119,7 @@ function SetTimestamp(dv, timestamp, offset) {
 function SetTimestamp32(dv, timestamp, offset) {
     if (typeof timestamp === 'string')
         timestamp = parseUTC(timestamp);
-    var unixtime = timestamp.unix();
+    var unixtime = timestamp.unix() + 60 * timestamp.utcOffset(); // Usage of utcOffset() is afaik EMH specific!
     var bytes = getInt64Bytes(unixtime);
     var buffer = new ArrayBuffer(4);
     var tv = new DataView(buffer);
