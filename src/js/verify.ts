@@ -20,14 +20,15 @@ var chargingSessions          = new Array<IChargingSession>();
 
 function StartDashboard() {
 
-    //var ec = new elliptic.ec('p192');
     var el      = require('elliptic');
     let moment  = require('moment');
 
     // variable 'crypto' is already defined differently in Google Chrome!
     const crypt = require('electron').remote.require('crypto');
 
-    function GetChargingPool(Id: String): IChargingPool
+    //#region GetMethods...
+
+    let GetChargingPool: GetChargingPoolFunc = function (Id: String)
     {
 
         for (var chargingPool of chargingPools)
@@ -40,7 +41,7 @@ function StartDashboard() {
 
     }
 
-    function GetChargingStation(Id: String): IChargingStation
+    let GetChargingStation: GetChargingStationFunc = function (Id: String)
     {
 
         for (var chargingStation of chargingStations)
@@ -53,7 +54,7 @@ function StartDashboard() {
 
     }
 
-    function GetEVSE(Id: String): IEVSE
+    let GetEVSE: GetEVSEFunc = function (Id: String)
     {
 
         for (var evse of EVSEs)
@@ -66,7 +67,8 @@ function StartDashboard() {
 
     }
 
-    let GetMeter: GetMeterFunc = function(Id: string) {
+    let GetMeter: GetMeterFunc = function(Id: string)
+    {
     
         for (var meter of meters)
         {
@@ -78,272 +80,8 @@ function StartDashboard() {
     
     }    
 
-
-
-
-    //#region showMeasurementCryptoDetails
-
-    function showMeasurementCryptoDetails(measurementValue:  IMeasurementValue,
-                                          viewData:          boolean) : ICryptoResult
-    {
-
-        function doError(text: String)
-        {
-            //inputInfosDiv.style.display  = 'flex';
-            //errorTextDiv.style.display   = 'inline-block';
-            infoDiv.innerHTML       = '<i class="fas fa-times-circle"></i> ' + text;
-        }
-
-
-        let infoDiv                   = overlayDiv.querySelector('#info')                      as HTMLDivElement;
-        var result = { status: "Unbekanntes Messdatensatzformat!" };
-
-        if (measurementValue == null || measurementValue.measurement == null)
-        {
-            doError("Unbekanntes Messdatensatzformat!");
-            return { status: "Unbekanntes Messdatensatzformat!" };
-        }
-
-
-        //#region Show data and result on overlay        
-
-        if (viewData)
-            overlayDiv.style.display = 'block';
-        else
-            overlayDiv.style.display = 'none';
-
-        let bufferValue               = overlayDiv.querySelector('#buffer .value')             as HTMLDivElement;
-        let hashedBufferValue         = overlayDiv.querySelector('#hashedBuffer .value')       as HTMLDivElement;
-        let publicKeyValue            = overlayDiv.querySelector('#publicKey .value')          as HTMLDivElement;
-        let signatureExpectedValue    = overlayDiv.querySelector('#signatureExpected .value')  as HTMLDivElement;
-        let signatureCheckValue       = overlayDiv.querySelector('#signatureCheck')            as HTMLDivElement;
-
-        infoDiv.innerHTML                 = '';
-        bufferValue.innerHTML             = '';
-        hashedBufferValue.innerHTML       = '0x00000000000000000000000000000000000';
-        publicKeyValue.innerHTML          = '0x00000000000000000000000000000000000';
-        signatureExpectedValue.innerHTML  = '0x00000000000000000000000000000000000';
-        signatureCheckValue.innerHTML     = '';
-
-        switch (measurementValue.measurement["@context"])
-        {
-
-            case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/GDFCrypt01+json":
-
-                var _GDFCrypt01 = new GDFCrypt01(GetMeter);
-
-                result = _GDFCrypt01.Calc(measurementValue);
-
-                if (viewData)
-                    _GDFCrypt01.View(measurementValue,
-                                     result as IGDFCrypt01Result,
-                                     infoDiv,
-                                     bufferValue,
-                                     hashedBufferValue,
-                                     publicKeyValue,
-                                     signatureExpectedValue,
-                                     signatureCheckValue);
-
-                return result;
-
-            case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json":
-                
-                var _EMHCrypt01 = new EMHCrypt01(GetMeter);
-
-                result = _EMHCrypt01.Calc(measurementValue as IEMHMeasurementValue);
-
-                if (viewData)
-                    _EMHCrypt01.View(measurementValue as IEMHMeasurementValue,
-                                     result as IEMHCrypt01Result,
-                                     infoDiv,
-                                     bufferValue,
-                                     hashedBufferValue,
-                                     publicKeyValue,
-                                     signatureExpectedValue,
-                                     signatureCheckValue);
-
-                return result;
-
-            default:
-                doError("Unbekanntes Messdatensatzformat!");
-                return { status: "Unbekanntes Messdatensatzformat!" };
-
-        }
-
-        //#endregion
-
-    }
-
-    // Will capture the correct measurement value and its context!
-    function captureMeasurementCryptoDetails(mv: IMeasurementValue) {
-        return function(this: HTMLDivElement, ev: MouseEvent) {
-                   showMeasurementCryptoDetails(mv, true);
-               };
-    }
-
     //#endregion
 
-    //#region showChargingSessionDetails
-
-    function showChargingSessionDetails(chargingSession: IChargingSession)
-    {
-
-        function checkMeasurementCrypto(measurementValue: IMeasurementValue)
-        {
-
-            var result = showMeasurementCryptoDetails(measurementValue, false);
-
-            switch (result.status)
-            {
-
-                case "verified":
-                    return '<i class="fas fa-check-circle"></i> Gültige Signatur';
-
-                default:
-                    return '<i class="fas fa-times-circle"></i> ' + result.status;
-
-            }            
-
-        }
-
-
-        try
-        {
-
-            evseTarifInfosDiv.innerHTML = "";
-
-            if (chargingSession.measurements)
-            {
-                for (var measurement of chargingSession.measurements)
-                {
-
-                    measurement.chargingSession     = chargingSession;
-
-                    let MeasurementInfoDiv          = CreateDiv(evseTarifInfosDiv,  "measurementInfo");
-
-                    //#region Show Meter vendor infos
-
-                    var meter                        = GetMeter(measurement.energyMeterId);
-
-                    if (meter != null)
-                    {
-
-                        let MeterVendorDiv           = CreateDiv(MeasurementInfoDiv,  "meterVendor");
-
-                        let MeterVendorIdDiv         = CreateDiv(MeterVendorDiv,      "meterVendorId",
-                                                                 "Zählerhersteller");
-
-                        let MeterVendorValueDiv      = CreateDiv(MeterVendorDiv,      "meterVendorIdValue",
-                                                                 meter.vendor);
-
-
-                        let MeterModelDiv            = CreateDiv(MeasurementInfoDiv,  "meterModel");
-
-                        let MeterModelIdDiv          = CreateDiv(MeterModelDiv,       "meterModelId",
-                                                                 "Model");
-
-                        let MeterModelValueDiv       = CreateDiv(MeterModelDiv,       "meterModelIdValue",
-                                                                 meter.model);
-
-                    }
-
-                    //#endregion
-
-                    //#region Show Meter infos
-
-                    let MeterDiv                    = CreateDiv(MeasurementInfoDiv,  "meter");
-
-                    let MeterIdDiv                  = CreateDiv(MeterDiv,            "meterId",
-                                                                meter != null ? "Seriennummer" : "Zählerseriennummer");
-
-                    let MeterIdValueDiv             = CreateDiv(MeterDiv,            "meterIdValue",
-                                                                measurement.energyMeterId);
-
-                    //#endregion
-
-                    //#region Show Measurement infos
-
-                    let MeasurementDiv               = CreateDiv(MeasurementInfoDiv, "measurement");
-
-                    let MeasurementIdDiv             = CreateDiv(MeasurementDiv,     "measurementId",
-                                                                 "Messung");
-
-                    let MeasurementIdValueDiv        = CreateDiv(MeasurementDiv,     "measurementIdValue",
-                                                                 measurement.name + " (OBIS: " + measurement.obis + ")");
-
-                    //#endregion
-
-                    //#region Show Measurement values...
-
-                    //<i class="far fa-chart-bar"></i>
-                    if (measurement.values && measurement.values.length > 0)
-                    {
-
-                        let MeasurementValuesDiv         = CreateDiv(evseTarifInfosDiv, "measurementValues");
-
-                        for (var measurementValue of measurement.values)
-                        {
-
-                            measurementValue.measurement     = measurement;
-
-                            let MeasurementValueDiv          = CreateDiv(MeasurementValuesDiv, "measurementValue");
-                            MeasurementValueDiv.onclick      = captureMeasurementCryptoDetails(measurementValue);
-
-                            var timestamp                    = parseUTC(measurementValue.timestamp);
-
-                            let timestampDiv                 = CreateDiv(MeasurementValueDiv, "timestamp",
-                                                                         timestamp.format('HH:mm:ss'));
-
-                            var _value                       = measurementValue.value;
-
-                            switch (measurement.unit)
-                            {
-
-                                case "KILO_WATT_HOURS":
-                                    _value = _value * Math.pow(10, measurementValue.measurement.scale);
-                                    break;
-
-                                // "WATT_HOURS"
-                                default:
-                                    _value = _value / 1000 * Math.pow(10, measurementValue.measurement.scale);
-                                    break;
-
-                            }
-
-                            let valueDiv                     = CreateDiv(MeasurementValueDiv, "value",
-                                                                         _value.toString());
-
-                            let unitDiv                      = CreateDiv(MeasurementValueDiv, "unit",
-                                                                         "kWh");
-
-                            let verificationStatusDiv        = CreateDiv(MeasurementValueDiv, "verificationStatus",
-                                                                         checkMeasurementCrypto(measurementValue));
-
-                        }
-
-                    }
-
-                    //#endregion
-
-                }
-            }
-
-        }
-        catch (exception)
-        { 
-            console.log(exception);
-        }
-
-    }
-
-    // Will capture the correct charging session and its context!
-    function captureChargingSession(cs: IChargingSession) {
-        return function(this: HTMLDivElement, ev: MouseEvent) {
-                   showChargingSessionDetails(cs);
-               };
-    }
-
-    //#endregion
 
 
     //#region detectContentFormat
@@ -580,7 +318,7 @@ function StartDashboard() {
             //#endregion
 
 
-            //#region Process charging sessions...
+            //#region Show all charging sessions...
 
             if (CTR.chargingSessions) {
 
@@ -593,31 +331,39 @@ function StartDashboard() {
                     let chargingSessionDiv      = CreateDiv(chargingSessionsDiv, "chargingSessions");               
                     chargingSessionDiv.onclick  = captureChargingSession(chargingSession);
 
-                    //#region Show session time
+                    //#region Show session time infos
 
-                    if (chargingSession.begin)
-                    {
+                    try {
 
-                        var beginUTC = parseUTC(chargingSession.begin);
-
-                        let dateDiv = chargingSessionDiv.appendChild(document.createElement('div'));
-                        dateDiv.className = "date";
-                        dateDiv.innerHTML = beginUTC.format('dddd, D; MMM YYYY HH:mm:ss').
-                                                    replace(".", "").   // Nov. -> Nov
-                                                    replace(";", ".");  // 14;  -> 14.
-
-                        if (chargingSession.end)
+                        if (chargingSession.begin)
                         {
 
-                            var endUTC   = parseUTC(chargingSession.end);
-                            var duration = moment.duration(endUTC - beginUTC);
+                            var beginUTC = parseUTC(chargingSession.begin);
 
-                            dateDiv.innerHTML += " - " +
-                                                (Math.floor(duration.asDays()) > 0 ? endUTC.format("dddd") + " " : "") +
-                                                endUTC.format('HH:mm:ss');
+                            let dateDiv = chargingSessionDiv.appendChild(document.createElement('div'));
+                            dateDiv.className = "date";
+                            dateDiv.innerHTML = beginUTC.format('dddd, D; MMM YYYY HH:mm:ss').
+                                                        replace(".", "").   // Nov. -> Nov
+                                                        replace(";", ".");  // 14;  -> 14.
+
+                            if (chargingSession.end)
+                            {
+
+                                var endUTC   = parseUTC(chargingSession.end);
+                                var duration = moment.duration(endUTC - beginUTC);
+
+                                dateDiv.innerHTML += " - " +
+                                                    (Math.floor(duration.asDays()) > 0 ? endUTC.format("dddd") + " " : "") +
+                                                    endUTC.format('HH:mm:ss');
+
+                            }
 
                         }
 
+                    }
+                    catch (exception)
+                    { 
+                        console.log("Could not show session time infos of charging session '" + chargingSession["@id"] + "':" + exception);
                     }
 
                     //#endregion
@@ -654,7 +400,7 @@ function StartDashboard() {
 
                                     var first  = measurement.values[0].value;
                                     var last   = measurement.values[measurement.values.length-1].value;
-                                    var amount = (last - first) * Math.pow(10, measurement.scale);
+                                    var amount = parseFloat(((last - first) * Math.pow(10, measurement.scale)).toFixed(10));
 
                                     switch (measurement.unit)
                                     {
@@ -664,7 +410,7 @@ function StartDashboard() {
 
                                         // "WATT_HOURS"
                                         default:
-                                            amount = amount / 1000;
+                                            amount = parseFloat((amount / 1000).toFixed(10));
                                             break;
 
                                     }
@@ -677,8 +423,10 @@ function StartDashboard() {
                         }
 
                     }
-                    catch (Exception)
-                    { }
+                    catch (exception)
+                    { 
+                        console.log("Could not show energy infos of charging session '" + chargingSession["@id"] + "':" + exception);
+                    }
 
                     //#endregion
 
@@ -794,8 +542,7 @@ function StartDashboard() {
 
                     //#endregion
 
-
-                    //#region Verification Status
+                    //#region Show verification status
 
                     let verificationStatusDiv = chargingSessionDiv.appendChild(document.createElement('div'));
                     verificationStatusDiv.className = "verificationStatus";
@@ -813,9 +560,6 @@ function StartDashboard() {
             }
 
             //#endregion
-
-
-            //resultsDiv.innerHTML = VerificationResult[result].toString();
 
         }
 
@@ -1285,76 +1029,368 @@ function StartDashboard() {
 
     //#endregion
 
+    //#region showChargingSessionDetails
 
-    function doGlobalError(text: String)
+    function showChargingSessionDetails(chargingSession: IChargingSession)
     {
+
+        function checkMeasurementCrypto(measurementValue: IMeasurementValue)
+        {
+
+            var result = verifyMeasurementCryptoDetails(measurementValue);
+
+            switch (result.status)
+            {
+
+                case VerificationResult.ValidSignature:
+                    return '<i class="fas fa-check-circle"></i> Gültige Signatur';
+
+                default:
+                    return '<i class="fas fa-times-circle"></i> ' + result.status;
+
+            }            
+
+        }
+
+
+        try
+        {
+
+            evseTarifInfosDiv.innerHTML = "";
+
+            if (chargingSession.measurements)
+            {
+                for (var measurement of chargingSession.measurements)
+                {
+
+                    measurement.chargingSession      = chargingSession;
+
+                    let MeasurementInfoDiv           = CreateDiv(evseTarifInfosDiv,  "measurementInfo");
+
+                    //#region Show meter vendor infos
+
+                    var meter                        = GetMeter(measurement.energyMeterId);
+
+                    if (meter != null)
+                    {
+
+                        let MeterVendorDiv           = CreateDiv(MeasurementInfoDiv,  "meterVendor");
+
+                        let MeterVendorIdDiv         = CreateDiv(MeterVendorDiv,      "meterVendorId",
+                                                                 "Zählerhersteller");
+
+                        let MeterVendorValueDiv      = CreateDiv(MeterVendorDiv,      "meterVendorIdValue",
+                                                                 meter.vendor);
+
+
+                        let MeterModelDiv            = CreateDiv(MeasurementInfoDiv,  "meterModel");
+
+                        let MeterModelIdDiv          = CreateDiv(MeterModelDiv,       "meterModelId",
+                                                                 "Model");
+
+                        let MeterModelValueDiv       = CreateDiv(MeterModelDiv,       "meterModelIdValue",
+                                                                 meter.model);
+
+                    }
+
+                    //#endregion
+
+                    //#region Show meter infos
+
+                    let MeterDiv                    = CreateDiv(MeasurementInfoDiv,  "meter");
+
+                    let MeterIdDiv                  = CreateDiv(MeterDiv,            "meterId",
+                                                                meter != null ? "Seriennummer" : "Zählerseriennummer");
+
+                    let MeterIdValueDiv             = CreateDiv(MeterDiv,            "meterIdValue",
+                                                                measurement.energyMeterId);
+
+                    //#endregion
+
+                    //#region Show measurement infos
+
+                    let MeasurementDiv               = CreateDiv(MeasurementInfoDiv, "measurement");
+
+                    let MeasurementIdDiv             = CreateDiv(MeasurementDiv,     "measurementId",
+                                                                 "Messung");
+
+                    let MeasurementIdValueDiv        = CreateDiv(MeasurementDiv,     "measurementIdValue",
+                                                                 measurement.name + " (OBIS: " + measurement.obis + ")");
+
+                    //#endregion
+
+                    //#region Show measurement values...
+
+                    if (measurement.values && measurement.values.length > 0)
+                    {
+
+                        //<i class="far fa-chart-bar"></i>
+
+                        let MeasurementValuesDiv         = CreateDiv(evseTarifInfosDiv, "measurementValues");
+
+                        for (var measurementValue of measurement.values)
+                        {
+
+                            measurementValue.measurement     = measurement;
+
+                            let MeasurementValueDiv          = CreateDiv(MeasurementValuesDiv, "measurementValue");
+                            MeasurementValueDiv.onclick      = captureMeasurementCryptoDetails(measurementValue);
+
+                            var timestamp                    = parseUTC(measurementValue.timestamp);
+
+                            let timestampDiv                 = CreateDiv(MeasurementValueDiv, "timestamp",
+                                                                         timestamp.format('HH:mm:ss'));
+
+                            var _value                       = measurementValue.value;
+
+                            switch (measurement.unit)
+                            {
+
+                                case "KILO_WATT_HOURS":
+                                    _value = parseFloat((_value * Math.pow(10, measurementValue.measurement.scale)).toFixed(10));
+                                    break;
+
+                                // "WATT_HOURS"
+                                default:
+                                    _value = parseFloat((_value / 1000 * Math.pow(10, measurementValue.measurement.scale)).toFixed(10));
+                                    break;
+
+                            }
+
+                            let valueDiv                     = CreateDiv(MeasurementValueDiv, "value",
+                                                                         _value.toString());
+
+                            let unitDiv                      = CreateDiv(MeasurementValueDiv, "unit",
+                                                                         "kWh");
+
+                            let verificationStatusDiv        = CreateDiv(MeasurementValueDiv, "verificationStatus",
+                                                                         checkMeasurementCrypto(measurementValue));
+
+                        }
+
+                    }
+
+                    //#endregion
+
+                }
+            }
+
+        }
+        catch (exception)
+        { 
+            console.log("Could not show charging session details: " + exception);
+        }
+
+    }
+
+    //#region Capture the correct charging session and its context!
+
+    function captureChargingSession(cs: IChargingSession) {
+        return function(this: HTMLDivElement, ev: MouseEvent) {
+
+                   //#region Highlight the selected charging session...
+
+                   var AllChargingSessionsDivs = document.getElementsByClassName("chargingSessions");
+                   for(var i=0; i<AllChargingSessionsDivs.length; i++)
+                       AllChargingSessionsDivs[i].classList.remove("activated");
+
+                   this.classList.add("activated");
+
+                   //#endregion
+
+                   showChargingSessionDetails(cs);
+
+               };
+    }
+
+    //#endregion
+
+    //#endregion
+
+    //#region verifyMeasurementCryptoDetails
+
+    function verifyMeasurementCryptoDetails(measurementValue:  IMeasurementValue) : ICryptoResult
+    {
+
+        var result: ICryptoResult = {
+            status: VerificationResult.UnknownCTRFormat
+        };
+
+        if (measurementValue             == null ||
+            measurementValue.measurement == null)
+        {
+            return result;
+        }
+
+        switch (measurementValue.measurement["@context"])
+        {
+
+            case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/GDFCrypt01+json":
+                measurementValue.method = new GDFCrypt01(GetMeter);
+                return measurementValue.method.Verify(measurementValue);
+
+            case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json":
+                measurementValue.method = new EMHCrypt01(GetMeter);
+                return measurementValue.method.Verify(measurementValue);
+
+            default:
+                return result;
+
+        }
+
+    }
+
+    //#endregion
+
+    //#region showMeasurementCryptoDetails
+
+    function showMeasurementCryptoDetails(measurementValue:  IMeasurementValue) : void
+    {
+
+        function doError(text: String)
+        {
+            //inputInfosDiv.style.display  = 'flex';
+            //errorTextDiv.style.display   = 'inline-block';
+            infoDiv.innerHTML       = '<i class="fas fa-times-circle"></i> ' + text;
+        }
+
+
+        let infoDiv  = overlayDiv.querySelector('#info') as HTMLDivElement;
+
+        if (measurementValue             == null ||
+            measurementValue.measurement == null)
+        {
+            doError("Unbekanntes Messdatensatzformat!");
+        }
+
+
+        //#region Show data and result on overlay        
+
+        overlayDiv.style.display = 'block';
+
+        let bufferValue               = overlayDiv.querySelector('#buffer .value')             as HTMLDivElement;
+        let hashedBufferValue         = overlayDiv.querySelector('#hashedBuffer .value')       as HTMLDivElement;
+        let publicKeyValue            = overlayDiv.querySelector('#publicKey .value')          as HTMLDivElement;
+        let signatureExpectedValue    = overlayDiv.querySelector('#signatureExpected .value')  as HTMLDivElement;
+        let signatureCheckValue       = overlayDiv.querySelector('#signatureCheck')            as HTMLDivElement;
+
+        infoDiv.innerHTML                 = '';
+        bufferValue.innerHTML             = '';
+        hashedBufferValue.innerHTML       = '0x00000000000000000000000000000000000';
+        publicKeyValue.innerHTML          = '0x00000000000000000000000000000000000';
+        signatureExpectedValue.innerHTML  = '0x00000000000000000000000000000000000';
+        signatureCheckValue.innerHTML     = '';
+
+        if (measurementValue.method)
+            measurementValue.method.View(measurementValue,
+                                         infoDiv,
+                                         bufferValue,
+                                         hashedBufferValue,
+                                         publicKeyValue,
+                                         signatureExpectedValue,
+                                         signatureCheckValue);
+
+        else
+        {
+            doError("Unbekanntes Messdatensatzformat!");
+        }
+
+        //#endregion
+
+    }
+
+    //#region Capture the correct measurement value and its context!
+
+    function captureMeasurementCryptoDetails(measurementValue: IMeasurementValue) {
+        return function(this: HTMLDivElement, ev: MouseEvent) {
+                   showMeasurementCryptoDetails(measurementValue);
+               };
+    }
+
+    //#endregion
+
+    //#endregion
+
+
+
+    //#region Global error handling...
+
+    function doGlobalError(text:      String,
+                           context?:  any)
+    {
+
         inputInfosDiv.style.display             = 'flex';
         chargingSessionReportDiv.style.display  = 'none';
         chargingSessionReportDiv.innerHTML      = '';
         errorTextDiv.style.display              = 'inline-block';
         errorTextDiv.innerHTML                  = '<i class="fas fa-times-circle"></i> ' + text;
+
+        console.log(text);
+        console.log(context);
+
     }
 
+    //#endregion
 
     //#region Process loaded CTR file...
 
-    function readFileFromDisk(e) {
-        readAndParseFile(e.target.files[0]);
+    function readFileFromDisk(event) {
+        readAndParseFile(event.target.files[0]);
     }
 
     //#endregion
 
     //#region Process dropped CTR file...
 
-    function handleDroppedFile(evt) {
-
-        evt.stopPropagation();
-        evt.preventDefault();
-
-        evt.target.classList.remove('over');
-
-        readAndParseFile(evt.dataTransfer.files[0]);
-
+    function handleDroppedFile(event: DragEvent) {
+        event.stopPropagation();
+        event.preventDefault();
+        (event.target as HTMLDivElement).classList.remove('over');
+        readAndParseFile(event.dataTransfer.files[0]);
     }
 
-    function handleDragEnter(evt) {
-        evt.preventDefault();
-        evt.target.classList.add('over');
+    function handleDragEnter(event: DragEvent) {
+        event.preventDefault();
+        (event.target as HTMLDivElement).classList.add('over');
     }
 
-    function handleDragOver(evt) {
-        evt.stopPropagation();
-        evt.preventDefault();
-        evt.dataTransfer.dropEffect = 'copy';
-        evt.target.classList.add('over');
+    function handleDragOver(event: DragEvent) {
+        event.stopPropagation();
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'copy';
+        (event.target as HTMLDivElement).classList.add('over');
     }
 
-    function handleDragLeave(evt) {
-        evt.target.classList.remove('over');
+    function handleDragLeave(event: DragEvent) {
+        (event.target as HTMLDivElement).classList.remove('over');
     }
 
     //#endregion
 
     //#region Read and parse CTR file
 
-    function readAndParseFile(file) {
+    function readAndParseFile(file: File) {
 
         if (!file)
             return;
 
         var reader = new FileReader();
 
-        reader.onload = function(e) {
+        reader.onload = function(event) {
             try
             {
-                detectContentFormat(JSON.parse((e.target as any).result));
+                detectContentFormat(JSON.parse((event.target as any).result));
             }
-            catch (e) {
-                doGlobalError("Fehlerhafter Transparenzdatensatz!");
+            catch (exception) {
+                doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
             }
         }
 
-        reader.readAsText(file)
+        reader.onerror = function(event) {
+            doGlobalError("Fehlerhafter Transparenzdatensatz!", event);
+        }
+
+        reader.readAsText(file, 'UTF-8');
 
     }
 
@@ -1364,14 +1400,14 @@ function StartDashboard() {
 
     function PasteFile(this: HTMLElement, ev: MouseEvent) {
 
-        (navigator as any).clipboard.readText().then(function (clipText) {
+        (navigator as any).clipboard.readText().then(function (clipText: string) {
 
             try
             {
                 detectContentFormat(JSON.parse(clipText));
             }
-            catch (e) {
-                doGlobalError("Fehlerhafter Transparenzdatensatz!");
+            catch (exception) {
+                doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
             }
 
         });
@@ -1380,9 +1416,10 @@ function StartDashboard() {
 
     //#endregion
 
+
     var d                         = document as any;
 
-    var input                     = <HTMLDivElement> document.getElementById('input');
+    var input                     = <HTMLDivElement>      document.getElementById('input');
     input.addEventListener('dragenter', handleDragEnter,   false);
     input.addEventListener('dragover',  handleDragOver,    false);
     input.addEventListener('dragleave', handleDragLeave,   false);

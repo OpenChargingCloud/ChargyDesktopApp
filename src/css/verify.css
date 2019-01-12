@@ -201,6 +201,9 @@ body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSe
 body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSessions .chargingSessions:hover {
   background-color: #b8cdde;
 }
+body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSessions .activated {
+  background-color: #b5d4ec;
+}
 body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSessions::-webkit-scrollbar {
   display: none;
 }

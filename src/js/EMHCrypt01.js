@@ -21,11 +21,70 @@ var EMHCrypt01 = /** @class */ (function (_super) {
         _this.curve = new _this.elliptic.ec('p192');
         return _this;
     }
-    EMHCrypt01.prototype.Calc = function (measurementValue) {
+    EMHCrypt01.prototype.Sign = function (measurementValue, privateKey, publicKey) {
+        // var keypair                      = this.curve.genKeyPair();
+        //     privateKey                   = keypair.getPrivate();
+        //     publicKey                    = keypair.getPublic();        
+        // var privateKeyHEX                = privateKey.toString('hex').toLowerCase();
+        // var publicKeyHEX                 = publicKey.encode('hex').toLowerCase();
         var buffer = new ArrayBuffer(320);
         var cryptoBuffer = new DataView(buffer);
-        var cryptoData = {
-            status: "unknown",
+        var cryptoResult = {
+            status: VerificationResult.InvalidSignature,
+            meterId: SetHex(cryptoBuffer, measurementValue.measurement.energyMeterId, 0),
+            timestamp: SetTimestamp32(cryptoBuffer, measurementValue.timestamp, 10),
+            infoStatus: SetHex(cryptoBuffer, measurementValue.infoStatus, 14, false),
+            secondsIndex: SetUInt32(cryptoBuffer, measurementValue.secondsIndex, 15, true),
+            paginationId: SetHex(cryptoBuffer, measurementValue.paginationId, 19, true),
+            obis: SetHex(cryptoBuffer, measurementValue.measurement.obis, 23, false),
+            unitEncoded: SetInt8(cryptoBuffer, measurementValue.measurement.unitEncoded, 29),
+            scale: SetInt8(cryptoBuffer, measurementValue.measurement.scale, 30),
+            value: SetUInt64(cryptoBuffer, measurementValue.value, 31, true),
+            logBookIndex: SetHex(cryptoBuffer, measurementValue.logBookIndex, 39, false),
+            authorizationStart: SetText(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"], 41),
+            authorizationStartTimestamp: SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
+        };
+        // Only the first 24 bytes/192 bits are used!
+        cryptoResult.sha256value = this.crypt.createHash('sha256').
+            update(cryptoBuffer).
+            digest('hex').
+            toLowerCase().
+            substring(0, 48);
+        cryptoResult.publicKey = publicKey.encode('hex').
+            toLowerCase();
+        var signature = this.curve.keyFromPrivate(privateKey.toString('hex')).
+            sign(cryptoResult.sha256value);
+        switch (measurementValue.measurement.signatureInfos.format) {
+            case SignatureFormats.DER:
+                cryptoResult.signature = {
+                    algorithm: measurementValue.measurement.signatureInfos.algorithm,
+                    format: measurementValue.measurement.signatureInfos.format,
+                    value: signature.toDER('hex')
+                };
+                return cryptoResult;
+            case SignatureFormats.rs:
+                cryptoResult.signature = {
+                    algorithm: measurementValue.measurement.signatureInfos.algorithm,
+                    format: measurementValue.measurement.signatureInfos.format,
+                    r: signature.r,
+                    s: signature.s
+                };
+                return cryptoResult;
+            //default:
+        }
+        cryptoResult.status = VerificationResult.ValidSignature;
+        return cryptoResult;
+    };
+    EMHCrypt01.prototype.Verify = function (measurementValue) {
+        function setResult(vr) {
+            cryptoResult.status = vr;
+            measurementValue.result = cryptoResult;
+            return cryptoResult;
+        }
+        var buffer = new ArrayBuffer(320);
+        var cryptoBuffer = new DataView(buffer);
+        var cryptoResult = {
+            status: VerificationResult.InvalidSignature,
             meterId: SetHex(cryptoBuffer, measurementValue.measurement.energyMeterId, 0),
             timestamp: SetTimestamp32(cryptoBuffer, measurementValue.timestamp, 10),
             infoStatus: SetHex(cryptoBuffer, measurementValue.infoStatus, 14, false),
@@ -41,60 +100,54 @@ var EMHCrypt01 = /** @class */ (function (_super) {
         };
         var signatureExpected = measurementValue.signatures[0];
         if (signatureExpected != null) {
-            cryptoData.signature = {
-                algorithm: measurementValue.measurement.signatureInfos.algorithm,
-                format: measurementValue.measurement.signatureInfos.format,
-                r: signatureExpected.r,
-                s: signatureExpected.s
-            };
             try {
-                var entireHash = this.crypt.createHash('sha256').
-                    update(cryptoBuffer).
-                    digest('hex');
+                cryptoResult.signature = {
+                    algorithm: measurementValue.measurement.signatureInfos.algorithm,
+                    format: measurementValue.measurement.signatureInfos.format,
+                    r: signatureExpected.r,
+                    s: signatureExpected.s
+                };
                 // Only the first 24 bytes/192 bits are used!
-                cryptoData.sha256value = entireHash.substring(0, 48);
+                cryptoResult.sha256value = this.crypt.createHash('sha256').
+                    update(cryptoBuffer).
+                    digest('hex').
+                    substring(0, 48);
                 var meter = this.GetMeter(measurementValue.measurement.energyMeterId);
                 if (meter != null) {
-                    cryptoData.meter = meter;
+                    cryptoResult.meter = meter;
                     var iPublicKey = meter.publicKeys[0];
                     if (iPublicKey != null) {
                         try {
-                            cryptoData.publicKey = iPublicKey.value.toLowerCase();
-                            cryptoData.publicKeyFormat = iPublicKey.format;
+                            cryptoResult.publicKey = iPublicKey.value.toLowerCase();
+                            cryptoResult.publicKeyFormat = iPublicKey.format;
                             try {
-                                var result = this.curve.keyFromPublic(cryptoData.publicKey, 'hex').
-                                    verify(cryptoData.sha256value, cryptoData.signature);
-                                if (result) {
-                                    cryptoData.status = "verified";
-                                    return cryptoData;
+                                if (this.curve.keyFromPublic(cryptoResult.publicKey, 'hex').
+                                    verify(cryptoResult.sha256value, cryptoResult.signature)) {
+                                    return setResult(VerificationResult.ValidSignature);
                                 }
-                                else {
-                                    cryptoData.status = "invalid signature";
-                                    return cryptoData;
-                                }
+                                return setResult(VerificationResult.InvalidSignature);
                             }
                             catch (exception) {
-                                cryptoData.status = "invalid signature";
-                                return cryptoData;
+                                return setResult(VerificationResult.InvalidSignature);
                             }
                         }
                         catch (exception) {
-                            cryptoData.status = "invalid public key";
-                            return cryptoData;
+                            return setResult(VerificationResult.InvalidPublicKey);
                         }
                     }
                     else
-                        return { status: "no public key found" };
+                        return setResult(VerificationResult.PublicKeyNotFound);
                 }
                 else
-                    return { status: "energy meter not found" };
+                    return setResult(VerificationResult.EnergyMeterNotFound);
             }
             catch (exception) {
-                return { status: "invalid signature" };
+                return setResult(VerificationResult.InvalidSignature);
             }
         }
     };
-    EMHCrypt01.prototype.View = function (measurementValue, result, infoDiv, bufferValue, hashedBufferValue, publicKeyValue, signatureExpectedValue, signatureCheckValue) {
+    EMHCrypt01.prototype.View = function (measurementValue, infoDiv, bufferValue, hashedBufferValue, publicKeyValue, signatureExpectedValue, signatureCheckValue) {
+        var result = measurementValue.result;
         var cryptoDiv = CreateDiv(infoDiv, "row");
         CreateDiv(cryptoDiv, "id", "Kryptoverfahren");
         CreateDiv(cryptoDiv, "value", "EMHCrypt01 (" + this.description + ")");
@@ -127,7 +180,7 @@ var EMHCrypt01 = /** @class */ (function (_super) {
             signatureExpectedValue.innerHTML = "0x" + result.signature.value.toLowerCase();
         // Result
         switch (result.status) {
-            case "verified":
+            case VerificationResult.ValidSignature:
                 signatureCheckValue.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
                 break;
             default:

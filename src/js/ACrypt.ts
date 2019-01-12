@@ -63,4 +63,18 @@ abstract class ACrypt {
 
     }
 
+    abstract Sign(measurementValue:        IMeasurementValue,
+                  privateKey:              any,
+                  publicKey:               any): ICryptoResult;
+
+    abstract Verify(measurementValue:      IMeasurementValue): ICryptoResult;
+
+    abstract View(measurementValue:        IMeasurementValue,
+                  infoDiv:                 HTMLDivElement,
+                  bufferValue:             HTMLDivElement,
+                  hashedBufferValue:       HTMLDivElement,
+                  publicKeyValue:          HTMLDivElement,
+                  signatureExpectedValue:  HTMLDivElement,
+                  signatureCheckValue:     HTMLDivElement) : void;
+
 }
