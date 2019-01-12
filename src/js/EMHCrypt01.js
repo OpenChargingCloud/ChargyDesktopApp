@@ -21,7 +21,7 @@ var EMHCrypt01 = /** @class */ (function (_super) {
         _this.curve = new _this.elliptic.ec('p192');
         return _this;
     }
-    EMHCrypt01.prototype.Sign = function (measurementValue, privateKey, publicKey) {
+    EMHCrypt01.prototype.SignMeasurement = function (measurementValue, privateKey, publicKey) {
         // var keypair                      = this.curve.genKeyPair();
         //     privateKey                   = keypair.getPrivate();
         //     publicKey                    = keypair.getPublic();        
@@ -75,7 +75,37 @@ var EMHCrypt01 = /** @class */ (function (_super) {
         cryptoResult.status = VerificationResult.ValidSignature;
         return cryptoResult;
     };
-    EMHCrypt01.prototype.Verify = function (measurementValue) {
+    EMHCrypt01.prototype.VerifyChargingSession = function (chargingSession) {
+        var sessionResult = SessionVerificationResult.UnknownSessionFormat;
+        //var measurementResults  = new Array<IEMHCrypt01Result>();
+        if (chargingSession.measurements) {
+            for (var _i = 0, _a = chargingSession.measurements; _i < _a.length; _i++) {
+                var measurement = _a[_i];
+                measurement.chargingSession = chargingSession;
+                if (measurement.values && measurement.values.length > 0) {
+                    // Validate...
+                    for (var _b = 0, _c = measurement.values; _b < _c.length; _b++) {
+                        var measurementValue = _c[_b];
+                        measurementValue.measurement = measurement;
+                        this.VerifyMeasurement(measurementValue);
+                    }
+                    // Find an overall result...
+                    sessionResult = SessionVerificationResult.ValidSignature;
+                    for (var _d = 0, _e = measurement.values; _d < _e.length; _d++) {
+                        var measurementValue = _e[_d];
+                        if (sessionResult == SessionVerificationResult.ValidSignature &&
+                            measurementValue.result.status != VerificationResult.ValidSignature) {
+                            sessionResult = SessionVerificationResult.InvalidSignature;
+                        }
+                    }
+                }
+            }
+        }
+        return {
+            status: sessionResult
+        };
+    };
+    EMHCrypt01.prototype.VerifyMeasurement = function (measurementValue) {
         function setResult(vr) {
             cryptoResult.status = vr;
             measurementValue.result = cryptoResult;
@@ -146,7 +176,7 @@ var EMHCrypt01 = /** @class */ (function (_super) {
             }
         }
     };
-    EMHCrypt01.prototype.View = function (measurementValue, infoDiv, bufferValue, hashedBufferValue, publicKeyValue, signatureExpectedValue, signatureCheckValue) {
+    EMHCrypt01.prototype.ViewMeasurement = function (measurementValue, infoDiv, bufferValue, hashedBufferValue, publicKeyValue, signatureExpectedValue, signatureCheckValue) {
         var result = measurementValue.result;
         var cryptoDiv = CreateDiv(infoDiv, "row");
         CreateDiv(cryptoDiv, "id", "Kryptoverfahren");
@@ -180,11 +210,26 @@ var EMHCrypt01 = /** @class */ (function (_super) {
             signatureExpectedValue.innerHTML = "0x" + result.signature.value.toLowerCase();
         // Result
         switch (result.status) {
+            case VerificationResult.UnknownCTRFormat:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
+                break;
+            case VerificationResult.EnergyMeterNotFound:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
+                break;
+            case VerificationResult.PublicKeyNotFound:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
+                break;
+            case VerificationResult.InvalidPublicKey:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
+                break;
+            case VerificationResult.InvalidSignature:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
+                break;
             case VerificationResult.ValidSignature:
                 signatureCheckValue.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
                 break;
             default:
-                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">' + result.status + '</div>';
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
                 break;
         }
     };

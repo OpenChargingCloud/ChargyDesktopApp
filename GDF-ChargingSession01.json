@@ -506,7 +506,8 @@
         {
 
             "@id":                          "1544702812148:9043942080760213223:1",
-            "@context":                     "https://open.charging.cloud/contexts/CTR/unverified+json",
+            "@context2":                     "https://open.charging.cloud/contexts/CTR/unverified+json",
+            "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
             "begin":                        "2018-06-06T00:06:27-02:00",
             "end":                          "2018-06-06T00:15:25-02:00",
             "chargingStationId":            "DE*GEF*EVSE*CI*TESTS*3*A",

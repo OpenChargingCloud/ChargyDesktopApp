@@ -36,9 +36,9 @@ class GDFCrypt01 extends ACrypt {
     }
 
 
-    Sign(measurementValue:  IGDFMeasurementValue,
-         privateKey:        any,
-         publicKey:         any): IGDFCrypt01Result
+    SignMeasurement(measurementValue:  IGDFMeasurementValue,
+                    privateKey:        any,
+                    publicKey:         any): IGDFCrypt01Result
     {
 
         // var keypair                      = this.curve.genKeyPair();
@@ -110,7 +110,43 @@ class GDFCrypt01 extends ACrypt {
     }
 
 
-    Verify(measurementValue:  IGDFMeasurementValue): IGDFCrypt01Result
+    VerifyChargingSession(chargingSession:   IChargingSession): ISessionCryptoResult
+    {
+
+        var results = new Array<IGDFCrypt01Result>();
+
+        if (chargingSession.measurements)
+        {
+            for (var measurement of chargingSession.measurements)
+            {
+
+                measurement.chargingSession = chargingSession;
+
+                if (measurement.values && measurement.values.length > 0)
+                {
+
+                    for (var measurementValue of measurement.values)
+                    {
+
+                        measurementValue.measurement = measurement;
+
+                        results.push(this.VerifyMeasurement(measurementValue as IGDFMeasurementValue));
+
+                    }
+
+                }
+
+            }
+        }
+
+        return {
+            status: SessionVerificationResult.InvalidSignature
+        } ;
+
+    }
+
+
+    VerifyMeasurement(measurementValue:  IGDFMeasurementValue): IGDFCrypt01Result
     {
 
         function setResult(vr: VerificationResult)
@@ -215,13 +251,13 @@ class GDFCrypt01 extends ACrypt {
     }
 
 
-    View(measurementValue:        IMeasurementValue,
-         infoDiv:                 HTMLDivElement,
-         bufferValue:             HTMLDivElement,
-         hashedBufferValue:       HTMLDivElement,
-         publicKeyValue:          HTMLDivElement,
-         signatureExpectedValue:  HTMLDivElement,
-         signatureCheckValue:     HTMLDivElement)
+    ViewMeasurement(measurementValue:        IMeasurementValue,
+                    infoDiv:                 HTMLDivElement,
+                    bufferValue:             HTMLDivElement,
+                    hashedBufferValue:       HTMLDivElement,
+                    publicKeyValue:          HTMLDivElement,
+                    signatureExpectedValue:  HTMLDivElement,
+                    signatureCheckValue:     HTMLDivElement)
     {
 
         const result    = measurementValue.result as IGDFCrypt01Result;
@@ -270,12 +306,33 @@ class GDFCrypt01 extends ACrypt {
         switch (result.status)
         {
 
+            case VerificationResult.UnknownCTRFormat:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
+                break;
+
+            case VerificationResult.EnergyMeterNotFound:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
+                break;
+
+            case VerificationResult.PublicKeyNotFound:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
+                break;
+
+            case VerificationResult.InvalidPublicKey:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
+                break;
+
+            case VerificationResult.InvalidSignature:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
+                break;
+
             case VerificationResult.ValidSignature:
                 signatureCheckValue.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
                 break;
 
+
             default:
-                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">' + result.status + '</div>';
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
                 break;
 
         }

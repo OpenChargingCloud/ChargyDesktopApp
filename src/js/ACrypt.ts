@@ -63,18 +63,20 @@ abstract class ACrypt {
 
     }
 
-    abstract Sign(measurementValue:        IMeasurementValue,
-                  privateKey:              any,
-                  publicKey:               any): ICryptoResult;
+    abstract VerifyChargingSession(chargingSession:   IChargingSession): ISessionCryptoResult;
 
-    abstract Verify(measurementValue:      IMeasurementValue): ICryptoResult;
+    abstract SignMeasurement(measurementValue:        IMeasurementValue,
+                             privateKey:              any,
+                             publicKey:               any): ICryptoResult;
 
-    abstract View(measurementValue:        IMeasurementValue,
-                  infoDiv:                 HTMLDivElement,
-                  bufferValue:             HTMLDivElement,
-                  hashedBufferValue:       HTMLDivElement,
-                  publicKeyValue:          HTMLDivElement,
-                  signatureExpectedValue:  HTMLDivElement,
-                  signatureCheckValue:     HTMLDivElement) : void;
+    abstract VerifyMeasurement(measurementValue:      IMeasurementValue): ICryptoResult;
+
+    abstract ViewMeasurement(measurementValue:        IMeasurementValue,
+                             infoDiv:                 HTMLDivElement,
+                             bufferValue:             HTMLDivElement,
+                             hashedBufferValue:       HTMLDivElement,
+                             publicKeyValue:          HTMLDivElement,
+                             signatureExpectedValue:  HTMLDivElement,
+                             signatureCheckValue:     HTMLDivElement) : void;
 
 }

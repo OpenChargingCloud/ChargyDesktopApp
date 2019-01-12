@@ -145,6 +145,7 @@ interface IChargingSession
     authorizationStop:          IAuthorization;
     product:                    IChargingProduct;
     measurements:               Array<IMeasurement>;
+    method:                     ACrypt;
 }
 
 interface IChargingProduct
@@ -204,6 +205,11 @@ interface IMeasurementValue
     signatures:                 Array<ISignature>;
 }
 
+interface ISessionCryptoResult
+{
+    status:                     SessionVerificationResult;
+}
+
 interface ICryptoResult
 {
     status:                     VerificationResult;
@@ -247,10 +253,18 @@ interface IAddress {
 }
 
 
-enum VerificationResult {
-    UnknownCTRFormat,            // Unbekanntes Messdatensatzformat!
+enum SessionVerificationResult {
+    UnknownSessionFormat,
     PublicKeyNotFound,
+    InvalidPublicKey,
+    InvalidSignature,
+    ValidSignature
+}
+
+enum VerificationResult {
+    UnknownCTRFormat,
     EnergyMeterNotFound,
+    PublicKeyNotFound,
     InvalidPublicKey,
     InvalidSignature,
     ValidSignature

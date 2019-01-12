@@ -44,9 +44,9 @@ class EMHCrypt01 extends ACrypt {
     }
 
 
-    Sign(measurementValue:  IEMHMeasurementValue,
-         privateKey:        any,
-         publicKey:         any): IGDFCrypt01Result
+    SignMeasurement(measurementValue:  IEMHMeasurementValue,
+                    privateKey:        any,
+                    publicKey:         any): IGDFCrypt01Result
     {
 
         // var keypair                      = this.curve.genKeyPair();
@@ -124,7 +124,55 @@ class EMHCrypt01 extends ACrypt {
     }
 
 
-    Verify(measurementValue:  IEMHMeasurementValue): IEMHCrypt01Result
+    VerifyChargingSession(chargingSession:   IChargingSession): ISessionCryptoResult
+    {
+
+        var sessionResult       = SessionVerificationResult.UnknownSessionFormat;
+        //var measurementResults  = new Array<IEMHCrypt01Result>();
+
+        if (chargingSession.measurements)
+        {
+            for (var measurement of chargingSession.measurements)
+            {
+
+                measurement.chargingSession = chargingSession;
+
+                if (measurement.values && measurement.values.length > 0)
+                {
+
+                    // Validate...
+                    for (var measurementValue of measurement.values)
+                    {
+                        measurementValue.measurement = measurement;
+                        this.VerifyMeasurement(measurementValue as IEMHMeasurementValue);
+                    }
+
+
+                    // Find an overall result...
+                    sessionResult = SessionVerificationResult.ValidSignature;
+
+                    for (var measurementValue of measurement.values)
+                    {
+                        if (sessionResult                  == SessionVerificationResult.ValidSignature &&
+                            measurementValue.result.status != VerificationResult.ValidSignature)
+                        {
+                            sessionResult = SessionVerificationResult.InvalidSignature;
+                        }
+                    }
+
+                }
+
+            }
+        }
+
+        return {
+            status: sessionResult
+        } ;
+
+    }
+
+
+    VerifyMeasurement(measurementValue:  IEMHMeasurementValue): IEMHCrypt01Result
     {
 
         function setResult(vr: VerificationResult)
@@ -235,13 +283,13 @@ class EMHCrypt01 extends ACrypt {
     }
 
 
-    View(measurementValue:        IEMHMeasurementValue,
-         infoDiv:                 HTMLDivElement,
-         bufferValue:             HTMLDivElement,
-         hashedBufferValue:       HTMLDivElement,
-         publicKeyValue:          HTMLDivElement,
-         signatureExpectedValue:  HTMLDivElement,
-         signatureCheckValue:     HTMLDivElement)
+    ViewMeasurement(measurementValue:        IEMHMeasurementValue,
+                    infoDiv:                 HTMLDivElement,
+                    bufferValue:             HTMLDivElement,
+                    hashedBufferValue:       HTMLDivElement,
+                    publicKeyValue:          HTMLDivElement,
+                    signatureExpectedValue:  HTMLDivElement,
+                    signatureCheckValue:     HTMLDivElement)
     {
 
         const result    = measurementValue.result as IEMHCrypt01Result;
@@ -294,12 +342,33 @@ class EMHCrypt01 extends ACrypt {
         switch (result.status)
         {
 
+            case VerificationResult.UnknownCTRFormat:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
+                break;
+
+            case VerificationResult.EnergyMeterNotFound:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
+                break;
+
+            case VerificationResult.PublicKeyNotFound:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
+                break;
+
+            case VerificationResult.InvalidPublicKey:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
+                break;
+
+            case VerificationResult.InvalidSignature:
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
+                break;
+
             case VerificationResult.ValidSignature:
                 signatureCheckValue.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
                 break;
 
+
             default:
-                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">' + result.status + '</div>';
+                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
                 break;
 
         }

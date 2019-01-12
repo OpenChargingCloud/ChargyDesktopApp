@@ -92,6 +92,38 @@ function StartDashboard() {
         function processOpenChargingCloudFormat(CTR: IChargeTransparencyRecord)
         {
 
+            function checkSessionCrypto(chargingSession: IChargingSession)
+            {
+    
+                var result = verifySessionCryptoDetails(chargingSession);
+
+                switch (result.status)
+                {
+    
+                    case SessionVerificationResult.UnknownSessionFormat:
+                        return '<i class="fas fa-times-circle"></i> Ungültig';
+
+                    case SessionVerificationResult.PublicKeyNotFound:
+                        return '<i class="fas fa-times-circle"></i> Ungültig';
+
+                    case SessionVerificationResult.InvalidPublicKey:
+                        return '<i class="fas fa-times-circle"></i> Ungültig';
+
+                    case SessionVerificationResult.InvalidSignature:
+                        return '<i class="fas fa-times-circle"></i> Ungültig';
+
+                    case SessionVerificationResult.ValidSignature:
+                        return '<i class="fas fa-check-circle"></i> Gültig';
+    
+
+                    default:
+                        return '<i class="fas fa-times-circle"></i> Ungültig';
+    
+                }            
+    
+            }
+
+
             chargingStationOperators  = [];
             chargingPools             = [];
             chargingStations          = [];
@@ -546,7 +578,7 @@ function StartDashboard() {
 
                     let verificationStatusDiv = chargingSessionDiv.appendChild(document.createElement('div'));
                     verificationStatusDiv.className = "verificationStatus";
-                    verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Ungültig';
+                    verificationStatusDiv.innerHTML = checkSessionCrypto(chargingSession);
 
                     //#endregion
 
@@ -899,7 +931,7 @@ function StartDashboard() {
                             {
 
                                 "@id":                          _transactionId,
-                                "@context":                     "https://open.charging.cloud/contexts/CTR/unverified+json",
+                                "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
                                 "begin":                        moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
                                 "end":                          moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
                                 "chargingStationId":            "DE*GEF*EVSE*CI*TESTS*3*A",
@@ -943,39 +975,39 @@ function StartDashboard() {
 
                                         "values": [
 
-                                                {
-                                                    "timestamp":      moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().zone(-1 *
-                                                                                  CTRArray[0]["measuredValue"]["timestampLocal"]["localOffset"] +
-                                                                                  CTRArray[0]["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
-                                                    "value":          CTRArray[0]["measuredValue"]["value"],
-                                                    "infoStatus":     CTRArray[0]["additionalInfo"]["status"],
-                                                    "secondsIndex":   CTRArray[0]["additionalInfo"]["indexes"]["timer"],
-                                                    "paginationId":   CTRArray[0]["measurementId"],
-                                                    "logBookIndex":   CTRArray[0]["additionalInfo"]["indexes"]["logBook"],
-                                                    "signatures": [
-                                                        {
-                                                            "r":          CTRArray[0]["signature"].substring(0, 48),
-                                                            "s":          CTRArray[0]["signature"].substring(48)
-                                                        }
-                                                    ]
-                                                },
+                                                // {
+                                                //     "timestamp":      moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().zone(-1 *
+                                                //                                   CTRArray[0]["measuredValue"]["timestampLocal"]["localOffset"] +
+                                                //                                   CTRArray[0]["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
+                                                //     "value":          CTRArray[0]["measuredValue"]["value"],
+                                                //     "infoStatus":     CTRArray[0]["additionalInfo"]["status"],
+                                                //     "secondsIndex":   CTRArray[0]["additionalInfo"]["indexes"]["timer"],
+                                                //     "paginationId":   CTRArray[0]["measurementId"],
+                                                //     "logBookIndex":   CTRArray[0]["additionalInfo"]["indexes"]["logBook"],
+                                                //     "signatures": [
+                                                //         {
+                                                //             "r":          CTRArray[0]["signature"].substring(0, 48),
+                                                //             "s":          CTRArray[0]["signature"].substring(48)
+                                                //         }
+                                                //     ]
+                                                // },
 
-                                                {
-                                                    "timestamp":      moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().zone(-1 *
-                                                                                  CTRArray[0]["measuredValue"]["timestampLocal"]["localOffset"] +
-                                                                                  CTRArray[0]["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
-                                                    "value":          CTRArray[n]["measuredValue"]["value"],
-                                                    "infoStatus":     CTRArray[n]["additionalInfo"]["status"],
-                                                    "secondsIndex":   CTRArray[n]["additionalInfo"]["indexes"]["timer"],
-                                                    "paginationId":   CTRArray[n]["measurementId"],
-                                                    "logBookIndex":   CTRArray[n]["additionalInfo"]["indexes"]["logBook"],
-                                                    "signatures": [
-                                                        {
-                                                            "r":          CTRArray[n]["signature"].substring(0, 48),
-                                                            "s":          CTRArray[n]["signature"].substring(48)
-                                                        }
-                                                    ]
-                                                }
+                                                // {
+                                                //     "timestamp":      moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().zone(-1 *
+                                                //                                   CTRArray[0]["measuredValue"]["timestampLocal"]["localOffset"] +
+                                                //                                   CTRArray[0]["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
+                                                //     "value":          CTRArray[n]["measuredValue"]["value"],
+                                                //     "infoStatus":     CTRArray[n]["additionalInfo"]["status"],
+                                                //     "secondsIndex":   CTRArray[n]["additionalInfo"]["indexes"]["timer"],
+                                                //     "paginationId":   CTRArray[n]["measurementId"],
+                                                //     "logBookIndex":   CTRArray[n]["additionalInfo"]["indexes"]["logBook"],
+                                                //     "signatures": [
+                                                //         {
+                                                //             "r":          CTRArray[n]["signature"].substring(0, 48),
+                                                //             "s":          CTRArray[n]["signature"].substring(48)
+                                                //         }
+                                                //     ]
+                                                // }
 
                                             ]
 
@@ -988,6 +1020,32 @@ function StartDashboard() {
                         ]
 
                     };
+
+                    for (var _measurement of CTRArray)
+                    {
+
+                        _CTR["chargingSessions"][0]["measurements"][0]["values"].push(
+
+                                                {
+                                                    "timestamp":      moment.unix(_measurement["measuredValue"]["timestampLocal"]["timestamp"]).utc().zone(-1 *
+                                                                                  _measurement["measuredValue"]["timestampLocal"]["localOffset"] +
+                                                                                  _measurement["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
+                                                    "value":          _measurement["measuredValue"]["value"],
+                                                    "infoStatus":     _measurement["additionalInfo"]["status"],
+                                                    "secondsIndex":   _measurement["additionalInfo"]["indexes"]["timer"],
+                                                    "paginationId":   _measurement["measurementId"],
+                                                    "logBookIndex":   _measurement["additionalInfo"]["indexes"]["logBook"],
+                                                    "signatures": [
+                                                        {
+                                                            "r":          _measurement["signature"].substring(0, 48),
+                                                            "s":          _measurement["signature"].substring(48)
+                                                        }
+                                                    ]
+                                                }
+
+                        );
+
+                    }
 
                     processOpenChargingCloudFormat(_CTR);
                     return true;
@@ -1042,11 +1100,27 @@ function StartDashboard() {
             switch (result.status)
             {
 
-                case VerificationResult.ValidSignature:
-                    return '<i class="fas fa-check-circle"></i> Gültige Signatur';
+                    case VerificationResult.UnknownCTRFormat:
+                        return '<i class="fas fa-times-circle"></i> Unbekanntes Transparenzdatenformat';
 
-                default:
-                    return '<i class="fas fa-times-circle"></i> ' + result.status;
+                    case VerificationResult.EnergyMeterNotFound:
+                        return '<i class="fas fa-times-circle"></i> Ungültiger Energiezähler';
+
+                    case VerificationResult.PublicKeyNotFound:
+                        return '<i class="fas fa-times-circle"></i> Ungültiger Public Key';
+
+                    case VerificationResult.InvalidPublicKey:
+                        return '<i class="fas fa-times-circle"></i> Ungültiger Public Key';
+
+                    case VerificationResult.InvalidSignature:
+                        return '<i class="fas fa-times-circle"></i> Ungültige Signatur';
+
+                    case VerificationResult.ValidSignature:
+                        return '<i class="fas fa-check-circle"></i> Gültige Signatur';
+    
+
+                    default:
+                        return '<i class="fas fa-times-circle"></i> Ungültige Signatur';
 
             }            
 
@@ -1207,6 +1281,42 @@ function StartDashboard() {
 
     //#endregion
 
+
+    //#region verifySessionCryptoDetails
+
+    function verifySessionCryptoDetails(chargingSession: IChargingSession) : ISessionCryptoResult
+    {
+
+        var result: ISessionCryptoResult = {
+            status: SessionVerificationResult.UnknownSessionFormat
+        };
+
+        if (chargingSession              == null ||
+            chargingSession.measurements == null)
+        {
+            return result;
+        }
+
+        switch (chargingSession["@context"])
+        {
+
+            case "https://open.charging.cloud/contexts/SessionSignatureFormats/GDFCrypt01+json":
+                chargingSession.method = new GDFCrypt01(GetMeter);
+                return chargingSession.method.VerifyChargingSession(chargingSession);
+
+            case "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json":
+                chargingSession.method = new EMHCrypt01(GetMeter);
+                return chargingSession.method.VerifyChargingSession(chargingSession);
+
+            default:
+                return result;
+
+        }
+
+    }
+
+    //#endregion
+
     //#region verifyMeasurementCryptoDetails
 
     function verifyMeasurementCryptoDetails(measurementValue:  IMeasurementValue) : ICryptoResult
@@ -1226,12 +1336,24 @@ function StartDashboard() {
         {
 
             case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/GDFCrypt01+json":
-                measurementValue.method = new GDFCrypt01(GetMeter);
-                return measurementValue.method.Verify(measurementValue);
+                 measurementValue.method = new GDFCrypt01(GetMeter);
+                 return measurementValue.method.VerifyMeasurement(measurementValue);
 
             case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json":
-                measurementValue.method = new EMHCrypt01(GetMeter);
-                return measurementValue.method.Verify(measurementValue);
+                 if (measurementValue.measurement.chargingSession.method != null)
+                 {
+
+                    measurementValue.method = measurementValue.measurement.chargingSession.method;
+
+                    if (measurementValue.result == null)
+                        return measurementValue.method.VerifyMeasurement(measurementValue);
+
+                    return measurementValue.result;
+
+                 }
+
+                 measurementValue.method = new EMHCrypt01(GetMeter);
+                 return measurementValue.method.VerifyMeasurement(measurementValue);
 
             default:
                 return result;
@@ -1282,7 +1404,7 @@ function StartDashboard() {
         signatureCheckValue.innerHTML     = '';
 
         if (measurementValue.method)
-            measurementValue.method.View(measurementValue,
+            measurementValue.method.ViewMeasurement(measurementValue,
                                          infoDiv,
                                          bufferValue,
                                          hashedBufferValue,
