@@ -1,0 +1,91 @@
+[{
+   "timestamp": 1550561270,
+   "meterInfo": {
+      "firmwareVersion": "123",
+      "publicKey": "08A56CF3B51DABA44F38607BB884F62FB8BE84B4EF39D09624AB9E0910354398590DC59A5B40F43FE68A9F416F65EC76",
+      "meterId": "0901454D4800007F9F3E",
+      "type": "eHZ IW8E EMH",
+      "manufacturer": "EMH"
+   },
+   "transactionId": "1546961267168:463645022654661183:1",
+   "contract": {
+      "type": "RFID_TAG_ID",
+      "timestampLocal": {
+         "timestamp": 1546961270,
+         "localOffset": 60,
+         "seasonOffset": 0
+      },
+      "timestamp": 1550561270,
+      "id": "235DD5BB"
+   },
+   "measurementId": "00000019",
+   "measuredValue": {
+      "timestampLocal": {
+         "timestamp": 1546961270,
+         "localOffset": 60,
+         "seasonOffset": 0
+      },
+      "value": "110281",
+      "unit": "WATT_HOUR",
+      "scale": -1,
+      "valueType": "Integer64",
+      "unitEncoded": 30
+   },
+   "measurand": {
+      "id": "0100011100FF",
+      "name": "ENERGY_TOTAL"
+   },
+   "additionalInfo": {
+      "indexes": {
+         "timer": 1758261,
+         "logBook": "0004"
+      },
+      "status": "88"
+   },
+   "signature": "E1939948DDF556867C81094A7A47CCD403FBC955AC272D6B350A17658C84E9749855365B30B5928702706F34998F9D50"
+},{
+   "timestamp": 1550562602,
+   "meterInfo": {
+      "firmwareVersion": "123",
+      "publicKey": "08A56CF3B51DABA44F38607BB884F62FB8BE84B4EF39D09624AB9E0910354398590DC59A5B40F43FE68A9F416F65EC76",
+      "meterId": "0901454D4800007F9F3E",
+      "type": "eHZ IW8E EMH",
+      "manufacturer": "EMH"
+   },
+   "transactionId": "1546961267168:463645022654661183:1",
+   "contract": {
+      "type": "UNKNOWN",
+      "timestampLocal": {
+         "timestamp": 1546961270,
+         "localOffset": 60,
+         "seasonOffset": 0
+      },
+      "timestamp": 1550561270,
+      "id": "235DD5BB"
+   },
+   "measurementId": "0000001A",
+   "measuredValue": {
+      "timestampLocal": {
+         "timestamp": 1546962602,
+         "localOffset": 60,
+         "seasonOffset": 0
+      },
+      "value": "116765",
+      "unit": "WATT_HOUR",
+      "scale": -1,
+      "valueType": "Integer64",
+      "unitEncoded": 30
+   },
+   "measurand": {
+      "id": "0100011100FF",
+      "name": "ENERGY_TOTAL"
+   },
+   "additionalInfo": {
+      "indexes": {
+         "timer": 1759593,
+         "logBook": "0004"
+      },
+      "status": "88"
+   },
+   "signature": "4C3B0F17F30F9E2E07AC9D2DABC0D47A12DFE4E329644A6D4EE386F75235D3A363A248B1782B7771DD05C8080A82B1B2"
+}]

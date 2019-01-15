@@ -973,43 +973,7 @@ function StartDashboard() {
                                             "format":               "rs"
                                         },
 
-                                        "values": [
-
-                                                // {
-                                                //     "timestamp":      moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().zone(-1 *
-                                                //                                   CTRArray[0]["measuredValue"]["timestampLocal"]["localOffset"] +
-                                                //                                   CTRArray[0]["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
-                                                //     "value":          CTRArray[0]["measuredValue"]["value"],
-                                                //     "infoStatus":     CTRArray[0]["additionalInfo"]["status"],
-                                                //     "secondsIndex":   CTRArray[0]["additionalInfo"]["indexes"]["timer"],
-                                                //     "paginationId":   CTRArray[0]["measurementId"],
-                                                //     "logBookIndex":   CTRArray[0]["additionalInfo"]["indexes"]["logBook"],
-                                                //     "signatures": [
-                                                //         {
-                                                //             "r":          CTRArray[0]["signature"].substring(0, 48),
-                                                //             "s":          CTRArray[0]["signature"].substring(48)
-                                                //         }
-                                                //     ]
-                                                // },
-
-                                                // {
-                                                //     "timestamp":      moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().zone(-1 *
-                                                //                                   CTRArray[0]["measuredValue"]["timestampLocal"]["localOffset"] +
-                                                //                                   CTRArray[0]["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
-                                                //     "value":          CTRArray[n]["measuredValue"]["value"],
-                                                //     "infoStatus":     CTRArray[n]["additionalInfo"]["status"],
-                                                //     "secondsIndex":   CTRArray[n]["additionalInfo"]["indexes"]["timer"],
-                                                //     "paginationId":   CTRArray[n]["measurementId"],
-                                                //     "logBookIndex":   CTRArray[n]["additionalInfo"]["indexes"]["logBook"],
-                                                //     "signatures": [
-                                                //         {
-                                                //             "r":          CTRArray[n]["signature"].substring(0, 48),
-                                                //             "s":          CTRArray[n]["signature"].substring(48)
-                                                //         }
-                                                //     ]
-                                                // }
-
-                                            ]
+                                        "values": [ ]
 
                                     }
 
