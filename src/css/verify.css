@@ -215,14 +215,13 @@ body #outerframe #verifyframe #leftbar #input #backButtonDiv {
 }
 body #outerframe #verifyframe #leftbar #input #backButtonDiv #backButton {
   border: 0;
-  background-color: #cce5f7;
-  padding: 7px 14px 8px 13px;
-  border-radius: 50%;
+  background-color: transparent;
+  color: #b6d8f1;
   margin: 4px;
-  font-size: 180%;
+  font-size: 280%;
 }
 body #outerframe #verifyframe #leftbar #input #backButtonDiv #backButton:hover {
-  background-color: #519ad0;
+  color: #519ad0;
 }
 body #outerframe #verifyframe #leftbar #input::-webkit-scrollbar {
   display: none;
@@ -315,6 +314,7 @@ body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues {
   display: table;
   margin-top: 5px;
   width: 100%;
+  cursor: zoom-in;
 }
 body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues .measurementValue {
   display: table-row;
@@ -461,14 +461,13 @@ body #outerframe #overlay #overlayText #overlayOkButtonDiv {
 }
 body #outerframe #overlay #overlayText #overlayOkButtonDiv #overlayOkButton {
   border: 0;
-  background-color: #cce5f7;
-  padding: 7px 14px 8px 13px;
-  border-radius: 50%;
+  background-color: transparent;
+  color: #b6d8f1;
   margin: 4px;
-  font-size: 180%;
+  font-size: 280%;
 }
 body #outerframe #overlay #overlayText #overlayOkButtonDiv #overlayOkButton:hover {
-  background-color: #519ad0;
+  color: #519ad0;
 }
 body #outerframe #overlay #overlayText::-webkit-scrollbar {
   display: none;

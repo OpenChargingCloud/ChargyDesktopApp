@@ -288,15 +288,18 @@ body {
 
                         #backButton {
                             border:             0;
-                            background-color:   #cce5f7;
-                            padding:            7px 14px 8px 13px;
-                            border-radius:      50%;
+                            // background-color:   #cce5f7;
+                            // padding:            7px 14px 8px 13px;
+                            // border-radius:      50%;
+                            background-color:   transparent;
+                            color:            #b6d8f1;
                             margin:             4px;
-                            font-size:          180%;
+                            font-size:          280%;
                         }
 
                         #backButton:hover {
-                            background-color:   #519ad0;
+                            // background-color:   #519ad0;
+                            color:            #519ad0;
                         }
 
                     }
@@ -430,6 +433,7 @@ body {
                         display:            table;
                         margin-top:         5px;
                         width:              100%;
+                        cursor:             zoom-in;
 
                         .measurementValue {
 
@@ -630,15 +634,14 @@ body {
 
                     #overlayOkButton {
                         border:             0;
-                        background-color:   #cce5f7;
-                        padding:            7px 14px 8px 13px;
-                        border-radius:      50%;
+                        background-color:   transparent;
+                        color:            #b6d8f1;
                         margin:             4px;
-                        font-size:          180%;
+                        font-size:          280%;
                     }
 
                     #overlayOkButton:hover {
-                        background-color:   #519ad0;
+                        color:            #519ad0;
                     }
 
                 }
