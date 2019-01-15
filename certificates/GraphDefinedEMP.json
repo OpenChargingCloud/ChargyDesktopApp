@@ -1,0 +1,66 @@
+{
+    "@id":                    "675efc9g97t68r67dzddd7d",
+    "@context":               "https://open.charging.cloud/contexts/eMobilityOperator/certificate",
+    "name":                   "GraphDefinedEMP",
+    "description": {
+        "de":                 "E-Mobility Operator Services"
+    },
+    "email":                  "mail@graphdefined.com",
+    "web":                    "https://open.charging.cloud",
+    "logoUrl":                "...",
+    "eMobilityIds":           [ "DE*GDF" ],
+    "operations": {
+        "signCertificates": {
+            "matchId":                     "*",
+            "matchEMail":                  "*",
+            "matchEMobilityId":            "$DE\\*GDF",
+            "maxChilds":                   4
+        },
+        "EMPServices":                     true,
+        "signCommunicationEndpoints":      true,
+        "signTarifs":                      true
+    },
+    "comment":                {
+        "en":                 "Hello e-mobility world!"
+    },
+    "publicKeys": [
+        {
+            "notBefore":      "2018-11-04T16:47:01Z",
+            "notAfter":       "2023-03-12T13:54:12Z",
+            "algorithm":      "secp192r1",
+            "format":         "DER",
+            "value":          "045dd7f4baef8cef4f6103bebab5bc8e74f80509b5fe806840466e8ada3b13d106c59b7a0f9503dfabfb23bcf46947ec67",
+            "signatures":     [ ]
+        },
+        {
+            "notBefore":      "2018-11-04T16:47:01Z",
+            "notAfter":       "2023-03-12T13:54:12Z",
+            "algorithm":      "secp256k1",
+            "format":         "DER",
+            "value":          "041921d6fe41ecfbc6fa47b2aa37339da45be76e675c9b677b83a838287e42799ab4dfeddbe8817d9cc2ad7108767e4e1add03028c5f335232384f55f8a3a90ea5",
+            "signatures":     [ ]
+        }
+    ],
+    "signatures": [
+        {
+            "certificateId":    "675efc9g97t68r67dzddd7d",
+            "comment": {
+                "en":           "A really useful charging service!"
+            },
+            "revocationURIs":   [],
+            "algorithm":        "secp256k1",
+            "format":           "DER",
+            "value":            "..."
+        },
+        {
+            "certificateId":    "6586r86f7f8d8f8f6s4w6d7df7f7tf86f7",
+            "comment": {
+                "en":           "A really useful charging service!"
+            },
+            "revocationURIs":   [],
+            "algorithm":        "secp256k1",
+            "format":           "DER",
+            "value":            "3045022100aa9f873cbe0b4305ee7ddf1526fb89a00fbbf2fb3fc3f1d7ba9c3a260523463002205bbdd0a3a0696e78f64e75515811e3e4ac00562eabe16ae244aa66e8814234e8"
+        }
+    ]
+}
