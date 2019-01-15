@@ -1,2 +1,8 @@
 node_modules
 out
+src/js/ACrypt.js
+src/js/EMHCrypt01.js
+src/js/GDFCrypt01.js
+src/js/verify.js
+src/js/verifyInterfaces.js
+src/js/verifyLib.js
