@@ -60,7 +60,8 @@ body #outerframe #verifyframe #leftbar #input {
   border: 0;
   border-radius: 6px;
   background-color: #e7f5ff;
-  font-family: monospace;
+  font-family: Arial;
+  font-size: 95%;
   width: calc(100% - 60px);
   flex-grow: 1;
 }
@@ -154,14 +155,15 @@ body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSe
 body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSessions .chargingSessions {
   position: relative;
   margin-bottom: 4px;
-  padding: 5px 9px;
+  padding: 7px 11px;
   background-color: #d6e4ef;
   border-radius: 6px;
+  cursor: pointer;
 }
 body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSessions .chargingSessions .date {
   font-weight: bold;
   padding: 2px 0px 3px 0px;
-  font-size: 110%;
+  font-size: 105%;
 }
 body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSessions .chargingSessions .table {
   display: table;
@@ -177,6 +179,9 @@ body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSe
   text-align: center;
   vertical-align: top;
 }
+body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSessions .chargingSessions .table .productInfos .productText {
+  color: #212427;
+}
 body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSessions .chargingSessions .table .locationInfos {
   display: table-row;
 }
@@ -186,16 +191,19 @@ body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSe
   text-align: center;
   vertical-align: top;
 }
+body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSessions .chargingSessions .table .locationInfos .locationText {
+  color: #212427;
+}
 body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSessions .chargingSessions .verificationStatus {
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: 12px;
   text-align: center;
   font-size: 80%;
 }
 body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSessions .chargingSessions .verificationStatus i {
   display: block;
-  font-size: 200%;
+  font-size: 250%;
   padding-bottom: 4px;
 }
 body #outerframe #verifyframe #leftbar #input #chargingSessionReport #chargingSessions .chargingSessions:hover {
@@ -325,21 +333,25 @@ body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues .meas
   display: table-cell;
   padding: 2px 16px 2px 6px;
   border-radius: 4px 0px 0px 4px;
+  white-space: nowrap;
 }
 body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues .measurementValue .value {
   display: table-cell;
   text-align: right;
   padding-right: 5px;
+  white-space: nowrap;
 }
 body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues .measurementValue .unit {
   display: table-cell;
   padding-right: 10px;
+  white-space: nowrap;
 }
 body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues .measurementValue .verificationStatus {
   display: table-cell;
   padding: 2px 6px;
   border-radius: 0px 4px 4px 0px;
   width: 100%;
+  white-space: nowrap;
 }
 body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues .measurementValue:hover {
   background-color: #72b3e2;

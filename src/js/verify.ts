@@ -113,7 +113,7 @@ function StartDashboard() {
                         return '<i class="fas fa-times-circle"></i> Ungültig';
 
                     case SessionVerificationResult.ValidSignature:
-                        return '<i class="fas fa-check-circle"></i> Gültig';
+                        return '<i class="fas fa-check-circle"></i>';
     
 
                     default:
@@ -153,14 +153,14 @@ function StartDashboard() {
                 let beginDiv = chargingSessionReportDiv.appendChild(document.createElement('div'));
                 beginDiv.id        = "begin";
                 beginDiv.className = "defi";
-                beginDiv.innerHTML = parseUTC(CTR.begin).format('dddd, D. MMMM YYYY');
+                beginDiv.innerHTML = "von " + parseUTC(CTR.begin).format('dddd, D. MMMM YYYY');
             }
 
             if (CTR.end) {
                 let endDiv = chargingSessionReportDiv.appendChild(document.createElement('div'));
                 endDiv.id          = "begin";
                 endDiv.className   = "defi";
-                endDiv.innerHTML   = parseUTC(CTR.end).format('dddd, D. MMMM YYYY');
+                endDiv.innerHTML   = "bis " + parseUTC(CTR.end).format('dddd, D. MMMM YYYY');
             }
 
             //#endregion
@@ -376,7 +376,8 @@ function StartDashboard() {
                             dateDiv.className = "date";
                             dateDiv.innerHTML = beginUTC.format('dddd, D; MMM YYYY HH:mm:ss').
                                                         replace(".", "").   // Nov. -> Nov
-                                                        replace(";", ".");  // 14;  -> 14.
+                                                        replace(";", ".") +  // 14;  -> 14.
+                                                        " Uhr";
 
                             if (chargingSession.end)
                             {
@@ -386,7 +387,8 @@ function StartDashboard() {
 
                                 dateDiv.innerHTML += " - " +
                                                     (Math.floor(duration.asDays()) > 0 ? endUTC.format("dddd") + " " : "") +
-                                                    endUTC.format('HH:mm:ss');
+                                                    endUTC.format('HH:mm:ss') +
+                                                    " Uhr";
 
                             }
 
@@ -415,7 +417,10 @@ function StartDashboard() {
                         productIconDiv.innerHTML             = '<i class="fas fa-chart-pie"></i>';
 
                         var productDiv                       = productInfoDiv.appendChild(document.createElement('div'));
+                        productDiv.className                 = "productText";
                         productDiv.innerHTML = chargingSession.product != null ? chargingSession.product["@id"] + "<br />" : "";
+
+                        productDiv.innerHTML += "Ladedauer ";
                         if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days()    + " Tage " + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
                         else if (Math.floor(duration.asDays())    > 0) productDiv.innerHTML += duration.days()    + " Tag "  + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
                         else if (Math.floor(duration.asHours())   > 0) productDiv.innerHTML += duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
@@ -447,7 +452,7 @@ function StartDashboard() {
 
                                     }
 
-                                    productDiv.innerHTML += "<br />" + amount.toString() + " kWh " + measurement.name + " (" + measurement.values.length + " Messwerte)";
+                                    productDiv.innerHTML += "<br />" + translateMeasurementName(measurement.name) + " " + amount.toString() + " kWh (" + measurement.values.length + " Messwerte)";
 
                                 }
 
@@ -481,13 +486,14 @@ function StartDashboard() {
                             locationIconDiv.innerHTML             = '<i class="fas fa-map-marker-alt"></i>';
 
                             var locationDiv                       = locationInfoDiv.appendChild(document.createElement('div'));
+                            locationDiv.classList.add("locationText");
 
                             if (chargingSession.EVSEId || chargingSession.EVSE) {
 
                                 if (chargingSession.EVSE == null || typeof chargingSession.EVSE !== 'object')
                                     chargingSession.EVSE = GetEVSE(chargingSession.EVSEId);
 
-                                locationDiv.className             = "EVSE";
+                                locationDiv.classList.add("EVSE");
                                 locationDiv.innerHTML             = (chargingSession.EVSE   != null && chargingSession.EVSE.description != null
                                                                         ? firstValue(chargingSession.EVSE.description) + "<br />"
                                                                         : "") +
@@ -513,7 +519,7 @@ function StartDashboard() {
                                 if (chargingSession.chargingStation != null)
                                 {
 
-                                    locationDiv.className             = "chargingStation";
+                                    locationDiv.classList.add("chargingStation");
                                     locationDiv.innerHTML             = (chargingSession.chargingStation   != null && chargingSession.chargingStation.description != null
                                                                             ? firstValue(chargingSession.chargingStation.description) + "<br />"
                                                                             : "") +
@@ -540,7 +546,7 @@ function StartDashboard() {
                                 if (chargingSession.chargingPool != null)
                                 {
 
-                                    locationDiv.className             = "chargingPool";
+                                    locationDiv.classList.add("chargingPool");
                                     locationDiv.innerHTML             = (chargingSession.chargingPool   != null && chargingSession.chargingPool.description != null
                                                                             ? firstValue(chargingSession.chargingPool.description) + "<br />"
                                                                             : "") +
@@ -1177,7 +1183,7 @@ function StartDashboard() {
                             var timestamp                    = parseUTC(measurementValue.timestamp);
 
                             let timestampDiv                 = CreateDiv(MeasurementValueDiv, "timestamp",
-                                                                         timestamp.format('HH:mm:ss'));
+                                                                         timestamp.format('HH:mm:ss') + " Uhr");
 
                             var _value                       = measurementValue.value;
 

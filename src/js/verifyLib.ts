@@ -34,6 +34,46 @@ function parseUTC(UTCString: string|number): any {
 
 }
 
+function parseOBIS(OBIS: string): string
+{
+
+    if (OBIS.length != 12)
+        return OBIS;
+
+    // https://wiki.volkszaehler.org/software/obis
+    // https://github.com/volkszaehler/vzlogger/blob/master/src/Obis.cpp
+    // https://www.promotic.eu/en/pmdoc/Subsystems/Comm/PmDrivers/IEC62056_OBIS.htm
+    // https://www.bundesnetzagentur.de/DE/Service-Funktionen/Beschlusskammern/BK06/BK6_81_GPKE_GeLi/Mitteilung_nr_62/Anlagen/Codeliste_OBIS_Kennzahlen_2.2g.pdf?__blob=publicationFile&v=2
+    // http://www.nzr.de/download.php?id=612: 1.17.0 => Signierter Zählerstand (nur im EDL40-Modus)
+
+    // format: "A-B:C.D.E[*&]F"
+    // A, B, E, F are optional
+    // C & D are mandatory
+    var media       = parseInt(OBIS.substring( 0,  2), 16); // A
+    var channel     = parseInt(OBIS.substring( 2,  4), 16); // B
+    var indicator   = parseInt(OBIS.substring( 4,  6), 16); // C =>  1: Wirkenergie Bezug P+, kWh
+    var mode        = parseInt(OBIS.substring( 6,  8), 16); // D => 17: Signierter Momentanwert (vgl. 7)
+    var quantities  = parseInt(OBIS.substring( 8, 10), 16); // E =>  0: Total
+    var storage     = parseInt(OBIS.substring(10, 12), 16); // F
+
+    return media + "-" + channel + ":" + indicator + "." + mode + "." + quantities + "*" + storage;
+
+}
+
+function translateMeasurementName(In: string) : string
+{
+    switch (In)
+    {
+
+        case "ENERGY_TOTAL":
+            return "Energiebezug";
+
+        default:
+            return In;
+
+    }
+}
+
 function bufferToHex(buffer) : string {
 
     //return Array
