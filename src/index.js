@@ -24,7 +24,13 @@ const createWindow = () => {
   mainWindow.loadURL(`file://${__dirname}/index.html`);
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
+  // mainWindow.on("keydown", function (e) {
+  //   if (e.which === 123) {
+  //     mainWindow.webContents.openDevTools();
+  //     //require('remote').getCurrentWindow().toggleDevTools();
+  //   }
+  // });  
 
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
@@ -60,3 +66,4 @@ app.on('activate', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+
