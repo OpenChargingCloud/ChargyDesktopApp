@@ -1,8 +1,4 @@
 ﻿
-// declare var jsSHA:    any;
-// declare var elliptic: any;
-// declare var moment:   any;
-
 function ParseJSON_LD<T>(Text:    string,
     Context: string = null): T {
 
@@ -66,7 +62,7 @@ function translateMeasurementName(In: string) : string
     {
 
         case "ENERGY_TOTAL":
-            return "Energiebezug";
+            return "Bezogene Energiemenge";
 
         default:
             return In;
@@ -84,13 +80,6 @@ function bufferToHex(buffer) : string {
     return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
 
 }
-
-// function sha256_(text)
-// {
-//     var hash = new jsSHA('SHA-256', 'TEXT');
-//     hash.update(text);
-//     return hash.getHash("HEX");
-// }
 
 function hex32(val) {
     val &= 0xFFFFFFFF;

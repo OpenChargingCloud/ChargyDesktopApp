@@ -1,7 +1,7 @@
 {
   "name": "chargyapp",
   "productName": "ChargyApp",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Transparenzsoftware für die Elektromobilität",
   "main": "src/index.js",
   "scripts": {

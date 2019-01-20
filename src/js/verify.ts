@@ -605,72 +605,88 @@ function StartDashboard() {
         function tryToParseAnonymousFormat(SomeJSON) : boolean
         {
 
-            if (Array.isArray(SomeJSON))
+            if (!Array.isArray(SomeJSON))
             {
 
-                var JSONArray = SomeJSON as Array<any>;
+                var signedMeterValues = SomeJSON.signedMeterValues as Array<any>;
+                var placeInfo         = SomeJSON.placeInfo;
 
-                // [{
-                //     "timestamp": 1550533285,
-                //     "meterInfo": {
-                //        "firmwareVersion": "123",
-                //        "publicKey": "08A56CF3B51DABA44F38607BB884F62FB8BE84B4EF39D09624AB9E0910354398590DC59A5B40F43FE68A9F416F65EC76",
-                //        "meterId": "0901454D4800007F9F3E",
-                //        "type": "eHZ IW8E EMH",
-                //        "manufacturer": "EMH"
-                //     },
-                //     "transactionId": "1546933282548:-7209653592192971037:1",
-                //     "contract": {
-                //        "type": "RFID_TAG_ID",
-                //        "timestampLocal": {
-                //           "timestamp": 1546933284,
-                //           "localOffset": 60,
-                //           "seasonOffset": 0
-                //        },
-                //        "timestamp": 1550533284,
-                //        "id": "235DD5BB"
-                //     },
-                //     "measurementId": "00000007",
-                //     "measuredValue": {
-                //        "timestampLocal": {
-                //           "timestamp": 1546933285,
-                //           "localOffset": 60,
-                //           "seasonOffset": 0
-                //        },
-                //        "value": "60077",
-                //        "unit": "WATT_HOUR",
-                //        "scale": -1,
-                //        "valueType": "Integer64",
-                //        "unitEncoded": 30
-                //     },
-                //     "measurand": {
-                //        "id": "0100011100FF",
-                //        "name": "ENERGY_TOTAL"
-                //     },
-                //     "additionalInfo": {
-                //        "indexes": {
-                //           "timer": 1730275,
-                //           "logBook": "0004"
-                //        },
-                //        "status": "88"
-                //     },
-                //     "signature": "13493BBB43DA1E26C88B21ADB7AA53A7AE4FC7F6F6B916E67AD3E168421D180F021D6DD458612C53FF167781892A9DF3"
-                //  }]
+                // {
+                //     "signedMeterValues":[{
+                //         "timestamp": 1550533285,
+                //         "meterInfo": {
+                //            "firmwareVersion": "123",
+                //            "publicKey": "08A56CF3B51DABA44F38607BB884F62FB8BE84B4EF39D09624AB9E0910354398590DC59A5B40F43FE68A9F416F65EC76",
+                //            "meterId": "0901454D4800007F9F3E",
+                //            "type": "eHZ IW8E EMH",
+                //            "manufacturer": "EMH"
+                //         },
+                //         "transactionId": "1546933282548:-7209653592192971037:1",
+                //         "contract": {
+                //            "type": "RFID_TAG_ID",
+                //            "timestampLocal": {
+                //               "timestamp": 1546933284,
+                //               "localOffset": 60,
+                //               "seasonOffset": 0
+                //            },
+                //            "timestamp": 1550533284,
+                //            "id": "235DD5BB"
+                //         },
+                //         "measurementId": "00000007",
+                //         "measuredValue": {
+                //            "timestampLocal": {
+                //               "timestamp": 1546933285,
+                //               "localOffset": 60,
+                //               "seasonOffset": 0
+                //            },
+                //            "value": "60077",
+                //            "unit": "WATT_HOUR",
+                //            "scale": -1,
+                //            "valueType": "Integer64",
+                //            "unitEncoded": 30
+                //         },
+                //         "measurand": {
+                //            "id": "0100011100FF",
+                //            "name": "ENERGY_TOTAL"
+                //         },
+                //         "additionalInfo": {
+                //            "indexes": {
+                //               "timer": 1730275,
+                //               "logBook": "0004"
+                //            },
+                //            "status": "88"
+                //         },
+                //         "signature": "13493BBB43DA1E26C88B21ADB7AA53A7AE4FC7F6F6B916E67AD3E168421D180F021D6DD458612C53FF167781892A9DF3"
+                //     }],
+                //
+                //     "placeInfo": {
+                //         "evseId": "DE*BDO*74778874*1",
+                //         "address": {
+                //             "street": "Musterstraße 12",
+                //             "zipCode": "74789",
+                //             "town": "Stadt" 
+                //         },
+                //         "geoLocation": {
+                //             "lat": 12.3774,
+                //             "lon": 1.3774
+                //         }
+                //     }
+                // }
 
                 try {
 
                     var CTRArray = [];
 
-                    for (var i = 0; i < JSONArray.length; i++) {
+                    for (var i = 0; i < signedMeterValues.length; i++) {
 
-                        var JSONValue = JSONArray[i];
+                        var signedMeterValue = signedMeterValues[i];
 
-                        var _timestamp = JSONValue["timestamp"] as number;
+                        var _timestamp = signedMeterValue["timestamp"] as number;
                         if (_timestamp == null || typeof _timestamp !== 'number')
                             throw "Missing or invalid timestamp[" + i + "]!"
                         var timestamp = parseUTC(_timestamp);
 
-                        var _meterInfo = JSONValue["meterInfo"] as string;
+                        var _meterInfo = signedMeterValue["meterInfo"] as string;
                         if (_meterInfo == null || typeof _meterInfo !== 'object')
                             throw "Missing or invalid meterInfo[" + i + "]!"
 
@@ -695,14 +711,14 @@ function StartDashboard() {
                             throw "Missing or invalid meterInfo manufacturer[" + i + "]!"
 
 
-                        var _transactionId = JSONValue["transactionId"] as string;
-                            if (_transactionId == null || typeof _transactionId !== 'string')
-                                throw "Missing or invalid transactionId[" + i + "]!"
+                        var _transactionId = signedMeterValue["transactionId"] as string;
+                        if (_transactionId == null || typeof _transactionId !== 'string')
+                            throw "Missing or invalid transactionId[" + i + "]!"
 
 
-                        var _contract = JSONValue["contract"];
-                            if (_contract == null || typeof _contract !== 'object')
-                                throw "Missing or invalid contract[" + i + "]!"
+                        var _contract = signedMeterValue["contract"];
+                        if (_contract == null || typeof _contract !== 'object')
+                            throw "Missing or invalid contract[" + i + "]!"
 
                         var _contract_type = _contract["type"] as string;
                         if (_contract_type == null || typeof _contract_type !== 'string')
@@ -733,12 +749,12 @@ function StartDashboard() {
                             throw "Missing or invalid contract type[" + i + "]!"
 
 
-                        var _measurementId = JSONValue["measurementId"] as string;
+                        var _measurementId = signedMeterValue["measurementId"] as string;
                         if (_measurementId == null || typeof _measurementId !== 'string')
                             throw "Missing or invalid measurementId[" + i + "]!"
 
 
-                        var _measuredValue = JSONValue["measuredValue"];
+                        var _measuredValue = signedMeterValue["measuredValue"];
                         if (_measuredValue == null || typeof _measuredValue !== 'object')
                             throw "Missing or invalid measuredValue[" + i + "]!"
 
@@ -779,7 +795,7 @@ function StartDashboard() {
                             throw "Missing or invalid measuredValue unitEncoded[" + i + "]!"
 
 
-                        var _measurand = JSONValue["measurand"];
+                        var _measurand = signedMeterValue["measurand"];
                             if (_measurand == null || typeof _measurand !== 'object')
                                 throw "Missing or invalid measurand[" + i + "]!"
 
@@ -792,7 +808,7 @@ function StartDashboard() {
                             throw "Missing or invalid measurand name[" + i + "]!"
 
 
-                        var _additionalInfo = JSONValue["additionalInfo"];
+                        var _additionalInfo = signedMeterValue["additionalInfo"];
                             if (_additionalInfo == null || typeof _additionalInfo !== 'object')
                                 throw "Missing or invalid additionalInfo[" + i + "]!"
 
@@ -813,9 +829,9 @@ function StartDashboard() {
                             throw "Missing or invalid additionalInfo status[" + i + "]!"
 
 
-                        var _signature = JSONValue["signature"] as string;
-                            if (_signature == null || typeof _signature !== 'string')
-                                throw "Missing or invalid signature[" + i + "]!"
+                        var _signature = signedMeterValue["signature"] as string;
+                        if (_signature == null || typeof _signature !== 'string')
+                            throw "Missing or invalid signature[" + i + "]!"
 
 
                         var aaa = moment.unix(_contract_timestampLocal_timestamp).utc();
@@ -869,6 +885,42 @@ function StartDashboard() {
 
                     }
 
+
+                    var evseId = placeInfo["evseId"] as string;
+                    if (evseId == null || typeof evseId !== 'string')
+                        throw "Missing or invalid EVSE Id!"
+
+
+                    var address = placeInfo["address"];
+                    if (address == null)
+                        throw "Missing or invalid address!"
+
+                    var address_street = address["street"];
+                    if (address_street == null || typeof address_street !== 'string')
+                        throw "Missing or invalid address street!"
+
+                    var address_zipCode = address["zipCode"];
+                    if (address_zipCode == null || typeof address_zipCode !== 'string')
+                        throw "Missing or invalid address zipCode!"
+
+                    var address_town = address["town"];
+                    if (address_town == null || typeof address_town !== 'string')
+                        throw "Missing or invalid address town!"
+
+           
+                    var geoLocation = placeInfo["geoLocation"];
+                    if (geoLocation == null)
+                        throw "Missing or invalid geoLocation!"
+
+                    var geoLocation_lat = geoLocation["lat"];
+                    if (geoLocation_lat == null || typeof geoLocation_lat !== 'number')
+                        throw "Missing or invalid geoLocation latitude!"
+
+                    var geoLocation_lon = geoLocation["lon"];
+                    if (geoLocation_lon == null || typeof geoLocation_lon !== 'number')
+                        throw "Missing or invalid geoLocation longitude!"
+
+
                     var n = CTRArray.length-1;
                     var _CTR: any = { //IChargeTransparencyRecord = {
 
@@ -890,24 +942,22 @@ function StartDashboard() {
 
                         "chargingStations": [
                             {
-                                "@id":                      "DE*GEF*STATION*CI*TESTS*3*A",
-                                "description": {
-                                    "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
-                                },
-                                "gps":                      { "lat": 50.397945, "lng": 10.4404 },
+                                "@id":                      evseId,
+                                // "description": {
+                                //     "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
+                                // },
+                                "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
                                 "address": {
-                                    "street":               "Biberweg",
-                                    "houseNumber":          "18",
-                                    "postalCode":           "07749",
-                                    "city":                 "Jena",
-                                    "country":              "Deutschland"
+                                    "street":               address_street,
+                                    "postalCode":           address_zipCode,
+                                    "city":                 address_town
                                 },
                                 "EVSEs": [
                                     {
-                                        "@id":                      "DE*GEF*EVSE*CI*TESTS*3*A*1",
-                                        "description": {
-                                            "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
-                                        },
+                                        "@id":                      evseId,
+                                        // "description": {
+                                        //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
+                                        // },
                                         "sockets":                  [ { } ],
                                         "meters": [
                                             {
@@ -940,7 +990,7 @@ function StartDashboard() {
                                 "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
                                 "begin":                        moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
                                 "end":                          moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
-                                "chargingStationId":            "DE*GEF*EVSE*CI*TESTS*3*A",
+                                "EVSEId":                       evseId,
                     
                                 "authorizationStart": {
                                     "@id":                      CTRArray[0]["contract"]["id"],
