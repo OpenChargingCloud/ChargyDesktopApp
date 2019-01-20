@@ -18,15 +18,15 @@ function firstValue(obj) {
 for (var a in obj) return obj[a];
 }
 
-function parseUTC(UTCString: string|number): any {
+function parseUTC(UTCTime: string|number): any {
 
     var moment = require('moment');
 
     moment.locale(window.navigator.language);
 
-    return typeof UTCString === 'string'
-               ? moment.utc(UTCString).local()
-               : moment.utc(UTCString.toString()).local()
+    return typeof UTCTime === 'string'
+               ? moment.utc(UTCTime).local()
+               : moment.unix(UTCTime).local()
 
 }
 

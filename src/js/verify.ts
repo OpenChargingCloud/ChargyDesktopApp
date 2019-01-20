@@ -995,7 +995,7 @@ function StartDashboard() {
                                 "authorizationStart": {
                                     "@id":                      CTRArray[0]["contract"]["id"],
                                     "type":                     CTRArray[0]["contract"]["type"],
-                                    "timestamp":                moment.unix(CTRArray[0]["contract"]["timestampLocal"]["timestamp"]).utc().zone(-1 *
+                                    "timestamp":                moment.unix(CTRArray[0]["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
                                                                             CTRArray[0]["contract"]["timestampLocal"]["localOffset"] +
                                                                             CTRArray[0]["contract"]["timestampLocal"]["seasonOffset"]).format(),
                                 },
@@ -1047,7 +1047,7 @@ function StartDashboard() {
                         _CTR["chargingSessions"][0]["measurements"][0]["values"].push(
 
                                                 {
-                                                    "timestamp":      moment.unix(_measurement["measuredValue"]["timestampLocal"]["timestamp"]).utc().zone(-1 *
+                                                    "timestamp":      moment.unix(_measurement["measuredValue"]["timestampLocal"]["timestamp"]).utc().utcOffset(
                                                                                   _measurement["measuredValue"]["timestampLocal"]["localOffset"] +
                                                                                   _measurement["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
                                                     "value":          _measurement["measuredValue"]["value"],
