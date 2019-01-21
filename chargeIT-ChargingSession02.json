@@ -102,7 +102,7 @@
          "address": {
              "street": "Musterstraße 12",
              "zipCode": "74789",
-             "town": "Stadt" 
+             "town": "Musterstadt" 
           },
          "geoLocation": {
              "lat": 12.3774,

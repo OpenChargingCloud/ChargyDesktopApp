@@ -49,12 +49,13 @@
                     
                     <div id="inputInfos">
 
-                        <div id="text">Bitte geben Sie hier die signierten Ladeinformationen ein...</div>
+                        <div id="text">Sie können den Transparenzdatensatz zu Ihren Ladevorgängen entweder aus
+                                       einer Datei laden oder über die Zwischenablage einfügen...</div>
 
                         <div id="buttonsDiv">
-                            <button id="fileInputButton"><i class="far fa-folder-open"></i><br />Datei laden</button>
+                            <button id="fileInputButton"><i class="far fa-folder-open"></i><br />Datensatz<br />laden</button>
                             <input id="fileInput" type="file" style="display: none"/>
-                            <button id="pasteButton"><i class="fas fa-paste"></i><br />Einfügen</button>
+                            <button id="pasteButton"><i class="fas fa-paste"></i><br />Datensatz<br />einfügen</button>
                         </div>
 
                         <div id="loadingErrors">
@@ -91,12 +92,12 @@
                 <div id="map"></div>
 
                 <div id="evseTarifInfos">
-                   <!--  <div id="headline">Ladestations- und Tarifinformationen</div>
-                    Keine Ladestations- oder Tarifinformationen verfügbar!<br /><br /> -->
                 </div>
 
-                <div id="results">
-                    <!--<i class="fas fa-check-circle"></i> Korrekte Signatur-->
+                <div id="feedback">
+                    Falsche Daten, falsche Signaturen oder sonstige Fragen?<br />
+                    Treten Sie mit uns in Kontakt:<br />
+                    <button id="showIssueTracker">Mängel melden</button>
                 </div>
 
             </div>
@@ -134,7 +135,44 @@
 
                 <div id="overlayOkButtonDiv">
                     <button id="overlayOkButton"><i class="fas fa-arrow-alt-circle-left"></i></button>
-                    <!-- &#129092; -->
+                </div>
+
+            </div>
+        </div>
+
+        <div id="issueTracker" style="display: none">
+            <div id="issueTrackerText">
+
+                <div id="headline">
+                    Einen Mängel melden...
+                </div>
+
+                <form id="newIssue">
+
+                    <div class="label">Bitte wählen sie eine oder mehrere Kategorien...</div>
+                    <input type="checkbox" name="category" value="invalidCTR"> Transparenzdatensatz konnte nicht geladen werden<br>
+                    <input type="checkbox" name="category" value="invalidSignatures"> Signatur(en) im Transparenzdatensatz sind ungültig<br>
+                    <input type="checkbox" name="category" value="InvalidStationData"> Falsche Daten zu einer Ladestation<br>
+                    <input type="checkbox" name="category" value="InvalidStationData"> Fehler in der Transparenzsoftware<br>
+                    <input type="checkbox" name="category" value="other"> Sonstiges Problem<br>
+
+                    <div class="label">Bitte beschreiben Sie den Mängel ein wenig genauer...</div>
+                    <textarea id="description"></textarea>
+
+                    <div class="label">Ihre Kontaktdaten, falls Rückfragen notwendig sein sollten...</div>
+                    <input type="text" id="name"  placeholder="Ihr Name"><br /> 
+                    <input type="text" id="phone" placeholder="Ihre Telefonnummer"><br /> 
+                    <input type="text" id="email" placeholder="Ihre E-Mail Adresse"><br /> 
+
+                    <div id="sendIssueBox">
+                        <input type="checkbox" name="acceptsPrivacy"> Datenschutzerklärung akzeptiert?<br />
+                        <button id="sendIssue">Mängel melden</button>
+                    </div>
+
+                </form>
+
+                <div id="issueBackButtonDiv">
+                    <button id="issueBackButton"><i class="fas fa-arrow-alt-circle-left"></i></button>
                 </div>
 
             </div>

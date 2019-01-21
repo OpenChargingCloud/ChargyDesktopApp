@@ -72,8 +72,9 @@ body #outerframe #verifyframe #leftbar #input #inputInfos {
   width: 100%;
 }
 body #outerframe #verifyframe #leftbar #input #inputInfos #text {
-  display: none;
+  text-align: center;
   font-size: 110%;
+  line-height: 130%;
 }
 body #outerframe #verifyframe #leftbar #input #inputInfos #buttonsDiv {
   padding: 8px 0px 15px 0px;
@@ -83,6 +84,7 @@ body #outerframe #verifyframe #leftbar #input #inputInfos #buttonsDiv {
 }
 body #outerframe #verifyframe #leftbar #input #inputInfos #buttonsDiv button {
   font-size: 1.1vw;
+  line-height: 125%;
   width: 10vw;
   height: 10vw;
   padding: 0;
@@ -359,20 +361,26 @@ body #outerframe #verifyframe #rightbar #evseTarifInfos .measurementValues .meas
 body #outerframe #verifyframe #rightbar #evseTarifInfos::-webkit-scrollbar {
   display: none;
 }
-body #outerframe #verifyframe #rightbar #results {
+body #outerframe #verifyframe #rightbar #feedback {
   width: 100%;
   min-height: 34%;
   padding: 20px 20px;
   width: calc(100% - 40px);
   font-family: Arial;
   font-weight: bold;
+  color: #6488a3;
+  line-height: 130%;
 }
-body #outerframe #verifyframe #rightbar #results i {
-  /*color:              #5ab337;*/
-  font-size: 400%;
-  position: relative;
-  top: 18px;
-  padding-right: 15px;
+body #outerframe #verifyframe #rightbar #feedback button {
+  border: 0;
+  margin-top: 10px;
+  padding: 8px 15px;
+  background-color: #b6d8f1;
+  color: #6488a3;
+  border-radius: 4px;
+}
+body #outerframe #verifyframe #rightbar #feedback button:hover {
+  background-color: #a6c8e1;
 }
 body #outerframe #overlay {
   position: absolute;
@@ -482,6 +490,80 @@ body #outerframe #overlay #overlayText #overlayOkButtonDiv #overlayOkButton:hove
   color: #519ad0;
 }
 body #outerframe #overlay #overlayText::-webkit-scrollbar {
+  display: none;
+}
+body #outerframe #issueTracker {
+  position: absolute;
+  font-family: sans-serif;
+  font-size: 90%;
+  background-color: rgba(0, 0, 0, 0.3);
+  width: 100vw;
+  height: 100vh;
+  margin: auto;
+}
+body #outerframe #issueTracker #issueTrackerText {
+  position: relative;
+  top: 5%;
+  width: calc(90% - 20px);
+  height: calc(90% - 50px);
+  margin: auto;
+  padding: 1px;
+  background-color: #f5f5f5;
+  border: 10px solid #f5f5f5;
+  border-radius: 6px;
+  box-shadow: 2px 0 16px 0 rgba(0, 0, 0, 0.3);
+  overflow-y: scroll;
+  z-index: 9000;
+}
+body #outerframe #issueTracker #issueTrackerText form {
+  padding: 20px;
+}
+body #outerframe #issueTracker #issueTrackerText form .label {
+  margin: 15px 0px 4px 0px;
+}
+body #outerframe #issueTracker #issueTrackerText form textarea {
+  width: 100%;
+  min-height: 20vh;
+  resize: vertical;
+  border: 0;
+  border-radius: 4px;
+}
+body #outerframe #issueTracker #issueTrackerText form input[type=text] {
+  padding: 2px 3px;
+  border: 0;
+  border-radius: 3px;
+  margin-bottom: 3px;
+}
+body #outerframe #issueTracker #issueTrackerText form #sendIssueBox {
+  margin-top: 25px;
+  text-align: center;
+}
+body #outerframe #issueTracker #issueTrackerText form #sendIssueBox button {
+  margin-top: 10px;
+  padding: 8px 15px;
+  border: 0;
+  border-radius: 4px;
+  background-color: #b6d8f1;
+}
+body #outerframe #issueTracker #issueTrackerText form #sendIssueBox button:hover {
+  background-color: #519ad0;
+}
+body #outerframe #issueTracker #issueTrackerText #issueBackButtonDiv {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+}
+body #outerframe #issueTracker #issueTrackerText #issueBackButtonDiv #issueBackButton {
+  border: 0;
+  background-color: transparent;
+  color: #b6d8f1;
+  margin: 4px;
+  font-size: 280%;
+}
+body #outerframe #issueTracker #issueTrackerText #issueBackButtonDiv #issueBackButton:hover {
+  color: #519ad0;
+}
+body #outerframe #issueTracker #issueTrackerText::-webkit-scrollbar {
   display: none;
 }
 body #outerframe .fullScreen {

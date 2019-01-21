@@ -113,7 +113,7 @@ function StartDashboard() {
                         return '<i class="fas fa-times-circle"></i> Ungültig';
 
                     case SessionVerificationResult.ValidSignature:
-                        return '<i class="fas fa-check-circle"></i>';
+                        return '<i class="fas fa-check-circle"></i> Gültig';
     
 
                     default:
@@ -1209,7 +1209,7 @@ function StartDashboard() {
                                                                  "Messung");
 
                     let MeasurementIdValueDiv        = CreateDiv(MeasurementDiv,     "measurementIdValue",
-                                                                 measurement.name + " (OBIS: " + measurement.obis + ")");
+                                                                 measurement.name + " (OBIS: " + parseOBIS(measurement.obis) + ")");
 
                     //#endregion
 
@@ -1282,19 +1282,19 @@ function StartDashboard() {
     function captureChargingSession(cs: IChargingSession) {
         return function(this: HTMLDivElement, ev: MouseEvent) {
 
-                   //#region Highlight the selected charging session...
+            //#region Highlight the selected charging session...
 
-                   var AllChargingSessionsDivs = document.getElementsByClassName("chargingSessions");
-                   for(var i=0; i<AllChargingSessionsDivs.length; i++)
-                       AllChargingSessionsDivs[i].classList.remove("activated");
+            var AllChargingSessionsDivs = document.getElementsByClassName("chargingSessions");
+            for(var i=0; i<AllChargingSessionsDivs.length; i++)
+                AllChargingSessionsDivs[i].classList.remove("activated");
 
-                   this.classList.add("activated");
+            this.classList.add("activated");
 
-                   //#endregion
+            //#endregion
 
-                   showChargingSessionDetails(cs);
+            showChargingSessionDetails(cs);
 
-               };
+        };
     }
 
     //#endregion
@@ -1452,6 +1452,14 @@ function StartDashboard() {
     //#endregion
 
     //#endregion
+
+
+    function showIssueTracker()
+    {
+
+        issueTracker.style.display = 'block';
+
+    }
 
 
 
@@ -1615,7 +1623,15 @@ function StartDashboard() {
     var chargingSessionReportDiv  = <HTMLDivElement>      document.getElementById('chargingSessionReport');
     var rightbar                  = <HTMLDivElement>      document.getElementById('rightbar');
     var evseTarifInfosDiv         = <HTMLDivElement>      document.getElementById('evseTarifInfos');
-    var resultsDiv                = <HTMLDivElement>      document.getElementById('results');
+
+    var feedbackDiv               = <HTMLDivElement>      document.getElementById('feedback');
+
+    var issueTracker              = <HTMLDivElement>      document.getElementById('issueTracker');
+    var showIssueTrackerButton    = <HTMLButtonElement>   document.getElementById('showIssueTracker');
+    showIssueTrackerButton.onclick = function (this: HTMLElement, ev: MouseEvent) { showIssueTracker(); }
+    var issueBackButton           = <HTMLButtonElement>   document.getElementById('issueBackButton');
+    issueBackButton.onclick = function (this: HTMLElement, ev: MouseEvent) { issueTracker.style.display = 'none'; }
+
     var backButtonDiv             = <HTMLDivElement>      document.getElementById('backButtonDiv');
     backButtonDiv.onclick = function (this: HTMLElement, ev: MouseEvent) {
         inputInfosDiv.style.display             = 'flex';
