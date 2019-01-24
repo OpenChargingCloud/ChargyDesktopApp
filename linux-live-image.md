@@ -1,53 +1,46 @@
 # Creating a Linux Live ISO Image
 
+This documentation is based on the documentation of [TRuDI Live CD](https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master), another project at the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de). 
 
-# Schritte zur Erstellung eines Live Linux ISO-Image
-
-Original: https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master
-
-Diese Beschreibung basiert auf der Anleitung "Live-Ubuntu selbstgebaut" aus dem [c't Heft 11/2016](https://www.heise.de/ct/ausgabe/2016-11-Selbstgemachtes-Live-Ubuntu-fuer-DVD-und-USB-Stick-3198759.html), des Autors Mirko Dölle.
-
-Als Grundlage wurde die amd64-Variante der Ubuntu-Installations-DVD (die TRuDI ist eine 64-Bit-Applikation) der LTS Version 18.04.1 LTS verwendet.
+Als Grundlage wurde die 
 
 
-# Original ISO-image per loop mounten
+# Mounting of the original ISO-image
+
+We use Ubuntu 18.04.1 LTS (amd64) for bootstrapping the ISO image.
+
 ```
 wget http://ftp-stud.hs-esslingen.de/pub/Mirrors/releases.ubuntu.com/18.04.1/ubuntu-18.04.1-desktop-amd64.iso
+
 sudo modprobe loop
 sudo modprobe iso9660
 mkdir cd-mount
 sudo mount -t iso9660 ./ubuntu-18.04.1-desktop-amd64.iso cd-mount/ -o ro,loop
 ```
 
-# Verzeichnis fuer Live-System-Daten anlegen
+# Creating a directory of the new live system
 ```
-mkdir chargy_LiveCD
-mkdir chargy_LiveCD/iso
-mkdir chargy_LiveCD/iso/casper
-cp -rp cd-mount/EFI cd-mount/.disk cd-mount/boot cd-mount/isolinux cd-mount/pool cd-mount/dists  chargy_LiveCD/iso/
+mkdir ChargyLiveCD
+mkdir ChargyLiveCD/iso
+mkdir ChargyLiveCD/iso/casper
+cp -rp cd-mount/EFI cd-mount/.disk cd-mount/boot cd-mount/isolinux cd-mount/pool cd-mount/dists  ChargyLiveCD/iso/
 
 sudo apt install debootstrap
-sudo debootstrap --arch amd64 xenial squashfs
+sudo debootstrap --arch amd64 cosmic squashfs
 ```
 
-Um das erzeugte Live-System in Ihr laufendes System einzubinden, führen Sie folgende Befehle aus:
-
+Mount some virtual file systems into your change-root-environment and prepare this system for the installation of the base system:
 ```
 sudo mount --bind /dev squashfs/dev
 sudo mount -t devpts devpts squashfs/dev/pts
 sudo mount -t proc proc squashfs/proc
 sudo mount -t sysfs sysfs squashfs/sys
-```
 
-Um Pakete über die Offizielle Quellen beziehen zu können, führen Sie folgendes aus:
-
-```
 sudo cp /etc/resolv.conf squashfs/etc
 sudo cp /etc/apt/sources.list squashfs/etc/apt
 ```
 
-Nun kann man die Quellen, und danach essentielle Softwarepakete aktualisieren:
-
+Now you can download and install security updates and the required additional software:
 ```
 sudo chroot squashfs apt update
 sudo chroot squashfs apt upgrade
@@ -56,26 +49,16 @@ sudo chroot squashfs apt install linux-image-generic tzdata console-setup casper
 sudo chroot squashfs apt install --no-install-recommends ubuntu-desktop evince git ssh firefox firefox-locale-de gedit
 ```
 
-Für die deutsche Sprachunterstützung sind folgende Pakete nötig: 
-
+As the Chargy Live DVD is intended for the German "Eichrecht" we activate "German" as system language:
 ```
 sudo chroot squashfs apt install language-pack-de language-pack-gnome-de wngerman wogerman wswiss
-```
-
-Setzen Sie Deutsch als Standardsprache wie folgt:
-```
 sudo chroot squashfs update-locale LANG=de_DE.UTF-8 LANGUAGE=de_DE LC_ALL=de_DE.UTF-8
 ```
 
-Ã„ndern sie folgende Datei, um die deutsche Tastatur als Standard beim Bootvorgang einzustellen:
-
+Activate a German keyboard layout by editing the following file:
 ```
 sudo joe squashfs/etc/default/keyboard 
-```
 
-Der Dateiinhalt sollte wie folgt aussehen:
-
-```
 XKBMODEL="pc105"
 XKBLAYOUT="de,us"
 XKBVARIANT=""
@@ -83,12 +66,11 @@ XKBOPTIONS=""
 BACKSPACE="guess"
 ```
 
-Die Zeitzone auf "Europe/Berlin" stellen
+Change the timezone to "Europe/Berlin":
 ```
 #sudo echo "Europe/Berlin" > squashfs/etc/timezone
 sudo chroot squashfs dpkg-reconfigure tzdata
 ```
-
 
 Kopieren Sie das Installationspaket der aktuelle TRuDI-Version in den ``squashfs`` Verzeichnisbaum und führen Sie die Installation aus. (alle abhängigen Pakete werden automatisch mitinstalliert):
 
