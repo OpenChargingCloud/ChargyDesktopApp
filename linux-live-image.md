@@ -2,8 +2,7 @@
 
 This documentation is based on the documentation of the [TRuDI Live CD](https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master), which is a similar project of the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) for the transparency of smart meters. 
 
-
-## Mounting of the original ISO-image
+### Downloading and mounting of the original Ubuntu ISO image
 
 We use Ubuntu 18.04.1 LTS (amd64) for bootstrapping the ISO image.
 
@@ -16,7 +15,7 @@ mkdir cd-mount
 sudo mount -t iso9660 ./ubuntu-18.04.1-desktop-amd64.iso cd-mount/ -o ro,loop
 ```
 
-## Creating a directory of the new live system
+### Creating a directory for the new Ubuntu live system
 ```
 mkdir ChargyLiveCD
 mkdir ChargyLiveCD/iso
