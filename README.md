@@ -17,7 +17,7 @@ Install nodejs on your system. For more details please check https://nodejs.org
 On Linux and Mac OS X:
 
 ```
-$ curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
+$ curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
 $ apt install nodejs
 
 $ npm install -g electron-forge
