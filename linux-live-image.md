@@ -26,6 +26,7 @@ mkdir ChargyLiveCD/iso/casper
 cp -rp cd-mount/EFI cd-mount/.disk cd-mount/boot cd-mount/isolinux cd-mount/pool cd-mount/dists  ChargyLiveCD/iso/
 
 sudo apt install debootstrap
+cd ChargyLiveCD
 sudo debootstrap --arch amd64 cosmic squashfs
 ```
 
