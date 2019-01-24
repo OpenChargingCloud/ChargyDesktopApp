@@ -49,7 +49,7 @@ sudo chroot squashfs apt update
 sudo chroot squashfs apt upgrade
 
 sudo chroot squashfs apt install linux-image-generic tzdata console-setup casper ubiquity-casper lupin-casper
-sudo chroot squashfs apt install --no-install-recommends ubuntu-desktop evince git ssh
+sudo chroot squashfs apt install --no-install-recommends ubuntu-desktop evince git ssh firefox firefox-locale-de gedit
 ```
 
 Für die deutsche Sprachunterstützung sind folgende Pakete nötig: 
@@ -78,6 +78,13 @@ XKBVARIANT=""
 XKBOPTIONS="" 
 BACKSPACE="guess"
 ```
+
+Die Zeitzone auf "Europe/Berlin" stellen
+```
+#sudo echo "Europe/Berlin" > squashfs/etc/timezone
+sudo chroot squashfs dpkg-reconfigure tzdata
+```
+
 
 Kopieren Sie das Installationspaket der aktuelle TRuDI-Version in den ``squashfs`` Verzeichnisbaum und führen Sie die Installation aus. (alle abhängigen Pakete werden automatisch mitinstalliert):
 
@@ -215,7 +222,7 @@ Ausser dem Abfangen von Tastenkombinationen, kann man auch in den systemd Prozes
 ```
 NAutoVTs=0
 ReserveVT=0
-``` 
+``` #
 
 
 ### Bootvorgang anpassen
@@ -375,12 +382,12 @@ logo='/usr/share/unity-greeter/trudi_greeter_logo.png'
 Erstellen Sie nun das ISO-Image wie folgt. Das Ergebnis ist eine neue Datei namens _live.iso_ in Ihrem Arbeitsverzeichnis: 
 
 ```
-sudo chroot squashfs update-initramfs -k all -c
+sudo chroot squashfs update-initramfs -k all -c -v
 #sudo zcat squashfs/boot/initrd.img* | lzma -9c > iso/casper/initrd.lz
-sudo cat squashfs/boot/initrd.img* | lzma -9c > iso/casper/initrd.lz
+sudo cat squashfs/boot/initrd.img* > iso/casper/initrd.lz
 sudo cp squashfs/boot/vmlinuz* iso/casper/vmlinuz.efi
 sudo umount squashfs/dev/pts squashfs/dev squashfs/proc squashfs/sys
-sudo rm squashfs/etc/resolv.conf 
+sudo echo "nameserver 8.8.8.8" > squashfs/etc/resolv.conf
 sudo mksquashfs squashfs iso/casper/filesystem.squashfs -noappend
 sudo genisoimage -cache-inodes -r -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot -o live.iso iso
 ```
@@ -416,3 +423,7 @@ git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
 cd ChargyDesktopApp
 npm install
 ```
+
+
+
+https://askubuntu.com/questions/48535/how-to-customize-the-ubuntu-live-cd#
