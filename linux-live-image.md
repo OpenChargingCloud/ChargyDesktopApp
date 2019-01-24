@@ -74,8 +74,8 @@ sudo chroot squashfs dpkg-reconfigure tzdata
 Kopieren Sie das Installationspaket der aktuelle TRuDI-Version in den ``squashfs`` Verzeichnisbaum und führen Sie die Installation aus. (alle abhängigen Pakete werden automatisch mitinstalliert):
 
 ```
-sudo cp ChargyDesktopApp/out/make/chargyapp_0.13.0_amd64.deb ./squashfs/usr/share/
-sudo chroot squashfs apt install /usr/share/chargyapp_0.13.0_amd64.deb
+sudo cp ../ChargyDesktopApp/out/make/chargyapp_0.13.0_amd64.deb ./squashfs/usr/share/
+sudo chroot squashfs dpkg -i /usr/share/chargyapp_0.13.0_amd64.deb
 sudo rm ./squashfs/usr/share/chargyapp_0.13.0_amd64.deb
 ```
 
