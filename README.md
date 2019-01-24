@@ -49,6 +49,7 @@ chmod +x run.sh
 
 ### Building a Windows Installer
 
+The Windows version can only be build on a Windows machine and uses [Squirrel](https://github.com/Squirrel/Squirrel.Windows) as an installation and update framework.
 ```
 electron-forge make
 ```
@@ -56,7 +57,7 @@ electron-forge make
 
 ### Building a Linux package
 
-On Debian GNU/Linux and Ubuntu you can run the following commands to create a Debian software package. More information about this process can be found at: https://github.com/electron-userland/electron-installer-debian
+On a Debian GNU/Linux or Ubuntu machine you can run the following commands to create a Debian software package. More information about this process can be found at: https://github.com/electron-userland/electron-installer-debian
 ```
 sudo apt install debootstrap
 electron-forge make
