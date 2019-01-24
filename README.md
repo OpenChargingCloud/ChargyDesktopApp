@@ -64,4 +64,4 @@ $ apt install out/make/chargyapp_X.Y.Z_amd64.deb
 
 ### Building a Linux Live ISO Image
 
-For sepcial users like the  chargy is also available as a Linux Live CD/DVD. The creation of the ISO image is described in the following document [linux-live-image](https://github.com/OpenChargingCloud/ChargyDesktopApp/blob/master/linux-live-image.md)
+For special users like the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) chargy is also available as a Linux Live CD/DVD. The creation of the ISO image is described in the following document [linux-live-image](https://github.com/OpenChargingCloud/ChargyDesktopApp/blob/master/linux-live-image.md).
