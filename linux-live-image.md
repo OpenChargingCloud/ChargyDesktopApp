@@ -390,25 +390,4 @@ Danach wird empfohlen, das Hybrid-Image auf das USB-Medium zu __klonen__. Dafür
 Sie können zwar Programme wie das _Unetbootin_ verwenden, um das Image auf das USB-Medium zu übertragen. Das _Unetbootin_ benötigt sogar das Hybrid-Image nicht, sondern Sie können ein normales ISO-Image auf das USB-Medium damit übertragen. Nachteil von diesen Programmen ist, dass Sie meistens einen eigenen Bootloader anlegen, und damit nicht weiter sichergestellt ist was in dem Absatz: **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_ gefordert wird.
 
 
-
-
-## Install Chargy
-
-```
-sudo apt install curl
-sudo curl -sL https://deb.nodesource.com/setup_11.x | sudo bash -
-sudo apt install nodejs
-sudo npm install -g sass
-sudo npm install -g typescript
-```
-
-```
-sudo apt install git
-git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
-cd ChargyDesktopApp
-npm install
-```
-
-
-
 https://askubuntu.com/questions/48535/how-to-customize-the-ubuntu-live-cd#
