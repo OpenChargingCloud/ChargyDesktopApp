@@ -43,7 +43,8 @@
         "packageManager": "npm"
       },
       "electronWinstallerConfig": {
-        "name": "chargyapp"
+        "name": "chargyapp",
+        "loadingGif": "chargy_Ladebildschirm_V4.gif"
       },
       "electronInstallerDebian": {},
       "electronInstallerRedhat": {},
