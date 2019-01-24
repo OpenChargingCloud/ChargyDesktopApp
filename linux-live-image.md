@@ -45,6 +45,7 @@ Now you can download and install security updates and the required additional so
 ```
 sudo chroot squashfs apt update
 sudo chroot squashfs apt upgrade
+sudo chroot squashfs apt autoremove
 
 sudo chroot squashfs apt install linux-image-generic tzdata console-setup casper ubiquity-casper lupin-casper
 sudo chroot squashfs apt install --no-install-recommends ubuntu-desktop evince git ssh firefox firefox-locale-de gedit
