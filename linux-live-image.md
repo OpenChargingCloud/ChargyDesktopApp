@@ -222,7 +222,7 @@ Ausser dem Abfangen von Tastenkombinationen, kann man auch in den systemd Prozes
 ```
 NAutoVTs=0
 ReserveVT=0
-``` #
+```
 
 
 ### Bootvorgang anpassen
