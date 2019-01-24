@@ -1,18 +1,22 @@
-Original: https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master
+# Creating a Linux Live ISO Image
+
 
 # Schritte zur Erstellung eines Live Linux ISO-Image
 
+Original: https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master
+
 Diese Beschreibung basiert auf der Anleitung "Live-Ubuntu selbstgebaut" aus dem [c't Heft 11/2016](https://www.heise.de/ct/ausgabe/2016-11-Selbstgemachtes-Live-Ubuntu-fuer-DVD-und-USB-Stick-3198759.html), des Autors Mirko Dölle.
 
-Als Grundlage wurde die amd64-Variante der Ubuntu-Installations-DVD (die TRuDI ist eine 64-Bit-Applikation) der LTS Version 16.04 verwendet.
+Als Grundlage wurde die amd64-Variante der Ubuntu-Installations-DVD (die TRuDI ist eine 64-Bit-Applikation) der LTS Version 18.04.1 LTS verwendet.
 
 
 # Original ISO-image per loop mounten
 ```
+wget http://ftp-stud.hs-esslingen.de/pub/Mirrors/releases.ubuntu.com/18.04.1/ubuntu-18.04.1-desktop-amd64.iso
 sudo modprobe loop
 sudo modprobe iso9660
 mkdir cd-mount
-sudo mount -t iso9660 ./ubuntu-16.04.5-desktop-amd64.iso cd-mount/ -o ro,loop
+sudo mount -t iso9660 ./ubuntu-18.04.1-desktop-amd64.iso cd-mount/ -o ro,loop
 ```
 
 # Verzeichnis fuer Live-System-Daten anlegen
