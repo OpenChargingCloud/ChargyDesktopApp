@@ -1,5 +1,5 @@
 # Chargy Desktop App
-## Transparency Software for a secure, transparent and reliable E-Mobility Charging processes
+## Transparency Software for a secure and transparent E-Mobility Charging processes
 
 ### Technology
 This application is based on Electron https://github.com/electron-userland/electron-forge/tree/5.x, a cross platform Open Source framework for creating native applications with web technologies like Java-/TypeScript, HTML, and (S)CSS.    
