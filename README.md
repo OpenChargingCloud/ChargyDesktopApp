@@ -19,12 +19,12 @@ Install nodejs on your system. For more details please check https://nodejs.org
 On Linux and Mac OS X:
 
 ```
-$ curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
-$ apt install nodejs
+sudo curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
+sudo apt install nodejs
 
-$ npm install -g electron-forge
-$ npm install -g typescript
-$ npm install -g sass
+sudo npm install -g electron-forge
+sudo npm install -g typescript
+sudo npm install -g sass
 ```
 
 
@@ -33,18 +33,18 @@ $ npm install -g sass
 Clone the github repository for the latest version of chargy and install
 its nodejs dependencies:
 ```
-$ git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
-$ cd ChargyDesktopApp
-$ npm install
-$ chmod +x run.sh
-$ ./run.sh
+git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
+cd ChargyDesktopApp
+npm install
+chmod +x run.sh
+./run.sh
 ```
 
 
 ### Building a Windows Installer
 
 ```
-$ electron-forge make
+electron-forge make
 ```
 
 
@@ -52,14 +52,14 @@ $ electron-forge make
 
 On Debian GNU/Linux and Ubuntu you can run the following commands to create a Debian software package. More information about this process can be found at: https://github.com/electron-userland/electron-installer-debian
 ```
-$ sudo apt install debootstrap
-$ electron-forge make
+sudo apt install debootstrap
+electron-forge make
 ```
 
 Now you can use the normal package management tools of your Linux distribution to install the app:
 ```
-$ cd out/make
-$ dpkg -i chargyapp_X.Y.Z_amd64.deb
+cd out/make
+sudo dpkg -i chargyapp_X.Y.Z_amd64.deb
 ```
 
 
