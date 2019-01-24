@@ -50,7 +50,7 @@ $ electron-forge make
 
 ### Building a Linux package
 
-On Debian GNU/Linux and Ubuntu you can run the following commands to create a Debian software package.
+On Debian GNU/Linux and Ubuntu you can run the following commands to create a Debian software package. More information about this process can be found at: https://github.com/electron-userland/electron-installer-debian
 ```
 $ sudo apt install debootstrap
 $ electron-forge make
@@ -58,7 +58,8 @@ $ electron-forge make
 
 Now you can use the normal package management tools of your Linux distribution to install the app.
 ```
-$ apt install out/make/chargyapp_X.Y.Z_amd64.deb
+$ cd out/make
+$ dpkg -i chargyapp_X.Y.Z_amd64.deb
 ```
 
 
