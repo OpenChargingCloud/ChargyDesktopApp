@@ -33,13 +33,12 @@
           "dmg"
         ],
         "linux": [
-          "deb",
-          "rpm",
-          "flatpak",
-          "snap"
+          "deb"
         ]
       },
       "electronPackagerConfig": {
+        "appCopyright": "Copyright (C) 2019 GraphDefined GmbH",
+        "executableName": "chargyapp",
         "packageManager": "npm"
       },
       "electronWinstallerConfig": {
