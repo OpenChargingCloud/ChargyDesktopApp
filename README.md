@@ -33,7 +33,7 @@ $ npm install -g sass
 Clone the github repository for the latest version of chargy and install
 its nodejs dependencies:
 ```
-$ git clone git@github.com:OpenChargingCloud/ChargyDesktopApp.git
+$ git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
 $ cd ChargyDesktopApp
 $ npm install
 $ chmod +x run.sh
@@ -56,7 +56,7 @@ $ sudo apt install debootstrap
 $ electron-forge make
 ```
 
-Now you can use the normal package management tools of your Linux distribution to install the app.
+Now you can use the normal package management tools of your Linux distribution to install the app:
 ```
 $ cd out/make
 $ dpkg -i chargyapp_X.Y.Z_amd64.deb
