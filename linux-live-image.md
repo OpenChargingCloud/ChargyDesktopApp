@@ -4,7 +4,7 @@ This documentation is based on the documentation of the [TRuDI Live CD](https://
 
 ### Downloading and mounting of the original Ubuntu ISO image
 
-We use Ubuntu 18.04.1 LTS (amd64) for bootstrapping the ISO image.
+We use Ubuntu 18.04.1 LTS (amd64) as the base for our ISO image.
 
 ```
 wget http://ftp-stud.hs-esslingen.de/pub/Mirrors/releases.ubuntu.com/18.04.1/ubuntu-18.04.1-desktop-amd64.iso
@@ -13,15 +13,15 @@ sudo modprobe loop
 sudo modprobe iso9660
 mkdir cd-mount
 sudo mount -t iso9660 ./ubuntu-18.04.1-desktop-amd64.iso cd-mount/ -o ro,loop
-```
 
-### Creating a directory for the new Ubuntu live system
-```
 mkdir ChargyLiveCD
 mkdir ChargyLiveCD/iso
 mkdir ChargyLiveCD/iso/casper
 cp -rp cd-mount/EFI cd-mount/.disk cd-mount/boot cd-mount/isolinux cd-mount/pool cd-mount/dists  ChargyLiveCD/iso/
+```
 
+### Bootstrapping the new Ubuntu live system
+```
 sudo apt install debootstrap
 cd ChargyLiveCD
 sudo debootstrap --arch amd64 bionic squashfs
@@ -84,76 +84,7 @@ network:
       dhcp6: true
 ```
 
-Kopieren Sie das Installationspaket der aktuelle TRuDI-Version in den ``squashfs`` Verzeichnisbaum und führen Sie die Installation aus. (alle abhängigen Pakete werden automatisch mitinstalliert):
-
-```
-sudo cp ../ChargyDesktopApp/out/make/chargyapp_0.13.0_amd64.deb ./squashfs/usr/share/
-sudo chroot squashfs dpkg -i /usr/share/chargyapp_0.13.0_amd64.deb
-sudo rm ./squashfs/usr/share/chargyapp_0.13.0_amd64.deb
-```
-
-Eine Desktopverknüpfung für die TRuDI legt man im Verzeichnis squashfs/etc/skel/ an, da ein Benutzer beim Live-System immer dynamisch angelegt wird:
-
-```
-sudo mkdir squashfs/etc/skel/Desktop
-sudo touch squashfs/etc/skel/Desktop/chargy.desktop
-sudo joe squashfs/etc/skel/Desktop/chargy.desktop
-```
-
-Der Dateiinhalt sollte folgendermaßen aussehen:
-
-```
-[Desktop Entry]
-Name=chargy
-Exec=chargyapp
-Icon=/usr/share/backgounds/chargy/icon.png
-Terminal=false
-Type=Application
-```
-
-Es muss noch ein Icon für die Verknüpfung eingerichtet werden (Es wird angenommen, dass Sie eine Datei namens icon.png bereits in das Arbeitsverzeichnis kopiert haben):
-
-```
-sudo mkdir squashfs/usr/share/backgounds/chargy
-sudo cp icon.png squashfs/usr/share/backgounds/chargy/icon.png
-```
-
-Das TRuDI Handbuch sollte sich auch im Desktop-Verzeichnis des Live-Systems befinden (Es wird angenommen, dass Sie das Dokument bereits in das Arbeitsverzeichnis kopiert haben):
-```
-sudo cp TRuDI-Handbuch.pdf squashfs/etc/skel/Desktop/TRuDI-Handbuch.pdf
-```
-
-## Optionale Schritte
-
-Folgende Schritte sind für ein lauffähiges Live-Image nicht notwendig.
-Wenn das Live-Image die PTB Anforderungen aus dem **_Merkblatt: Einrichten eines Live-Mediums_** _(PTB-8.51-MB08-BSLM-DE-V01)_ erfüllen soll, sollten sie aber gemacht werden.
-
-
-### Nicht benötigte Pakete deinstallieren
-
-Dieser Schritt bezieht sich auf den Absatz: **_Zulässige Komponenten_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
-
-Um das Live-Image möglichst klein zu halten, sollten möglichst viele Pakete die zwar mit dem minimalen Installationsumfang vom Ubuntu kommen, aber nicht benötigt werden, deinstalliert werden:
-
-```
-sudo chroot squashfs apt-get autoremove --purge ubuntu-wallpapers-xenial
-sudo chroot squashfs apt-get autoremove --purge ubiquity-casper
-sudo chroot squashfs apt-get autoremove --purge samba-libs
-sudo chroot squashfs apt-get autoremove --purge gnome-terminal
-sudo chroot squashfs apt-get autoremove --purge ubuntu-wallpapers-xenial
-sudo chroot squashfs apt-get autoremove --purge ubuntu-mobile-icons
-sudo chroot squashfs apt-get autoremove --purge openssh-client
-sudo chroot squashfs apt-get autoremove --purge suru-icon-theme
-```
-
-Durch die Aktualisierung der Softwarepakete werden im chroot-System womöglich mehrere Kernels installiert sein. Sie sollten alle alten Versionen deinstallieren. Neueste Version zum Aktuellen Zeitpunkt ist die Version: `linux-image-4.4.0-119-generic`). 
-
-```
-sudo chroot squashfs apt-get autoremove --purge linux-image-4.4.0-109-generic
-sudo chroot squashfs apt-get autoremove --purge linux-image-4.4.0-112-generic
-```
-
-### Festes Benutzerkonto einrichten
+#### Festes Benutzerkonto einrichten
 
 Dieser Schritt bezieht sich auf den Absatz: **_Schutz in Verwendung_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
 
@@ -169,9 +100,7 @@ Benutzername und Passwort kann man auf ``trudi`` setzen und alle weiteren Fragen
 sudo chroot squashfs adduser trudi
 ```
 
-
-
-### Automatische Anmeldung des trudi-Benutzers und Deaktivierung der Gastbenutzeroption
+#### Automatische Anmeldung des trudi-Benutzers und Deaktivierung der Gastbenutzeroption
 
 Dieser Schritt bezieht sich auf die Absätze: **_Schutz in Verwendung_** und **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
 
@@ -187,41 +116,6 @@ autologin-user=trudi
 autologin-user-timeout=0
 allow-guest=false
 ```
-
-### Automatischer Start des TRuDI Programms
-
-Dieser Schritt bezieht sich auf die Absätze: **_Schutz in Verwendung_** und **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
-
-Es bietet sich auch die Möglichkeit, das TRuDI-Programm nach der Benutzeranmeldung automatisch zu starten. Dazu kopiert man die Datei, die für die Desktopverknüpfung bereits angelegt wurde, in das Verzeichnis ``autostart``.
-Falls nicht vorhanden, muss das Verzeichnis zuerst angelegt werden.
-```
-sudo chroot squashfs mkdir /etc/skel/.config
-sudo chroot squashfs mkdir /etc/skel/.config/autostart
-sudo cp squashfs/etc/skel/Desktop/TRuDI.desktop squashfs/etc/skel/.config/autostart/
-```
-
-### Deaktivierung von virtuellen Konsolen
-Dieser Schritt bezieht sich auf die Absätze: **_Schutz in Verwendung_** und **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
-
-Man kann die Tastenkombinationen für die virtuellen Konsolen abfangen. Legen Sie dazu eine Datei mit `.config` Erweiterung im Verzeichnis `etc/X11/xorg.conf.d`:
-```
-sudo chroot squashfs mkdir /etc/X11/xorg.conf.d
-sudo joe squashfs/etc/X11/xorg.conf.d/50-novtswitch.conf
-```
-Der Dateiinhalt sollte folgendermaßen aussehen:
-
-```
-Section "ServerFlags"
-Option "DontVTSwitch" "true"
-EndSection
-``` 
-
-Ausser dem Abfangen von Tastenkombinationen, kann man auch in den systemd Prozess eingreifen. Man muss dazu die Datei `/etc/systemd/logind.conf` anpassen, indem man Zeilen für Parameter `NAutoVTs` und `ReserveVT`, wie folgt modifiziert:
-```
-NAutoVTs=0
-ReserveVT=0
-```
-
 
 ### Bootvorgang anpassen
 
@@ -374,6 +268,72 @@ draw-user-backgrounds=false
 background='/usr/share/backgrounds/trudi_background.png'
 logo='/usr/share/unity-greeter/trudi_greeter_logo.png'
 ```
+
+
+
+
+
+
+
+
+
+
+
+### Installing the Chargy software
+
+Kopieren Sie das Installationspaket der aktuelle TRuDI-Version in den ``squashfs`` Verzeichnisbaum und führen Sie die Installation aus. (alle abhängigen Pakete werden automatisch mitinstalliert):
+
+```
+sudo cp ../ChargyDesktopApp/out/make/chargyapp_0.13.0_amd64.deb ./squashfs/usr/share/
+sudo chroot squashfs dpkg -i /usr/share/chargyapp_0.13.0_amd64.deb
+sudo rm ./squashfs/usr/share/chargyapp_0.13.0_amd64.deb
+```
+
+Eine Desktopverknüpfung für die TRuDI legt man im Verzeichnis squashfs/etc/skel/ an, da ein Benutzer beim Live-System immer dynamisch angelegt wird:
+
+```
+sudo mkdir squashfs/etc/skel/Desktop
+sudo touch squashfs/etc/skel/Desktop/chargy.desktop
+sudo joe squashfs/etc/skel/Desktop/chargy.desktop
+```
+
+Der Dateiinhalt sollte folgendermaßen aussehen:
+
+```
+[Desktop Entry]
+Name=chargy
+Exec=chargyapp
+Icon=/usr/share/backgounds/chargy/icon.png
+Terminal=false
+Type=Application
+```
+
+Es muss noch ein Icon für die Verknüpfung eingerichtet werden (Es wird angenommen, dass Sie eine Datei namens icon.png bereits in das Arbeitsverzeichnis kopiert haben):
+
+```
+sudo mkdir squashfs/usr/share/backgounds/chargy
+sudo cp icon.png squashfs/usr/share/backgounds/chargy/icon.png
+```
+
+Das TRuDI Handbuch sollte sich auch im Desktop-Verzeichnis des Live-Systems befinden (Es wird angenommen, dass Sie das Dokument bereits in das Arbeitsverzeichnis kopiert haben):
+```
+sudo cp TRuDI-Handbuch.pdf squashfs/etc/skel/Desktop/TRuDI-Handbuch.pdf
+```
+
+
+### Automatischer Start des TRuDI Programms
+
+Dieser Schritt bezieht sich auf die Absätze: **_Schutz in Verwendung_** und **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
+
+Es bietet sich auch die Möglichkeit, das TRuDI-Programm nach der Benutzeranmeldung automatisch zu starten. Dazu kopiert man die Datei, die für die Desktopverknüpfung bereits angelegt wurde, in das Verzeichnis ``autostart``.
+Falls nicht vorhanden, muss das Verzeichnis zuerst angelegt werden.
+```
+sudo chroot squashfs mkdir /etc/skel/.config
+sudo chroot squashfs mkdir /etc/skel/.config/autostart
+sudo cp squashfs/etc/skel/Desktop/TRuDI.desktop squashfs/etc/skel/.config/autostart/
+```
+
+
 
 ## ISO-Image Fertigstellen
 
