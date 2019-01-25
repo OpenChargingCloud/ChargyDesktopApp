@@ -67,13 +67,12 @@ BACKSPACE="guess"
 
 Change the timezone to "Europe/Berlin":
 ```
-#sudo echo "Europe/Berlin" > squashfs/etc/timezone
 sudo chroot squashfs dpkg-reconfigure tzdata
 ```
 
 Setup networking via netplan.io:
 ```
-joe squashfs/etc/netplan/01-network-manager-all.yaml
+sudo joe squashfs/etc/netplan/01-network-manager-all.yaml
 
 network:
   version: 2
