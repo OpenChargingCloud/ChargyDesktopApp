@@ -45,7 +45,7 @@ sudo chroot squashfs apt upgrade
 sudo chroot squashfs apt autoremove
 
 sudo chroot squashfs apt install linux-image-generic tzdata console-setup casper ubiquity-casper lupin-casper
-sudo chroot squashfs apt install --no-install-recommends ubuntu-desktop evince netplan.io resolvconf git ssh firefox firefox-locale-de gedit
+sudo chroot squashfs apt install --no-install-recommends ubuntu-desktop evince netplan.io resolvconf git ssh joe mc firefox firefox-locale-de gedit
 ```
 
 As the Chargy Live DVD is intended for the German "Eichrecht" we activate "German" as system language:
