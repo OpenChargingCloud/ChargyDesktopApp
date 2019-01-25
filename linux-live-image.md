@@ -45,7 +45,7 @@ sudo chroot squashfs apt upgrade
 sudo chroot squashfs apt autoremove
 
 sudo chroot squashfs apt install linux-image-generic tzdata console-setup casper ubiquity-casper lupin-casper
-sudo chroot squashfs apt install --no-install-recommends ubuntu-desktop evince git ssh firefox firefox-locale-de gedit
+sudo chroot squashfs apt install --no-install-recommends ubuntu-desktop evince netplan.io resolvconf git ssh firefox firefox-locale-de gedit
 ```
 
 As the Chargy Live DVD is intended for the German "Eichrecht" we activate "German" as system language:
@@ -69,6 +69,19 @@ Change the timezone to "Europe/Berlin":
 ```
 #sudo echo "Europe/Berlin" > squashfs/etc/timezone
 sudo chroot squashfs dpkg-reconfigure tzdata
+```
+
+Setup networking via netplan.io:
+```
+joe squashfs/etc/netplan/01-network-manager-all.yaml
+
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp0s3:
+      dhcp4: true
+      dhcp6: true
 ```
 
 Kopieren Sie das Installationspaket der aktuelle TRuDI-Version in den ``squashfs`` Verzeichnisbaum und führen Sie die Installation aus. (alle abhängigen Pakete werden automatisch mitinstalliert):
@@ -242,7 +255,7 @@ PROMPT 0
 TIMEOUT 0
 NOESCAPE 1
 ALLOWOPTIONS 0
- SAY Lade chargy Ubuntu Live 16.04...
+ SAY Lade Chargy Ubuntu Live 18.04...
 LABEL chargy
  KERNEL /casper/vmlinuz.efi
  APPEND BOOT_IMAGE=/casper/vmlinuz.efi boot=casper initrd=/casper/initrd.lz quiet splash --debian-installer/language=de console-setup/layoutcode?=de
@@ -368,11 +381,9 @@ Erstellen Sie nun das ISO-Image wie folgt. Das Ergebnis ist eine neue Datei name
 
 ```
 sudo chroot squashfs update-initramfs -k all -c -v
-#sudo zcat squashfs/boot/initrd.img* | lzma -9c > iso/casper/initrd.lz
 sudo cat squashfs/boot/initrd.img* > iso/casper/initrd.lz
 sudo cp squashfs/boot/vmlinuz* iso/casper/vmlinuz.efi
 sudo umount squashfs/dev/pts squashfs/dev squashfs/proc squashfs/sys
-sudo echo "nameserver 8.8.8.8" > squashfs/etc/resolv.conf
 sudo mksquashfs squashfs iso/casper/filesystem.squashfs -noappend
 sudo genisoimage -cache-inodes -r -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot -o live.iso iso
 ```
