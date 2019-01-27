@@ -1221,6 +1221,7 @@ function StartDashboard() {
                         //<i class="far fa-chart-bar"></i>
 
                         let MeasurementValuesDiv         = CreateDiv(evseTarifInfosDiv, "measurementValues");
+                        let previousValue                = 0;
 
                         for (var measurementValue of measurement.values)
                         {
@@ -1235,30 +1236,57 @@ function StartDashboard() {
                             let timestampDiv                 = CreateDiv(MeasurementValueDiv, "timestamp",
                                                                          timestamp.format('HH:mm:ss') + " Uhr");
 
-                            var _value                       = measurementValue.value;
+
+                            // Show energy counter value
+                            let value2Div                    = CreateDiv(MeasurementValueDiv, "value",
+                                                                         parseFloat((measurementValue.value * Math.pow(10, measurementValue.measurement.scale)).toFixed(10)).toString());
 
                             switch (measurement.unit)
                             {
 
                                 case "KILO_WATT_HOURS":
-                                    _value = parseFloat((_value * Math.pow(10, measurementValue.measurement.scale)).toFixed(10));
+                                    CreateDiv(MeasurementValueDiv, "unit", "kWh");
                                     break;
 
                                 // "WATT_HOURS"
                                 default:
-                                    _value = parseFloat((_value / 1000 * Math.pow(10, measurementValue.measurement.scale)).toFixed(10));
+                                    CreateDiv(MeasurementValueDiv, "unit", "Wh");
+                                    break;
+
+                            }
+
+
+                            // Show energy difference
+                            var currentValue                 = measurementValue.value;
+                            
+                            switch (measurement.unit)
+                            {
+
+                                case "KILO_WATT_HOURS":
+                                    currentValue = parseFloat((currentValue * Math.pow(10, measurementValue.measurement.scale)).toFixed(10));
+                                    break;
+
+                                // "WATT_HOURS"
+                                default:
+                                    currentValue = parseFloat((currentValue / 1000 * Math.pow(10, measurementValue.measurement.scale)).toFixed(10));
                                     break;
 
                             }
 
                             let valueDiv                     = CreateDiv(MeasurementValueDiv, "value",
-                                                                         _value.toString());
+                                                                         "+" + (previousValue > 0
+                                                                                    ? parseFloat((currentValue - previousValue).toFixed(10))
+                                                                                    : "0"));
 
                             let unitDiv                      = CreateDiv(MeasurementValueDiv, "unit",
                                                                          "kWh");
 
+
+                            // Show signature status
                             let verificationStatusDiv        = CreateDiv(MeasurementValueDiv, "verificationStatus",
                                                                          checkMeasurementCrypto(measurementValue));
+
+                            previousValue                    = currentValue;
 
                         }
 
