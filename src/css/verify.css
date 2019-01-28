@@ -371,16 +371,38 @@ body #outerframe #verifyframe #rightbar #feedback {
   color: #6488a3;
   line-height: 130%;
 }
-body #outerframe #verifyframe #rightbar #feedback button {
+body #outerframe #verifyframe #rightbar #feedback #feedbackMethods {
+  display: table;
+  margin-top: 6px;
+}
+body #outerframe #verifyframe #rightbar #feedback #feedbackMethods .row {
+  display: table-row;
+}
+body #outerframe #verifyframe #rightbar #feedback #feedbackMethods .row .key {
+  display: table-cell;
+  padding: 0px 3px 0px 20px;
+  position: relative;
+}
+body #outerframe #verifyframe #rightbar #feedback #feedbackMethods .row .value {
+  display: table-cell;
+  font-size: 90%;
+}
+body #outerframe #verifyframe #rightbar #feedback #feedbackMethods .row .value a {
+  text-decoration: none;
+  color: #6488a3;
+}
+body #outerframe #verifyframe #rightbar #feedback #feedbackMethods .row .value button {
   border: 0;
-  margin-top: 10px;
   padding: 8px 15px;
   background-color: #b6d8f1;
   color: #6488a3;
   border-radius: 4px;
 }
-body #outerframe #verifyframe #rightbar #feedback button:hover {
+body #outerframe #verifyframe #rightbar #feedback #feedbackMethods .row .value button:hover {
   background-color: #a6c8e1;
+}
+body #outerframe #verifyframe #rightbar #feedback #feedbackMethods #feedbackEMail > .key {
+  top: 1px;
 }
 body #outerframe #overlay {
   position: absolute;

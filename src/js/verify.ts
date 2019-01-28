@@ -1258,7 +1258,7 @@ function StartDashboard() {
 
                             // Show energy difference
                             var currentValue                 = measurementValue.value;
-                            
+
                             switch (measurement.unit)
                             {
 

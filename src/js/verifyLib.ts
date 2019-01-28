@@ -354,3 +354,13 @@ function CreateDiv(ParentDiv:   HTMLDivElement,
     return childDiv;
     
 }
+
+
+function OpenExternal(URL: string)
+{
+
+    var shell = require('electron').shell;
+
+    shell.openExternal(URL);
+
+}
