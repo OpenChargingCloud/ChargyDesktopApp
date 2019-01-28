@@ -100,6 +100,8 @@ function StartDashboard() {
     
                 var result = verifySessionCryptoDetails(chargingSession);
 
+                //#region Add marker to map
+
                 var redMarker                 = leaflet.AwesomeMarkers.icon({
                     prefix:                     'fa',
                     icon:                       'exclamation',
@@ -136,37 +138,68 @@ function StartDashboard() {
 
                 }
 
-                var geoLocation  = chargingSession.EVSE.chargingStation.geoLocation;
+                var geoLocation  = null;
+                
+                if (chargingSession.chargingPool                != null &&
+                    chargingSession.chargingPool.geoLocation    != null)
+                {
+                    geoLocation = chargingSession.chargingPool.geoLocation;
+                }
 
-                var marker       = leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(map);
-                marker.bindPopup("lala!");
-                markers.push(marker);
+                if (chargingSession.chargingStation             != null &&
+                    chargingSession.chargingStation.geoLocation != null)
+                {
+                    geoLocation = chargingSession.chargingStation.geoLocation;
+                }
 
-                if (minlat > geoLocation.lat)
-                    minlat = geoLocation.lat;
+                if (geoLocation != null)
+                {
 
-                if (maxlat < geoLocation.lat)
-                    maxlat = geoLocation.lat;
+                    var marker = leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(map);
+                    markers.push(marker);
 
-                if (minlng > geoLocation.lng)
-                    minlng = geoLocation.lng;
+                    if (minlat > geoLocation.lat)
+                        minlat = geoLocation.lat;
 
-                if (maxlng < geoLocation.lng)
-                    maxlng = geoLocation.lng;
+                    if (maxlat < geoLocation.lat)
+                        maxlat = geoLocation.lat;
 
+                    if (minlng > geoLocation.lng)
+                        minlng = geoLocation.lng;
+
+                    if (maxlng < geoLocation.lng)
+                        maxlng = geoLocation.lng;
+
+                    switch (result.status)
+                    {
+        
+                        case SessionVerificationResult.UnknownSessionFormat:
+                        case SessionVerificationResult.PublicKeyNotFound:
+                        case SessionVerificationResult.InvalidPublicKey:
+                        case SessionVerificationResult.InvalidSignature:
+                            marker.bindPopup("Ungültiger Ladevorgang!");
+                            break;
+    
+                        case SessionVerificationResult.ValidSignature:
+                            marker.bindPopup("Gültiger Ladevorgang!");
+                            break;
+    
+    
+                        default:
+                            markerIcon = redMarker;
+    
+                    }
+
+                }
+
+                //#endregion
 
                 switch (result.status)
                 {
     
                     case SessionVerificationResult.UnknownSessionFormat:
-                        return '<i class="fas fa-times-circle"></i> Ungültig';
-
                     case SessionVerificationResult.PublicKeyNotFound:
-                        return '<i class="fas fa-times-circle"></i> Ungültig';
-
                     case SessionVerificationResult.InvalidPublicKey:
-                        return '<i class="fas fa-times-circle"></i> Ungültig';
-
                     case SessionVerificationResult.InvalidSignature:
                         return '<i class="fas fa-times-circle"></i> Ungültig';
 
@@ -272,6 +305,23 @@ function StartDashboard() {
 
                                             EVSEs.push(EVSE);
 
+                                            if (EVSE.meters) {
+
+                                                for (var meter of EVSE.meters)
+                                                {
+
+                                                    meter.EVSE               = EVSE;
+                                                    meter.EVSEId             = EVSE["@id"];
+
+                                                    meter.chargingStation    = chargingStation;
+                                                    meter.chargingStationId  = chargingStation["@id"];
+
+                                                    meters.push(meter);
+
+                                                }
+
+                                            }
+
                                         }
 
                                     }
@@ -296,7 +346,29 @@ function StartDashboard() {
 
                                 for (var EVSE of chargingStation.EVSEs)
                                 {
+        
+                                    EVSE.chargingStation    = chargingStation;
+                                    EVSE.chargingStationId  = chargingStation["@id"];
+        
                                     EVSEs.push(EVSE);
+        
+                                    if (EVSE.meters) {
+        
+                                        for (var meter of EVSE.meters)
+                                        {
+        
+                                            meter.EVSE               = EVSE;
+                                            meter.EVSEId             = EVSE["@id"];
+        
+                                            meter.chargingStation    = chargingStation;
+                                            meter.chargingStationId  = chargingStation["@id"];
+        
+                                            meters.push(meter);
+        
+                                        }
+        
+                                    }
+        
                                 }
 
                             }
@@ -309,7 +381,29 @@ function StartDashboard() {
 
                         for (var EVSE of chargingStationOperator.EVSEs)
                         {
+
+                            // EVSE.chargingStation    = chargingStation;
+                            // EVSE.chargingStationId  = chargingStation["@id"];
+
                             EVSEs.push(EVSE);
+
+                            if (EVSE.meters) {
+
+                                for (var meter of EVSE.meters)
+                                {
+
+                                    meter.EVSE               = EVSE;
+                                    meter.EVSEId             = EVSE["@id"];
+
+                                    // meter.chargingStation    = chargingStation;
+                                    // meter.chargingStationId  = chargingStation["@id"];
+
+                                    meters.push(meter);
+
+                                }
+
+                            }
+
                         }
 
                     }
@@ -1007,45 +1101,113 @@ function StartDashboard() {
                             "email":        ""
                         },
 
-                        "chargingStations": [
+                        "chargingStationOperators": [
                             {
-                                "@id":                      evseId,
-                                // "description": {
-                                //     "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
-                                // },
-                                "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
-                                "address": {
-                                    "street":               address_street,
-                                    "postalCode":           address_zipCode,
-                                    "city":                 address_town
+
+                                "@id":                      "chargeITmobilityCSO",
+                                "eMobilityIds":             [ "DE*BDO", "DE*LVF", "+49*822" ],
+                                "description": {
+                                    "de":                   "chargeIT mobility GmbH - Charging Station Operator Services"
                                 },
-                                "EVSEs": [
+                    
+                                "contact": {
+                                    "email":                    "info@chargeit-mobility.com",
+                                    "web":                      "https://www.chargeit-mobility.com",
+                                    "logoUrl":                  "http://www.chargeit-mobility.com/fileadmin/BELECTRIC_Drive/templates/pics/chargeit_logo_408x70.png",
+                                    "publicKeys": [
+                                        {
+                                            "algorithm":        "secp192r1",
+                                            "format":           "DER",
+                                            "value":            "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
+                                            "signatures": [
+                                                {
+                                                    "keyId":      "...",
+                                                    "algorithm":  "secp192r1",
+                                                    "format":     "DER",
+                                                    "value":      "????"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "algorithm":        "secp256k1",
+                                            "format":           "DER",
+                                            "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                                            "signatures":       [ ]
+                                        }
+                                    ]
+                                },
+                    
+                                "support": {
+                                    "hotline":                  "+49 9321 / 2680 - 700",
+                                    "email":                    "service@chargeit-mobility.com",
+                                    "web":                      "https://cso.chargeit.charging.cloud/issues"
+                                    // "mediationServices":        [ "GraphDefined Mediation" ],
+                                    // "publicKeys": [
+                                    //     {
+                                    //         "algorithm":        "secp256k1",
+                                    //         "format":           "DER",
+                                    //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                                    //         "signatures":       [ ]
+                                    //     }
+                                    // ]
+                                },
+
+                                "privacy": {
+                                    "contact":                  "Dr. iur. Christian Borchers, datenschutz süd GmbH",
+                                    "email":                    "datenschutz@chargeit-mobility.com",
+                                    "web":                      "http://www.chargeit-mobility.com/de/datenschutz/"
+                                    // "publicKeys": [
+                                    //     {
+                                    //         "algorithm":        "secp256k1",
+                                    //         "format":           "DER",
+                                    //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                                    //         "signatures":       [ ]
+                                    //     }
+                                    // ]
+                                },
+
+                                "chargingStations": [
                                     {
                                         "@id":                      evseId,
                                         // "description": {
-                                        //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
+                                        //     "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
                                         // },
-                                        "sockets":                  [ { } ],
-                                        "meters": [
+                                        "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
+                                        "address": {
+                                            "street":               address_street,
+                                            "postalCode":           address_zipCode,
+                                            "city":                 address_town
+                                        },
+                                        "EVSEs": [
                                             {
-                                                "@id":                      CTRArray[0]["meterInfo"]["meterId"],
-                                                "vendor":                   CTRArray[0]["meterInfo"]["manufacturer"],
-                                                "vendorURL":                "http://www.emh-metering.de",
-                                                "model":                    CTRArray[0]["meterInfo"]["type"],
-                                                "hardwareVersion":          "1.0",
-                                                "firmwareVersion":          CTRArray[0]["meterInfo"]["firmwareVersion"],
-                                                "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
-                                                "publicKeys": [
+                                                "@id":                      evseId,
+                                                // "description": {
+                                                //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
+                                                // },
+                                                "sockets":                  [ { } ],
+                                                "meters": [
                                                     {
-                                                        "algorithm":        "secp192r1",
-                                                        "format":           "DER",
-                                                        "value":            "04" + CTRArray[0]["meterInfo"]["publicKey"]
+                                                        "@id":                      CTRArray[0]["meterInfo"]["meterId"],
+                                                        "vendor":                   CTRArray[0]["meterInfo"]["manufacturer"],
+                                                        "vendorURL":                "http://www.emh-metering.de",
+                                                        "model":                    CTRArray[0]["meterInfo"]["type"],
+                                                        "hardwareVersion":          "1.0",
+                                                        "firmwareVersion":          CTRArray[0]["meterInfo"]["firmwareVersion"],
+                                                        "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+                                                        "publicKeys": [
+                                                            {
+                                                                "algorithm":        "secp192r1",
+                                                                "format":           "DER",
+                                                                "value":            "04" + CTRArray[0]["meterInfo"]["publicKey"]
+                                                            }
+                                                        ]
                                                     }
                                                 ]
                                             }
                                         ]
                                     }
                                 ]
+
                             }
                         ],
 

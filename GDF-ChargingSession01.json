@@ -82,7 +82,7 @@
     "chargingPools": [
         {
             "@id":                      "DE*GEF*POOL*CI*TESTS*3",
-            "gps":                      { "lat": 50.387945, "lng": 10.4304 },
+            "geoLocation":              { "lat": 50.398945, "lng": 10.4414 },
             "address": {
                 "street":               "Biberweg",
                 "houseNumber":          "18",
@@ -105,7 +105,7 @@
             "description": {
                 "de":                   "GraphDefined Charging Station - CI-Tests Pool 1 / Station A"
             },
-            "gps":                      { "lat": 50.387945, "lng": 10.4304 },
+            "geoLocation":              { "lat": 50.387945, "lng": 10.4304 },
             "address": {
                 "street":               "Biberweg",
                 "houseNumber":          "18",
@@ -154,7 +154,7 @@
             "description": {
                 "de":                   "GraphDefined Charging Station - CI-Tests Pool 2 / Station A"
             },
-            "gps":                      { "lat": 50.397945, "lng": 10.4404 },
+            "geoLocation":              { "lat": 50.396945, "lng": 10.4414 },
             "address": {
                 "street":               "Biberweg",
                 "houseNumber":          "18",
@@ -204,7 +204,7 @@
             "description": {
                 "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
             },
-            "gps":                      { "lat": 50.397945, "lng": 10.4404 },
+            "geoLocation":              { "lat": 50.398945, "lng": 10.4414 },
             "address": {
                 "street":               "Biberweg",
                 "houseNumber":          "18",

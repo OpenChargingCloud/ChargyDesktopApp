@@ -105,8 +105,8 @@
              "town": "Musterstadt" 
           },
          "geoLocation": {
-             "lat": 12.3774,
-             "lon": 1.3774
+			  "lat": 48.035131,
+			  "lon": 10.50635
           }
     }
 	

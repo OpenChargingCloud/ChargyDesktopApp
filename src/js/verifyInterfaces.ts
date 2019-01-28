@@ -45,6 +45,7 @@ interface IChargingStationOperator
     "@context":                 string;
     description:                {};
     address:                    IAddress;
+    geoLocation?:               IGeoLocation;
     chargingPools:              Array<IChargingPool>;
     chargingStations:           Array<IChargingStation>;
     EVSEs:                      Array<IEVSE>;
@@ -57,6 +58,7 @@ interface IChargingPool
     "@context":                 string;
     description:                {};
     address:                    IAddress;
+    geoLocation?:               IGeoLocation;
     chargingStationOperator:    IChargingStationOperator;
     chargingStations:           Array<IChargingStation>;
     tariffs:                    Array<ITariff>;
