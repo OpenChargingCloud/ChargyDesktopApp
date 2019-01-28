@@ -1,77 +1,63 @@
-Original: https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master
+# Creating a Linux Live ISO Image
 
-# Schritte zur Erstellung eines Live Linux ISO-Image
+This documentation is based on the documentation of the [TRuDI Live CD](https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master), which is a similar project of the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) for the transparency of smart meters. 
 
-Diese Beschreibung basiert auf der Anleitung "Live-Ubuntu selbstgebaut" aus dem [c't Heft 11/2016](https://www.heise.de/ct/ausgabe/2016-11-Selbstgemachtes-Live-Ubuntu-fuer-DVD-und-USB-Stick-3198759.html), des Autors Mirko Dölle.
+### Downloading and mounting of the original Ubuntu ISO image
 
-Als Grundlage wurde die amd64-Variante der Ubuntu-Installations-DVD (die TRuDI ist eine 64-Bit-Applikation) der LTS Version 16.04 verwendet.
+We use Ubuntu 18.04.1 LTS (amd64) as the base for our ISO image.
 
-
-# Original ISO-image per loop mounten
 ```
+wget http://ftp-stud.hs-esslingen.de/pub/Mirrors/releases.ubuntu.com/18.04.1/ubuntu-18.04.1-desktop-amd64.iso
+
 sudo modprobe loop
 sudo modprobe iso9660
 mkdir cd-mount
-sudo mount -t iso9660 ./ubuntu-16.04.5-desktop-amd64.iso cd-mount/ -o ro,loop
+sudo mount -t iso9660 ./ubuntu-18.04.1-desktop-amd64.iso cd-mount/ -o ro,loop
+
+mkdir ChargyLiveCD
+mkdir ChargyLiveCD/iso
+mkdir ChargyLiveCD/iso/casper
+cp -rp cd-mount/EFI cd-mount/.disk cd-mount/boot cd-mount/isolinux cd-mount/pool cd-mount/dists  ChargyLiveCD/iso/
 ```
 
-# Verzeichnis fuer Live-System-Daten anlegen
+### Bootstrapping the new Ubuntu live system
 ```
-mkdir chargy_LiveCD
-mkdir chargy_LiveCD/iso
-mkdir chargy_LiveCD/iso/casper
-cp -rp cd-mount/EFI cd-mount/.disk cd-mount/boot cd-mount/isolinux cd-mount/pool cd-mount/dists  chargy_LiveCD/iso/
-
 sudo apt install debootstrap
-sudo debootstrap --arch amd64 xenial squashfs
+cd ChargyLiveCD
+sudo debootstrap --arch amd64 bionic squashfs
 ```
 
-Um das erzeugte Live-System in Ihr laufendes System einzubinden, führen Sie folgende Befehle aus:
-
+Mount some virtual file systems into your change-root-environment and prepare this system for the installation of the base system:
 ```
 sudo mount --bind /dev squashfs/dev
 sudo mount -t devpts devpts squashfs/dev/pts
 sudo mount -t proc proc squashfs/proc
 sudo mount -t sysfs sysfs squashfs/sys
-```
 
-Um Pakete über die Offizielle Quellen beziehen zu können, führen Sie folgendes aus:
-
-```
 sudo cp /etc/resolv.conf squashfs/etc
 sudo cp /etc/apt/sources.list squashfs/etc/apt
 ```
 
-Nun kann man die Quellen, und danach essentielle Softwarepakete aktualisieren:
-
+Now you can download and install security updates and the required additional software:
 ```
 sudo chroot squashfs apt update
 sudo chroot squashfs apt upgrade
+sudo chroot squashfs apt autoremove
 
 sudo chroot squashfs apt install linux-image-generic tzdata console-setup casper ubiquity-casper lupin-casper
-sudo chroot squashfs apt install --no-install-recommends ubuntu-desktop evince git ssh firefox firefox-locale-de gedit
+sudo chroot squashfs apt install --no-install-recommends ubuntu-desktop evince netplan.io resolvconf git ssh joe mc firefox firefox-locale-de gedit
 ```
 
-Für die deutsche Sprachunterstützung sind folgende Pakete nötig: 
-
+As the Chargy Live DVD is intended for the German "Eichrecht" we activate "German" as system language:
 ```
 sudo chroot squashfs apt install language-pack-de language-pack-gnome-de wngerman wogerman wswiss
-```
-
-Setzen Sie Deutsch als Standardsprache wie folgt:
-```
 sudo chroot squashfs update-locale LANG=de_DE.UTF-8 LANGUAGE=de_DE LC_ALL=de_DE.UTF-8
 ```
 
-Ã„ndern sie folgende Datei, um die deutsche Tastatur als Standard beim Bootvorgang einzustellen:
-
+Activate a German keyboard layout by editing the following file:
 ```
 sudo joe squashfs/etc/default/keyboard 
-```
 
-Der Dateiinhalt sollte wie folgt aussehen:
-
-```
 XKBMODEL="pc105"
 XKBLAYOUT="de,us"
 XKBVARIANT=""
@@ -79,83 +65,25 @@ XKBOPTIONS=""
 BACKSPACE="guess"
 ```
 
-Die Zeitzone auf "Europe/Berlin" stellen
+Change the timezone to "Europe/Berlin":
 ```
-#sudo echo "Europe/Berlin" > squashfs/etc/timezone
 sudo chroot squashfs dpkg-reconfigure tzdata
 ```
 
-
-Kopieren Sie das Installationspaket der aktuelle TRuDI-Version in den ``squashfs`` Verzeichnisbaum und führen Sie die Installation aus. (alle abhängigen Pakete werden automatisch mitinstalliert):
-
+Setup networking via netplan.io:
 ```
-sudo cp ChargyDesktopApp/out/make/chargyapp_0.13.0_amd64.deb ./squashfs/usr/share/
-sudo chroot squashfs apt install /usr/share/chargyapp_0.13.0_amd64.deb
-sudo rm ./squashfs/usr/share/chargyapp_0.13.0_amd64.deb
-```
+sudo joe squashfs/etc/netplan/01-network-manager-all.yaml
 
-Eine Desktopverknüpfung für die TRuDI legt man im Verzeichnis squashfs/etc/skel/ an, da ein Benutzer beim Live-System immer dynamisch angelegt wird:
-
-```
-sudo mkdir squashfs/etc/skel/Desktop
-sudo touch squashfs/etc/skel/Desktop/chargy.desktop
-sudo joe squashfs/etc/skel/Desktop/chargy.desktop
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp0s3:
+      dhcp4: true
+      dhcp6: true
 ```
 
-Der Dateiinhalt sollte folgendermaßen aussehen:
-
-```
-[Desktop Entry]
-Name=chargy
-Exec=chargyapp
-Icon=/usr/share/backgounds/chargy/icon.png
-Terminal=false
-Type=Application
-```
-
-Es muss noch ein Icon für die Verknüpfung eingerichtet werden (Es wird angenommen, dass Sie eine Datei namens icon.png bereits in das Arbeitsverzeichnis kopiert haben):
-
-```
-sudo mkdir squashfs/usr/share/backgounds/chargy
-sudo cp icon.png squashfs/usr/share/backgounds/chargy/icon.png
-```
-
-Das TRuDI Handbuch sollte sich auch im Desktop-Verzeichnis des Live-Systems befinden (Es wird angenommen, dass Sie das Dokument bereits in das Arbeitsverzeichnis kopiert haben):
-```
-sudo cp TRuDI-Handbuch.pdf squashfs/etc/skel/Desktop/TRuDI-Handbuch.pdf
-```
-
-## Optionale Schritte
-
-Folgende Schritte sind für ein lauffähiges Live-Image nicht notwendig.
-Wenn das Live-Image die PTB Anforderungen aus dem **_Merkblatt: Einrichten eines Live-Mediums_** _(PTB-8.51-MB08-BSLM-DE-V01)_ erfüllen soll, sollten sie aber gemacht werden.
-
-
-### Nicht benötigte Pakete deinstallieren
-
-Dieser Schritt bezieht sich auf den Absatz: **_Zulässige Komponenten_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
-
-Um das Live-Image möglichst klein zu halten, sollten möglichst viele Pakete die zwar mit dem minimalen Installationsumfang vom Ubuntu kommen, aber nicht benötigt werden, deinstalliert werden:
-
-```
-sudo chroot squashfs apt-get autoremove --purge ubuntu-wallpapers-xenial
-sudo chroot squashfs apt-get autoremove --purge ubiquity-casper
-sudo chroot squashfs apt-get autoremove --purge samba-libs
-sudo chroot squashfs apt-get autoremove --purge gnome-terminal
-sudo chroot squashfs apt-get autoremove --purge ubuntu-wallpapers-xenial
-sudo chroot squashfs apt-get autoremove --purge ubuntu-mobile-icons
-sudo chroot squashfs apt-get autoremove --purge openssh-client
-sudo chroot squashfs apt-get autoremove --purge suru-icon-theme
-```
-
-Durch die Aktualisierung der Softwarepakete werden im chroot-System womöglich mehrere Kernels installiert sein. Sie sollten alle alten Versionen deinstallieren. Neueste Version zum Aktuellen Zeitpunkt ist die Version: `linux-image-4.4.0-119-generic`). 
-
-```
-sudo chroot squashfs apt-get autoremove --purge linux-image-4.4.0-109-generic
-sudo chroot squashfs apt-get autoremove --purge linux-image-4.4.0-112-generic
-```
-
-### Festes Benutzerkonto einrichten
+#### Festes Benutzerkonto einrichten
 
 Dieser Schritt bezieht sich auf den Absatz: **_Schutz in Verwendung_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
 
@@ -171,9 +99,7 @@ Benutzername und Passwort kann man auf ``trudi`` setzen und alle weiteren Fragen
 sudo chroot squashfs adduser trudi
 ```
 
-
-
-### Automatische Anmeldung des trudi-Benutzers und Deaktivierung der Gastbenutzeroption
+#### Automatische Anmeldung des trudi-Benutzers und Deaktivierung der Gastbenutzeroption
 
 Dieser Schritt bezieht sich auf die Absätze: **_Schutz in Verwendung_** und **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
 
@@ -189,41 +115,6 @@ autologin-user=trudi
 autologin-user-timeout=0
 allow-guest=false
 ```
-
-### Automatischer Start des TRuDI Programms
-
-Dieser Schritt bezieht sich auf die Absätze: **_Schutz in Verwendung_** und **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
-
-Es bietet sich auch die Möglichkeit, das TRuDI-Programm nach der Benutzeranmeldung automatisch zu starten. Dazu kopiert man die Datei, die für die Desktopverknüpfung bereits angelegt wurde, in das Verzeichnis ``autostart``.
-Falls nicht vorhanden, muss das Verzeichnis zuerst angelegt werden.
-```
-sudo chroot squashfs mkdir /etc/skel/.config
-sudo chroot squashfs mkdir /etc/skel/.config/autostart
-sudo cp squashfs/etc/skel/Desktop/TRuDI.desktop squashfs/etc/skel/.config/autostart/
-```
-
-### Deaktivierung von virtuellen Konsolen
-Dieser Schritt bezieht sich auf die Absätze: **_Schutz in Verwendung_** und **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
-
-Man kann die Tastenkombinationen für die virtuellen Konsolen abfangen. Legen Sie dazu eine Datei mit `.config` Erweiterung im Verzeichnis `etc/X11/xorg.conf.d`:
-```
-sudo chroot squashfs mkdir /etc/X11/xorg.conf.d
-sudo joe squashfs/etc/X11/xorg.conf.d/50-novtswitch.conf
-```
-Der Dateiinhalt sollte folgendermaßen aussehen:
-
-```
-Section "ServerFlags"
-Option "DontVTSwitch" "true"
-EndSection
-``` 
-
-Ausser dem Abfangen von Tastenkombinationen, kann man auch in den systemd Prozess eingreifen. Man muss dazu die Datei `/etc/systemd/logind.conf` anpassen, indem man Zeilen für Parameter `NAutoVTs` und `ReserveVT`, wie folgt modifiziert:
-```
-NAutoVTs=0
-ReserveVT=0
-``` #
-
 
 ### Bootvorgang anpassen
 
@@ -257,7 +148,7 @@ PROMPT 0
 TIMEOUT 0
 NOESCAPE 1
 ALLOWOPTIONS 0
- SAY Lade chargy Ubuntu Live 16.04...
+ SAY Lade Chargy Ubuntu Live 18.04...
 LABEL chargy
  KERNEL /casper/vmlinuz.efi
  APPEND BOOT_IMAGE=/casper/vmlinuz.efi boot=casper initrd=/casper/initrd.lz quiet splash --debian-installer/language=de console-setup/layoutcode?=de
@@ -377,17 +268,81 @@ background='/usr/share/backgrounds/trudi_background.png'
 logo='/usr/share/unity-greeter/trudi_greeter_logo.png'
 ```
 
+
+
+
+
+
+
+
+
+
+
+### Installing the Chargy software
+
+Kopieren Sie das Installationspaket der aktuelle TRuDI-Version in den ``squashfs`` Verzeichnisbaum und führen Sie die Installation aus. (alle abhängigen Pakete werden automatisch mitinstalliert):
+
+```
+sudo cp ../ChargyDesktopApp/out/make/chargyapp_0.13.0_amd64.deb ./squashfs/usr/share/
+sudo chroot squashfs apt install /usr/share/chargyapp_0.13.0_amd64.deb
+sudo rm ./squashfs/usr/share/chargyapp_0.13.0_amd64.deb
+```
+
+Eine Desktopverknüpfung für die TRuDI legt man im Verzeichnis squashfs/etc/skel/ an, da ein Benutzer beim Live-System immer dynamisch angelegt wird:
+
+```
+sudo mkdir squashfs/etc/skel/Desktop
+sudo touch squashfs/etc/skel/Desktop/chargy.desktop
+sudo joe squashfs/etc/skel/Desktop/chargy.desktop
+```
+
+Der Dateiinhalt sollte folgendermaßen aussehen:
+
+```
+[Desktop Entry]
+Name=chargy
+Exec=chargyapp
+Icon=/usr/share/backgounds/chargy/icon.png
+Terminal=false
+Type=Application
+```
+
+Es muss noch ein Icon für die Verknüpfung eingerichtet werden (Es wird angenommen, dass Sie eine Datei namens icon.png bereits in das Arbeitsverzeichnis kopiert haben):
+
+```
+sudo mkdir squashfs/usr/share/backgounds/chargy
+sudo cp icon.png squashfs/usr/share/backgounds/chargy/icon.png
+```
+
+Das TRuDI Handbuch sollte sich auch im Desktop-Verzeichnis des Live-Systems befinden (Es wird angenommen, dass Sie das Dokument bereits in das Arbeitsverzeichnis kopiert haben):
+```
+sudo cp TRuDI-Handbuch.pdf squashfs/etc/skel/Desktop/TRuDI-Handbuch.pdf
+```
+
+
+### Automatischer Start des TRuDI Programms
+
+Dieser Schritt bezieht sich auf die Absätze: **_Schutz in Verwendung_** und **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
+
+Es bietet sich auch die Möglichkeit, das TRuDI-Programm nach der Benutzeranmeldung automatisch zu starten. Dazu kopiert man die Datei, die für die Desktopverknüpfung bereits angelegt wurde, in das Verzeichnis ``autostart``.
+Falls nicht vorhanden, muss das Verzeichnis zuerst angelegt werden.
+```
+sudo chroot squashfs mkdir /etc/skel/.config
+sudo chroot squashfs mkdir /etc/skel/.config/autostart
+sudo cp squashfs/etc/skel/Desktop/TRuDI.desktop squashfs/etc/skel/.config/autostart/
+```
+
+
+
 ## ISO-Image Fertigstellen
 
 Erstellen Sie nun das ISO-Image wie folgt. Das Ergebnis ist eine neue Datei namens _live.iso_ in Ihrem Arbeitsverzeichnis: 
 
 ```
 sudo chroot squashfs update-initramfs -k all -c -v
-#sudo zcat squashfs/boot/initrd.img* | lzma -9c > iso/casper/initrd.lz
 sudo cat squashfs/boot/initrd.img* > iso/casper/initrd.lz
 sudo cp squashfs/boot/vmlinuz* iso/casper/vmlinuz.efi
 sudo umount squashfs/dev/pts squashfs/dev squashfs/proc squashfs/sys
-sudo echo "nameserver 8.8.8.8" > squashfs/etc/resolv.conf
 sudo mksquashfs squashfs iso/casper/filesystem.squashfs -noappend
 sudo genisoimage -cache-inodes -r -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot -o live.iso iso
 ```
@@ -403,27 +358,6 @@ sudo isohybrid --uefi --verbose live.iso
 
 Danach wird empfohlen, das Hybrid-Image auf das USB-Medium zu __klonen__. Dafür können Sie das Programm _mkusb_ direkt von ihrem Ubuntu Host-Rechner benutzen.
 Sie können zwar Programme wie das _Unetbootin_ verwenden, um das Image auf das USB-Medium zu übertragen. Das _Unetbootin_ benötigt sogar das Hybrid-Image nicht, sondern Sie können ein normales ISO-Image auf das USB-Medium damit übertragen. Nachteil von diesen Programmen ist, dass Sie meistens einen eigenen Bootloader anlegen, und damit nicht weiter sichergestellt ist was in dem Absatz: **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_ gefordert wird.
-
-
-
-
-## Install Chargy
-
-```
-sudo apt install curl
-sudo curl -sL https://deb.nodesource.com/setup_11.x | sudo bash -
-sudo apt install nodejs
-sudo npm install -g sass
-sudo npm install -g typescript
-```
-
-```
-sudo apt install git
-git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
-cd ChargyDesktopApp
-npm install
-```
-
 
 
 https://askubuntu.com/questions/48535/how-to-customize-the-ubuntu-live-cd#
