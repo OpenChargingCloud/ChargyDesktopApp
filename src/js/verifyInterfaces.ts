@@ -70,6 +70,7 @@ interface IChargingStation
     end:                        string;
     description:                {};
     address:                    IAddress;
+    geoLocation?:               IGeoLocation;
     chargingStationOperator:    IChargingStationOperator;
     chargingPoolId:             string;
     chargingPool:               IChargingPool;
@@ -250,6 +251,11 @@ interface IAddress {
     postalCode:                 string;
     country:                    string;
     comment:                    any;
+}
+
+interface IGeoLocation {
+    lat:                        number;
+    lng:                        number;
 }
 
 

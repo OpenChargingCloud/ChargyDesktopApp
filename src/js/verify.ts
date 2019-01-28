@@ -7,6 +7,9 @@ import { debug } from "util";
 import * as crypto from "crypto";
 import { readSync } from "fs";
 
+var map:     any = "";
+var leaflet: any = "";
+
 //const { randomBytes } = require('crypto')
 
 var chargingStationOperators  = new Array<IChargingStationOperator>();
@@ -97,6 +100,61 @@ function StartDashboard() {
     
                 var result = verifySessionCryptoDetails(chargingSession);
 
+                var redMarker                 = leaflet.AwesomeMarkers.icon({
+                    prefix:                     'fa',
+                    icon:                       'exclamation',
+                    markerColor:                'red',
+                    iconColor:                  '#ecc8c3'
+                });
+
+                var greenMarker               = leaflet.AwesomeMarkers.icon({
+                    prefix:                     'fa',
+                    icon:                       'charging-station',
+                    markerColor:                'green',
+                    iconColor:                  '#c2ec8e'
+                });
+
+                var markerIcon  = redMarker;
+
+                switch (result.status)
+                {
+    
+                    case SessionVerificationResult.UnknownSessionFormat:
+                    case SessionVerificationResult.PublicKeyNotFound:
+                    case SessionVerificationResult.InvalidPublicKey:
+                    case SessionVerificationResult.InvalidSignature:
+                        markerIcon = redMarker;
+                        break;
+
+                    case SessionVerificationResult.ValidSignature:
+                        markerIcon = greenMarker;
+                        break;
+
+
+                    default:
+                        markerIcon = redMarker;
+
+                }
+
+                var geoLocation  = chargingSession.EVSE.chargingStation.geoLocation;
+
+                var marker       = leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(map);
+                marker.bindPopup("lala!");
+                markers.push(marker);
+
+                if (minlat > geoLocation.lat)
+                    minlat = geoLocation.lat;
+
+                if (maxlat < geoLocation.lat)
+                    maxlat = geoLocation.lat;
+
+                if (minlng > geoLocation.lng)
+                    minlng = geoLocation.lng;
+
+                if (maxlng < geoLocation.lng)
+                    maxlng = geoLocation.lng;
+
+
                 switch (result.status)
                 {
     
@@ -114,12 +172,12 @@ function StartDashboard() {
 
                     case SessionVerificationResult.ValidSignature:
                         return '<i class="fas fa-check-circle"></i> Gültig';
-    
+
 
                     default:
                         return '<i class="fas fa-times-circle"></i> Ungültig';
-    
-                }            
+
+                }
     
             }
 
@@ -132,6 +190,12 @@ function StartDashboard() {
             eMobilityProviders        = [];
             mediationServices         = [];
             chargingSessions          = [];
+
+            var markers: any = [];
+            var minlat                    = +1000;
+            var maxlat                    = -1000;
+            var minlng                    = +1000;
+            var maxlng                    = -1000;
 
             //#region Prepare View
 
@@ -594,6 +658,9 @@ function StartDashboard() {
                         chargingSessionDiv.click();
 
                 }
+
+                map.fitBounds([[minlat, minlng], [maxlat, maxlng]],
+                    { padding: [40, 40] });
 
             }
 
