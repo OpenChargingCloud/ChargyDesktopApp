@@ -28,9 +28,17 @@ On Linux and Mac OS X:
 sudo curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
 sudo apt install nodejs
 
-sudo npm install -g electron-forge
-sudo npm install -g typescript
-sudo npm install -g sass
+$ sudo npm install -g electron-forge@latest
++ electron-forge@5.2.4
+added 594 packages from 397 contributors in 57.986s
+
+$ sudo npm install -g typescript@latest
++ typescript@3.3.3333
+added 1 package from 1 contributor in 1.738s
+
+$ sudo npm install -g sass@latest
++ sass@1.17.2
+added 135 packages from 106 contributors in 9.64s
 ```
 
 
