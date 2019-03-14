@@ -588,35 +588,39 @@ body {
                 overflow-y:             scroll;
                 z-index:                9000;
 
-                #info {
+                #intro {
+                    margin:                 10px 0px 10px 0px;
+                }
 
-                    display: table;
+                #cryptoData {
+
+                    display:                table;
 
                     .row {
 
-                        display: table-row;
+                        display:                table-row;
 
                         .id {
-                            display:        table-cell;
-                            padding:        2px 10px 1px 8px;
-                            font-weight:    bold;
-                            border-radius:  4px 0px 0px 4px;
+                            display:                table-cell;
+                            padding:                2px 10px 1px 8px;
+                            font-weight:            bold;
+                            border-radius:          4px 0px 0px 4px;
                         }
 
                         .value {
-                            display:        table-cell;
-                            padding:        2px 8px 1px 0px;
-                            border-radius:  0px 4px 4px 0px;
+                            display:                table-cell;
+                            padding:                2px 8px 1px 0px;
+                            border-radius:          0px 4px 4px 0px;
                         }
 
                     }
 
                     .row:hover {
-                        background-color: orange;        
+                        background-color:       orange;        
                     }
 
                     .overEntry {
-                        background-color: orange;        
+                        background-color:       orange;        
                     }
 
                 }

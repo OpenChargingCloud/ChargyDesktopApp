@@ -284,6 +284,7 @@ class EMHCrypt01 extends ACrypt {
 
 
     ViewMeasurement(measurementValue:        IEMHMeasurementValue,
+                    introDiv:                HTMLDivElement,
                     infoDiv:                 HTMLDivElement,
                     bufferValue:             HTMLDivElement,
                     hashedBufferValue:       HTMLDivElement,
@@ -294,9 +295,12 @@ class EMHCrypt01 extends ACrypt {
 
         const result    = measurementValue.result as IEMHCrypt01Result;
 
-        const cryptoDiv = CreateDiv(infoDiv,   "row");
-                          CreateDiv(cryptoDiv, "id",    "Kryptoverfahren");
-                          CreateDiv(cryptoDiv, "value", "EMHCrypt01 (" + this.description + ")");
+        //const cryptoDiv = CreateDiv(introDiv,  "row");
+        //                  CreateDiv(cryptoDiv, "id",    "Kryptoverfahren");
+        //                  CreateDiv(cryptoDiv, "value", "EMHCrypt01 (" + this.description + ")");
+
+        const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
+        cryptoSpan.innerHTML = "EMHCrypt01 (" + this.description + ")";
 
         hashedBufferValue.parentElement.children[0].innerHTML = "Hashed Puffer (SHA256, 24 bytes)";
  

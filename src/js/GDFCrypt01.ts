@@ -252,6 +252,7 @@ class GDFCrypt01 extends ACrypt {
 
 
     ViewMeasurement(measurementValue:        IMeasurementValue,
+                    introDiv:                HTMLDivElement,
                     infoDiv:                 HTMLDivElement,
                     bufferValue:             HTMLDivElement,
                     hashedBufferValue:       HTMLDivElement,
@@ -262,7 +263,7 @@ class GDFCrypt01 extends ACrypt {
 
         const result    = measurementValue.result as IGDFCrypt01Result;
 
-        const cryptoDiv = CreateDiv(infoDiv,   "row");
+        const cryptoDiv = CreateDiv(introDiv,  "row");
                           CreateDiv(cryptoDiv, "id",    "Kryptoverfahren");
                           CreateDiv(cryptoDiv, "value", "GDFCrypt01 (" + this.description + ")");
 

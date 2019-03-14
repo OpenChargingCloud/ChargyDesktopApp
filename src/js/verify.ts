@@ -1650,11 +1650,12 @@ function StartDashboard() {
         {
             //inputInfosDiv.style.display  = 'flex';
             //errorTextDiv.style.display   = 'inline-block';
-            infoDiv.innerHTML       = '<i class="fas fa-times-circle"></i> ' + text;
+            introDiv.innerHTML           = '<i class="fas fa-times-circle"></i> ' + text;
         }
 
 
-        let infoDiv  = overlayDiv.querySelector('#info') as HTMLDivElement;
+        let introDiv       = overlayDiv.querySelector('#intro')      as HTMLDivElement;
+        let cryptoDataDiv  = overlayDiv.querySelector('#cryptoData') as HTMLDivElement;
 
         if (measurementValue             == null ||
             measurementValue.measurement == null)
@@ -1673,7 +1674,8 @@ function StartDashboard() {
         let signatureExpectedValue    = overlayDiv.querySelector('#signatureExpected .value')  as HTMLDivElement;
         let signatureCheckValue       = overlayDiv.querySelector('#signatureCheck')            as HTMLDivElement;
 
-        infoDiv.innerHTML                 = '';
+        //introDiv.innerHTML                = '';
+        cryptoDataDiv.innerHTML           = '';
         bufferValue.innerHTML             = '';
         hashedBufferValue.innerHTML       = '0x00000000000000000000000000000000000';
         publicKeyValue.innerHTML          = '0x00000000000000000000000000000000000';
@@ -1682,12 +1684,13 @@ function StartDashboard() {
 
         if (measurementValue.method)
             measurementValue.method.ViewMeasurement(measurementValue,
-                                         infoDiv,
-                                         bufferValue,
-                                         hashedBufferValue,
-                                         publicKeyValue,
-                                         signatureExpectedValue,
-                                         signatureCheckValue);
+                                                    introDiv,
+                                                    cryptoDataDiv,
+                                                    bufferValue,
+                                                    hashedBufferValue,
+                                                    publicKeyValue,
+                                                    signatureExpectedValue,
+                                                    signatureCheckValue);
 
         else
         {

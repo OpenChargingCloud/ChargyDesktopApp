@@ -72,6 +72,7 @@ abstract class ACrypt {
     abstract VerifyMeasurement(measurementValue:      IMeasurementValue): ICryptoResult;
 
     abstract ViewMeasurement(measurementValue:        IMeasurementValue,
+                             introDiv:                HTMLDivElement,
                              infoDiv:                 HTMLDivElement,
                              bufferValue:             HTMLDivElement,
                              hashedBufferValue:       HTMLDivElement,

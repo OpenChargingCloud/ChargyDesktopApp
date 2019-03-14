@@ -427,27 +427,30 @@ body #outerframe #overlay #overlayText {
   overflow-y: scroll;
   z-index: 9000;
 }
-body #outerframe #overlay #overlayText #info {
+body #outerframe #overlay #overlayText #intro {
+  margin: 10px 0px 10px 0px;
+}
+body #outerframe #overlay #overlayText #cryptoData {
   display: table;
 }
-body #outerframe #overlay #overlayText #info .row {
+body #outerframe #overlay #overlayText #cryptoData .row {
   display: table-row;
 }
-body #outerframe #overlay #overlayText #info .row .id {
+body #outerframe #overlay #overlayText #cryptoData .row .id {
   display: table-cell;
   padding: 2px 10px 1px 8px;
   font-weight: bold;
   border-radius: 4px 0px 0px 4px;
 }
-body #outerframe #overlay #overlayText #info .row .value {
+body #outerframe #overlay #overlayText #cryptoData .row .value {
   display: table-cell;
   padding: 2px 8px 1px 0px;
   border-radius: 0px 4px 4px 0px;
 }
-body #outerframe #overlay #overlayText #info .row:hover {
+body #outerframe #overlay #overlayText #cryptoData .row:hover {
   background-color: orange;
 }
-body #outerframe #overlay #overlayText #info .overEntry {
+body #outerframe #overlay #overlayText #cryptoData .overEntry {
   background-color: orange;
 }
 body #outerframe #overlay #overlayText .infoblock {
