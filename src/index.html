@@ -68,16 +68,27 @@
                     </div>
 
                     <div id="aboutScreen">
-                        Diese Software ist Open Source und basiert auf den folgenden Open Source Software Bibliotheken:<br />
-                        <br />
-                        <ul>
+                        Diese Software ist Open Source und basiert auf den folgenden Open-Source-Software-Bibliotheken:
+                        <ul id="OpenSourceLibs">
                             <li>Chargy <script>document.write(require('electron').remote.app.getVersion())</script>, <button class="linkButton" href="https://github.com/OpenChargingCloud/ChargyDesktopApp/blob/master/LICENSE">AGPL v3 License</button></li>
                             <li>Electron <script>document.write(process.versions.electron)</script>,                 <button class="linkButton" href="https://github.com/electron/electron/blob/master/LICENSE">MIT License</button></li>
                             <li>Electron Forge,                                                                      <button class="linkButton" href="https://github.com/electron-userland/electron-forge/blob/master/LICENSE">MIT License</button></li>
                             <li>Chromium <script>document.write(process.versions.chrome)</script>,                   <button class="linkButton" href="https://github.com/chromium/chromium/blob/master/LICENSE">MIT License</button></li>
                             <li>Node.js <script>document.write(process.versions.node)</script>,                      <button class="linkButton" href="https://github.com/nodejs/node/blob/master/LICENSE">MIT License</button></li>
                             <li>OpenSSL <script>document.write(process.versions.openssl)</script>,                   <button class="linkButton" href="https://github.com/openssl/openssl/blob/master/LICENSE">Apache License v2.0</button></li>
+                            <li>elliptic 6.4.1,                                                                      <button class="linkButton" href="https://github.com/indutny/elliptic">MIT License</button></li>
+                            <li>moment 2.23.0,                                                                       <button class="linkButton" href="https://github.com/moment/moment/blob/develop/LICENSE">MIT License</button></li>
                         </ul>
+                        <p>
+                            Die SHA256 Hash-Funktionen werden durch die <button class="linkButton" href="https://nodejs.org/api/crypto.html">Node.js Crypto API</button> realisiert. Diese nutzen intern <button class="linkButton" href="https://github.com/openssl/openssl">OpenSSL</button>.
+                        </p>
+                        <p>
+                            Elliptische Kurven Kryptographie wird durch <button class="linkButton" href="https://github.com/indutny/elliptic">elliptic</button> realisiert.
+                            Hierbei kommen je nach Verfahren und Ladestations- bzw. SmartMeter-Hersteller unterschiedliche elliptische Kurven zum Einsatz.
+                        </p>
+                        <p>
+                            Weitere Details zu den internen Datenstrukturen und Abläufen von Chargy gibt es auf <button class="linkButton" href="https://github.com/OpenChargingCloud/ChargyDesktopApp/">GitHub</button>.
+                        </p>
                     </div>
 
                     <div id="chargingSessionReport"></div>

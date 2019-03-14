@@ -125,6 +125,7 @@ body #outerframe #verifyframe #leftbar #input #inputInfos #loadingErrors #errorT
 body #outerframe #verifyframe #leftbar #input #aboutScreen {
   display: none;
   width: 100%;
+  margin-top: 10px;
 }
 body #outerframe #verifyframe #leftbar #input #aboutScreen .linkButton {
   border: 0;
