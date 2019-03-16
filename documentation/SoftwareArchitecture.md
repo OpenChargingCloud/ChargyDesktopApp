@@ -37,9 +37,9 @@ Roll | Description | Expectations
 EV Drivers | | A common and vendor independent transparency and verification of their charging processes
 Open Source Community | Initiative of GraphDefined, chargeIT mobility and Wiedergrün | Providing a standardized solution
 PTB (Working Group 8.51 Metrology Software) | National Metrology Institute of the Federal Republic of Germany | Regulatory verification of the software
-Charging Station Vendors | | Providing data and protocols for the verification of charging processes
-Charging Station Operators | | Providing a common software for the verification of charging processes to their direct customers and e-mobility providers
-E-Mobility Providers | | Providing a common software for the verification of charging processes to their customers
+Charging Station Vendors | Responsible for regulatory issues | Providing data and protocols for the verification of charging processes
+Charging Station Operators | Responsible for technical and legal issues | Providing a common software for the verification of charging processes to e-mobility providers. Might act on behalf of the charging station owners.
+E-Mobility Providers | The legal person selling energy to ev drivers | Providing a common software for the verification of charging processes to their customers
 
 ## Constraints
 
