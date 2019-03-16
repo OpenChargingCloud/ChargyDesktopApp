@@ -92,7 +92,7 @@ function StartDashboard() {
     function detectContentFormat(Content) {
 
 
-        function processOpenChargingCloudFormat(CTR: IChargeTransparencyRecord)
+        function processChargeTransparencyRecord(CTR: IChargeTransparencyRecord)
         {
 
             function checkSessionCrypto(chargingSession: IChargingSession)
@@ -1296,7 +1296,7 @@ function StartDashboard() {
 
                     }
 
-                    processOpenChargingCloudFormat(_CTR);
+                    processChargeTransparencyRecord(_CTR);
                     return true;
 
                 }
@@ -1322,7 +1322,7 @@ function StartDashboard() {
         {
 
             case "https://open.charging.cloud/contexts/CTR+json":
-                processOpenChargingCloudFormat(Content);
+                processChargeTransparencyRecord(Content);
                 break;
 
             default:
