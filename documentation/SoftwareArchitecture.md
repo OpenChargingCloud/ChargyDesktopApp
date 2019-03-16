@@ -43,6 +43,8 @@ E-Mobility Providers | | Providing a common software for the verification of cha
 
 ## Constraints
 
+Chargy esists within a highly regulated environment. The following constraints exists.
+
 ### Technical Constraints
 
 Constraint | Description, Background                  
@@ -74,8 +76,6 @@ about charging stations, their geo coordinates, addresses, tariffs and
 includes an issue tracker. This all is done to give the ev driver the best
 experience, to help him evaluate the correctness of the charging process
 and to support him when something seems to be wrong.
-
-## Benefits of Chargy
 
 1. Chargy comes with __*meta data*__. True charging transparency is more than just signed smart meter values. Chargy allows you to group multiple signed smart meter values to entire charging sessions and to add additional meta data like EVSE information, geo coordinates, tariffs, ... within your backend in order to improve the user experience for the ev drivers.
 2. Chargy is __*secure*__. Chargy implements a public key infrastructure for managing certificates of smart meters, EVSEs, charging stations, charging station operators and e-mobility providers. By this the ev driver will always retrieve the correct public key to verify a charging process automatically and without complicated manual lookups in external databases.
