@@ -35,7 +35,7 @@ regulatory tasks even a special Chargy Linux-Live-DVD exists.
 Roll | Description | Expectations                 
 -- | -- | -- 
 EV Drivers | | A common and vendor independent transparency and verification of their charging processes
-Open Source Community | Initiative of GraphDefined, chargeIT mobility and Wiedergrün | Providing a standardised solution
+Open Source Community | Initiative of GraphDefined, chargeIT mobility and Wiedergrün | Providing a standardized solution
 PTB (Working Group 8.51 Metrology Software) | National Metrology Institute of the Federal Republic of Germany | Regulatory verification of the software
 Charging Station Vendors | | Providing data and protocols for the verification of charging processes
 Charging Station Operators | | Providing a common software for the verification of charging processes to their direct customers and e-mobility providers
@@ -43,7 +43,7 @@ E-Mobility Providers | | Providing a common software for the verification of cha
 
 ## Constraints
 
-Chargy esists within a highly regulated environment. The following constraints exists.
+Chargy exists within a highly regulated environment. The following constraints exists.
 
 ### Technical Constraints
 
@@ -77,12 +77,18 @@ includes an issue tracker. This all is done to give the ev driver the best
 experience, to help him evaluate the correctness of the charging process
 and to support him when something seems to be wrong.
 
-1. Chargy comes with __*meta data*__. True charging transparency is more than just signed smart meter values. Chargy allows you to group multiple signed smart meter values to entire charging sessions and to add additional meta data like EVSE information, geo coordinates, tariffs, ... within your backend in order to improve the user experience for the ev drivers.
-2. Chargy is __*secure*__. Chargy implements a public key infrastructure for managing certificates of smart meters, EVSEs, charging stations, charging station operators and e-mobility providers. By this the ev driver will always retrieve the correct public key to verify a charging process automatically and without complicated manual lookups in external databases.
-3. Chargy is __*platform agnostic*__. The entire software is available for desktop and smart phone operating systems and .NET. If you want ports to other platforms or programming languages, we will support your efforts.
-4. Chargy is __*Open Source*__. In contrast to other vendors in e-mobility, we belief that true transparency is only trustworthy if the entire process and the required software is open and reusable under a fair copyleft license (AGPL).
-5. Chargy is __*open for your contributions*__. We currently support adapters for the protocols of different charging station vendors like chargeIT mobility, ABL (OCMF), chargepoint. The certification at the Physikalisch-Technische Bundesanstalt (PTB) is provided by chargeIT mobility. If you want to add your protocol or a protocol adapter feel free to read the contributor license agreement and to send us a pull request.
-6. Chargy is __*white label*__. If you are a supporter of the Chargy project you can even use the entire software project under the free Apache 2.0 license. This allows you to create proprietary forks implementing your own corporate design or to include Chargy as a library within your existing application (This limitation was introduced to avoid discussions with too many black sheeps in the e-mobility market. We are sorry...).
-7. Chargy is __*accessible*__. For public sector bodies Chargy fully supports the [EU directive 2016/2102](https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32016L2102) on the accessibility of websites and mobile applications and provides a context-sensitive feedback-mechanism and methods for dispute resolution.
+## Data Flow
+
+The following describes the data flow and the actors.
+
+![](DataFlow.svg)
+
+Entity | Description                  
+-- | -- 
+Charging Station Operator | The operator of charging stations selling energy to EV drivers.
+EV Driver | An enduser who wants to charge its electric vehicle and understand the resulting costs.
+Charge Transparency Record | A data record about the charging process including at least charging time, consumed energy and a digital signature. May include additional signed or unsigned meta data to support the ev driver.
+Public Key(s)/Certificates | The charging station operator publishes its charging stations within a public register.
+Public Charging Station Register | The charging station register acts as trusted source of charging station meta data, esp. public keys for the verification of charge transparency records.
 
 
