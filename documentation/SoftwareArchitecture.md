@@ -34,12 +34,12 @@ regulatory tasks even a special Chargy Linux-Live-DVD exists.
 
 Roll | Description | Expectations                 
 -- | -- | -- 
-EV Drivers | | A common and vendor independent transparency and verification of their charging processes
-Open Source Community | Initiative of GraphDefined, chargeIT mobility and Wiedergrün | Providing a standardized solution
-PTB (Working Group 8.51 Metrology Software) | National Metrology Institute of the Federal Republic of Germany | Regulatory verification of the software
-Charging Station Vendors | Responsible for regulatory issues | Providing data and protocols for the verification of charging processes
-Charging Station Operators | Responsible for technical and legal issues | Providing a common software for the verification of charging processes to e-mobility providers. Might act on behalf of the charging station owners.
-E-Mobility Providers | The legal person selling energy to ev drivers | Providing a common software for the verification of charging processes to their customers
+EV Drivers | | A simple and vendor independent way to understand and verify their charging costs.
+Open Source Community | Initiative of GraphDefined, chargeIT mobility and Wiedergrün | Providing an open and standardized solution.
+PTB (Working Group 8.51 Metrology Software) | National Metrology Institute of the Federal Republic of Germany | Regulatory verification of the software.
+Charging Station Vendors | Responsible for regulatory issues | Data models and protocols for the verification of charging processes.
+Charging Station Operators | Responsible for technical and legal issues | Providing a common software for the verification of charging processes to e-mobility providers. Might act on behalf of multiple charging station owners.
+E-Mobility Providers | The legal person selling energy to ev drivers | Providing a common software for the verification of charging processes to their customers. Might want to include the software into their own software stack.
 
 ## Constraints
 
