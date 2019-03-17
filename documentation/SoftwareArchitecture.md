@@ -77,9 +77,9 @@ includes an issue tracker. This all is done to give the ev driver the best
 experience, to help him evaluate the correctness of the charging process
 and to support him when something seems to be wrong.
 
-## Data Flow
+## Architecture
 
-The following describes the data flow and the actors.
+The following architecture describes the entities, actors and data flows.
 
 ![](DataFlow.svg)
 
@@ -93,3 +93,8 @@ Public Key(s)/Certificates | The charging station operator publishes its chargin
 Public Charging Station Register | The charging station register acts as trusted source of charging station metadata, esp. public keys for the verification of charge transparency records.
 
 
+## Processing Steps
+
+The following describes the data processing and verification steps within the transparency software.
+
+![](SoftwareArchitecture.svg)
