@@ -88,8 +88,8 @@ Entity | Description
 Charging Station Operator | The operator of charging stations selling energy to EV drivers.
 EV Driver | An enduser who wants to charge its electric vehicle at a charging station and understand the resulting costs.
 Charging Station | A device to charge an electric vehicle. Will record and digitaly sign the energy consumption measurements.
-Charge Transparency Record | A data record about the charging process including at least charging time, consumed energy and a digital signature. May include additional signed or unsigned meta data to support the ev driver.
+Charge Transparency Record | A data record about the charging process including at least charging time, consumed energy and a digital signature. May include additional signed or unsigned metadata to support the ev driver.
 Public Key(s)/Certificates | The charging station operator publishes its charging stations within a public register.
-Public Charging Station Register | The charging station register acts as trusted source of charging station meta data, esp. public keys for the verification of charge transparency records.
+Public Charging Station Register | The charging station register acts as trusted source of charging station metadata, esp. public keys for the verification of charge transparency records.
 
 
