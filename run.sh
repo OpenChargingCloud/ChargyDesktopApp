@@ -11,5 +11,6 @@ tsc src/js/verify.ts
 #tsc src/main.ts
 
 sass src/css/verify.scss src/css/verify.css
+sass src/css/custom.scss src/css/custom.css
 
 npm start

@@ -127,11 +127,25 @@ body #outerframe #verifyframe #leftbar #input #aboutScreen {
   width: 100%;
   margin-top: 10px;
 }
+body #outerframe #verifyframe #leftbar #input #aboutScreen #OpenSourceLibs {
+  display: table;
+  margin: 10px 20px;
+}
+body #outerframe #verifyframe #leftbar #input #aboutScreen #OpenSourceLibs .lib {
+  display: table-row;
+}
+body #outerframe #verifyframe #leftbar #input #aboutScreen #OpenSourceLibs .lib .name {
+  display: table-cell;
+}
+body #outerframe #verifyframe #leftbar #input #aboutScreen #OpenSourceLibs .lib .license {
+  display: table-cell;
+}
 body #outerframe #verifyframe #leftbar #input #aboutScreen .linkButton {
   border: 0;
   border-radius: 4px;
   padding: 2px 4px;
   margin-top: 1px;
+  margin-left: 4px;
   background-color: #b9dbf5;
   font-size: 75%;
 }
@@ -417,19 +431,19 @@ body #outerframe #overlay {
 body #outerframe #overlay #overlayText {
   position: relative;
   top: 5%;
-  width: calc(90% - 20px);
+  width: calc(90% - 40px);
   height: calc(90% - 50px);
   margin: auto;
   padding: 1px;
   background-color: #f5f5f5;
-  border: 10px solid #f5f5f5;
+  border: 20px solid #f5f5f5;
   border-radius: 6px;
   box-shadow: 2px 0 16px 0 rgba(0, 0, 0, 0.3);
   overflow-y: scroll;
   z-index: 9000;
 }
 body #outerframe #overlay #overlayText #intro {
-  margin: 10px 0px 10px 0px;
+  margin: 5px 0px 10px 0px;
 }
 body #outerframe #overlay #overlayText #cryptoData {
   display: table;
