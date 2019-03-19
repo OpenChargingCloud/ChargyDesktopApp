@@ -519,6 +519,7 @@ function StartDashboard() {
                 {
 
                     let chargingSessionDiv      = CreateDiv(chargingSessionsDiv, "chargingSessions");               
+                    chargingSession.GUI         = chargingSessionDiv;
                     chargingSessionDiv.onclick  = captureChargingSession(chargingSession);
 
                     //#region Show session time infos
@@ -560,10 +561,10 @@ function StartDashboard() {
 
                     //#endregion
 
-                    //#region Show energy infos
+                    var tableDiv                = chargingSessionDiv.appendChild(document.createElement('div'));
+                        tableDiv.className      = "table";
 
-                    var tableDiv                   = chargingSessionDiv.appendChild(document.createElement('div'));
-                        tableDiv.className         = "table";
+                    //#region Show energy infos
 
                     try {
 
@@ -571,11 +572,11 @@ function StartDashboard() {
                         productInfoDiv.className             = "productInfos";
 
                         var productIconDiv                   = productInfoDiv.appendChild(document.createElement('div'));
-                        productIconDiv.className             = "productIcon";
+                        productIconDiv.className             = "icon";
                         productIconDiv.innerHTML             = '<i class="fas fa-chart-pie"></i>';
 
                         var productDiv                       = productInfoDiv.appendChild(document.createElement('div'));
-                        productDiv.className                 = "productText";
+                        productDiv.className                 = "text";
                         productDiv.innerHTML = chargingSession.product != null ? chargingSession.product["@id"] + "<br />" : "";
 
                         productDiv.innerHTML += "Ladedauer ";
@@ -625,6 +626,81 @@ function StartDashboard() {
 
                     //#endregion
 
+                    //#region Show authorization start/stop information
+
+                    try {
+
+                        if (chargingSession.authorizationStart != null)
+                        {
+    
+                            var authorizationStartDiv            = tableDiv.appendChild(document.createElement('div'));
+                                authorizationStartDiv.className  = "authorizationStart";
+
+                            var authorizationStartIconDiv                   = authorizationStartDiv.appendChild(document.createElement('div'));
+                            authorizationStartIconDiv.className             = "icon";
+                            switch (chargingSession.authorizationStart.type)
+                            {
+
+                                case "cryptoKey":
+                                    authorizationStartIconDiv.innerHTML     = '<i class="fas fa-key"></i>';
+                                    break;
+
+                                case "eMAId":
+                                case "EVCOId":
+                                    authorizationStartIconDiv.innerHTML     = '<i class="fas fa-mobile-alt"></i>';
+                                    break;
+
+                                default:
+                                    authorizationStartIconDiv.innerHTML     = '<i class="fas fa-id-card"></i>';
+                                    break;
+
+                            }
+
+                            var authorizationStartIdDiv                     = authorizationStartDiv.appendChild(document.createElement('div'));
+                            authorizationStartIdDiv.className               = "id";
+                            authorizationStartIdDiv.innerHTML = chargingSession.authorizationStart["@id"];
+
+                        }
+
+                        if (chargingSession.authorizationStop != null)
+                        {
+    
+                            var authorizationStopDiv            = tableDiv.appendChild(document.createElement('div'));
+                                authorizationStopDiv.className  = "authorizationStop";
+
+                            var authorizationStopIconDiv                   = authorizationStopDiv.appendChild(document.createElement('div'));
+                            authorizationStopIconDiv.className             = "icon";
+                            switch (chargingSession.authorizationStop.type)
+                            {
+
+                                case "cryptoKey":
+                                    authorizationStopIconDiv.innerHTML     = '<i class="fas fa-key"></i>';
+                                    break;
+
+                                case "eMAId":
+                                case "EVCOId":
+                                    authorizationStopIconDiv.innerHTML     = '<i class="fas fa-mobile-alt"></i>';
+                                    break;
+
+                                default:
+                                    authorizationStopIconDiv.innerHTML     = '<i class="fas fa-id-card"></i>';
+                                    break;
+
+                            }
+    
+                            var authorizationStopIdDiv                     = authorizationStopDiv.appendChild(document.createElement('div'));
+                            authorizationStopIdDiv.className               = "id";
+                            authorizationStopIdDiv.innerHTML = chargingSession.authorizationStop["@id"];
+
+                        }                        
+
+                    } catch (exception)
+                    {
+                        console.log("Could not show authorization start/stop infos of charging session '" + chargingSession["@id"] + "':" + exception);
+                    }
+
+                    //#endregion
+
                     //#region Show location infos...
 
                     try
@@ -640,11 +716,11 @@ function StartDashboard() {
                             locationInfoDiv.className             = "locationInfos";
 
                             var locationIconDiv                   = locationInfoDiv.appendChild(document.createElement('div'));
-                            locationIconDiv.className             = "locationIcon";
+                            locationIconDiv.className             = "icon";
                             locationIconDiv.innerHTML             = '<i class="fas fa-map-marker-alt"></i>';
 
                             var locationDiv                       = locationInfoDiv.appendChild(document.createElement('div'));
-                            locationDiv.classList.add("locationText");
+                            locationDiv.classList.add("text");
 
                             if (chargingSession.EVSEId || chargingSession.EVSE) {
 
@@ -747,11 +823,13 @@ function StartDashboard() {
                     //#endregion
 
 
-                    // If there is only one charging session show its details at once...
-                    if (CTR.chargingSessions.length == 1)
-                        chargingSessionDiv.click();
+                    chargingSessions.push(chargingSession);
 
                 }
+
+                // If there is only one charging session show its details at once...
+                if (chargingSessions.length == 1)
+                    chargingSessions[0].GUI.click();
 
                 map.fitBounds([[minlat, minlng], [maxlat, maxlng]],
                     { padding: [40, 40] });
@@ -1096,7 +1174,8 @@ function StartDashboard() {
                         },
                     
                         "contract": {
-                            "@id":          _contract_id,
+                            "@id":          CTRArray[0]["contract"]["id"],
+                            "type":         CTRArray[0]["contract"]["type"],
                             "username":     "",
                             "email":        ""
                         },

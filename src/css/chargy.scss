@@ -249,31 +249,65 @@ body {
 
                                         display:            table-row;
 
-                                        .productIcon {
+                                        .icon {
                                             display:            table-cell;
                                             padding:            6px 7px 0px 3px;
                                             text-align:         center;
                                             vertical-align:     top;
                                         }
 
-                                        .productText {
+                                        .text {
+                                            display:            table-cell;
                                             color:            #212427;
                                         }
 
+                                    }
+
+                                    .authorizationStart {
+
+                                        display:            table-row;
+
+                                        .icon {
+                                            display:            table-cell;
+                                            padding:            0px 7px 0px 3px;
+                                            text-align:         center;
+                                            vertical-align:     top;
+                                        }
+
+                                        .id {
+                                            display:            table-cell;
+                                        }
+                                    }
+
+                                    .authorizationStop {
+
+                                        display:            table-row;
+
+                                        .icon {
+                                            display:            table-cell;
+                                            padding:            0px 7px 0px 3px;
+                                            text-align:         center;
+                                            vertical-align:     top;
+                                        }
+
+                                        .id {
+                                            display:            table-cell;
+                                        }
                                     }
 
                                     .locationInfos {
 
                                         display:            table-row;
 
-                                        .locationIcon {
+                                        .icon {
                                             display:            table-cell;
                                             padding:            6px 7px 0px 3px;
                                             text-align:         center;
                                             vertical-align:     top;
                                         }
 
-                                        .locationText {
+                                        .text {
+                                            display:            table-cell;
                                             color:            #212427;
                                         }                                        
 

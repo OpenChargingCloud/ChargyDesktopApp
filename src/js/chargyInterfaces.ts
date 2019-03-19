@@ -134,6 +134,7 @@ interface IChargingSession
 {
     "@id":                      string;
     "@context":                 string;
+    GUI:                        HTMLDivElement;
     begin:                      string;
     end:                        string;
     description:                {};
