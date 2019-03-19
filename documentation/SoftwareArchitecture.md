@@ -36,7 +36,7 @@ Roll | Description | Expectations
 -- | -- | -- 
 EV Drivers | | A simple and vendor independent way to understand and verify their charging costs.
 Open Source Community | Initiative of GraphDefined, chargeIT mobility and Wiedergrün | Providing an open and standardized solution.
-PTB (Working Group 8.51 Metrology Software) | National Metrology Institute of the Federal Republic of Germany | Regulatory verification of the software.
+PTB (Working Group 8.51 Metrology Software) | National Metrology Institute of the Federal Republic of Germany | Regulatory verification of the software according to [PTB-A 50.7, Abschnitt 3.1.1.3 Buchstabe B](https://oar.ptb.de/files/download/56d6a9e2ab9f3f76468b4619) and published [here](https://www.ptb.de/cms/ptb/fachabteilungen/abt2/fb-23/ag-234/info-center-234/via-234000.html).
 Charging Station Vendors | Responsible for regulatory issues | Data models and protocols for the verification of charging processes.
 Charging Station Operators | Responsible for technical and legal issues | Providing a common software for the verification of charging processes to e-mobility providers. Might act on behalf of multiple charging station owners.
 E-Mobility Providers | The legal person selling energy to ev drivers | Providing a common software for the verification of charging processes to their customers. Might want to include the software into their own software stack.
@@ -77,18 +77,24 @@ includes an issue tracker. This all is done to give the ev driver the best
 experience, to help him evaluate the correctness of the charging process
 and to support him when something seems to be wrong.
 
-## Data Flow
+## Architecture
 
-The following describes the data flow and the actors.
+The following architecture describes the entities, actors and data flows.
 
 ![](DataFlow.svg)
 
 Entity | Description                  
 -- | -- 
 Charging Station Operator | The operator of charging stations selling energy to EV drivers.
-EV Driver | An enduser who wants to charge its electric vehicle and understand the resulting costs.
-Charge Transparency Record | A data record about the charging process including at least charging time, consumed energy and a digital signature. May include additional signed or unsigned meta data to support the ev driver.
+EV Driver | An enduser who wants to charge its electric vehicle at a charging station and understand the resulting costs.
+Charging Station | A device to charge an electric vehicle. Will record and digitaly sign the energy consumption measurements.
+Charge Transparency Record | A data record about the charging process including at least charging time, consumed energy and a digital signature. May include additional signed or unsigned metadata to support the ev driver.
 Public Key(s)/Certificates | The charging station operator publishes its charging stations within a public register.
-Public Charging Station Register | The charging station register acts as trusted source of charging station meta data, esp. public keys for the verification of charge transparency records.
+Public Charging Station Register | The charging station register acts as trusted source of charging station metadata, esp. public keys for the verification of charge transparency records.
 
 
+## Processing Steps
+
+The following describes the data processing and verification steps within the transparency software.
+
+![](SoftwareArchitecture.svg)
