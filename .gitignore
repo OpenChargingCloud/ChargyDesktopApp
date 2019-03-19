@@ -4,9 +4,4 @@ out
 src/css/*.css
 src/css/*.css.map
 !src/css/fontawesome-all.min.css
-src/js/ACrypt.js
-src/js/EMHCrypt01.js
-src/js/GDFCrypt01.js
-src/js/verify.js
-src/js/verifyInterfaces.js
-src/js/verifyLib.js
+src/js/*.js
