@@ -28,7 +28,6 @@ The Chargy Desktop project has a sister project called [Chargy Mobile](https://g
 
  - Apple iOS
  - Google Android
- - Windows Mobile
 
 
 ### System Requirements
