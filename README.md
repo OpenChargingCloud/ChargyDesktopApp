@@ -24,7 +24,7 @@ Chargy is developed for and tested on the following operating systems:
  - Apple Mac OS X
  - Linux Debian/Ubuntu
 
-The Chargy Desktop project has a sister project called [Chargy Mobile](https://github.com/OpenChargingCloud/ChargyMobileApp) which provides the same features, but is based on Apache Cordova and is available for the following operating systems:
+The Chargy Desktop project has a sister project called [Chargy Mobile](https://github.com/OpenChargingCloud/ChargyMobileApp) which provides the same features, but is based on [Apache Cordova](https://cordova.apache.org) and is available for the following operating systems:
 
  - Apple iOS
  - Google Android
