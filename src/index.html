@@ -18,7 +18,6 @@
     <link rel="stylesheet" href="js/leaflet/leaflet.css"                 type="text/css" />
     <link rel="stylesheet" href="js/leaflet/leaflet.awesome-markers.css" type="text/css" />
     <link rel="stylesheet" href="css/chargy.css"                         type="text/css" />
-    <link rel="stylesheet" href="css/custom.css"                         type="text/css" />
 
     <script type="text/javascript" src="js/leaflet/leaflet.js"></script>
     <script type="text/javascript" src="js/leaflet/leaflet.awesome-markers.js"></script>
@@ -35,8 +34,7 @@
     <div id="outerframe">
 
         <div id="headline">
-            <div id="name">Chargy v<script>document.write(require('electron').remote.app.getVersion())</script></div>
-            <div id="text">Transparenzsoftware für die Elektromobilität</div>
+            <div id="logo"></div>
             <div id="windowButtons">
                 <button id="aboutButton"     ><i class="far fa-question-circle"></i></button>
                 <button id="fullScreenButton"><i class="fas fa-expand"         ></i></button>
@@ -137,10 +135,10 @@
                     Falsche Daten, falsche Signaturen oder sonstige Fragen?<br />
                     Treten Sie mit uns in Kontakt:
                     <div id="feedbackMethods">
-                        <div id="feedbackGitHub"       class="row"><div class="key"><i class="fab fa-github"            ></i></div><div id="feedbackGitHub"       class="value"><a href="javascript:OpenExternal('https://github.com/OpenChargingCloud/ChargyDesktopApp')">Chargy Open Source Repository</a></div></div>
                         <div id="feedbackIssueTracker" class="row"><div class="key"><i class="far fa-comments"          ></i></div><div id="feedbackIssueTracker" class="value"><button id="showIssueTracker">Mängel melden</button></div></div>
-                        <div id="feedbackEMail"        class="row"><div class="key"><i class="far fa-envelope"          ></i></div><div id="feedbackEMailValue"   class="value"><a href="mailto:info@chargy.org">chargy.org</a></div></div>
-                        <div id="feedbackPhone"        class="row"><div class="key"><i class="fas fa-phone fa-rotate-90"></i></div><div id="feedbackPhoneValue"   class="value">+49 348 93402854</div></div>
+                        <div id="feedbackEMail"        class="row"><div class="key"><i class="far fa-envelope"          ></i></div><div id="feedbackEMailValue"   class="value"><a href="mailto:info@chargeIT-mobility.com">info@chargeIT-mobility.com</a></div></div>
+                        <div id="feedbackPhone"        class="row"><div class="key"><i class="fas fa-phone fa-rotate-90"></i></div><div id="feedbackPhoneValue"   class="value">+49 (0) 9321 2680 700</div></div>
+                        <div id="feedbackGitHub"       class="row"><div class="key"><i class="fab fa-github"            ></i></div><div id="feedbackGitHub"       class="value"><a href="javascript:OpenExternal('https://github.com/OpenChargingCloud/ChargyDesktopApp')">Chargy Open Source Repository</a></div></div>
                     </div>
                 </div>
 
@@ -154,7 +152,7 @@
             <div id="overlayText">
 
                 <div id="intro">
-                    Folgende Daten des Ladevorgangs sind gemäß <span id="cryptoAlgorithm"></span> Teil der digitalen Signatur und damit direkt oder indirekt eichrechtsrelevant:
+                    Folgende Daten des Ladevorgangs sind eichrechtsrelevant und damit gemäß <span id="cryptoAlgorithm"></span> Teil der digitalen Signatur:
                 </div>
 
                 <div id="cryptoData"></div>

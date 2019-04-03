@@ -11,6 +11,5 @@ tsc src/js/chargy.ts
 #tsc src/main.ts
 
 sass src/css/chargy.scss src/css/chargy.css
-sass src/css/custom.scss src/css/custom.css
 
 npm start

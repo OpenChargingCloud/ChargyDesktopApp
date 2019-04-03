@@ -1068,6 +1068,15 @@ function StartDashboard() {
                             throw "Missing or invalid additionalInfo status[" + i + "]!"
 
 
+                        var _chargePoint = signedMeterValue["chargePoint"];
+                        if (_chargePoint == null || typeof _chargePoint !== 'object')
+                            throw "Missing or invalid chargePoint[" + i + "] information!"
+
+                        var _chargePointSoftwareVersion = _chargePoint["softwareVersion"];
+                        if (_chargePointSoftwareVersion == null || typeof _chargePointSoftwareVersion !== 'string')
+                            throw "Missing or invalid chargePoint softwareVersion[" + i + "]!"
+
+
                         var _signature = signedMeterValue["signature"] as string;
                         if (_signature == null || typeof _signature !== 'string')
                             throw "Missing or invalid signature[" + i + "]!"
@@ -1118,6 +1127,9 @@ function StartDashboard() {
                                           "logBook": _additionalInfo_indexes_logBook
                                        },
                                        "status": _additionalInfo_status
+                                    },
+                                    "chargePoint": {
+                                       "softwareVersion": _chargePointSoftwareVersion
                                     },
                                     "signature": _signature
                         });
@@ -1247,10 +1259,11 @@ function StartDashboard() {
 
                                 "chargingStations": [
                                     {
-                                        "@id":                      evseId,
+                                        "@id":                      evseId.substring(0, evseId.lastIndexOf("*")),
                                         // "description": {
                                         //     "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
                                         // },
+                                        "firmwareVersion":          CTRArray[0]["chargePoint"]["softwareVersion"],
                                         "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
                                         "address": {
                                             "street":               address_street,
@@ -1467,16 +1480,68 @@ function StartDashboard() {
 
                     measurement.chargingSession      = chargingSession;
 
-                    let MeasurementInfoDiv           = CreateDiv(evseTarifInfosDiv,  "measurementInfo");
+                    let MeasurementInfoDiv           = CreateDiv(evseTarifInfosDiv,  "measurementInfos");
 
-                    //#region Show meter vendor infos
+                    //#region Show charging station infos
+
+                    if (measurement.chargingSession.chargingStation != null)
+                    {
+
+                        let ChargingStationDiv       = CreateDiv(MeasurementInfoDiv,  "chargingStation");
+                        let ChargingStationHeadline  = CreateDiv(ChargingStationDiv,  "chargingStationHeadline",
+                                                                 "Ladestation");
+
+                        if (measurement.chargingSession.chargingStation["@id"] != null)
+                        {
+
+                            let ChargingStationIdDiv       = CreateDiv(ChargingStationDiv,    "chargingStationId");
+
+                            let ChargingStationIdIdDiv     = CreateDiv(ChargingStationIdDiv,  "chargingStationIdId",
+                                                                       "Identifikation");
+
+                            let ChargingStationIdValueDiv  = CreateDiv(ChargingStationIdDiv,  "chargingStationIdValue",
+                                                                       measurement.chargingSession.chargingStation["@id"]);
+
+                        }
+
+                        if (measurement.chargingSession.chargingStation.firmwareVersion != null)
+                        {
+
+                            let firmwareVersionDiv       = CreateDiv(ChargingStationDiv,  "firmwareVersion");
+
+                            let firmwareVersionIdDiv     = CreateDiv(firmwareVersionDiv,  "firmwareVersionId",
+                                                                     "Firmware-Version");
+
+                            let firmwareVersionValueDiv  = CreateDiv(firmwareVersionDiv,  "firmwareVersionValue",
+                                                                     measurement.chargingSession.chargingStation.firmwareVersion);
+
+                        }
+
+                    }
+
+                    //#endregion
+
+                    //#region Show meter infos...
+
+                    let meterDiv       = CreateDiv(MeasurementInfoDiv,  "meter");
+                    let meterHeadline  = CreateDiv(meterDiv,  "meterHeadline",
+                                                             "Energiezähler");
 
                     var meter                        = GetMeter(measurement.energyMeterId);
 
                     if (meter != null)
                     {
 
-                        let MeterVendorDiv           = CreateDiv(MeasurementInfoDiv,  "meterVendor");
+                        let meterIdDiv               = CreateDiv(meterDiv,            "meterId");
+
+                        let meterIdIdDiv             = CreateDiv(meterIdDiv,          "meterIdId",
+                                                                 "Seriennummer");
+
+                        let meterIdValueDiv          = CreateDiv(meterIdDiv,          "meterIdValue",
+                                                                 measurement.energyMeterId);
+
+
+                        let MeterVendorDiv           = CreateDiv(meterDiv,  "meterVendor");
 
                         let MeterVendorIdDiv         = CreateDiv(MeterVendorDiv,      "meterVendorId",
                                                                  "Zählerhersteller");
@@ -1485,7 +1550,7 @@ function StartDashboard() {
                                                                  meter.vendor);
 
 
-                        let MeterModelDiv            = CreateDiv(MeasurementInfoDiv,  "meterModel");
+                        let MeterModelDiv            = CreateDiv(meterDiv,  "meterModel");
 
                         let MeterModelIdDiv          = CreateDiv(MeterModelDiv,       "meterModelId",
                                                                  "Model");
@@ -1497,39 +1562,54 @@ function StartDashboard() {
 
                     //#endregion
 
-                    //#region Show meter infos
+                    //#region ...or show meterId infos
 
-                    let MeterDiv                    = CreateDiv(MeasurementInfoDiv,  "meter");
+                    else {
 
-                    let MeterIdDiv                  = CreateDiv(MeterDiv,            "meterId",
-                                                                meter != null ? "Seriennummer" : "Zählerseriennummer");
+                        let meterIdDiv               = CreateDiv(meterDiv,            "meter");
 
-                    let MeterIdValueDiv             = CreateDiv(MeterDiv,            "meterIdValue",
-                                                                measurement.energyMeterId);
+                        let meterIdIdDiv             = CreateDiv(meterIdDiv,          "meterId",
+                                                                 "Zählerseriennummer");
+
+                        let meterIdValueDiv          = CreateDiv(meterIdDiv,          "meterIdValue",
+                                                                 measurement.energyMeterId);
+
+                    }
 
                     //#endregion
 
                     //#region Show measurement infos
 
-                    let MeasurementDiv               = CreateDiv(MeasurementInfoDiv, "measurement");
+                    let measurementDiv               = CreateDiv(meterDiv,           "measurement");
 
-                    let MeasurementIdDiv             = CreateDiv(MeasurementDiv,     "measurementId",
+                    let MeasurementIdDiv             = CreateDiv(measurementDiv,     "measurementId",
                                                                  "Messung");
 
-                    let MeasurementIdValueDiv        = CreateDiv(MeasurementDiv,     "measurementIdValue",
-                                                                 measurement.name + " (OBIS: " + parseOBIS(measurement.obis) + ")");
+                    let MeasurementIdValueDiv        = CreateDiv(measurementDiv,     "measurementIdValue",
+                                                                 measurement.name);
+
+
+                    let OBISDiv                      = CreateDiv(meterDiv,           "OBIS");
+
+                    let OBISIdDiv                    = CreateDiv(OBISDiv,            "OBISId",
+                                                                 "OBIS-Kennzahl");
+
+                    let OBISValueDiv                 = CreateDiv(OBISDiv,            "OBISValue",
+                                                                 parseOBIS(measurement.obis));
 
                     //#endregion
+
 
                     //#region Show measurement values...
 
                     if (measurement.values && measurement.values.length > 0)
                     {
 
-                        //<i class="far fa-chart-bar"></i>
-
-                        let MeasurementValuesDiv         = CreateDiv(evseTarifInfosDiv, "measurementValues");
+                        let MeasurementValuesDiv         = CreateDiv(evseTarifInfosDiv,     "measurementValues");
                         let previousValue                = 0;
+
+                        let meterHeadline                = CreateDiv(MeasurementValuesDiv,  "measurementsHeadline",
+                                                                     "Messwerte");
 
                         for (var measurementValue of measurement.values)
                         {
@@ -1952,7 +2032,10 @@ function StartDashboard() {
 
     var fileInputButton           = <HTMLButtonElement>   document.getElementById('fileInputButton');
     var fileInput                 = <HTMLInputElement>    document.getElementById('fileInput');
-    fileInputButton.onclick = function (this: HTMLElement, ev: MouseEvent) { fileInput.click(); }
+    fileInputButton.onclick = function (this: HTMLElement, ev: MouseEvent) {
+        fileInput.value = '';
+        fileInput.click();
+    }
     fileInput.onchange            = readFileFromDisk;
 
     var pasteButton               = <HTMLButtonElement>   document.getElementById('pasteButton');

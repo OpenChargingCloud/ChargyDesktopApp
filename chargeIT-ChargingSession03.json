@@ -1,0 +1,114 @@
+{
+  "placeInfo": {
+    "geoLocation": {
+      "lat": 48.035131,
+      "lon": 10.50635
+    },
+    "address": {
+      "street": "Breitenbergstr. 2",
+      "town": "Mindelheim",
+      "zipCode": "87719"
+    },
+    "evseId": "DE*BDO*E8025334492*2"
+  },
+  "signedMeterValues": [
+    {
+      "timestamp": 1554188419,
+      "meterInfo": {
+        "firmwareVersion": "123",
+        "publicKey": "9EA8697F5C3126E86A37295566D560DE8EA690325791C9CBA79D30612B8EA8E00908FBAD5374812D55DCC3D809C3A36C",
+        "meterId": "0901454D48000083E076",
+        "type": "eHZ IW8E EMH",
+        "manufacturer": "EMH"
+      },
+      "transactionId": "1554181214441:-1965658344385548683:2",
+      "contract": {
+        "type": "RFID_TAG_ID",
+        "timestampLocal": {
+          "timestamp": 1554181219,
+          "localOffset": 60,
+          "seasonOffset": 60
+        },
+        "timestamp": 1554188419,
+        "id": "8057F5AA592904"
+      },
+      "measurementId": "00000012",
+      "measuredValue": {
+        "timestampLocal": {
+          "timestamp": 1554181219,
+          "localOffset": 60,
+          "seasonOffset": 60
+        },
+        "value": "66260",
+        "unit": "WATT_HOUR",
+        "scale": -1,
+        "valueType": "Integer64",
+        "unitEncoded": 30
+      },
+      "measurand": {
+        "id": "0100011100FF",
+        "name": "ENERGY_TOTAL"
+      },
+      "additionalInfo": {
+        "indexes": {
+          "timer": 65058,
+          "logBook": "0006"
+        },
+        "status": "08"
+      },
+      "chargePoint": {
+        "softwareVersion": "3.0.25.2089"
+      },
+      "signature": "71F76A80F170F87675AAEB19606BBD298355FDA7B08517002FAD322FA073255BD8B971BD69BFF051BCA9330703172E3C"
+    },
+    {
+      "timestamp": 1554189232,
+      "meterInfo": {
+        "firmwareVersion": "123",
+        "publicKey": "9EA8697F5C3126E86A37295566D560DE8EA690325791C9CBA79D30612B8EA8E00908FBAD5374812D55DCC3D809C3A36C",
+        "meterId": "0901454D48000083E076",
+        "type": "eHZ IW8E EMH",
+        "manufacturer": "EMH"
+      },
+      "transactionId": "1554181214441:-1965658344385548683:2",
+      "contract": {
+        "type": "RFID_TAG_ID",
+        "timestampLocal": {
+          "timestamp": 1554181219,
+          "localOffset": 60,
+          "seasonOffset": 60
+        },
+        "timestamp": 1554188419,
+        "id": "8057F5AA592904"
+      },
+      "measurementId": "00000013",
+      "measuredValue": {
+        "timestampLocal": {
+          "timestamp": 1554182032,
+          "localOffset": 60,
+          "seasonOffset": 60
+        },
+        "value": "67327",
+        "unit": "WATT_HOUR",
+        "scale": -1,
+        "valueType": "Integer64",
+        "unitEncoded": 30
+      },
+      "measurand": {
+        "id": "0100011100FF",
+        "name": "ENERGY_TOTAL"
+      },
+      "additionalInfo": {
+        "indexes": {
+          "timer": 65871,
+          "logBook": "0006"
+        },
+        "status": "08"
+      },
+      "chargePoint": {
+        "softwareVersion": "3.0.25.2089"
+      },
+      "signature": "6DF01D7603CB49BB76141F8E67B371351BF1F87C1F8D38AEB3600A9432B8CE0A378126D4FB9D9581457651A5D208AD9E"
+    }
+  ]
+}

@@ -68,9 +68,10 @@ interface IChargingStation
 {
     "@id":                      string;
     "@context":                 string;
-    begin:                      string;
-    end:                        string;
+    //begin:                      string;
+    //end:                        string;
     description:                {};
+    firmwareVersion:            string;
     address:                    IAddress;
     geoLocation?:               IGeoLocation;
     chargingStationOperator:    IChargingStationOperator;
