@@ -1,4 +1,5 @@
-﻿///<reference path="chargyInterfaces.ts" />
+﻿///<reference path="certificates.ts" />
+///<reference path="chargyInterfaces.ts" />
 ///<reference path="chargyLib.ts" />
 ///<reference path="GDFCrypt01.ts" />
 ///<reference path="EMHCrypt01.ts" />
