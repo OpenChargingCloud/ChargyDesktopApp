@@ -24,11 +24,10 @@ Chargy is developed for and tested on the following operating systems:
  - Apple Mac OS X
  - Linux Debian/Ubuntu
 
-The Chargy Desktop project has a sister project called [Chargy Mobile](https://github.com/OpenChargingCloud/ChargyMobileApp) which provides the same features, but is based on Apache Cordova and is available for the following operating systems:
+The Chargy Desktop project has a sister project called [Chargy Mobile](https://github.com/OpenChargingCloud/ChargyMobileApp) which provides the same features, but is based on [Apache Cordova](https://cordova.apache.org) and is available for the following operating systems:
 
  - Apple iOS
  - Google Android
- - Windows Mobile
 
 
 ### System Requirements
@@ -42,15 +41,12 @@ sudo apt install nodejs
 
 $ sudo npm install -g electron-forge@latest
 + electron-forge@5.2.4
-added 594 packages from 397 contributors in 57.986s
 
 $ sudo npm install -g typescript@latest
 + typescript@3.3.3333
-added 1 package from 1 contributor in 1.738s
 
 $ sudo npm install -g sass@latest
 + sass@1.17.2
-added 135 packages from 106 contributors in 9.64s
 ```
 
 
