@@ -22,6 +22,11 @@ var eMobilityProviders        = new Array<IEMobilityProvider>();
 var mediationServices         = new Array<IMediationService>();
 var chargingSessions          = new Array<IChargingSession>();
 
+function OpenLink(url: string)
+{
+    require('electron').shell.openExternal(url);
+}
+
 function StartDashboard() {
 
     var el      = require('elliptic');

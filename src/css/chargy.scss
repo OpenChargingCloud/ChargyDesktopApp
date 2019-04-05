@@ -167,6 +167,8 @@ body {
                         display:        none;
                         width:          100%;
                         margin-top:     10px;
+                        overflow-y:     scroll;
+                        overflow-x:     hidden;
 
                         #OpenSourceLibs {
 
@@ -228,6 +230,53 @@ body {
 
                         }
 
+                        #TOSP {
+
+                            margin-top:         4vh;
+                            font-size:          80%;
+
+                            a {
+                                color:              #517692;
+                                font-weight:        bold;
+                                text-decoration:    none;
+                            }
+
+                            #logos {
+
+                                display:                flex;
+                                justify-content:        space-evenly;
+                                align-items:            center;
+                                margin-top:             0.5vh;
+
+                                #TMWWDG {
+
+                                    margin:             2vh 7% 3vh 7%;
+
+                                    img {
+                                        width:              100%;
+                                    }
+                                    
+                                }
+
+                                #ITnet {
+
+                                    width:              50%;
+                                    margin:             2vh 9% 3vh 1%;
+
+                                    img {
+                                        width:              100%;
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                    #aboutScreen::-webkit-scrollbar {
+                        display:            none;
                     }
 
                     #chargingSessionReport {
