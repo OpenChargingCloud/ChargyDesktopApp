@@ -833,7 +833,7 @@ function StartDashboard() {
                     chargingSessions[0].GUI.click();
 
                 map.fitBounds([[minlat, minlng], [maxlat, maxlng]],
-                    { padding: [40, 40] });
+                              { padding: [40, 40] });
 
             }
 
@@ -1481,6 +1481,10 @@ function StartDashboard() {
 
                     measurement.chargingSession      = chargingSession;
 
+                    let headline                     = CreateDiv(evseTarifInfosDiv);
+                    headline.id                      = "headline";
+                    headline.innerHTML               = "Informationen zum Ladevorgang";
+
                     let MeasurementInfoDiv           = CreateDiv(evseTarifInfosDiv,  "measurementInfos");
 
                     //#region Show charging station infos
@@ -1606,11 +1610,12 @@ function StartDashboard() {
                     if (measurement.values && measurement.values.length > 0)
                     {
 
+                        let meterHeadline                = CreateDiv(evseTarifInfosDiv,  "measurementsHeadline",
+                                                                     "Messwerte");
+                        meterHeadline.id = "measurementValues-headline";
+
                         let MeasurementValuesDiv         = CreateDiv(evseTarifInfosDiv,     "measurementValues");
                         let previousValue                = 0;
-
-                        let meterHeadline                = CreateDiv(MeasurementValuesDiv,  "measurementsHeadline",
-                                                                     "Messwerte");
 
                         for (var measurementValue of measurement.values)
                         {
@@ -1627,19 +1632,19 @@ function StartDashboard() {
 
 
                             // Show energy counter value
-                            let value2Div                    = CreateDiv(MeasurementValueDiv, "value",
+                            let value2Div                    = CreateDiv(MeasurementValueDiv, "value1",
                                                                          parseFloat((measurementValue.value * Math.pow(10, measurementValue.measurement.scale)).toFixed(10)).toString());
 
                             switch (measurement.unit)
                             {
 
                                 case "KILO_WATT_HOURS":
-                                    CreateDiv(MeasurementValueDiv, "unit", "kWh");
+                                    CreateDiv(MeasurementValueDiv, "unit1", "kWh");
                                     break;
 
                                 // "WATT_HOURS"
                                 default:
-                                    CreateDiv(MeasurementValueDiv, "unit", "Wh");
+                                    CreateDiv(MeasurementValueDiv, "unit1", "Wh");
                                     break;
 
                             }
@@ -1662,12 +1667,12 @@ function StartDashboard() {
 
                             }
 
-                            let valueDiv                     = CreateDiv(MeasurementValueDiv, "value",
+                            let valueDiv                     = CreateDiv(MeasurementValueDiv, "value2",
                                                                          "+" + (previousValue > 0
                                                                                     ? parseFloat((currentValue - previousValue).toFixed(10))
                                                                                     : "0"));
 
-                            let unitDiv                      = CreateDiv(MeasurementValueDiv, "unit",
+                            let unitDiv                      = CreateDiv(MeasurementValueDiv, "unit2",
                                                                          "kWh");
 
 

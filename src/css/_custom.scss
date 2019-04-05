@@ -12,6 +12,12 @@ body {
                 background-image:     url('../img/charge-it-logo.jpg');
             }
 
+            #windowButtons {
+                button:hover {
+                    color:              #b7b7b7;
+                }
+            }
+
         }
         
         #verifyframe {
@@ -23,6 +29,7 @@ body {
 
                     #inputInfos {
                         #buttonsDiv {
+
                             button {
 
                                 color:      #8d420e;
@@ -41,6 +48,7 @@ body {
                                 color:      #fff2ee;
                                 background:   linear-gradient(to right, rgb(239, 136, 107) 0%,rgb(240, 182, 93) 100%);
                             }
+
                         }
                     }
 
@@ -70,28 +78,11 @@ body {
 
                 #feedback {
 
-                    color: #34668a;
+                    color:            #34668a;
 
                     #feedbackMethods {
-
-                        .row {
-                            .value {
-                                a {
-                                    color: #34668a;
-                                }
-                            }
-                        }
-
-                        #feedbackIssueTracker {
-                            #feedbackIssueTracker {
-                                button {
-                                    background-color:   transparent;
-                                    padding:            0px;
-                                    font-weight:        bold;
-                                    font-size:          100%;
-                                    color:            #34668a;
-                                }
-                            }
+                        button:hover, a:hover {
+                            color:        #d78930;
                         }
                     }
 
