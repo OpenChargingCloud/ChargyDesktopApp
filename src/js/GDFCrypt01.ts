@@ -113,7 +113,7 @@ class GDFCrypt01 extends ACrypt {
     VerifyChargingSession(chargingSession:   IChargingSession): ISessionCryptoResult
     {
 
-        var results = new Array<IGDFCrypt01Result>();
+        var sessionResult = SessionVerificationResult.UnknownSessionFormat;
 
         if (chargingSession.measurements)
         {
@@ -126,22 +126,36 @@ class GDFCrypt01 extends ACrypt {
                 if (measurement.values && measurement.values.length > 1)
                 {
 
+                    // Validate...
                     for (var measurementValue of measurement.values)
                     {
-
                         measurementValue.measurement = measurement;
+                        this.VerifyMeasurement(measurementValue as IGDFMeasurementValue);
+                    }
 
-                        results.push(this.VerifyMeasurement(measurementValue as IGDFMeasurementValue));
 
+                    // Find an overall result...
+                    sessionResult = SessionVerificationResult.ValidSignature;
+
+                    for (var measurementValue of measurement.values)
+                    {
+                        if (sessionResult                  == SessionVerificationResult.ValidSignature &&
+                            measurementValue.result.status != VerificationResult.ValidSignature)
+                        {
+                            sessionResult = SessionVerificationResult.InvalidSignature;
+                        }
                     }
 
                 }
+
+                else
+                    sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsExpected;
 
             }
         }
 
         return {
-            status: SessionVerificationResult.InvalidSignature
+            status: sessionResult
         } ;
 
     }

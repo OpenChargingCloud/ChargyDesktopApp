@@ -127,8 +127,7 @@ class EMHCrypt01 extends ACrypt {
     VerifyChargingSession(chargingSession:   IChargingSession): ISessionCryptoResult
     {
 
-        var sessionResult       = SessionVerificationResult.UnknownSessionFormat;
-        //var measurementResults  = new Array<IEMHCrypt01Result>();
+        var sessionResult = SessionVerificationResult.UnknownSessionFormat;
 
         if (chargingSession.measurements)
         {
@@ -162,6 +161,9 @@ class EMHCrypt01 extends ACrypt {
                     }
 
                 }
+
+                else
+                    sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsExpected;
 
             }
         }

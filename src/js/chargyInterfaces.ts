@@ -268,7 +268,8 @@ enum SessionVerificationResult {
     PublicKeyNotFound,
     InvalidPublicKey,
     InvalidSignature,
-    ValidSignature
+    ValidSignature,
+    AtLeastTwoMeasurementsExpected
 }
 
 enum VerificationResult {
