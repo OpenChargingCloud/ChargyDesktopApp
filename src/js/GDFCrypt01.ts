@@ -122,7 +122,8 @@ class GDFCrypt01 extends ACrypt {
 
                 measurement.chargingSession = chargingSession;
 
-                if (measurement.values && measurement.values.length > 0)
+                // Must include at least two measurements (start & stop)
+                if (measurement.values && measurement.values.length > 1)
                 {
 
                     for (var measurementValue of measurement.values)

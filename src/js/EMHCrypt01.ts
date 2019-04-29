@@ -46,7 +46,7 @@ class EMHCrypt01 extends ACrypt {
 
     SignMeasurement(measurementValue:  IEMHMeasurementValue,
                     privateKey:        any,
-                    publicKey:         any): IGDFCrypt01Result
+                    publicKey:         any): IEMHCrypt01Result
     {
 
         // var keypair                      = this.curve.genKeyPair();
@@ -137,7 +137,8 @@ class EMHCrypt01 extends ACrypt {
 
                 measurement.chargingSession = chargingSession;
 
-                if (measurement.values && measurement.values.length > 0)
+                // Must include at least two measurements (start & stop)
+                if (measurement.values && measurement.values.length > 1)
                 {
 
                     // Validate...
