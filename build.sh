@@ -8,4 +8,4 @@ tsc src/js/chargy.ts
 
 sass src/css/chargy.scss src/css/chargy.css
 
-npm start
+electron-builder

@@ -11,7 +11,30 @@ import { readSync } from "fs";
 var map:     any = "";
 var leaflet: any = "";
 
-//const { randomBytes } = require('crypto')
+function fileHash(filename:string, func: { (hash: string): any; })
+{
+    const fs    = require('original-fs');
+    const cryp2 = require('electron').remote.require('crypto');
+
+    var sha512hash = cryp2.createHash('sha512');
+    var s = fs.createReadStream(filename);
+    s.on('data', function(data: any) {
+        sha512hash.update(data)
+    })
+    s.on('error', function() {
+        console.log(filename + " => Not found!");
+    })  
+    s.on('end', function() {
+        var hash = sha512hash.digest('hex');
+        console.log(filename + " => " + hash);
+        func(hash);
+    })
+}
+
+var exe_hash            = "";
+var app_asar_hash       = "";
+var electron_asar_hash  = "";
+var complete_hash       = "";
 
 var chargingStationOperators  = new Array<IChargingStationOperator>();
 var chargingPools             = new Array<IChargingPool>();
@@ -34,6 +57,11 @@ function StartDashboard() {
 
     // variable 'crypto' is already defined differently in Google Chrome!
     const crypt = require('electron').remote.require('crypto');
+
+    var path  = require('path');
+    fileHash('Chargy Transparenz Software.exe',       hash => exe_hash           = hash);
+    fileHash(path.join('resources', 'app.asar'),      hash => app_asar_hash      = hash);
+    fileHash(path.join('resources', 'electron.asar'), hash => electron_asar_hash = hash);
 
     //#region GetMethods...
 
@@ -95,7 +123,7 @@ function StartDashboard() {
 
     //#region detectContentFormat
 
-    function detectContentFormat(Content) {
+    function detectContentFormat(Content: IChargeTransparencyRecord) {
 
 
         function processChargeTransparencyRecord(CTR: IChargeTransparencyRecord)
@@ -847,7 +875,7 @@ function StartDashboard() {
         }
 
         // e.g. the current chargeIT mobility does not provide any format identifiers
-        function tryToParseAnonymousFormat(SomeJSON) : boolean
+        function tryToParseAnonymousFormat(SomeJSON: { signedMeterValues: any[]; placeInfo: any; }) : boolean
         {
 
             if (!Array.isArray(SomeJSON))
@@ -1328,7 +1356,7 @@ function StartDashboard() {
                                 },
 
                                 "signatureInfos": {
-                                    "hash":                     "SHA256",
+                                    "hash":                     "SHA512",
                                     "hashTruncation":           "24",
                                     "algorithm":                "ECC",
                                     "curve":                    "secp192r1",
@@ -1349,7 +1377,7 @@ function StartDashboard() {
                                         "scale":                CTRArray[0]["measuredValue"]["scale"],
 
                                         "signatureInfos": {
-                                            "hash":                 "SHA256",
+                                            "hash":                 "SHA512",
                                             "hashTruncation":       "24",
                                             "algorithm":            "ECC",
                                             "curve":                "secp192r1",
@@ -1424,6 +1452,7 @@ function StartDashboard() {
                 break;
 
             default:
+                //@ts-ignore
                 if (!tryToParseAnonymousFormat(Content))
                     doGlobalError("Unbekanntes Transparenzdatensatzformat!");
                 break;
@@ -1914,7 +1943,7 @@ function StartDashboard() {
 
     //#region Process loaded CTR file...
 
-    function readFileFromDisk(event) {
+    function readFileFromDisk(event: { target: { files: File[]; }; }) {
         readAndParseFile(event.target.files[0]);
     }
 
@@ -2013,6 +2042,26 @@ function StartDashboard() {
         aboutScreenDiv.style.display            = "block";
         chargingSessionReportDiv.style.display  = "none";
         backButtonDiv.style.display             = "block";
+
+        var aaa = document.getElementById('chargySHA512') as HTMLDivElement;
+
+        if (complete_hash == null)
+        {
+            if (exe_hash !== "" && app_asar_hash !== "" && electron_asar_hash !== "")
+            {
+
+                const cryp2 = require('electron').remote.require('crypto');
+
+                var sha512hash = cryp2.createHash('sha512');
+                sha512hash.update(exe_hash);
+                sha512hash.update(app_asar_hash);
+                sha512hash.update(electron_asar_hash);
+
+                aaa.children[1].innerHTML = complete_hash = sha512hash.digest('hex').match(/.{1,8}/g).join(" ");
+
+            }
+        }
+
     }
 
     var fullScreenButton          = <HTMLButtonElement>   document.getElementById('fullScreenButton');
@@ -2047,6 +2096,7 @@ function StartDashboard() {
         fileInput.value = '';
         fileInput.click();
     }
+    //@ts-ignore
     fileInput.onchange            = readFileFromDisk;
 
     var pasteButton               = <HTMLButtonElement>   document.getElementById('pasteButton');

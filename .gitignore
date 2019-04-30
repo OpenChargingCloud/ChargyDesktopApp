@@ -1,6 +1,6 @@
 *~
 node_modules
-out
+dist
 src/css/*.css
 src/css/*.css.map
 !src/css/fontawesome-all.min.css
