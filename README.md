@@ -75,7 +75,7 @@ The Windows version can only be build on a Windows machine and uses [NSIS](https
 ```
 The resulting installer is located at
 ```
-~/dist/Chargy Transparenz Software Setup 0.x.y.exe
+~/dist/Chargy Transparenz Software Setup x.y.z.exe
 ```
 
 
