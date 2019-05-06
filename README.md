@@ -32,13 +32,15 @@ The Chargy Desktop project has a sister project called [Chargy Mobile](https://g
 
 ### System Requirements
 
-Install nodejs on your system. For more details please check https://nodejs.org    
-On Linux and Mac OS X:
-
+Using node.js 12.1.0 (includes npm 6.9.0) for Microsoft Windows: https://nodejs.org/en/download/current/    
+Or install nodejs on your Linux / Mac OS X system via
 ```
-sudo curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
+sudo curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt install nodejs
+```
 
+Afterwards you can install the remaining software using the node packet manager
+```
 $ sudo npm install -g electron-forge@latest
 + electron-forge@5.2.4
 
