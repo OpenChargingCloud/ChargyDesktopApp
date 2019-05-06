@@ -41,14 +41,14 @@ sudo apt install nodejs
 
 Afterwards you can install the remaining software using the node packet manager
 ```
-$ sudo npm install -g electron-forge@latest
-+ electron-forge@5.2.4
+$ sudo npm install -g electron@latest
++ electron@5.0.1
 
 $ sudo npm install -g typescript@latest
-+ typescript@3.3.3333
++ typescript@3.4.5
 
 $ sudo npm install -g sass@latest
-+ sass@1.17.2
++ sass@1.20.1
 ```
 
 
@@ -61,15 +61,17 @@ git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
 cd ChargyDesktopApp
 npm install
 chmod +x run.sh
+```
+Now you can test the software via...
+```
 ./run.sh
 ```
 
-
 ### Building a Windows Installer
 
-The Windows version can only be build on a Windows machine and uses [Squirrel](https://github.com/Squirrel/Squirrel.Windows) as an installation and update framework.
+The Windows version can only be build on a Windows machine and uses [NSIS](https://www.electron.build/configuration/nsis) as an installation framework.
 ```
-electron-forge make
+./build.sh
 ```
 
 
