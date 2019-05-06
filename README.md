@@ -73,6 +73,10 @@ The Windows version can only be build on a Windows machine and uses [NSIS](https
 ```
 ./build.sh
 ```
+The resulting installer is located at
+```
+~/dist/Chargy Transparenz Software Setup 0.x.y.exe
+```
 
 
 ### Building a Linux package
