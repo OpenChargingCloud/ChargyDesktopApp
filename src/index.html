@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
+  
   <head>
-    <meta charset="UTF-8">
-    
-	<meta charset="utf-8" />
+	  <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     <title>Chargy - Transparenzsoftware für die Elektromobilität</title>
@@ -29,6 +28,7 @@
     <script type="text/javascript" src="js/chargy.js"></script>
 
   </head>
+
   <body>
 
     <div id="outerframe">
@@ -80,8 +80,8 @@
                                 <div class="license"><button class="linkButton" href="https://github.com/electron/electron/blob/master/LICENSE">MIT License</button></div>
                             </div>
                             <div class="lib">
-                                <div class="name">Electron Forge</div>
-                                <div class="license"><button class="linkButton" href="https://github.com/electron-userland/electron-forge/blob/master/LICENSE">MIT License</button></div>
+                                <div class="name">Electron Builder 20.39.0</div>
+                                <div class="license"><button class="linkButton" href="https://github.com/electron-userland/electron-builder/blob/master/LICENSE">MIT License</button></div>
                             </div>
                             <div class="lib">
                                 <div class="name">Chromium <script>document.write(process.versions.chrome)</script></div>
@@ -100,13 +100,21 @@
                                 <div class="license"><button class="linkButton" href="https://github.com/indutny/elliptic">MIT License</button></div>
                             </div>
                             <div class="lib">
-                                <div class="name">moment 2.23.0</div>
+                                <div class="name">moment 2.24.0</div>
                                 <div class="license"><button class="linkButton" href="https://github.com/moment/moment/blob/develop/LICENSE">MIT License</button></div>
                             </div>
+                            <div class="lib">
+                                <div class="name">leaflet 1.4.0</div>
+                                <div class="license"><button class="linkButton" href="https://github.com/Leaflet/Leaflet/blob/master/LICENSE">MIT License</button></div>
+                            </div>
+                            <div class="lib">
+                                <div class="name">chart.js 2.8.0</div>
+                                <div class="license"><button class="linkButton" href="https://github.com/chartjs/Chart.js/blob/master/LICENSE.md">MIT License</button></div>
+                            </div>
                         </div>
-                        
+
                         <p>
-                            Die SHA256 Hash-Funktionen werden durch die <button class="linkButton" href="https://nodejs.org/api/crypto.html">Node.js Crypto API</button> realisiert. Diese nutzen intern <button class="linkButton" href="https://github.com/openssl/openssl">OpenSSL</button>.
+                            Die SHA256/512-Hash-Funktionen werden durch die <button class="linkButton" href="https://nodejs.org/api/crypto.html">Node.js Crypto API</button> realisiert. Diese nutzen intern die <button class="linkButton" href="https://github.com/openssl/openssl">OpenSSL-Bibliothek</button> des jeweils aktuellen Node.js-Frameworks.
                         </p>
                         <p>
                             Elliptische Kurven Kryptographie wird durch <button class="linkButton" href="https://github.com/indutny/elliptic">elliptic</button> realisiert.
@@ -116,8 +124,8 @@
                             Weitere Details zu den internen Datenstrukturen und Abläufen von Chargy gibt es auf <button class="linkButton" href="https://github.com/OpenChargingCloud/ChargyDesktopApp/tree/master/documentation">GitHub</button>.
                         </p>
 
-                        <div id="chargySHA256">
-                            <div id="text">SHA-256 Hashwert dieser Software:</div>
+                        <div id="chargySHA512">
+                            <div id="text">SHA-512 Hashwert dieser Software:</div>
                             <div id="value">0x000000000000000000000000000000000000000</div>
                         </div>
 
@@ -129,13 +137,17 @@
                         </div>
 
                         <div id="TOSP">
-                            This software is one of the winners of the <a href="javascript:OpenLink('https://www.it-leistungsschau.de/programm/TOSP2019/')">1st
+                            Diese Software ist einer der Gewinner des <a href="javascript:OpenLink('https://www.it-leistungsschau.de/programm/TOSP2019/')">1.
+                            Th&uuml;ringer Open Source Preises</a> im März 2019. Der Preis wurde verliehen durch
+                            <a href="javascript:OpenLink('https://www.itnet-th.de')">ITnet Thüringen e.V.</a> and the
+                            <a href="javascript:OpenLink('https://www.thueringen.de/th6/tmwwdg/')">Thüringer Ministerium für Wirtschaft, Wissenschaft und Digitale Gesellschaft</a>
+                            <!-- This software is one of the winners of the <a href="javascript:OpenLink('https://www.it-leistungsschau.de/programm/TOSP2019/')">1st
                             Thuringian Open Source Prize</a> in March 2019. The prize was awarded by
                             <a href="javascript:OpenLink('https://www.itnet-th.de')">ITnet Thüringen e.V.</a> and the
-                            <a href="javascript:OpenLink('https://www.thueringen.de/th6/tmwwdg/')">Thuringian Ministry for Economic Affairs, Science and Digital Society</a>
+                            <a href="javascript:OpenLink('https://www.thueringen.de/th6/tmwwdg/')">Thuringian Ministry for Economic Affairs, Science and Digital Society</a>-->
                             <div id="logos">
-                                <a id="TMWWDG" href="javascript:OpenLink('https://www.thueringen.de/th6/tmwwdg/')"><img src="img/TMWWDG.svg"                alt="Thuringian Ministry for Economic Affairs, Science and Digital Society"></a>
-                                <a id="ITnet"  href="javascript:OpenLink('https://www.itnet.de')"                 ><img src="img/ITnet_Thüringen_small.png" alt="ITnet Thüringen e.V."></a>
+                                <a id="TMWWDG" href="javascript:OpenLink('https://www.thueringen.de/th6/tmwwdg/')"><img src="images/TMWWDG.svg"                 alt="Thuringian Ministry for Economic Affairs, Science and Digital Society"></a>
+                                <a id="ITnet"  href="javascript:OpenLink('https://www.itnet.de')"                 ><img src="images/ITnet_Thueringen_small.png" alt="ITnet Thüringen e.V."></a>
                             </div>
                         </div>
 
@@ -190,7 +202,7 @@
                 </div>
 
                 <div id="hashedBuffer" class="infoblock">
-                    <div class="description">Hashed Puffer (SHA256)</div>
+                    <div class="description">Hashed Puffer (SHA512)</div>
                     <div class="value">0x0000000000000000000000000000000000000000000000000000000000000000</div>
                 </div>
 
@@ -255,23 +267,26 @@
 
     <script type="text/javascript">
 
+      // You can also require other files to run in this process
+      require('./renderer.js')
 
-        var ACCESS_TOKEN = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
+      var ACCESS_TOKEN = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
 
-        leaflet = L;
-        map     = L.map('map').setView([49.7325504,10.1424442], 10);
+      leaflet = L;
+      map     = L.map('map').setView([49.7325504,10.1424442], 10);
 
-        L.tileLayer('https://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + ACCESS_TOKEN, {
-            maxZoom: 18,
-            attribution: '<a href="http://openstreetmap.org">OSM</a> contr., ' +
-            '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-            'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-            id: 'ahzf.nc811hb2'
-        }).addTo(map);
+      L.tileLayer('https://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + ACCESS_TOKEN, {
+          maxZoom: 18,
+          attribution: '<a href="http://openstreetmap.org">OSM</a> contr., ' +
+          '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+          'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+          id: 'ahzf.nc811hb2'
+      }).addTo(map);
 
-        var test = new StartDashboard();
+      var test = new StartDashboard();
 
     </script>
-	
+
   </body>
+
 </html>
