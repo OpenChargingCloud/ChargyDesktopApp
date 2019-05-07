@@ -44,6 +44,9 @@ Afterwards you can install the remaining software using the node packet manager
 $ sudo npm install -g electron@latest
 + electron@5.0.1
 
+$  npm install -g electron-builder@latest
++ electron-builder@20.39.0
+
 $ sudo npm install -g typescript@latest
 + typescript@3.4.5
 
