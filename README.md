@@ -44,7 +44,7 @@ Afterwards you can install the remaining software using the node packet manager
 $ sudo npm install -g electron@latest
 + electron@5.0.1
 
-$  npm install -g electron-builder@latest
+$ npm install -g electron-builder@latest
 + electron-builder@20.39.0
 
 $ sudo npm install -g typescript@latest
@@ -76,7 +76,7 @@ The Windows version can only be build on a Windows machine and uses [NSIS](https
 ```
 ./build.sh
 ```
-The resulting installer is located at
+The resulting installer is located at...
 ```
 ~/dist/Chargy Transparenz Software Setup x.y.z.exe
 ```
@@ -87,7 +87,7 @@ The resulting installer is located at
 On a Debian GNU/Linux or Ubuntu machine you can run the following commands to create a Debian software package. More information about this process can be found at: https://github.com/electron-userland/electron-installer-debian
 ```
 sudo apt install debootstrap
-electron-forge make
+electron-builder
 ```
 
 Now you can use the normal package management tools of your Linux distribution to install the app:
