@@ -83,37 +83,22 @@ network:
       dhcp6: true
 ```
 
-#### Festes Benutzerkonto einrichten
+#### Automatic Login
 
-Dieser Schritt bezieht sich auf den Absatz: **_Schutz in Verwendung_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
-
-Die Standardversion des Ubuntu Live-Systems legt bei jedem Start einen Benutzer namens ``ubuntu`` dynamisch an. 
-Dieser Benutzer hat standardmäßig kein Passwort und kann mit ``sudo`` Administratorrechte bekommen. 
-Es ist daher notwendig einen festen Benutzer mit eingeschränkten Benutzerrechten auf dem System einzurichten. 
-Standardmäßig kann dieser Benutzer keine Aktionen die Systemadministratorrechte benötigen, ausführen. Damit ist auch sichergestellt, dass aus dem Live-System keine Massenspeicher, die womöglich das Betriebssystem oder andere Daten des Host-Rechners enthalten, eingebunden werden können.
-
-Neuer Benutzer wird mit dem Kommando ``adduser`` erstellt. 
-Benutzername und Passwort kann man auf ``trudi`` setzen und alle weiteren Fragen überspringen.
+First create a new user called 'chargy'...
 
 ```
-sudo chroot squashfs adduser trudi
+sudo chroot squashfs adduser chargy
 ```
 
-#### Automatische Anmeldung des trudi-Benutzers und Deaktivierung der Gastbenutzeroption
-
-Dieser Schritt bezieht sich auf die Absätze: **_Schutz in Verwendung_** und **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
-
-Folgende Datei muss angepasst werden:
-
-```sudo joe squashfs/etc/lightdm/lightdm.conf```
-
-Der Dateiinhalt sollte folgendermaßen aussehen:
+...then enable auto-login within the display manager
 
 ```
-[Seat:*]
-autologin-user=trudi
-autologin-user-timeout=0
-allow-guest=false
+sudo joe squashfs/etc/gdm3/custom.conf
+
+# Enabling automatic login
+AutomaticLoginEnable = true
+AutomaticLogin = chargy
 ```
 
 ### Bootvorgang anpassen
@@ -148,78 +133,11 @@ PROMPT 0
 TIMEOUT 0
 NOESCAPE 1
 ALLOWOPTIONS 0
- SAY Lade Chargy Ubuntu Live 18.04...
+ SAY Lade Chargy Ubuntu Live 19.04...
 LABEL chargy
  KERNEL /casper/vmlinuz.efi
  APPEND BOOT_IMAGE=/casper/vmlinuz.efi boot=casper initrd=/casper/initrd.lz quiet splash --debian-installer/language=de console-setup/layoutcode?=de
 ``` 
-
-
-
-### Firewall einrichten
-
-Dieser Schritt bezieht sich auf den Absatz: **_Rückwirkungsfreiheit der Schnittstellen_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
-
-Benutzen Sie dazu das Programm _ufw_. Es muss zuerst in das chroot-System installiert werden. Installieren Sie auch Pakete _iptables_ und _ip6tables_ weil diese wahrscheinlich noch nicht installiert sind.
-
-```
-sudo chroot squashfs apt-get install iptables ip6tables
-sudo chroot squashfs apt-get install ufw
-``` 
-
-__Wichtig:__ vor dem Einrichten der Firewall Regeln im chroot-System, sollte das Programm _ufw_ auch auf dem Host-Rechner installiert sein, weil das chroot-System während der Live-Image Einrichtung das Kernel (und die Module) des Host-Rechners benutzt. Aus diesem Grund muss auch zuerst die Firewall des Host-Rechners laufen:
-
-```
-sudo ufw enable
-```
-
-Aktivieren Sie dann die Firewall am chroot-System, und geben die Regeln an. Alle eingehenden Pakete werden standardmäßig blockiert. Es sollen dann auch alle ausgehenden Pakete blockiert werden, bis auf bestimmte Portnummern die für die Kommunikation an den HAN-Schnittstellen der Smart Meter Gateways verwendet werden:
-
-```
-sudo chroot squashfs ufw enable
-sudo chroot squashfs ufw default deny outgoing
-sudo chroot squashfs ufw allow out 80
-sudo chroot squashfs ufw allow out 443
-sudo chroot squashfs ufw allow out 883
-sudo chroot squashfs ufw allow out 884
-sudo chroot squashfs ufw allow out 5556
-sudo chroot squashfs ufw allow out 10443
-sudo chroot squashfs ufw disable
-sudo chroot squashfs ufw enable
-```
-
-Die Deaktivierung und erneute Aktivierung zum Schluss ist notwendig, damit die Einstellungen im chroot-System für den nächsten Systemstart übernommen werden.
-
-Ãœberprüfen Sie die Die Liste der Firewall-Regeln:
-
-```
-sudo chroot squashfs ufw status verbose
-```
-
-Diese sollte wie folgt aussehen:
-
-```
-Status: active
-Logging: on (low)
-Default: deny (incoming), deny (outgoing), disabled (routed)
-New profiles: skip
-
-To                         Action      From
---                         ------      ----
-443                        ALLOW OUT   Anywhere                  
-80                         ALLOW OUT   Anywhere                  
-883                        ALLOW OUT   Anywhere                  
-884                        ALLOW OUT   Anywhere                  
-5556                       ALLOW OUT   Anywhere                  
-10443                      ALLOW OUT   Anywhere                  
-443 (v6)                   ALLOW OUT   Anywhere (v6)             
-80 (v6)                    ALLOW OUT   Anywhere (v6)             
-883 (v6)                   ALLOW OUT   Anywhere (v6)             
-884 (v6)                   ALLOW OUT   Anywhere (v6)             
-5556 (v6)                  ALLOW OUT   Anywhere (v6)             
-10443 (v6)                 ALLOW OUT   Anywhere (v6) 
-```
-
 
 ### Erscheinungsbild anpassen
 
@@ -283,7 +201,7 @@ logo='/usr/share/unity-greeter/trudi_greeter_logo.png'
 Kopieren Sie das Installationspaket der aktuelle TRuDI-Version in den ``squashfs`` Verzeichnisbaum und führen Sie die Installation aus. (alle abhängigen Pakete werden automatisch mitinstalliert):
 
 ```
-sudo cp ../ChargyDesktopApp/out/make/chargyapp_0.13.0_amd64.deb ./squashfs/usr/share/
+sudo cp ../ChargyDesktopApp/out/make/chargyapp_0.28.0_amd64.deb ./squashfs/usr/share/
 sudo chroot squashfs apt install /usr/share/chargyapp_0.13.0_amd64.deb
 sudo rm ./squashfs/usr/share/chargyapp_0.13.0_amd64.deb
 ```
