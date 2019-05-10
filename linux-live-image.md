@@ -198,29 +198,27 @@ logo='/usr/share/unity-greeter/trudi_greeter_logo.png'
 
 ### Installing the Chargy software
 
-Kopieren Sie das Installationspaket der aktuelle TRuDI-Version in den ``squashfs`` Verzeichnisbaum und führen Sie die Installation aus. (alle abhängigen Pakete werden automatisch mitinstalliert):
-
+This will copy the chargy debian package into the ``squashfs`` filesystem and install it with all dependencies
 ```
-sudo cp ../ChargyDesktopApp/out/make/chargyapp_0.28.0_amd64.deb ./squashfs/usr/share/
-sudo chroot squashfs apt install /usr/share/chargyapp_0.13.0_amd64.deb
-sudo rm ./squashfs/usr/share/chargyapp_0.13.0_amd64.deb
+sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_0.28.0_amd64.deb ./squashfs/usr/share/
+sudo chroot squashfs apt install /usr/share/chargytransparenzsoftware_0.28.0_amd64.deb
+sudo rm ./squashfs/usr/share/chargytransparenzsoftware_0.28.0_amd64.deb
 ```
 
-Eine Desktopverknüpfung für die TRuDI legt man im Verzeichnis squashfs/etc/skel/ an, da ein Benutzer beim Live-System immer dynamisch angelegt wird:
-
+A user within the live system will always be created dynamically. Therefore it is good to create a desktop shortcut for everyone.
 ```
 sudo mkdir squashfs/etc/skel/Desktop
 sudo touch squashfs/etc/skel/Desktop/chargy.desktop
+```
+
+Create a file having the following content
+```
 sudo joe squashfs/etc/skel/Desktop/chargy.desktop
-```
 
-Der Dateiinhalt sollte folgendermaßen aussehen:
-
-```
 [Desktop Entry]
-Name=chargy
-Exec=chargyapp
-Icon=/usr/share/backgounds/chargy/icon.png
+Name=Chargy Transparenz Software
+Exec=chargytransparenzsoftware
+Icon=/usr/share/backgrounds/chargytransparenzsoftware/icon.png
 Terminal=false
 Type=Application
 ```
@@ -228,8 +226,8 @@ Type=Application
 Es muss noch ein Icon für die Verknüpfung eingerichtet werden (Es wird angenommen, dass Sie eine Datei namens icon.png bereits in das Arbeitsverzeichnis kopiert haben):
 
 ```
-sudo mkdir squashfs/usr/share/backgounds/chargy
-sudo cp icon.png squashfs/usr/share/backgounds/chargy/icon.png
+sudo mkdir squashfs/usr/share/backgrounds/chargytransparenzsoftware
+sudo cp ../ChargyDesktopApp/build/chargy_icon.png squashfs/usr/share/backgrounds/chargytransparenzsoftware/icon.png
 ```
 
 Das TRuDI Handbuch sollte sich auch im Desktop-Verzeichnis des Live-Systems befinden (Es wird angenommen, dass Sie das Dokument bereits in das Arbeitsverzeichnis kopiert haben):
