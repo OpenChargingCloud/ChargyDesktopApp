@@ -67,8 +67,8 @@ function StartDashboard() {
 
     // Linux
     fileHash('/opt/Chargy\ Transparenz\ Software/chargytransparenzsoftware', hash => exe_hash           = hash);
-    fileHash('/opt/Chargy\ Transparenz\ Software/resources/app.asar',        hash => exe_hash           = hash);
-    fileHash('/opt/Chargy\ Transparenz\ Software/resources/electron.asar',   hash => exe_hash           = hash);
+    fileHash('/opt/Chargy\ Transparenz\ Software/resources/app.asar',        hash => app_asar_hash      = hash);
+    fileHash('/opt/Chargy\ Transparenz\ Software/resources/electron.asar',   hash => electron_asar_hash = hash);
 
 
     //#region GetMethods...
