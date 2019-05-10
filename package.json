@@ -57,7 +57,7 @@
       "target": [
         "deb"
       ],
-      "icon": "build/chargy.ico"
+      "icon": "build/chargy_icon.png"
     }
   }
 }
