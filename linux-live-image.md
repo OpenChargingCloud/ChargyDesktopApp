@@ -24,7 +24,7 @@ cp -rp cd-mount/EFI cd-mount/.disk cd-mount/boot cd-mount/isolinux cd-mount/pool
 ```
 sudo apt install debootstrap
 cd ChargyLiveCD
-sudo debootstrap --arch amd64 bionic squashfs
+sudo debootstrap --arch amd64 disco squashfs
 ```
 
 Mount some virtual file systems into your change-root-environment and prepare this system for the installation of the base system:
