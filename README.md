@@ -32,21 +32,26 @@ The Chargy Desktop project has a sister project called [Chargy Mobile](https://g
 
 ### System Requirements
 
-Install nodejs on your system. For more details please check https://nodejs.org    
-On Linux and Mac OS X:
-
+Using node.js 12.1.0 (includes npm 6.9.0) for Microsoft Windows: https://nodejs.org/en/download/current/    
+Or install nodejs on your Linux / Mac OS X system via
 ```
-sudo curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
+sudo curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt install nodejs
+```
 
-$ sudo npm install -g electron-forge@latest
-+ electron-forge@5.2.4
+Afterwards you can install the remaining software using the node packet manager
+```
+$ sudo npm install -g electron@latest
++ electron@5.0.1
+
+$  npm install -g electron-builder@latest
++ electron-builder@20.39.0
 
 $ sudo npm install -g typescript@latest
-+ typescript@3.3.3333
++ typescript@3.4.5
 
 $ sudo npm install -g sass@latest
-+ sass@1.17.2
++ sass@1.20.1
 ```
 
 
@@ -59,15 +64,21 @@ git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
 cd ChargyDesktopApp
 npm install
 chmod +x run.sh
+```
+Now you can test the software via...
+```
 ./run.sh
 ```
 
-
 ### Building a Windows Installer
 
-The Windows version can only be build on a Windows machine and uses [Squirrel](https://github.com/Squirrel/Squirrel.Windows) as an installation and update framework.
+The Windows version can only be build on a Windows machine and uses [NSIS](https://www.electron.build/configuration/nsis) as an installation framework.
 ```
-electron-forge make
+./build.sh
+```
+The resulting installer is located at
+```
+~/dist/Chargy Transparenz Software Setup x.y.z.exe
 ```
 
 
