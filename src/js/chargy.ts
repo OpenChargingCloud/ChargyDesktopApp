@@ -2047,7 +2047,7 @@ function StartDashboard() {
 
         if (complete_hash == null)
         {
-            if (exe_hash !== "" && app_asar_hash !== "" && electron_asar_hash !== "")
+            if (exe_hash != null && app_asar_hash != null && electron_asar_hash != null)
             {
 
                 const cryp2 = require('electron').remote.require('crypto');

@@ -10,8 +10,9 @@ function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1500,
-    height: 900,
-	  autoHideMenuBar: true,
+    height: 900,    
+    autoHideMenuBar: true,
+    icon: 'build/chargy_icon.png',
     webPreferences: {
       nodeIntegration: true
     }
@@ -24,7 +25,7 @@ function createWindow () {
   mainWindow.loadFile('src/index.html')
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools()
+  //mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
