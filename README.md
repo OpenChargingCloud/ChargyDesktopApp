@@ -65,7 +65,6 @@ its nodejs dependencies:
 git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
 cd ChargyDesktopApp
 npm install
-chmod +x run.sh
 ```
 Now you can test the software via...
 ```
