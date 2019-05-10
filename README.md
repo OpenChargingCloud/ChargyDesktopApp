@@ -86,14 +86,14 @@ The resulting installer is located at...
 
 On a Debian GNU/Linux or Ubuntu machine you can run the following commands to create a Debian software package. More information about this process can be found at: https://github.com/electron-userland/electron-installer-debian
 ```
-sudo apt install debootstrap
-electron-builder
+sudo apt install debootstrap binutils
+./build.sh
 ```
 
 Now you can use the normal package management tools of your Linux distribution to install the app:
 ```
-cd out/make
-sudo dpkg -i chargyapp_X.Y.Z_amd64.deb
+cd dist
+sudo dpkg -i chargytransparenzsoftware_X.Y.Z_amd64.deb
 ```
 
 
