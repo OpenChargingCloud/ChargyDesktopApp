@@ -4,10 +4,10 @@ This documentation is based on the documentation of the [TRuDI Live CD](https://
 
 ### Downloading and mounting of the original Ubuntu ISO image
 
-We use Ubuntu 18.04.1 LTS (amd64) as the base for our ISO image.
+We use Ubuntu 19.04 (amd64) as the base for our ISO image.
 
 ```
-wget http://ftp-stud.hs-esslingen.de/pub/Mirrors/releases.ubuntu.com/18.04.1/ubuntu-18.04.1-desktop-amd64.iso
+wget http://ftp-stud.hs-esslingen.de/pub/Mirrors/releases.ubuntu.com/19.04/ubuntu-19.04-desktop-amd64.iso
 
 sudo modprobe loop
 sudo modprobe iso9660
