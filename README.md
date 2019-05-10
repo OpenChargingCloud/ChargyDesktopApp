@@ -93,7 +93,7 @@ sudo apt install debootstrap binutils
 Now you can use the normal package management tools of your Linux distribution to install the app:
 ```
 cd dist
-sudo dpkg -i chargytransparenzsoftware_X.Y.Z_amd64.deb
+sudo apt install ./chargytransparenzsoftware_X.Y.Z_amd64.deb
 ```
 
 
