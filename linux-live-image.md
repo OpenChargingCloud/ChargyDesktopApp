@@ -12,7 +12,7 @@ wget http://ftp-stud.hs-esslingen.de/pub/Mirrors/releases.ubuntu.com/19.04/ubunt
 sudo modprobe loop
 sudo modprobe iso9660
 mkdir cd-mount
-sudo mount -t iso9660 ./ubuntu-18.04.1-desktop-amd64.iso cd-mount/ -o ro,loop
+sudo mount -t iso9660 ./ubuntu-19.04-desktop-amd64.iso cd-mount/ -o ro,loop
 
 mkdir ChargyLiveCD
 mkdir ChargyLiveCD/iso
