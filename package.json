@@ -9,7 +9,7 @@
     "dist": "electron-builder",
     "postinstall": "install-app-deps"
   },
-  "repository": "https://github.com/electron/electron-quick-start",
+  "repository": "https://github.com/OpenChargingCloud/ChargyDesktopApp",
   "keywords": [
     "Chargy",
     "Transparenzsoftware",
@@ -24,6 +24,7 @@
   ],
   "author": "Achim Friedland <achim.friedland@graphdefined.com>",
   "license": "AGPL-3.0-or-later",
+  "homepage": "https://github.com/OpenChargingCloud/ChargyDesktopApp",
   "dependencies": {
     "@types/chart.js": "^2.7.52",
     "@types/elliptic": "^6.4.6",
@@ -42,6 +43,10 @@
     "appId": "cloud.charging.open.chargy.desktop",
     "productName": "Chargy Transparenz Software",
     "copyright": "Copyright © 2018-2019 GraphDefined GmbH",
+    "extraFiles": [
+      "build",
+      "documentation"
+    ],
     "win": {
       "target": [
         "nsis"
