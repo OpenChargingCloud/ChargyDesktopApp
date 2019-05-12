@@ -59,8 +59,7 @@ apt install -y language-pack-de language-pack-gnome-de wngerman wogerman wswiss
 update-locale LANG=de_DE.UTF-8 LANGUAGE=de_DE LC_ALL=de_DE.UTF-8
 sed -i 's/XKBLAYOUT=\"us\"/XKBLAYOUT=\"de\"/g' /etc/default/keyboard
 
-echo "[org.gnome.shell]" > /usr/share/glib-2.0/schemas/90_gnome-shell.gschema.override
-echo "favorite-apps=[ 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'yelp.desktop', 'org.gnome.Terminal.desktop', 'chargytransparenzsoftware.desktop' ]" >> /usr/share/glib-2.0/schemas/90_gnome-shell.gschema.override
+echo -e "[org.gnome.shell]\nfavorite-apps=[ 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'yelp.desktop', 'org.gnome.Terminal.desktop', 'chargytransparenzsoftware.desktop' ]" > /usr/share/glib-2.0/schemas/90_gnome-shell.gschema.override
 
 ### gsettings set org.gnome.desktop.background picture-uri "file:///home/username/path/to/image.jpg"
 ```
