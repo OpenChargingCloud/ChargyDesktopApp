@@ -2,9 +2,9 @@
 
 This documentation is based on the documentation of the [TRuDI Live CD](https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master), which is a similar project of the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) for the transparency of smart meters, but was updated to support newer versions of Ubuntu Linux.
 
-### Downloading and mounting of the original Ubuntu ISO image
+### Preparing the Linux Live Image
 
-We use Ubuntu 19.04 (amd64) as the base for our ISO image.
+We use Ubuntu 19.04 (amd64) as the base for our ISO image. We expect that the chargy git repository is located at *../ChargyDesktopApp*.
 
 ```
 wget http://releases.ubuntu.com/19.04/ubuntu-19.04-desktop-amd64.iso
@@ -39,7 +39,7 @@ sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_0.28.0_amd64.deb new/
 sudo cp ../ChargyDesktopApp/build/chargy_icon.png new/opt/
 ```
 
-### Change root into the new Linux system and update the Linux system
+### Change root into the new Linux system and update all software packages
 
 ```
 sudo chroot new /bin/bash 
@@ -55,10 +55,14 @@ apt update
 echo "Europe/Berlin" > /etc/timezone
 rm -f /etc/localtime
 ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
-#dpkg-reconfigure tzdata
-##apt install language-pack-de language-pack-gnome-de wngerman wogerman wswiss
+apt install -y language-pack-de language-pack-gnome-de wngerman wogerman wswiss
 update-locale LANG=de_DE.UTF-8 LANGUAGE=de_DE LC_ALL=de_DE.UTF-8
 sed -i 's/XKBLAYOUT=\"us\"/XKBLAYOUT=\"de\"/g' /etc/default/keyboard
+
+echo "[org.gnome.shell]" > /usr/share/glib-2.0/schemas/90_gnome-shell.gschema.override
+echo "favorite-apps=[ 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'yelp.desktop', 'org.gnome.Terminal.desktop', 'chargytransparenzsoftware.desktop' ]" >> /usr/share/glib-2.0/schemas/90_gnome-shell.gschema.override
+
+### gsettings set org.gnome.desktop.background picture-uri "file:///home/username/path/to/image.jpg"
 ```
 
 ### Install Chargy Transparency Software
@@ -66,9 +70,6 @@ sed -i 's/XKBLAYOUT=\"us\"/XKBLAYOUT=\"de\"/g' /etc/default/keyboard
 apt install -y joe mc
 apt install -y /opt/chargytransparenzsoftware_0.28.0_amd64.deb
 sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/chargy_icon.png/g' /usr/share/applications/chargytransparenzsoftware.desktop 
-
-### gsettings set org.gnome.desktop.background picture-uri "file:///home/username/path/to/image.jpg"
-
 
 mkdir /etc/skel/Desktop
 cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/Desktop/
