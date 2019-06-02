@@ -2,6 +2,7 @@
 
 Chargy is a transparency software for secure and transparent e-mobility charging processes, as defined by the German "Eichrecht". The software allows you to verify the cryptographic signatures of energy measurements within charge detail records and comes with a couple of useful extentions to simplify the entire process for endusers and operators.
 
+![](documentation/Screenshot02.png)
 
 ## Benefits of Chargy
 
