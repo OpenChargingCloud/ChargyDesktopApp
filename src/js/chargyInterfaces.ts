@@ -1,19 +1,19 @@
 ﻿///<reference path="ACrypt.ts" />
 
 interface GetChargingPoolFunc {
-    (Id: String): IChargingPool;
+    (Id: string): IChargingPool|null;
 }
 
 interface GetChargingStationFunc {
-    (Id: String): IChargingStation;
+    (Id: string): IChargingStation|null;
 }
 
 interface GetEVSEFunc {
-    (Id: String): IEVSE;
+    (Id: string): IEVSE|null;
 }
 
 interface GetMeterFunc {
-    (Id: String): IMeter;
+    (Id: string): IMeter|null;
 }
 
 interface IChargeTransparencyRecord
@@ -140,12 +140,12 @@ interface IChargingSession
     end:                        string;
     description:                {};
     chargingPoolId:             string;
-    chargingPool:               IChargingPool;
+    chargingPool?:              IChargingPool|null;
     chargingStationId:          string;
-    chargingStation:            IChargingStation;
+    chargingStation?:           IChargingStation|null;
     EVSEId:                     string;
-    EVSE:                       IEVSE;
-    tariff:                     ITariff;
+    EVSE?:                      IEVSE|null;
+    tariff?:                    ITariff|null;
     authorizationStart:         IAuthorization;
     authorizationStop:          IAuthorization;
     product:                    IChargingProduct;
@@ -249,12 +249,12 @@ interface IECCSignature extends ISignature
 interface IAddress {
     "@context":         	    string;
     city:                       any;
-    street:                     string;
-    houseNumber:                string;
-    floorLevel:                 string;
+    street?:                    string;
+    houseNumber?:               string;
+    floorLevel?:                string;
     postalCode:                 string;
     country:                    string;
-    comment:                    any;
+    comment?:                   any;
 }
 
 interface IGeoLocation {

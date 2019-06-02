@@ -11,24 +11,30 @@ import { readSync } from "fs";
 var map:     any = "";
 var leaflet: any = "";
 
-function fileHash(filename:string, func: { (hash: string): any; })
+function fileHash(filename:  string,
+                  onSuccess: { (hash:         string): any; },
+                  OnFailed:  { (errorMessage: string): any; })
 {
-    const fs    = require('original-fs');
-    const cryp2 = require('electron').remote.require('crypto');
 
-    var sha512hash = cryp2.createHash('sha512');
-    var s = fs.createReadStream(filename);
+    const fs          = require('original-fs');
+    const _crypt2     = require('electron').remote.require('crypto');
+    let   sha512hash  = _crypt2.createHash('sha512');
+    let   s           = fs.createReadStream(filename);
     s.on('data', function(data: any) {
         sha512hash.update(data)
     })
+
     s.on('error', function() {
-        console.log(filename + " => Not found!");
-    })  
+        console.log(filename + " => File not found!");
+        OnFailed("File not found!");
+    })
+
     s.on('end', function() {
         var hash = sha512hash.digest('hex');
         console.log(filename + " => " + hash);
-        func(hash);
+        onSuccess(hash);
     })
+
 }
 
 var exe_hash            = "";
@@ -59,18 +65,26 @@ function StartDashboard() {
     const crypt = require('electron').remote.require('crypto');
 
     var path  = require('path');
-    fileHash('Chargy Transparenz Software.exe',       hash => exe_hash           = hash);
-    fileHash(path.join('resources', 'app.asar'),      hash => app_asar_hash      = hash);
-    fileHash(path.join('resources', 'electron.asar'), hash => electron_asar_hash = hash);
+
+    // Windows
+    fileHash('Chargy Transparenz Software.exe',                              hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+    fileHash(path.join('resources', 'app.asar'),                             hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+    fileHash(path.join('resources', 'electron.asar'),                        hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+
+    // Linux
+    fileHash('/opt/Chargy\ Transparenz\ Software/chargytransparenzsoftware', hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+    fileHash('/opt/Chargy\ Transparenz\ Software/resources/app.asar',        hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+    fileHash('/opt/Chargy\ Transparenz\ Software/resources/electron.asar',   hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+
 
     //#region GetMethods...
 
-    let GetChargingPool: GetChargingPoolFunc = function (Id: String)
+    let GetChargingPool: GetChargingPoolFunc = function (Id: string)
     {
 
         for (var chargingPool of chargingPools)
         {
-            if (chargingPool["@id"] == Id)
+            if (chargingPool["@id"] === Id)
                 return chargingPool;
         }
 
@@ -78,12 +92,12 @@ function StartDashboard() {
 
     }
 
-    let GetChargingStation: GetChargingStationFunc = function (Id: String)
+    let GetChargingStation: GetChargingStationFunc = function (Id: string)
     {
 
         for (var chargingStation of chargingStations)
         {
-            if (chargingStation["@id"] == Id)
+            if (chargingStation["@id"] === Id)
                 return chargingStation;
         }
 
@@ -91,12 +105,12 @@ function StartDashboard() {
 
     }
 
-    let GetEVSE: GetEVSEFunc = function (Id: String)
+    let GetEVSE: GetEVSEFunc = function (Id: string)
     {
 
         for (var evse of EVSEs)
         {
-            if (evse["@id"] == Id)
+            if (evse["@id"] === Id)
                 return evse;
         }
 
@@ -109,7 +123,7 @@ function StartDashboard() {
     
         for (var meter of meters)
         {
-            if (meter["@id"] == Id)
+            if (meter["@id"] === Id)
                 return meter;
         }
     
@@ -744,7 +758,7 @@ function StartDashboard() {
                             chargingSession.chargingStationId || chargingSession.chargingStation ||
                             chargingSession.chargingPoolId    || chargingSession.chargingPool) {
 
-                            var address:IAddress                  = null;
+                            var address:IAddress|null             = null;
 
                             var locationInfoDiv                   = tableDiv.appendChild(document.createElement('div'));
                             locationInfoDiv.className             = "locationInfos";
@@ -767,15 +781,15 @@ function StartDashboard() {
                                                                         : "") +
                                                                     (chargingSession.EVSEId != null
                                                                         ? chargingSession.EVSEId
-                                                                        : chargingSession.EVSE["@id"]);
+                                                                        : chargingSession.EVSE!["@id"]);
 
-                                chargingSession.chargingStation   = chargingSession.EVSE.chargingStation;
-                                chargingSession.chargingStationId = chargingSession.EVSE.chargingStationId;
+                                chargingSession.chargingStation   = chargingSession.EVSE!.chargingStation;
+                                chargingSession.chargingStationId = chargingSession.EVSE!.chargingStationId;
 
-                                chargingSession.chargingPool      = chargingSession.EVSE.chargingStation.chargingPool;
-                                chargingSession.chargingPoolId    = chargingSession.EVSE.chargingStation.chargingPoolId;
+                                chargingSession.chargingPool      = chargingSession.EVSE!.chargingStation.chargingPool;
+                                chargingSession.chargingPoolId    = chargingSession.EVSE!.chargingStation.chargingPoolId;
 
-                                address                           = chargingSession.EVSE.chargingStation.address;
+                                address                           = chargingSession.EVSE!.chargingStation.address;
 
                             }
 
@@ -822,7 +836,7 @@ function StartDashboard() {
                                                                             ? chargingSession.chargingPoolId
                                                                             : chargingSession.chargingPool["@id"]);
 
-                                    address = GetChargingPool(chargingSession.chargingPool["@id"]).address;
+                                    address = GetChargingPool(chargingSession.chargingPool["@id"])!.address;
 
                                 }
                                 else
@@ -948,175 +962,175 @@ function StartDashboard() {
 
                 try {
 
-                    var CTRArray = [];
+                    let CTRArray = [];
 
-                    for (var i = 0; i < signedMeterValues.length; i++) {
+                    for (let i = 0; i < signedMeterValues.length; i++) {
 
-                        var signedMeterValue = signedMeterValues[i];
+                        let signedMeterValue = signedMeterValues[i];
 
-                        var _timestamp = signedMeterValue["timestamp"] as number;
+                        let _timestamp = signedMeterValue["timestamp"] as number;
                         if (_timestamp == null || typeof _timestamp !== 'number')
                             throw "Missing or invalid timestamp[" + i + "]!"
-                        var timestamp = parseUTC(_timestamp);
+                        let timestamp = parseUTC(_timestamp);
 
-                        var _meterInfo = signedMeterValue["meterInfo"] as string;
+                        let _meterInfo = signedMeterValue["meterInfo"] as string;
                         if (_meterInfo == null || typeof _meterInfo !== 'object')
                             throw "Missing or invalid meterInfo[" + i + "]!"
 
-                        var _meterInfo_firmwareVersion = _meterInfo["firmwareVersion"] as string;
+                        let _meterInfo_firmwareVersion = _meterInfo["firmwareVersion"] as string;
                         if (_meterInfo_firmwareVersion == null || typeof _meterInfo_firmwareVersion !== 'string')
                             throw "Missing or invalid meterInfo firmwareVersion[" + i + "]!"
 
-                        var _meterInfo_publicKey = _meterInfo["publicKey"] as string;
+                        let _meterInfo_publicKey = _meterInfo["publicKey"] as string;
                         if (_meterInfo_publicKey == null || typeof _meterInfo_publicKey !== 'string')
                             throw "Missing or invalid meterInfo publicKey[" + i + "]!"
 
-                        var _meterInfo_meterId = _meterInfo["meterId"] as string;
+                        let _meterInfo_meterId = _meterInfo["meterId"] as string;
                         if (_meterInfo_meterId == null || typeof _meterInfo_meterId !== 'string')
                             throw "Missing or invalid meterInfo meterId[" + i + "]!"
 
-                        var _meterInfo_type = _meterInfo["type"] as string;
+                        let _meterInfo_type = _meterInfo["type"] as string;
                         if (_meterInfo_type == null || typeof _meterInfo_type !== 'string')
                             throw "Missing or invalid meterInfo type[" + i + "]!"
 
-                        var _meterInfo_manufacturer = _meterInfo["manufacturer"] as string;
+                        let _meterInfo_manufacturer = _meterInfo["manufacturer"] as string;
                         if (_meterInfo_manufacturer == null || typeof _meterInfo_manufacturer !== 'string')
                             throw "Missing or invalid meterInfo manufacturer[" + i + "]!"
 
 
-                        var _transactionId = signedMeterValue["transactionId"] as string;
+                        let _transactionId = signedMeterValue["transactionId"] as string;
                         if (_transactionId == null || typeof _transactionId !== 'string')
                             throw "Missing or invalid transactionId[" + i + "]!"
 
 
-                        var _contract = signedMeterValue["contract"];
+                        let _contract = signedMeterValue["contract"];
                         if (_contract == null || typeof _contract !== 'object')
                             throw "Missing or invalid contract[" + i + "]!"
 
-                        var _contract_type = _contract["type"] as string;
+                        let _contract_type = _contract["type"] as string;
                         if (_contract_type == null || typeof _contract_type !== 'string')
                             throw "Missing or invalid contract type[" + i + "]!"
 
-                        var _contract_timestampLocal = _contract["timestampLocal"];
+                        let _contract_timestampLocal = _contract["timestampLocal"];
                         if (_contract_timestampLocal == null || typeof _contract_timestampLocal !== 'object')
                             throw "Missing or invalid contract timestampLocal[" + i + "]!"
 
-                        var _contract_timestampLocal_timestamp = _contract_timestampLocal["timestamp"] as number;
+                        let _contract_timestampLocal_timestamp = _contract_timestampLocal["timestamp"] as number;
                         if (_contract_timestampLocal_timestamp == null || typeof _contract_timestampLocal_timestamp !== 'number')
                             throw "Missing or invalid contract timestampLocal timestamp[" + i + "]!"                            
 
-                        var _contract_timestampLocal_localOffset = _contract_timestampLocal["localOffset"] as number;
+                        let _contract_timestampLocal_localOffset = _contract_timestampLocal["localOffset"] as number;
                         if (_contract_timestampLocal_localOffset == null || typeof _contract_timestampLocal_localOffset !== 'number')
                             throw "Missing or invalid contract timestampLocal localOffset[" + i + "]!"                            
                             
-                        var _contract_timestampLocal_seasonOffset = _contract_timestampLocal["seasonOffset"] as number;
+                        let _contract_timestampLocal_seasonOffset = _contract_timestampLocal["seasonOffset"] as number;
                         if (_contract_timestampLocal_seasonOffset == null || typeof _contract_timestampLocal_seasonOffset !== 'number')
                             throw "Missing or invalid contract timestampLocal seasonOffset[" + i + "]!"  
 
-                        var _contract_timestamp = _contract["timestamp"] as number;
+                        let _contract_timestamp = _contract["timestamp"] as number;
                         if (_contract_timestamp == null || typeof _contract_timestamp !== 'number')
                             throw "Missing or invalid contract timestamp[" + i + "]!"
 
-                        var _contract_id = _contract["id"] as string;
+                        let _contract_id = _contract["id"] as string;
                         if (_contract_id == null || typeof _contract_id !== 'string')
                             throw "Missing or invalid contract type[" + i + "]!"
 
 
-                        var _measurementId = signedMeterValue["measurementId"] as string;
+                        let _measurementId = signedMeterValue["measurementId"] as string;
                         if (_measurementId == null || typeof _measurementId !== 'string')
                             throw "Missing or invalid measurementId[" + i + "]!"
 
 
-                        var _measuredValue = signedMeterValue["measuredValue"];
+                        let _measuredValue = signedMeterValue["measuredValue"];
                         if (_measuredValue == null || typeof _measuredValue !== 'object')
                             throw "Missing or invalid measuredValue[" + i + "]!"
 
-                        var _measuredValue_timestampLocal = _measuredValue["timestampLocal"];
+                        let _measuredValue_timestampLocal = _measuredValue["timestampLocal"];
                         if (_measuredValue_timestampLocal == null || typeof _measuredValue_timestampLocal !== 'object')
                             throw "Missing or invalid measuredValue timestampLocal[" + i + "]!"
 
-                        var _measuredValue_timestampLocal_timestamp = _measuredValue_timestampLocal["timestamp"] as number;
+                        let _measuredValue_timestampLocal_timestamp = _measuredValue_timestampLocal["timestamp"] as number;
                         if (_measuredValue_timestampLocal_timestamp == null || typeof _measuredValue_timestampLocal_timestamp !== 'number')
                             throw "Missing or invalid measuredValue timestampLocal timestamp[" + i + "]!"                            
 
-                        var _measuredValue_timestampLocal_localOffset = _measuredValue_timestampLocal["localOffset"] as number;
+                        let _measuredValue_timestampLocal_localOffset = _measuredValue_timestampLocal["localOffset"] as number;
                         if (_measuredValue_timestampLocal_localOffset == null || typeof _measuredValue_timestampLocal_localOffset !== 'number')
                             throw "Missing or invalid measuredValue timestampLocal localOffset[" + i + "]!"                            
                             
-                        var _measuredValue_timestampLocal_seasonOffset = _measuredValue_timestampLocal["seasonOffset"] as number;
+                        let _measuredValue_timestampLocal_seasonOffset = _measuredValue_timestampLocal["seasonOffset"] as number;
                         if (_measuredValue_timestampLocal_seasonOffset == null || typeof _measuredValue_timestampLocal_seasonOffset !== 'number')
                             throw "Missing or invalid measuredValue timestampLocal seasonOffset[" + i + "]!"                            
 
-                        var _measuredValue_value = _measuredValue["value"] as string;
+                        let _measuredValue_value = _measuredValue["value"] as string;
                         if (_measuredValue_value == null || typeof _measuredValue_value !== 'string')
                             throw "Missing or invalid measuredValue value[" + i + "]!"
 
-                        var _measuredValue_unit = _measuredValue["unit"] as string;
+                        let _measuredValue_unit = _measuredValue["unit"] as string;
                         if (_measuredValue_unit == null || typeof _measuredValue_unit !== 'string')
                             throw "Missing or invalid measuredValue unit[" + i + "]!"
 
-                        var _measuredValue_scale = _measuredValue["scale"] as number;
+                        let _measuredValue_scale = _measuredValue["scale"] as number;
                         if (_measuredValue_scale == null || typeof _measuredValue_scale !== 'number')
                             throw "Missing or invalid measuredValue scale[" + i + "]!"
 
-                        var _measuredValue_valueType = _measuredValue["valueType"] as string;
+                        let _measuredValue_valueType = _measuredValue["valueType"] as string;
                         if (_measuredValue_valueType == null || typeof _measuredValue_valueType !== 'string')
                             throw "Missing or invalid measuredValue valueType[" + i + "]!"
 
-                        var _measuredValue_unitEncoded = _measuredValue["unitEncoded"] as number;
+                        let _measuredValue_unitEncoded = _measuredValue["unitEncoded"] as number;
                         if (_measuredValue_unitEncoded == null || typeof _measuredValue_unitEncoded !== 'number')
                             throw "Missing or invalid measuredValue unitEncoded[" + i + "]!"
 
 
-                        var _measurand = signedMeterValue["measurand"];
+                        let _measurand = signedMeterValue["measurand"];
                             if (_measurand == null || typeof _measurand !== 'object')
                                 throw "Missing or invalid measurand[" + i + "]!"
 
-                        var _measurand_id = _measurand["id"] as string;
+                        let _measurand_id = _measurand["id"] as string;
                         if (_measurand_id == null || typeof _measurand_id !== 'string')
                             throw "Missing or invalid measurand id[" + i + "]!"
 
-                        var _measurand_name = _measurand["name"] as string;
+                        let _measurand_name = _measurand["name"] as string;
                         if (_measurand_name == null || typeof _measurand_name !== 'string')
                             throw "Missing or invalid measurand name[" + i + "]!"
 
 
-                        var _additionalInfo = signedMeterValue["additionalInfo"];
+                        let _additionalInfo = signedMeterValue["additionalInfo"];
                             if (_additionalInfo == null || typeof _additionalInfo !== 'object')
                                 throw "Missing or invalid additionalInfo[" + i + "]!"
 
-                        var _additionalInfo_indexes = _additionalInfo["indexes"];
+                        let _additionalInfo_indexes = _additionalInfo["indexes"];
                         if (_additionalInfo_indexes == null || typeof _additionalInfo_indexes !== 'object')
                             throw "Missing or invalid additionalInfo indexes[" + i + "]!"
 
-                        var _additionalInfo_indexes_timer = _additionalInfo_indexes["timer"] as number;
+                        let _additionalInfo_indexes_timer = _additionalInfo_indexes["timer"] as number;
                         if (_additionalInfo_indexes_timer == null || typeof _additionalInfo_indexes_timer !== 'number')
                             throw "Missing or invalid additionalInfo indexes timer[" + i + "]!"
 
-                        var _additionalInfo_indexes_logBook = _additionalInfo_indexes["logBook"] as string;
+                        let _additionalInfo_indexes_logBook = _additionalInfo_indexes["logBook"] as string;
                         if (_additionalInfo_indexes_logBook == null || typeof _additionalInfo_indexes_logBook !== 'string')
                             throw "Missing or invalid additionalInfo indexes logBook[" + i + "]!"
                             
-                        var _additionalInfo_status = _additionalInfo["status"] as string;
+                        let _additionalInfo_status = _additionalInfo["status"] as string;
                         if (_additionalInfo_status == null || typeof _additionalInfo_status !== 'string')
                             throw "Missing or invalid additionalInfo status[" + i + "]!"
 
 
-                        var _chargePoint = signedMeterValue["chargePoint"];
+                        let _chargePoint = signedMeterValue["chargePoint"];
                         if (_chargePoint == null || typeof _chargePoint !== 'object')
                             throw "Missing or invalid chargePoint[" + i + "] information!"
 
-                        var _chargePointSoftwareVersion = _chargePoint["softwareVersion"];
+                        let _chargePointSoftwareVersion = _chargePoint["softwareVersion"];
                         if (_chargePointSoftwareVersion == null || typeof _chargePointSoftwareVersion !== 'string')
                             throw "Missing or invalid chargePoint softwareVersion[" + i + "]!"
 
 
-                        var _signature = signedMeterValue["signature"] as string;
+                        let _signature = signedMeterValue["signature"] as string;
                         if (_signature == null || typeof _signature !== 'string')
                             throw "Missing or invalid signature[" + i + "]!"
 
 
-                        var aaa = moment.unix(_contract_timestampLocal_timestamp).utc();
+                        //let aaa = moment.unix(_contract_timestampLocal_timestamp).utc();
 
                         CTRArray.push({
                                     "timestamp": _timestamp,
@@ -1209,7 +1223,7 @@ function StartDashboard() {
                     var n = CTRArray.length-1;
                     var _CTR: any = { //IChargeTransparencyRecord = {
 
-                        "@id":              _transactionId,
+                        "@id":              CTRArray[n]["transactionId"],
                         "@context":         "https://open.charging.cloud/contexts/CTR+json",
                     
                         "begin":            moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
@@ -1341,7 +1355,7 @@ function StartDashboard() {
 
                             {
 
-                                "@id":                          _transactionId,
+                                "@id":                          CTRArray[n]["transactionId"],
                                 "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
                                 "begin":                        moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
                                 "end":                          moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
@@ -1736,7 +1750,7 @@ function StartDashboard() {
     //#region Capture the correct charging session and its context!
 
     function captureChargingSession(cs: IChargingSession) {
-        return function(this: HTMLDivElement, ev: MouseEvent) {
+        return function(this: GlobalEventHandlers, ev: MouseEvent) {
 
             //#region Highlight the selected charging session...
 
@@ -1744,7 +1758,7 @@ function StartDashboard() {
             for(var i=0; i<AllChargingSessionsDivs.length; i++)
                 AllChargingSessionsDivs[i].classList.remove("activated");
 
-            this.classList.add("activated");
+            (this as HTMLDivElement)!.classList.add("activated");
 
             //#endregion
 
@@ -1903,7 +1917,7 @@ function StartDashboard() {
     //#region Capture the correct measurement value and its context!
 
     function captureMeasurementCryptoDetails(measurementValue: IMeasurementValue) {
-        return function(this: HTMLDivElement, ev: MouseEvent) {
+        return function(this: GlobalEventHandlers, ev: MouseEvent) {
                    showMeasurementCryptoDetails(measurementValue);
                };
     }
@@ -1955,7 +1969,7 @@ function StartDashboard() {
         event.stopPropagation();
         event.preventDefault();
         (event.target as HTMLDivElement).classList.remove('over');
-        readAndParseFile(event.dataTransfer.files[0]);
+        readAndParseFile(event.dataTransfer!.files[0]);
     }
 
     function handleDragEnter(event: DragEvent) {
@@ -1966,7 +1980,7 @@ function StartDashboard() {
     function handleDragOver(event: DragEvent) {
         event.stopPropagation();
         event.preventDefault();
-        event.dataTransfer.dropEffect = 'copy';
+        event.dataTransfer!.dropEffect = 'copy';
         (event.target as HTMLDivElement).classList.add('over');
     }
 
@@ -2007,7 +2021,7 @@ function StartDashboard() {
 
     //#region Process pasted CTR file
 
-    function PasteFile(this: HTMLElement, ev: MouseEvent) {
+    function PasteFile(this: GlobalEventHandlers, ev: MouseEvent) {
 
         (navigator as any).clipboard.readText().then(function (clipText: string) {
 
@@ -2034,20 +2048,16 @@ function StartDashboard() {
     input.addEventListener('dragleave', handleDragLeave,   false);
     input.addEventListener('drop',      handleDroppedFile, false);
 
-    var outerframe                = <HTMLDivElement>      document.getElementById('outerframe');
-
     var aboutButton               = <HTMLButtonElement>   document.getElementById('aboutButton');
-    aboutButton.onclick = function (this: HTMLElement, ev: MouseEvent) {
+    aboutButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
         inputInfosDiv.style.display             = "none";
         aboutScreenDiv.style.display            = "block";
         chargingSessionReportDiv.style.display  = "none";
         backButtonDiv.style.display             = "block";
 
-        var aaa = document.getElementById('chargySHA512') as HTMLDivElement;
-
         if (complete_hash == null)
         {
-            if (exe_hash !== "" && app_asar_hash !== "" && electron_asar_hash !== "")
+            if (exe_hash != null && app_asar_hash != null && electron_asar_hash != null)
             {
 
                 const cryp2 = require('electron').remote.require('crypto');
@@ -2057,7 +2067,7 @@ function StartDashboard() {
                 sha512hash.update(app_asar_hash);
                 sha512hash.update(electron_asar_hash);
 
-                aaa.children[1].innerHTML = complete_hash = sha512hash.digest('hex').match(/.{1,8}/g).join(" ");
+                chargySHA512Div.children[1].innerHTML = complete_hash = sha512hash.digest('hex').match(/.{1,8}/g).join(" ");
 
             }
         }
@@ -2065,17 +2075,15 @@ function StartDashboard() {
     }
 
     var fullScreenButton          = <HTMLButtonElement>   document.getElementById('fullScreenButton');
-    fullScreenButton.onclick = function (this: HTMLElement, ev: MouseEvent) {
+    fullScreenButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
         if (d.fullScreen || d.mozFullScreen || d.webkitIsFullScreen)
         {
-            outerframe.classList.remove("fullScreen");
             overlayDiv.classList.remove("fullScreen");
             closeFullscreen();
             fullScreenButton.innerHTML = '<i class="fas fa-expand"></i>';
         }
         else
         {
-            outerframe.classList.add("fullScreen");
             overlayDiv.classList.add("fullScreen");
             openFullscreen();
             fullScreenButton.innerHTML = '<i class="fas fa-compress"></i>';
@@ -2088,11 +2096,13 @@ function StartDashboard() {
 
     var overlayDiv                = <HTMLDivElement>      document.getElementById('overlay');
     var overlayOkButton           = <HTMLButtonElement>   document.getElementById('overlayOkButton');
-    overlayOkButton.onclick = function (this: HTMLElement, ev: MouseEvent) { overlayDiv.style.display = 'none'; }
+    overlayOkButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
+        overlayDiv.style.display = 'none';
+    }
 
     var fileInputButton           = <HTMLButtonElement>   document.getElementById('fileInputButton');
     var fileInput                 = <HTMLInputElement>    document.getElementById('fileInput');
-    fileInputButton.onclick = function (this: HTMLElement, ev: MouseEvent) {
+    fileInputButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
         fileInput.value = '';
         fileInput.click();
     }
@@ -2103,6 +2113,7 @@ function StartDashboard() {
     pasteButton.onclick           = PasteFile;
 
     var aboutScreenDiv            = <HTMLDivElement>      document.getElementById('aboutScreen');
+    var chargySHA512Div           = <HTMLDivElement>      document.getElementById('chargySHA512');
     var chargingSessionReportDiv  = <HTMLDivElement>      document.getElementById('chargingSessionReport');
     var rightbar                  = <HTMLDivElement>      document.getElementById('rightbar');
     var evseTarifInfosDiv         = <HTMLDivElement>      document.getElementById('evseTarifInfos');
@@ -2111,12 +2122,16 @@ function StartDashboard() {
 
     var issueTracker              = <HTMLDivElement>      document.getElementById('issueTracker');
     var showIssueTrackerButton    = <HTMLButtonElement>   document.getElementById('showIssueTracker');
-    showIssueTrackerButton.onclick = function (this: HTMLElement, ev: MouseEvent) { showIssueTracker(); }
+    showIssueTrackerButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
+        showIssueTracker();
+    }
     var issueBackButton           = <HTMLButtonElement>   document.getElementById('issueBackButton');
-    issueBackButton.onclick = function (this: HTMLElement, ev: MouseEvent) { issueTracker.style.display = 'none'; }
+    issueBackButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
+        issueTracker.style.display = 'none';
+    }
 
     var backButtonDiv             = <HTMLDivElement>      document.getElementById('backButtonDiv');
-    backButtonDiv.onclick = function (this: HTMLElement, ev: MouseEvent) {
+    backButtonDiv.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
         inputInfosDiv.style.display             = 'flex';
         aboutScreenDiv.style.display            = "none";
         chargingSessionReportDiv.style.display  = "none";
@@ -2131,8 +2146,8 @@ function StartDashboard() {
 
         let linkButton = linkButtons[i];
 
-        linkButton.onclick = function (this: HTMLElement, ev: MouseEvent) {
-            event.preventDefault();
+        linkButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
+            ev.preventDefault();
             var link = linkButton.attributes["href"].nodeValue;
             if (link.startsWith("http://") || link.startsWith("https://")) {
                 shell.openExternal(link);

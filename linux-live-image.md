@@ -1,18 +1,156 @@
 # Creating a Linux Live ISO Image
 
-This documentation is based on the documentation of the [TRuDI Live CD](https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master), which is a similar project of the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) for the transparency of smart meters. 
+This documentation is based on the documentation of the [TRuDI Live CD](https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master), which is a similar project of the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) for the transparency of smart meters, but was updated to support newer versions of Ubuntu Linux.
+
+### Preparing the Linux Live Image
+
+We use Ubuntu 19.04 (amd64) as the base for our ISO image. We expect that the chargy git repository is located at *../ChargyDesktopApp*.
+
+```
+wget http://releases.ubuntu.com/19.04/ubuntu-19.04-desktop-amd64.iso
+
+sudo modprobe loop
+sudo modprobe iso9660
+mkdir source
+sudo mount -t iso9660 ./ubuntu-19.04-desktop-amd64.iso source -o ro,loop
+mkdir ubuntu-livecd
+cp -a source/. ubuntu-livecd
+sudo chmod -R u+w ubuntu-livecd 
+sudo umount source
+rmdir source
+
+mkdir old
+sudo mount -t squashfs -o loop,ro ubuntu-livecd/casper/filesystem.squashfs old 
+
+sudo dd if=/dev/zero of=ubuntu-fs.ext2 bs=1M count=7000
+sudo mke2fs ubuntu-fs.ext2
+
+mkdir new
+sudo mount -o loop ubuntu-fs.ext2 new
+sudo cp -va old/. new
+sudo umount old
+rmdir old
+
+sudo cp /etc/resolv.conf new/etc/
+sudo mount -t proc -o bind /proc new/proc
+sudo mount -o bind /dev/pts new/dev/pts
+
+sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_0.28.0_amd64.deb new/opt/
+sudo cp ../ChargyDesktopApp/build/chargy_icon.png new/opt/
+```
+
+### Change root into the new Linux system and update all software packages
+
+```
+sudo chroot new /bin/bash 
+apt update
+apt upgrade -y
+
+sed -i 's/restricted/restricted universe multiverse/g' /etc/apt/sources.list
+apt update
+```
+
+### Change system settings
+```
+echo "Europe/Berlin" > /etc/timezone
+rm -f /etc/localtime
+ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
+apt install -y language-pack-de language-pack-gnome-de wngerman wogerman wswiss
+update-locale LANG=de_DE.UTF-8 LANGUAGE=de_DE LC_ALL=de_DE.UTF-8
+sed -i 's/XKBLAYOUT=\"us\"/XKBLAYOUT=\"de\"/g' /etc/default/keyboard
+
+echo -e "[org.gnome.shell]\nfavorite-apps=[ 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'yelp.desktop', 'org.gnome.Terminal.desktop', 'chargytransparenzsoftware.desktop' ]" > /usr/share/glib-2.0/schemas/90_gnome-shell.gschema.override
+
+### gsettings set org.gnome.desktop.background picture-uri "file:///home/username/path/to/image.jpg"
+```
+
+### Install Chargy Transparency Software
+```
+apt install -y joe mc
+apt install -y /opt/chargytransparenzsoftware_0.28.0_amd64.deb
+sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/chargy_icon.png/g' /usr/share/applications/chargytransparenzsoftware.desktop 
+
+mkdir /etc/skel/Desktop
+cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/Desktop/
+
+mkdir /etc/skel/.config
+mkdir /etc/skel/.config/autostart
+cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/.config/autostart/
+```
+
+### Remove legacy applications
+```
+apt purge -y libreoffice-common thunderbird aisleriot gnome-mahjongg gnome-mines gnome-sudoku libgnome-games-support-common
+apt purge -y ubuntu-web-launchers gdb gdbserver gparted simple-scan sane-utils bolt bluez bluez-cups bluez-obexd transmission-common deja-dup cheese remmina remmina-common totem totem-common rhythmbox rhythmbox-data shotwell shotwell-common gnome-todo gnome-todo-common libgnome-todo
+# Remove Ubuntu Installer
+apt purge -y ubiquity ubiquity-casper ubiquity-slideshow-ubuntu ubiquity-ubuntu-artwork
+
+??? gnome-initial-setup (because of cheese removal???)
+```
+
+### Do not do this!
+```
+apt autoremove
+```
+
+### Unmount everything, create file manifest and clear free space
+```
+exit
+sudo umount new/proc
+sudo umount new/dev/pts
+sudo rm new/etc/resolv.conf
+
+sudo chroot new dpkg-query -W --showformat='${Package} ${Version}\n' > ubuntu-livecd/casper/filesystem.manifest
+
+sudo printf $(sudo du -sx --block-size=1 ubuntu-livecd/ | cut -f1) | sudo tee ubuntu-livecd/casper/filesystem.size
+cd ubuntu-livecd
+find -type f -print0 | sudo xargs -0 md5sum | grep -v isolinux/boot.cat | sudo tee md5sum.txt
+cd ..
+
+sudo dd if=/dev/zero of=new/dummyfile
+sudo rm new/dummyfile
+```
+
+### Create new system image (will take a while)
+```
+sudo rm ubuntu-livecd/casper/filesystem.squashfs
+cd new
+sudo mksquashfs . ../ubuntu-livecd/casper/filesystem.squashfs -comp xz
+cd ..
+sudo umount new
+rmdir new
+```
+
+### Create ISO image
+```
+sudo genisoimage \
+    -o chargytransparenzsoftware_0.28.0_amd64.iso \
+    -b isolinux/isolinux.bin \
+    -c isolinux/boot.cat \
+    -no-emul-boot \
+    -boot-load-size 4 \
+    -boot-info-table \
+    -r \
+    -V "Chargy Transparenz Software Live" \
+    -cache-inodes  \
+    -J \
+    -l \
+    ubuntu-livecd
+```
+
+OLD!!!
 
 ### Downloading and mounting of the original Ubuntu ISO image
 
-We use Ubuntu 18.04.1 LTS (amd64) as the base for our ISO image.
+We use Ubuntu 19.04 (amd64) as the base for our ISO image.
 
 ```
-wget http://ftp-stud.hs-esslingen.de/pub/Mirrors/releases.ubuntu.com/18.04.1/ubuntu-18.04.1-desktop-amd64.iso
+wget http://ftp-stud.hs-esslingen.de/pub/Mirrors/releases.ubuntu.com/19.04/ubuntu-19.04-desktop-amd64.iso
 
 sudo modprobe loop
 sudo modprobe iso9660
 mkdir cd-mount
-sudo mount -t iso9660 ./ubuntu-18.04.1-desktop-amd64.iso cd-mount/ -o ro,loop
+sudo mount -t iso9660 ./ubuntu-19.04-desktop-amd64.iso cd-mount/ -o ro,loop
 
 mkdir ChargyLiveCD
 mkdir ChargyLiveCD/iso
@@ -24,7 +162,7 @@ cp -rp cd-mount/EFI cd-mount/.disk cd-mount/boot cd-mount/isolinux cd-mount/pool
 ```
 sudo apt install debootstrap
 cd ChargyLiveCD
-sudo debootstrap --arch amd64 bionic squashfs
+sudo debootstrap --arch amd64 disco squashfs
 ```
 
 Mount some virtual file systems into your change-root-environment and prepare this system for the installation of the base system:
@@ -83,37 +221,22 @@ network:
       dhcp6: true
 ```
 
-#### Festes Benutzerkonto einrichten
+#### Automatic Login
 
-Dieser Schritt bezieht sich auf den Absatz: **_Schutz in Verwendung_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
-
-Die Standardversion des Ubuntu Live-Systems legt bei jedem Start einen Benutzer namens ``ubuntu`` dynamisch an. 
-Dieser Benutzer hat standardmäßig kein Passwort und kann mit ``sudo`` Administratorrechte bekommen. 
-Es ist daher notwendig einen festen Benutzer mit eingeschränkten Benutzerrechten auf dem System einzurichten. 
-Standardmäßig kann dieser Benutzer keine Aktionen die Systemadministratorrechte benötigen, ausführen. Damit ist auch sichergestellt, dass aus dem Live-System keine Massenspeicher, die womöglich das Betriebssystem oder andere Daten des Host-Rechners enthalten, eingebunden werden können.
-
-Neuer Benutzer wird mit dem Kommando ``adduser`` erstellt. 
-Benutzername und Passwort kann man auf ``trudi`` setzen und alle weiteren Fragen überspringen.
+First create a new user called 'chargy'...
 
 ```
-sudo chroot squashfs adduser trudi
+sudo chroot squashfs adduser chargy
 ```
 
-#### Automatische Anmeldung des trudi-Benutzers und Deaktivierung der Gastbenutzeroption
-
-Dieser Schritt bezieht sich auf die Absätze: **_Schutz in Verwendung_** und **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
-
-Folgende Datei muss angepasst werden:
-
-```sudo joe squashfs/etc/lightdm/lightdm.conf```
-
-Der Dateiinhalt sollte folgendermaßen aussehen:
+...then enable auto-login within the display manager
 
 ```
-[Seat:*]
-autologin-user=trudi
-autologin-user-timeout=0
-allow-guest=false
+sudo joe squashfs/etc/gdm3/custom.conf
+
+# Enabling automatic login
+AutomaticLoginEnable = true
+AutomaticLogin = chargy
 ```
 
 ### Bootvorgang anpassen
@@ -148,78 +271,11 @@ PROMPT 0
 TIMEOUT 0
 NOESCAPE 1
 ALLOWOPTIONS 0
- SAY Lade Chargy Ubuntu Live 18.04...
+ SAY Lade Chargy Ubuntu Live 19.04...
 LABEL chargy
  KERNEL /casper/vmlinuz.efi
  APPEND BOOT_IMAGE=/casper/vmlinuz.efi boot=casper initrd=/casper/initrd.lz quiet splash --debian-installer/language=de console-setup/layoutcode?=de
 ``` 
-
-
-
-### Firewall einrichten
-
-Dieser Schritt bezieht sich auf den Absatz: **_Rückwirkungsfreiheit der Schnittstellen_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
-
-Benutzen Sie dazu das Programm _ufw_. Es muss zuerst in das chroot-System installiert werden. Installieren Sie auch Pakete _iptables_ und _ip6tables_ weil diese wahrscheinlich noch nicht installiert sind.
-
-```
-sudo chroot squashfs apt-get install iptables ip6tables
-sudo chroot squashfs apt-get install ufw
-``` 
-
-__Wichtig:__ vor dem Einrichten der Firewall Regeln im chroot-System, sollte das Programm _ufw_ auch auf dem Host-Rechner installiert sein, weil das chroot-System während der Live-Image Einrichtung das Kernel (und die Module) des Host-Rechners benutzt. Aus diesem Grund muss auch zuerst die Firewall des Host-Rechners laufen:
-
-```
-sudo ufw enable
-```
-
-Aktivieren Sie dann die Firewall am chroot-System, und geben die Regeln an. Alle eingehenden Pakete werden standardmäßig blockiert. Es sollen dann auch alle ausgehenden Pakete blockiert werden, bis auf bestimmte Portnummern die für die Kommunikation an den HAN-Schnittstellen der Smart Meter Gateways verwendet werden:
-
-```
-sudo chroot squashfs ufw enable
-sudo chroot squashfs ufw default deny outgoing
-sudo chroot squashfs ufw allow out 80
-sudo chroot squashfs ufw allow out 443
-sudo chroot squashfs ufw allow out 883
-sudo chroot squashfs ufw allow out 884
-sudo chroot squashfs ufw allow out 5556
-sudo chroot squashfs ufw allow out 10443
-sudo chroot squashfs ufw disable
-sudo chroot squashfs ufw enable
-```
-
-Die Deaktivierung und erneute Aktivierung zum Schluss ist notwendig, damit die Einstellungen im chroot-System für den nächsten Systemstart übernommen werden.
-
-Ãœberprüfen Sie die Die Liste der Firewall-Regeln:
-
-```
-sudo chroot squashfs ufw status verbose
-```
-
-Diese sollte wie folgt aussehen:
-
-```
-Status: active
-Logging: on (low)
-Default: deny (incoming), deny (outgoing), disabled (routed)
-New profiles: skip
-
-To                         Action      From
---                         ------      ----
-443                        ALLOW OUT   Anywhere                  
-80                         ALLOW OUT   Anywhere                  
-883                        ALLOW OUT   Anywhere                  
-884                        ALLOW OUT   Anywhere                  
-5556                       ALLOW OUT   Anywhere                  
-10443                      ALLOW OUT   Anywhere                  
-443 (v6)                   ALLOW OUT   Anywhere (v6)             
-80 (v6)                    ALLOW OUT   Anywhere (v6)             
-883 (v6)                   ALLOW OUT   Anywhere (v6)             
-884 (v6)                   ALLOW OUT   Anywhere (v6)             
-5556 (v6)                  ALLOW OUT   Anywhere (v6)             
-10443 (v6)                 ALLOW OUT   Anywhere (v6) 
-```
-
 
 ### Erscheinungsbild anpassen
 
@@ -280,29 +336,27 @@ logo='/usr/share/unity-greeter/trudi_greeter_logo.png'
 
 ### Installing the Chargy software
 
-Kopieren Sie das Installationspaket der aktuelle TRuDI-Version in den ``squashfs`` Verzeichnisbaum und führen Sie die Installation aus. (alle abhängigen Pakete werden automatisch mitinstalliert):
-
+This will copy the chargy debian package into the ``squashfs`` filesystem and install it with all dependencies
 ```
-sudo cp ../ChargyDesktopApp/out/make/chargyapp_0.13.0_amd64.deb ./squashfs/usr/share/
-sudo chroot squashfs apt install /usr/share/chargyapp_0.13.0_amd64.deb
-sudo rm ./squashfs/usr/share/chargyapp_0.13.0_amd64.deb
+sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_0.28.0_amd64.deb ./squashfs/usr/share/
+sudo chroot squashfs apt install /usr/share/chargytransparenzsoftware_0.28.0_amd64.deb
+sudo rm ./squashfs/usr/share/chargytransparenzsoftware_0.28.0_amd64.deb
 ```
 
-Eine Desktopverknüpfung für die TRuDI legt man im Verzeichnis squashfs/etc/skel/ an, da ein Benutzer beim Live-System immer dynamisch angelegt wird:
-
+A user within the live system will always be created dynamically. Therefore it is good to create a desktop shortcut for everyone.
 ```
 sudo mkdir squashfs/etc/skel/Desktop
 sudo touch squashfs/etc/skel/Desktop/chargy.desktop
+```
+
+Create a file having the following content
+```
 sudo joe squashfs/etc/skel/Desktop/chargy.desktop
-```
 
-Der Dateiinhalt sollte folgendermaßen aussehen:
-
-```
 [Desktop Entry]
-Name=chargy
-Exec=chargyapp
-Icon=/usr/share/backgounds/chargy/icon.png
+Name=Chargy Transparenz Software
+Exec=chargytransparenzsoftware
+Icon=/usr/share/backgrounds/chargytransparenzsoftware/icon.png
 Terminal=false
 Type=Application
 ```
@@ -310,8 +364,8 @@ Type=Application
 Es muss noch ein Icon für die Verknüpfung eingerichtet werden (Es wird angenommen, dass Sie eine Datei namens icon.png bereits in das Arbeitsverzeichnis kopiert haben):
 
 ```
-sudo mkdir squashfs/usr/share/backgounds/chargy
-sudo cp icon.png squashfs/usr/share/backgounds/chargy/icon.png
+sudo mkdir squashfs/usr/share/backgrounds/chargytransparenzsoftware
+sudo cp ../ChargyDesktopApp/build/chargy_icon.png squashfs/usr/share/backgrounds/chargytransparenzsoftware/icon.png
 ```
 
 Das TRuDI Handbuch sollte sich auch im Desktop-Verzeichnis des Live-Systems befinden (Es wird angenommen, dass Sie das Dokument bereits in das Arbeitsverzeichnis kopiert haben):

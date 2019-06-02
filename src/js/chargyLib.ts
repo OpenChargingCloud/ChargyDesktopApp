@@ -1,6 +1,6 @@
 ﻿
-function ParseJSON_LD<T>(Text:    string,
-    Context: string = null): T {
+function ParseJSON_LD<T>(Text: string,
+    Context: string = ""): T {
 
 var JObject = JSON.parse(Text);
 
@@ -10,12 +10,14 @@ return JObject as T;
 
 }
 
-function firstKey(obj) {
-for (var a in obj) return a;
+function firstKey(obj: any) {
+    for (var a in obj)
+        return a;
 }
 
-function firstValue(obj) {
-for (var a in obj) return obj[a];
+function firstValue(obj: any) {
+    for (var a in obj)
+        return obj[a];
 }
 
 function parseUTC(UTCTime: string|number): any {
@@ -70,26 +72,32 @@ function translateMeasurementName(In: string) : string
     }
 }
 
-function bufferToHex(buffer) : string {
+function IsNullOrEmpty(value: string|undefined): boolean {
+    return (!value || value === null || value == undefined || value == "" || value.length == 0);
+}
 
-    //return Array
-    //    .from (new Uint8Array (buffer))
-    //    .map (b => b.toString (16).padStart (2, "0"))
-    //    .join("");
+function WhenNullOrEmpty(value: string|undefined, replacement: string): string {
 
-    return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
+    if (!value || value === null || value == undefined || value == "" || value.length == 0)
+        return replacement;
+
+    return value;
 
 }
 
-function hex32(val) {
+function hex2bin(hex: string) : string {
+    return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
+}
+
+function hex32(val: number) {
     val &= 0xFFFFFFFF;
     var hex = val.toString(16).toUpperCase();
     return ("00000000" + hex).slice(-8);
 }
 
-function parseHexString(str: string) {
+function parseHexString(str: string): number[] {
 
-    var result = [];
+    var result:number[] = [];
 
     while (str.length >= 2) {
         result.push(parseInt(str.substring(0, 2), 16));
@@ -100,7 +108,7 @@ function parseHexString(str: string) {
 
 }
 
-function createHexString(arr) {
+function createHexString(arr: Iterable<number>) {
     var result = "";
     for (var i in arr) {
         var str = arr[i].toString(16);
@@ -113,11 +121,11 @@ function createHexString(arr) {
     return result;
 }
 
-function buf2hex(buffer) {
-    return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
+function buf2hex(buffer: ArrayBuffer) {
+    return Array.prototype.map.call(new Uint8Array(buffer), (x:number) => ('00' + x.toString(16)).slice(-2)).join('');
 }
 
-function intFromBytes(x){
+function intFromBytes(x: number[]){
     var val = 0;
     for (var i = 0; i < x.length; ++i) {
         val += x[i];
@@ -128,10 +136,10 @@ function intFromBytes(x){
     return val;
 }
 
-function getInt32Bytes(x) {
+function getInt32Bytes(x: number) : number[] {
 
-    var bytes = [];
-    var i = 4;
+    var bytes:number[] = [];
+    var i              = 4;
 
     do {
         bytes[--i] = x & (255);
@@ -142,10 +150,10 @@ function getInt32Bytes(x) {
 
 }
 
-function getInt64Bytes(x) {
+function getInt64Bytes(x: number) : number[] {
 
-    var bytes = [];
-    var i = 8;
+    var bytes:number[] = [];
+    var i              = 8;
 
     do {
         bytes[--i] = x & (255);
@@ -284,7 +292,7 @@ function SetText(dv: DataView, text: string, offset: number): string
 }
 
 
-function Clone(obj) {
+function Clone(obj: any) {
 
     if(obj == null || typeof(obj) != 'object')
         return obj;

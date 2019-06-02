@@ -178,9 +178,9 @@ class EMHCrypt01 extends ACrypt {
     VerifyMeasurement(measurementValue:  IEMHMeasurementValue): IEMHCrypt01Result
     {
 
-        function setResult(vr: VerificationResult)
+        function setResult(verificationResult: VerificationResult)
         {
-            cryptoResult.status     = vr;
+            cryptoResult.status     = verificationResult;
             measurementValue.result = cryptoResult;
             return cryptoResult;
         }
@@ -283,6 +283,48 @@ class EMHCrypt01 extends ACrypt {
 
         }
 
+        return {} as IEMHCrypt01Result;
+
+    }
+
+    private DecodeStatus(statusValue: string) : Array<string>
+    {
+
+        let statusArray:string[] = [];
+
+        try
+        {
+
+            let status = parseInt(statusValue);
+
+            if ((status &  1) ==  1)
+                statusArray.push("Fehler erkannt");
+
+            if ((status &  2) ==  2)
+                statusArray.push("Synchrone Messwertübermittlung");
+
+            // Bit 3 is reserved!
+
+            if ((status &  8) ==  8)
+                statusArray.push("System-Uhr ist synchron");
+
+            if ((status & 16) == 16)
+                statusArray.push("Rücklaufsperre aktiv");
+
+            if ((status & 32) == 32)
+                statusArray.push("Energierichtung -A");
+
+            if ((status & 64) == 64)
+                statusArray.push("Magnetfeld erkannt");
+
+        }
+        catch (exception)
+        {
+            statusArray.push("Invalid status!");
+        }
+
+        return statusArray;
+
     }
 
 
@@ -296,53 +338,58 @@ class EMHCrypt01 extends ACrypt {
                     signatureCheckValue:     HTMLDivElement)
     {
 
-        const result    = measurementValue.result as IEMHCrypt01Result;
-
-        //const cryptoDiv = CreateDiv(introDiv,  "row");
-        //                  CreateDiv(cryptoDiv, "id",    "Kryptoverfahren");
-        //                  CreateDiv(cryptoDiv, "value", "EMHCrypt01 (" + this.description + ")");
+        const result     = measurementValue.result as IEMHCrypt01Result;
 
         const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
         cryptoSpan.innerHTML = "EMHCrypt01 (" + this.description + ")";
 
-        hashedBufferValue.parentElement.children[0].innerHTML = "Hashed Puffer (SHA256, 24 bytes)";
- 
-        this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId,                      infoDiv, bufferValue);
-        this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp,                    infoDiv, bufferValue);
-        this.CreateLine("Status",                   "0x" + measurementValue.infoStatus,                                                  result.infoStatus,                   infoDiv, bufferValue);
-        this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                       result.secondsIndex,                 infoDiv, bufferValue);
-        this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                         result.paginationId,                 infoDiv, bufferValue);
-        this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis,                         infoDiv, bufferValue);
-        this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded,                  infoDiv, bufferValue);
-        this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale,                        infoDiv, bufferValue);
-        this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value,                        infoDiv, bufferValue);
-        this.CreateLine("Logbuchindex",             "0x" + measurementValue.logBookIndex,                                                result.logBookIndex,                 infoDiv, bufferValue);
-        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"],              result.authorizationStart,           infoDiv, bufferValue);
-        this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), result.authorizationStartTimestamp,  infoDiv, bufferValue);
-
+        this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId                     || "",  infoDiv, bufferValue);
+        this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp                   || "",  infoDiv, bufferValue);
+        this.CreateLine("Status",                   hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
+                                                    this.DecodeStatus(measurementValue.infoStatus).join(", ") + "</span>",
+                                                                                                                                         result.infoStatus                  || "",  infoDiv, bufferValue);
+        this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                       result.secondsIndex                || "",  infoDiv, bufferValue);
+        this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                         result.paginationId                || "",  infoDiv, bufferValue);
+        this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis                        || "",  infoDiv, bufferValue);
+        this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded                 || "",  infoDiv, bufferValue);
+        this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale                       || "",  infoDiv, bufferValue);
+        this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value                       || "",  infoDiv, bufferValue);
+        this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                              result.logBookIndex                || "",  infoDiv, bufferValue);
+        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"],              result.authorizationStart          || "",  infoDiv, bufferValue);
+        this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), result.authorizationStartTimestamp || "",  infoDiv, bufferValue);
 
         // Buffer
-        bufferValue.parentElement.children[0].innerHTML = "Puffer (320 Bytes)";
-        hashedBufferValue.innerHTML      = "0x" + result.sha256value;
+        bufferValue.parentElement!.children[0].innerHTML             = "Puffer (320 Bytes, hex)";
+
+        // Hashed Buffer
+        hashedBufferValue.parentElement!.children[0].innerHTML       = "Hashed Puffer (SHA256, 24 bytes, hex)";
+        hashedBufferValue.innerHTML                                  = result.sha256value.match(/.{1,8}/g).join(" ");;
 
 
         // Public Key
-        publicKeyValue.parentElement.children[0].innerHTML = "Public Key";
-        
-        if (result.publicKeyFormat)
-            publicKeyValue.parentElement.children[0].innerHTML += " (" + result.publicKeyFormat + ")";
+        publicKeyValue.parentElement!.children[0].innerHTML          = "Public Key (" +
+                                                                       (result.publicKeyFormat
+                                                                           ? result.publicKeyFormat + ", "
+                                                                           : "") +
+                                                                       "hex)";
 
-        publicKeyValue.innerHTML         = "0x" + result.publicKey;
+        var pubKey = WhenNullOrEmpty(result.publicKey, "");
+
+        if (!IsNullOrEmpty(result.publicKey))
+            publicKeyValue.innerHTML                                 = pubKey.startsWith("04")
+                                                                           ? "04 " + pubKey.substring(2).match(/.{1,8}/g)!.join(" ")
+                                                                           : pubKey.match(/.{1,8}/g)!.join(" ");
 
 
         // Signature
-        signatureExpectedValue.parentElement.children[0].innerHTML = "Erwartete Signatur (" + result.signature.format + ")";
+        signatureExpectedValue.parentElement!.children[0].innerHTML  = "Erwartete Signatur (" + (result.signature!.format || "") + ", hex)";
 
-        if (result.signature.r && result.signature.s)
-            signatureExpectedValue.innerHTML = "r: 0x" + result.signature.r.toLowerCase() + "<br />" + "s: 0x" + result.signature.s.toLowerCase();
+        if (result.signature!.r && result.signature!.s)
+            signatureExpectedValue.innerHTML                        = "r: " + result.signature!.r!.toLowerCase().match(/.{1,8}/g)!.join(" ") + "<br />" +
+                                                                      "s: " + result.signature!.s!.toLowerCase().match(/.{1,8}/g)!.join(" ");
 
-        else if (result.signature.value)
-            signatureExpectedValue.innerHTML = "0x" + result.signature.value.toLowerCase();
+        else if (result.signature!.value)
+            signatureExpectedValue.innerHTML                        = result.signature!.value!.toLowerCase().match(/.{1,8}/g)!.join(" ");
 
 
         // Result
