@@ -34,7 +34,7 @@ body {
             }
         
             #logo::before {
-                content:              "Chargy - Transparenz-Software für die Elektromobilität";
+                content:              "Chargy - Transparenzsoftware für die Elektromobilität";
                 padding-left:         5vw;
             }            
 
@@ -862,9 +862,16 @@ body {
                         }
 
                         .value {
+
                             display:                table-cell;
                             padding:                2px 8px 1px 0px;
                             border-radius:          0px 4px 4px 0px;
+
+                            .statusInfos {
+                                font-style:             italic;
+                                font-size:              90%;
+                            }                            
+
                         }
 
                     }

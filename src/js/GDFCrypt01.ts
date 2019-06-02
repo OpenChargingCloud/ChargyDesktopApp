@@ -263,6 +263,8 @@ class GDFCrypt01 extends ACrypt {
 
         }
 
+        return {} as IGDFCrypt01Result;
+
     }
 
 
@@ -278,44 +280,50 @@ class GDFCrypt01 extends ACrypt {
 
         const result    = measurementValue.result as IGDFCrypt01Result;
 
-        const cryptoDiv = CreateDiv(introDiv,  "row");
-                          CreateDiv(cryptoDiv, "id",    "Kryptoverfahren");
-                          CreateDiv(cryptoDiv, "value", "GDFCrypt01 (" + this.description + ")");
+        const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
+        cryptoSpan.innerHTML = "GDFCrypt01 (" + this.description + ")";
 
-        hashedBufferValue.parentElement.children[0].innerHTML = "Hashed Puffer (SHA256)";
-
-        this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId,                      infoDiv, bufferValue);
-        this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp,                    infoDiv, bufferValue);
-        this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis,                         infoDiv, bufferValue);
-        this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded,                  infoDiv, bufferValue);
-        this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale,                        infoDiv, bufferValue);
-        this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value,                        infoDiv, bufferValue);
-        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"],              result.authorizationStart,           infoDiv, bufferValue);
-        this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), result.authorizationStartTimestamp,  infoDiv, bufferValue);
-
+        this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId                     || "",  infoDiv, bufferValue);
+        this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp                   || "",  infoDiv, bufferValue);
+        this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis                        || "",  infoDiv, bufferValue);
+        this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded                 || "",  infoDiv, bufferValue);
+        this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale                       || "",  infoDiv, bufferValue);
+        this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value                       || "",  infoDiv, bufferValue);
+        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"],              result.authorizationStart          || "",  infoDiv, bufferValue);
+        this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), result.authorizationStartTimestamp || "",  infoDiv, bufferValue);
 
         // Buffer
-        bufferValue.parentElement.children[0].innerHTML = "Puffer";
-        hashedBufferValue.innerHTML      = "0x" + result.sha256value;
+        bufferValue.parentElement!.children[0].innerHTML             = "Puffer (hex)";
+
+        // Hashed Buffer
+        hashedBufferValue.parentElement!.children[0].innerHTML       = "Hashed Puffer (SHA256, 24 bytes, hex)";
+        hashedBufferValue.innerHTML                                  = result.sha256value.match(/.{1,8}/g).join(" ");;
 
 
         // Public Key
-        publicKeyValue.parentElement.children[0].innerHTML = "Public Key";
-        
-        if (result.publicKeyFormat)
-            publicKeyValue.parentElement.children[0].innerHTML += " (" + result.publicKeyFormat + ")";
+        publicKeyValue.parentElement!.children[0].innerHTML          = "Public Key (" +
+                                                                       (result.publicKeyFormat
+                                                                           ? result.publicKeyFormat + ", "
+                                                                           : "") +
+                                                                       "hex)";
 
-        publicKeyValue.innerHTML         = "0x" + result.publicKey;
+        var pubKey = WhenNullOrEmpty(result.publicKey, "");
+
+        if (!IsNullOrEmpty(result.publicKey))
+            publicKeyValue.innerHTML                                 = pubKey.startsWith("04")
+                                                                           ? "04 " + pubKey.substring(2).match(/.{1,8}/g)!.join(" ")
+                                                                           : pubKey.match(/.{1,8}/g)!.join(" ");
 
 
         // Signature
-        signatureExpectedValue.parentElement.children[0].innerHTML = "Erwartete Signatur (" + result.signature.format + ")";
+        signatureExpectedValue.parentElement!.children[0].innerHTML  = "Erwartete Signatur (" + (result.signature!.format || "") + ", hex)";
 
-        if (result.signature.r && result.signature.s)
-            signatureExpectedValue.innerHTML = "r: 0x" + result.signature.r.toLowerCase() + "<br />" + "s: 0x" + result.signature.s.toLowerCase();
+        if (result.signature!.r && result.signature!.s)
+            signatureExpectedValue.innerHTML                         = "r: " + result.signature!.r!.toLowerCase().match(/.{1,8}/g)!.join(" ") + "<br />" +
+                                                                       "s: " + result.signature!.s!.toLowerCase().match(/.{1,8}/g)!.join(" ");
 
-        else if (result.signature.value)
-            signatureExpectedValue.innerHTML = "0x" + result.signature.value.toLowerCase();
+        else if (result.signature!.value)
+            signatureExpectedValue.innerHTML                        = result.signature!.value!.toLowerCase().match(/.{1,8}/g)!.join(" ");
 
 
         // Result

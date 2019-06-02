@@ -43,17 +43,17 @@ sudo apt install -y nodejs
 Afterwards you can install the remaining software using the node packet manager
 ```
 $ sudo npm install -g electron@latest
-+ electron@5.0.1
++ electron@5.0.2
 (If this fails try: sudo npm install -g electron --unsafe-perm=true --allow-root)
 
-$ npm install -g electron-builder@latest
-+ electron-builder@20.39.0
+$ sudo npm install -g electron-builder@latest
++ electron-builder@20.41.0
 
 $ sudo npm install -g typescript@latest
-+ typescript@3.4.5
++ typescript@3.5.1
 
 $ sudo npm install -g sass@latest
-+ sass@1.20.1
++ sass@1.20.3
 ```
 
 
