@@ -2,6 +2,8 @@
 
 This documentation is based on the documentation of the [TRuDI Live CD](https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master), which is a similar project of the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) for the transparency of smart meters, but was updated to support newer versions of Ubuntu Linux.
 
+![](documentation/Screenshot_VirtualBox01.png)
+
 ### Preparing the Linux Live Image
 
 We use Ubuntu 19.04 (amd64) as the base for our ISO image. We expect that the chargy git repository is located at *../ChargyDesktopApp*.
