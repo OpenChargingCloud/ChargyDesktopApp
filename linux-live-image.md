@@ -37,7 +37,7 @@ sudo cp /etc/resolv.conf new/etc/
 sudo mount -t proc -o bind /proc new/proc
 sudo mount -o bind /dev/pts new/dev/pts
 
-sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_0.28.0_amd64.deb new/opt/
+sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_0.29.0_amd64.deb new/opt/
 sudo cp ../ChargyDesktopApp/build/chargy_icon.png new/opt/
 ```
 
@@ -50,6 +50,9 @@ apt upgrade -y
 
 sed -i 's/restricted/restricted universe multiverse/g' /etc/apt/sources.list
 apt update
+apt upgrade -y
+
+apt install -y joe mc
 ```
 
 ### Change system settings
@@ -61,23 +64,34 @@ apt install -y language-pack-de language-pack-gnome-de wngerman wogerman wswiss
 update-locale LANG=de_DE.UTF-8 LANGUAGE=de_DE LC_ALL=de_DE.UTF-8
 sed -i 's/XKBLAYOUT=\"us\"/XKBLAYOUT=\"de\"/g' /etc/default/keyboard
 
-echo -e "[org.gnome.shell]\nfavorite-apps=[ 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'yelp.desktop', 'org.gnome.Terminal.desktop', 'chargytransparenzsoftware.desktop' ]" > /usr/share/glib-2.0/schemas/90_gnome-shell.gschema.override
+mkdir /etc/skel/.config
+echo "yes" >> /etc/skel/.config/gnome-initial-setup-done
 
 ### gsettings set org.gnome.desktop.background picture-uri "file:///home/username/path/to/image.jpg"
 ```
 
 ### Install Chargy Transparency Software
 ```
-apt install -y joe mc
-apt install -y /opt/chargytransparenzsoftware_0.28.0_amd64.deb
+apt install -y /opt/chargytransparenzsoftware_0.29.0_amd64.deb
 sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/chargy_icon.png/g' /usr/share/applications/chargytransparenzsoftware.desktop 
 
 mkdir /etc/skel/Desktop
-cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/Desktop/
+cp /opt/chargeIT-ChargingSession03.json /etc/skel/Desktop/
+cp /opt/chargy-Nutzerhandbuch.pdf /etc/skel/Desktop/
 
-mkdir /etc/skel/.config
 mkdir /etc/skel/.config/autostart
 cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/.config/autostart/
+
+echo -e "[org.gnome.shell]\nfavorite-apps=[ 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'yelp.desktop', 'org.gnome.Terminal.desktop', 'firefox.desktop', 'chargytransparenzsoftware.desktop' ]" > /usr/share/glib-2.0/schemas/90_gnome-shell.gschema.override
+```
+
+### Optional PTB-Security Settings
+
+The PTB (Paternalistische Technische Bundesanstalt) demands that the logged-in Linux user is not able to install and run malicious software. The following settings should limit the risks.    
+*Disclaimer: We do not recommend these changes!*
+```
+adduser --disabled-password --gecos "" chargy
+sed -i 's/#  AutomaticLogin = user1/AutomaticLogin = chargy/g' /etc/gdm3/custom.conf
 ```
 
 ### Remove legacy applications
@@ -126,112 +140,21 @@ rmdir new
 ### Create ISO image
 ```
 sudo genisoimage \
-    -o chargytransparenzsoftware_0.28.0_amd64.iso \
+    -o chargytransparenzsoftware_0.29.0_amd64.iso \
     -b isolinux/isolinux.bin \
     -c isolinux/boot.cat \
     -no-emul-boot \
     -boot-load-size 4 \
     -boot-info-table \
     -r \
-    -V "Chargy Transparenz Software Live" \
+    -V "Chargy Transparenzsoftware Live" \
     -cache-inodes  \
     -J \
     -l \
     ubuntu-livecd
 ```
 
-OLD!!!
-
-### Downloading and mounting of the original Ubuntu ISO image
-
-We use Ubuntu 19.04 (amd64) as the base for our ISO image.
-
-```
-wget http://ftp-stud.hs-esslingen.de/pub/Mirrors/releases.ubuntu.com/19.04/ubuntu-19.04-desktop-amd64.iso
-
-sudo modprobe loop
-sudo modprobe iso9660
-mkdir cd-mount
-sudo mount -t iso9660 ./ubuntu-19.04-desktop-amd64.iso cd-mount/ -o ro,loop
-
-mkdir ChargyLiveCD
-mkdir ChargyLiveCD/iso
-mkdir ChargyLiveCD/iso/casper
-cp -rp cd-mount/EFI cd-mount/.disk cd-mount/boot cd-mount/isolinux cd-mount/pool cd-mount/dists  ChargyLiveCD/iso/
-```
-
-### Bootstrapping the new Ubuntu live system
-```
-sudo apt install debootstrap
-cd ChargyLiveCD
-sudo debootstrap --arch amd64 disco squashfs
-```
-
-Mount some virtual file systems into your change-root-environment and prepare this system for the installation of the base system:
-```
-sudo mount --bind /dev squashfs/dev
-sudo mount -t devpts devpts squashfs/dev/pts
-sudo mount -t proc proc squashfs/proc
-sudo mount -t sysfs sysfs squashfs/sys
-
-sudo cp /etc/resolv.conf squashfs/etc
-sudo cp /etc/apt/sources.list squashfs/etc/apt
-```
-
-Now you can download and install security updates and the required additional software:
-```
-sudo chroot squashfs apt update
-sudo chroot squashfs apt upgrade
-sudo chroot squashfs apt autoremove
-
-sudo chroot squashfs apt install linux-image-generic tzdata console-setup casper ubiquity-casper lupin-casper
-sudo chroot squashfs apt install --no-install-recommends ubuntu-desktop evince netplan.io resolvconf git ssh joe mc firefox firefox-locale-de gedit
-```
-
-As the Chargy Live DVD is intended for the German "Eichrecht" we activate "German" as system language:
-```
-sudo chroot squashfs apt install language-pack-de language-pack-gnome-de wngerman wogerman wswiss
-sudo chroot squashfs update-locale LANG=de_DE.UTF-8 LANGUAGE=de_DE LC_ALL=de_DE.UTF-8
-```
-
-Activate a German keyboard layout by editing the following file:
-```
-sudo joe squashfs/etc/default/keyboard 
-
-XKBMODEL="pc105"
-XKBLAYOUT="de,us"
-XKBVARIANT=""
-XKBOPTIONS="" 
-BACKSPACE="guess"
-```
-
-Change the timezone to "Europe/Berlin":
-```
-sudo chroot squashfs dpkg-reconfigure tzdata
-```
-
-Setup networking via netplan.io:
-```
-sudo joe squashfs/etc/netplan/01-network-manager-all.yaml
-
-network:
-  version: 2
-  renderer: networkd
-  ethernets:
-    enp0s3:
-      dhcp4: true
-      dhcp6: true
-```
-
-#### Automatic Login
-
-First create a new user called 'chargy'...
-
-```
-sudo chroot squashfs adduser chargy
-```
-
-...then enable auto-login within the display manager
+OLD TRuDI HowTo... do not use!!!
 
 ```
 sudo joe squashfs/etc/gdm3/custom.conf
@@ -241,43 +164,6 @@ AutomaticLoginEnable = true
 AutomaticLogin = chargy
 ```
 
-### Bootvorgang anpassen
-
-Dieser Schritt bezieht sich auf den Absatz: **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
-
-Die Standardversion des Ubuntu Live-Systems bietet einige Bootvarianten und Installationsmöglichkeiten beim Start. Das muss verhindert werden, weil der Bootvorgang einheitlich und unbeeinflussbar sein muss.
-Dazu müssen Dateien ```iso/boot/grub/grub.cfg``` sowie ```iso/isolinux/isolinux.cfg``` angepasst werden:
-
-```sudo joe iso/boot/grub/grub.cfg```
-
-Der Inhalt der Datei sollen Sie komplett entfernen.
-
-
-Aufgrund der Veränderung der Datei ```isolinux.cfg``` werden einige Dateien im Verzeichnis ```iso/isolinux/``` nicht mehr gebraucht und Sie können diese löschen:
-
-```
-sudo rm iso/isolinux/*.tr
-sudo rm iso/isolinux/*.hlp
-sudo rm iso/isolinux/*.txt
-sudo rm iso/isolinux/*.cfg
-```
-Legen Sie danach eine neue ```isolinux.cfg``` an:
-
-```sudo joe iso/isolinux/isolinux.cfg```
-
-Der Dateiinhalt sollte folgendermaßen aussehen (Parameter _NOESCAPE_ und _ALLOWOPTIONS_ sind besonders wichtig, um Eingabe von Bootparametern vom Benutzer zu verhindern):
-
-```
-DEFAULT chargy
-PROMPT 0
-TIMEOUT 0
-NOESCAPE 1
-ALLOWOPTIONS 0
- SAY Lade Chargy Ubuntu Live 19.04...
-LABEL chargy
- KERNEL /casper/vmlinuz.efi
- APPEND BOOT_IMAGE=/casper/vmlinuz.efi boot=casper initrd=/casper/initrd.lz quiet splash --debian-installer/language=de console-setup/layoutcode?=de
-``` 
 
 ### Erscheinungsbild anpassen
 
@@ -375,33 +261,6 @@ Das TRuDI Handbuch sollte sich auch im Desktop-Verzeichnis des Live-Systems befi
 sudo cp TRuDI-Handbuch.pdf squashfs/etc/skel/Desktop/TRuDI-Handbuch.pdf
 ```
 
-
-### Automatischer Start des TRuDI Programms
-
-Dieser Schritt bezieht sich auf die Absätze: **_Schutz in Verwendung_** und **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_.
-
-Es bietet sich auch die Möglichkeit, das TRuDI-Programm nach der Benutzeranmeldung automatisch zu starten. Dazu kopiert man die Datei, die für die Desktopverknüpfung bereits angelegt wurde, in das Verzeichnis ``autostart``.
-Falls nicht vorhanden, muss das Verzeichnis zuerst angelegt werden.
-```
-sudo chroot squashfs mkdir /etc/skel/.config
-sudo chroot squashfs mkdir /etc/skel/.config/autostart
-sudo cp squashfs/etc/skel/Desktop/TRuDI.desktop squashfs/etc/skel/.config/autostart/
-```
-
-
-
-## ISO-Image Fertigstellen
-
-Erstellen Sie nun das ISO-Image wie folgt. Das Ergebnis ist eine neue Datei namens _live.iso_ in Ihrem Arbeitsverzeichnis: 
-
-```
-sudo chroot squashfs update-initramfs -k all -c -v
-sudo cat squashfs/boot/initrd.img* > iso/casper/initrd.lz
-sudo cp squashfs/boot/vmlinuz* iso/casper/vmlinuz.efi
-sudo umount squashfs/dev/pts squashfs/dev squashfs/proc squashfs/sys
-sudo mksquashfs squashfs iso/casper/filesystem.squashfs -noappend
-sudo genisoimage -cache-inodes -r -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot -o live.iso iso
-```
 
 ## Hinweise für die Erstellung eines Live-USB Mediums
 
