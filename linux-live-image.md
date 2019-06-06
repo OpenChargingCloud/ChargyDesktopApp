@@ -141,7 +141,7 @@ sudo genisoimage \
     -boot-load-size 4 \
     -boot-info-table \
     -r \
-    -V "Chargy Transparenzsoftware Live-Medium" \
+    -V "Chargy Transparenzsoftware Live" \
     -cache-inodes  \
     -J \
     -l \
