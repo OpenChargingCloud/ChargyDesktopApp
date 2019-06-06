@@ -67,14 +67,14 @@ function StartDashboard() {
     var path  = require('path');
 
     // Windows
-    fileHash('Chargy Transparenz Software.exe',                              hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-    fileHash(path.join('resources', 'app.asar'),                             hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-    fileHash(path.join('resources', 'electron.asar'),                        hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+    fileHash('Chargy Transparenzsoftware.exe',                             hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+    fileHash(path.join('resources', 'app.asar'),                           hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+    fileHash(path.join('resources', 'electron.asar'),                      hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
 
     // Linux
-    fileHash('/opt/Chargy\ Transparenz\ Software/chargytransparenzsoftware', hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-    fileHash('/opt/Chargy\ Transparenz\ Software/resources/app.asar',        hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-    fileHash('/opt/Chargy\ Transparenz\ Software/resources/electron.asar',   hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+    fileHash('/opt/Chargy\ Transparenzsoftware/chargytransparenzsoftware', hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+    fileHash('/opt/Chargy\ Transparenzsoftware/resources/app.asar',        hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+    fileHash('/opt/Chargy\ Transparenzsoftware/resources/electron.asar',   hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
 
 
     //#region GetMethods...
@@ -1338,7 +1338,9 @@ function StartDashboard() {
                                                             {
                                                                 "algorithm":        "secp192r1",
                                                                 "format":           "DER",
-                                                                "value":            "04" + CTRArray[0]["meterInfo"]["publicKey"]
+                                                                "value":            CTRArray[0]["meterInfo"]["publicKey"].startsWith("04")
+                                                                                        ?        CTRArray[0]["meterInfo"]["publicKey"]
+                                                                                        : "04" + CTRArray[0]["meterInfo"]["publicKey"]
                                                             }
                                                         ]
                                                     }

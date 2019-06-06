@@ -289,7 +289,7 @@ class GDFCrypt01 extends ACrypt {
         this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded                 || "",  infoDiv, bufferValue);
         this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale                       || "",  infoDiv, bufferValue);
         this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value                       || "",  infoDiv, bufferValue);
-        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"],              result.authorizationStart          || "",  infoDiv, bufferValue);
+        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     result.authorizationStart          || "",  infoDiv, bufferValue);
         this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), result.authorizationStartTimestamp || "",  infoDiv, bufferValue);
 
         // Buffer

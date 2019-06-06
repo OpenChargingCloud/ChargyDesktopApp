@@ -307,6 +307,8 @@ class EMHCrypt01 extends ACrypt {
 
             if ((status &  8) ==  8)
                 statusArray.push("System-Uhr ist synchron");
+            else
+                statusArray.push("System-Uhr ist nicht synchron");
 
             if ((status & 16) == 16)
                 statusArray.push("Rücklaufsperre aktiv");
@@ -346,8 +348,7 @@ class EMHCrypt01 extends ACrypt {
         this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId                     || "",  infoDiv, bufferValue);
         this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp                   || "",  infoDiv, bufferValue);
         this.CreateLine("Status",                   hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
-                                                    this.DecodeStatus(measurementValue.infoStatus).join(", ") + "</span>",
-                                                                                                                                         result.infoStatus                  || "",  infoDiv, bufferValue);
+                                                    this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",           result.infoStatus                  || "",  infoDiv, bufferValue);
         this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                       result.secondsIndex                || "",  infoDiv, bufferValue);
         this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                         result.paginationId                || "",  infoDiv, bufferValue);
         this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis                        || "",  infoDiv, bufferValue);
@@ -355,7 +356,7 @@ class EMHCrypt01 extends ACrypt {
         this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale                       || "",  infoDiv, bufferValue);
         this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value                       || "",  infoDiv, bufferValue);
         this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                              result.logBookIndex                || "",  infoDiv, bufferValue);
-        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"],              result.authorizationStart          || "",  infoDiv, bufferValue);
+        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     result.authorizationStart          || "",  infoDiv, bufferValue);
         this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), result.authorizationStartTimestamp || "",  infoDiv, bufferValue);
 
         // Buffer

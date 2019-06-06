@@ -184,10 +184,12 @@ body {
 
                                 .name {
                                     display:        table-cell;
+                                    vertical-align: middle;
                                 }
 
                                 .license {
                                     display:        table-cell;
+                                    vertical-align: middle;
                                     padding-left:   12px;
                                 }
 
@@ -201,6 +203,7 @@ body {
                             padding:            3px 7px;
                             background-color:   #b9dbf5;
                             font-size:          75%;
+                            text-align:         left;
                         }
 
                         .linkButton:hover {
