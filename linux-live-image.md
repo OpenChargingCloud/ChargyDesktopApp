@@ -9,12 +9,16 @@ This documentation is based on the following HowTo ["How to customize the Ubuntu
 We use [Ubuntu 19.04 (amd64)](http://releases.ubuntu.com/19.04/ubuntu-19.04-desktop-amd64.iso) as the base for our ISO image. We expect that the chargy git repository is located at *../ChargyDesktopApp*.
 
 ```
+git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
 wget http://releases.ubuntu.com/19.04/ubuntu-19.04-desktop-amd64.iso
+
+mkdir ChargyLive
+cd ChargyLive
 
 sudo modprobe loop
 sudo modprobe iso9660
 mkdir source
-sudo mount -t iso9660 ./ubuntu-19.04-desktop-amd64.iso source -o ro,loop
+sudo mount -t iso9660 ../ubuntu-19.04-desktop-amd64.iso source -o ro,loop
 mkdir ubuntu-livecd
 cp -a source/. ubuntu-livecd
 sudo chmod -R u+w ubuntu-livecd 
