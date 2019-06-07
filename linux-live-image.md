@@ -1,6 +1,6 @@
 # Creating a Linux Live ISO Image
 
-This documentation is based on the following [Ubuntu Live DVD HowTo](https://askubuntu.com/questions/48535/how-to-customize-the-ubuntu-live-cd#) and the documentation of the [TRuDI Live CD](https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master), which is a similar project of the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) for the transparency of smart meters, but was updated to support newer versions of Ubuntu Linux.
+This documentation is based on the following HowTo [How to customize the Ubuntu Live CD?](https://askubuntu.com/questions/48535/how-to-customize-the-ubuntu-live-cd#) and the documentation of the [TRuDI Live CD](https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master), which is a similar project of the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) for the transparency of smart meters, but was updated to support newer versions of Ubuntu Linux.
 
 ![](documentation/Screenshot_VirtualBox01.png)
 
