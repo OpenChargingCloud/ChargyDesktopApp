@@ -6,7 +6,7 @@ This documentation is based on the following HowTo ["How to customize the Ubuntu
 
 ### Preparing the Linux Live ISO Image
 
-We use [Ubuntu 19.04 (amd64)](http://releases.ubuntu.com/19.04/ubuntu-19.04-desktop-amd64.iso) as the base for our ISO image. We expect that the chargy git repository is located at *../ChargyDesktopApp*.
+We use [Ubuntu 19.04 (amd64)](http://releases.ubuntu.com/19.04/ubuntu-19.04-desktop-amd64.iso) as the base for our ISO image. We expect this ChargyDesktopApp git repository located at *../ChargyDesktopApp*.
 
 ```
 git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
