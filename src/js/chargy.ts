@@ -1,4 +1,21 @@
-﻿///<reference path="certificates.ts" />
+﻿/*
+ * Copyright (c) 2018-2019 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * This file is part of Chargy Mobile App <https://github.com/OpenChargingCloud/ChargyMobileApp>
+ *
+ * Licensed under the Affero GPL license, Version 3.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.gnu.org/licenses/agpl.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+///<reference path="certificates.ts" />
 ///<reference path="chargyInterfaces.ts" />
 ///<reference path="chargyLib.ts" />
 ///<reference path="GDFCrypt01.ts" />
@@ -64,18 +81,34 @@ function StartDashboard() {
     // variable 'crypto' is already defined differently in Google Chrome!
     const crypt = require('electron').remote.require('crypto');
 
+    //#region Calculate application hash
+
     var path  = require('path');
 
-    // Windows
-    fileHash('Chargy Transparenzsoftware.exe',                             hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-    fileHash(path.join('resources', 'app.asar'),                           hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-    fileHash(path.join('resources', 'electron.asar'),                      hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+    switch (process.platform)
+    {
 
-    // Linux
-    fileHash('/opt/Chargy\ Transparenzsoftware/chargytransparenzsoftware', hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-    fileHash('/opt/Chargy\ Transparenzsoftware/resources/app.asar',        hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-    fileHash('/opt/Chargy\ Transparenzsoftware/resources/electron.asar',   hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+        case "win32":
+            fileHash('Chargy Transparenzsoftware.exe',                             hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            fileHash(path.join('resources', 'app.asar'),                           hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            fileHash(path.join('resources', 'electron.asar'),                      hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            break;
 
+        case "linux":
+        case "darwin":
+        case "freebsd":
+            fileHash('/opt/Chargy\ Transparenzsoftware/chargytransparenzsoftware', hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            fileHash('/opt/Chargy\ Transparenzsoftware/resources/app.asar',        hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            fileHash('/opt/Chargy\ Transparenzsoftware/resources/electron.asar',   hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            break;
+
+        default:
+            document.getElementById('chargySHA512')!.children[1].innerHTML = "Kann nicht berechnet werden!"
+            break;
+
+    }
+
+    //#endregion
 
     //#region GetMethods...
 
@@ -132,7 +165,6 @@ function StartDashboard() {
     }    
 
     //#endregion
-
 
 
     //#region detectContentFormat
