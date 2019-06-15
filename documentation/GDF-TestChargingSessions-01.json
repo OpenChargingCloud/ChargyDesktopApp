@@ -1,13 +1,14 @@
 ﻿{
 
-    "@id":              "fr98ghe089wgrh0ejh5g",
+    "@id":              "7br76r6uin8rb7bebsd647b8nnn7687t64",
     "@context":         "https://open.charging.cloud/contexts/CTR+json",
 
     "begin":            "2018-11-01T00:00:00Z",
-    "end":              "2018-11-30T00:00:00Z",
+    "end":              "2019-06-30T00:00:00Z",
 
     "description": {
-        "de":               "Alle Ladevorgänge im November 2018"
+        "de":               "Dies ist eine Sammlung von Testladevorgängen zur Verifikation und Debugging.",
+        "eng":              "This is a collection of test charging sessions for verification and debugging."
     },
 
     "contract": {
