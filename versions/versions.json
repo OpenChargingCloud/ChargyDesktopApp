@@ -10,7 +10,7 @@
 
         {
 
-            "@id":              "0.31.0",
+            "versionId":        "0.31.0",
             "releaseDate":      "2019-06-15T00:00:00Z",
             "description": {
                 "de":               "Version 0.31.0 comes with many security and usability enhancements."
@@ -19,9 +19,10 @@
                 "security", "usability"
             ],
 
-            "scopes": {
+            "packages": [
 
-                "win32_installer": {
+                {
+                    "name":                 "win32_installer",
                     "description": {
                         "en":               "In general this means the 'Chargy Transparenzsoftware Setup x.y.z.exe' file."
                     },
@@ -67,7 +68,8 @@
                     ]
                 },
 
-                "win32_executables": {
+                {
+                    "name":                 "win32_executables",
                     "description": {
                         "en":               "In general this means the 'Chargy Transparenzsoftware.exe', the '~\\resources\\app.asar' and the '~\\resources\\electron.asar' files within the '%AppData%\\..\\Local\\Programs\\chargytransparenzsoftware' application directory on Microsoft Windows 10 newer."
                     },
@@ -110,7 +112,7 @@
                     ]
                 }
 
-            }
+            ]
 
         }
 
