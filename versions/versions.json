@@ -10,7 +10,7 @@
 
         {
 
-            "versionId":        "0.31.0",
+            "version":          "0.31.0",
             "releaseDate":      "2019-06-15T00:00:00Z",
             "description": {
                 "de":               "Version 0.31.0 comes with many security and usability enhancements."
