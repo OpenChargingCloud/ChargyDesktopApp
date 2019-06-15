@@ -2081,8 +2081,18 @@ function StartDashboard() {
     input.addEventListener('dragleave', handleDragLeave,   false);
     input.addEventListener('drop',      handleDroppedFile, false);
 
+    var updateAvailableButton     = <HTMLButtonElement>   document.getElementById('updateAvailableButton');
+    updateAvailableButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
+        updateAvailableScreen.style.display     = "block";
+        inputInfosDiv.style.display             = "none";
+        aboutScreenDiv.style.display            = "none";
+        chargingSessionReportDiv.style.display  = "none";
+        backButtonDiv.style.display             = "block";
+    }
+
     var aboutButton               = <HTMLButtonElement>   document.getElementById('aboutButton');
     aboutButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
+        updateAvailableScreen.style.display     = "none";
         inputInfosDiv.style.display             = "none";
         aboutScreenDiv.style.display            = "block";
         chargingSessionReportDiv.style.display  = "none";
@@ -2145,6 +2155,7 @@ function StartDashboard() {
     var pasteButton               = <HTMLButtonElement>   document.getElementById('pasteButton');
     pasteButton.onclick           = PasteFile;
 
+    var updateAvailableScreen     = <HTMLDivElement>      document.getElementById('updateAvailableScreen');
     var aboutScreenDiv            = <HTMLDivElement>      document.getElementById('aboutScreen');
     var chargySHA512Div           = <HTMLDivElement>      document.getElementById('chargySHA512');
     var chargingSessionReportDiv  = <HTMLDivElement>      document.getElementById('chargingSessionReport');
@@ -2165,6 +2176,7 @@ function StartDashboard() {
 
     var backButtonDiv             = <HTMLDivElement>      document.getElementById('backButtonDiv');
     backButtonDiv.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
+        updateAvailableScreen.style.display     = "none";
         inputInfosDiv.style.display             = 'flex';
         aboutScreenDiv.style.display            = "none";
         chargingSessionReportDiv.style.display  = "none";

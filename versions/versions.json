@@ -1,0 +1,119 @@
+{
+
+    "name":                 "Chargy Desktop App",
+    "description": {
+        "de":               "Die Chargy Transparenzsoftware für Windows, Mac OS X and Linux (basierend auf Electron)",
+        "eng":              "The Chargy E-Mobility Transparency Application for Windows, Mac OS X and Linux (based on Electron)"
+    },
+
+    "versions": [
+
+        {
+
+            "@id":              "0.31.0",
+            "releaseDate":      "2019-06-15T00:00:00Z",
+            "description": {
+                "de":               "Version 0.31.0 comes with many security and usability enhancements."
+            },
+            "tags": [
+                "security", "usability"
+            ],
+
+            "scopes": {
+
+                "win32_installer": {
+                    "description": {
+                        "en":               "In general this means the 'Chargy Transparenzsoftware Setup x.y.z.exe' file."
+                    },
+                    "cryptoHashes": {
+                        "sha512":           "0x000"
+                    },
+                    "signatures": [
+                        {
+                            "author":           "Open Charging Cloud by GraphDefined GmbH",
+                            "timestamp":        "2019-06-15T00:00:00Z",
+                            "comment": {
+                                "en":           "Greates version ever!"
+                            },
+                            "publicKey":        "0x000",
+                            "algorithm":        "secp192r1",
+                            "format":           "DER",
+                            "signature":        "0x000"
+                        },
+                        {
+                            "author":           "chargeIT mobility GmbH",
+                            "timestamp":        "2019-06-15T00:00:00Z",
+                            "publicKey":        "0x000",
+                            "algorithm":        "secp192r1",
+                            "format":           "DER",
+                            "signature":        "0x000"
+                        },
+                        {
+                            "author":           "Physikalisch-Technische Bundesanstalt",
+                            "timestamp":        "2019-06-15T00:00:00Z",
+                            "publicKey":        "0x000",
+                            "algorithm":        "secp192r1",
+                            "format":           "DER",
+                            "signature":        "0x000"
+                        },
+                        {
+                            "author":           "Hubject GmbH",
+                            "timestamp":        "2019-06-15T00:00:00Z",
+                            "publicKey":        "0x000",
+                            "algorithm":        "secp192r1",
+                            "format":           "DER",
+                            "signature":        "0x000"
+                        }
+                    ]
+                },
+
+                "win32_executables": {
+                    "description": {
+                        "en":               "In general this means the 'Chargy Transparenzsoftware.exe', the '~\\resources\\app.asar' and the '~\\resources\\electron.asar' files within the '%AppData%\\..\\Local\\Programs\\chargytransparenzsoftware' application directory on Microsoft Windows 10 newer."
+                    },
+                    "cryptoHashes": {
+                        "sha512":           "0x000"
+                    },
+                    "signatures": [
+                        {
+                            "author":           "Open Charging Cloud by GraphDefined GmbH",
+                            "timestamp":        "2019-06-15T00:00:00Z",
+                            "publicKey":        "0x000",
+                            "algorithm":        "secp192r1",
+                            "format":           "DER",
+                            "signature":        "0x000"
+                        },
+                        {
+                            "author":           "chargeIT mobility GmbH",
+                            "timestamp":        "2019-06-15T00:00:00Z",
+                            "publicKey":        "0x000",
+                            "algorithm":        "secp192r1",
+                            "format":           "DER",
+                            "signature":        "0x000"
+                        },
+                        {
+                            "author":           "Physikalisch-Technische Bundesanstalt",
+                            "timestamp":        "2019-06-15T00:00:00Z",
+                            "publicKey":        "0x000",
+                            "algorithm":        "secp192r1",
+                            "format":           "DER",
+                            "signature":        "0x000"
+                        },
+                        {
+                            "author":           "Hubject GmbH",
+                            "timestamp":        "2019-06-15T00:00:00Z",
+                            "publicKey":        "0x000",
+                            "algorithm":        "secp192r1",
+                            "format":           "DER",                            
+                            "signature":        "0x000"
+                        }
+                    ]
+                }
+
+            }
+
+        }
+
+    ]
+
+}
