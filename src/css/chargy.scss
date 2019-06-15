@@ -21,1082 +21,466 @@ body {
     padding:            0;
     background-color:   #bac5ce;
     overflow:           hidden;
+    width:              100vw;
+    height:             100vh;
+    margin:             auto;
+    //margin-top:         10vh;
+    background-color:   #87cafa;
+    //border-radius:      8px;
+    display:            flex;
+    flex-direction:     column;
 
-  //  #outerframe {
+    #headline {
 
-        width:              100vw;
-        height:             100vh;
-        margin:             auto;
-        //margin-top:         10vh;
-        background-color:   #87cafa;
-        //border-radius:      8px;
+        padding:            4px 8px 2px 8px;
+        font-family:        Arial;
+        font-size:          110%;
         display:            flex;
-        flex-direction:     column;
 
-        #headline {
+        #logo {
+            background-size:      contain;
+            background-repeat:    no-repeat;
+            line-height:          8.2vh;
+            font-size:            130%;
+            width:                100%;
+            text-align:           center;
+        }
+    
+        #logo::before {
+            content:              "Chargy - Transparenzsoftware für die Elektromobilität";
+            padding-left:         5vw;
+        }            
 
-            padding:            4px 8px 2px 8px;
-            font-family:        Arial;
-            font-size:          110%;
+        #windowButtons {
+
             display:            flex;
+            justify-content:    flex-end;
+            flex-grow:          1;
 
-            #logo {
-                background-size:      contain;
-                background-repeat:    no-repeat;
-                line-height:          8.2vh;
-                font-size:            130%;
-                width:                100%;
-                text-align:           center;
+            button {
+                padding:            0px 5px;
+                border:             0;
+                background:         0;
+                outline:            0;
+                font-size:          110%;
             }
-        
-            #logo::before {
-                content:              "Chargy - Transparenzsoftware für die Elektromobilität";
-                padding-left:         5vw;
-            }            
 
-            #windowButtons {
+            button:hover {
+                color:              #f7f7f7;
+            }
+
+            #updateAvailableButton {
+                display:            none;
+                color:              #ac3b3b;
+            }
+
+        }
+
+    }
+
+    #verifyframe {
+
+        height:             100%;
+        display:            flex;
+
+        #leftbar {
+
+            width:              50%;
+            display:            flex;
+            flex-direction:     column;
+            height:             100%;
+            overflow-y:         scroll;
+
+            #input {
 
                 display:            flex;
-                justify-content:    flex-end;
+                position:           relative;
+                margin:             0px 15px 15px 15px;
+                padding:            10px 15px;
+                border:             0;
+                border-radius:      6px;
+                background-color:   rgb(231, 245, 255);
+                font-family:        Arial;
+                //font-family:        sans-serif;
+                font-size:          95%;
+                width:              calc(100% - 60px);
                 flex-grow:          1;
 
-                button {
-                    padding:            0px 5px;
-                    border:             0;
-                    background:         0;
-                    outline:            0;
-                    font-size:          110%;
-                }
-
-                button:hover {
-                    color:              #f7f7f7;
-                }
-
-            }
-
-        }
-
-        #verifyframe {
-
-            height:             100%;
-            display:            flex;
-
-            #leftbar {
-
-                width:              50%;
-                display:            flex;
-                flex-direction:     column;
-                height:             100%;
-                overflow-y:         scroll;
-
-                #input {
+                #inputInfos {
 
                     display:            flex;
-                    position:           relative;
-                    margin:             0px 15px 15px 15px;
-                    padding:            10px 15px;
-                    border:             0;
-                    border-radius:      6px;
-                    background-color:   rgb(231, 245, 255);
-                    font-family:        Arial;
-                    //font-family:        sans-serif;
-                    font-size:          95%;
-                    width:              calc(100% - 60px);
-                    flex-grow:          1;
-
-                    #inputInfos {
-
-                        display:            flex;
-                        flex-direction:     column;
-                        justify-content:    space-evenly;
-                        width:              100%;
-
-                        #text {
-                            text-align:         center;
-                            font-size:          110%;
-                            line-height:        130%;
-                        }
-
-                        #buttonsDiv {
-
-                            padding:            8px 0px 15px 0px;
-                            display:            flex;
-                            width:              100%;
-                            justify-content:    space-evenly;
-        
-                            button {
-
-                                font-size:          1.1vw;
-                                line-height:        125%;
-                                width:              10vw;
-                                height:             10vw;
-                                padding:            0;
-                                margin:             0;
-                                outline:            0;
-                                border:             0;
-                                border-radius:      50%;
-                                background-color:   #aeddff;
-                                box-shadow:         none;
-                                align-self:         center;
-
-                                i {
-                                    font-size:          150%;
-                                    padding-bottom:     7px;
-                                }
-
-                            }
-
-                            button:hover {
-                                color:              #f7f7f7;
-                                background-color:   #519ad0;
-                            }
-    
-                        }
-
-                        #loadingErrors {
-                           
-                            min-height:         7vh;
-                            font-family:        Arial;
-                            font-size:          120%;
-                            text-align:         center;
-
-                            #errorText {
-                                
-                                display:            none;
-                                padding:            10px 30px 17px 30px;
-                                background-color:   #e46464a6;
-                                border-radius:      6px;
-
-                                i {
-                                    position:           relative;
-                                    font-size:          160%;
-                                    top:                5px;
-                                    padding-right:      3px;
-                                }
-
-                            }
-
-                        }
-
-                    }
-                    
-                    #aboutScreen {
-
-                        display:        none;
-                        width:          100%;
-                        margin-top:     10px;
-                        overflow-y:     scroll;
-                        overflow-x:     hidden;
-
-                        #softwareInfos {
-
-                            margin:         5px 0px 20px 0px;
-                            font-size:      110%;
-
-                            #product {
-                                font-weight:    bold;
-                            }
-                            #copyright {
-                                font-size:      80%;
-                            }
-
-                        }
-
-                        #OpenSourceLibs {
-
-                            display:        table;
-                            margin:         10px 20px;
-                            border-spacing: 2px;
-
-                            .lib {
-
-                                display:        table-row;
-
-                                .name {
-                                    display:        table-cell;
-                                    vertical-align: middle;
-                                }
-
-                                .license {
-                                    display:        table-cell;
-                                    vertical-align: middle;
-                                    padding-left:   12px;
-                                }
-
-                            }
-
-                        }
-
-                        .linkButton {
-                            border:             0;
-                            border-radius:      4px;
-                            padding:            3px 7px;
-                            background-color:   #b9dbf5;
-                            font-size:          75%;
-                            text-align:         left;
-                        }
-
-                        .linkButton:hover {
-                            color:              #aad0ec;
-                            background-color:   #3c75a0;
-                        }
-
-                        #chargySHA512 {
-
-                            margin:             1em 0 1em 0;
-
-                            #value {
-                                font-family:        monospace;
-                                font-size:          110%;
-                                margin-top:         3px;
-                            }
-
-                        }
-
-                        #chargySignature {
-
-                            margin:             1em 0 1em 0;
-
-                            #value {
-                                font-family:        monospace;
-                                font-size:          110%;
-                                margin-top:         3px;
-                            }
-
-                        }
-
-                        #TOSP {
-
-                            margin-top:         7vh;
-                            font-size:          80%;
-
-                            a {
-                                color:              #517692;
-                                font-weight:        bold;
-                                text-decoration:    none;
-                            }
-
-                            #logos {
-
-                                display:                flex;
-                                justify-content:        space-evenly;
-                                align-items:            center;
-                                margin-top:             0.5vh;
-                                margin-bottom:          40px;
-
-                                #TMWWDG {
-
-                                    margin:             2vh 7% 3vh 7%;
-
-                                    img {
-                                        width:              100%;
-                                    }
-
-                                }
-
-                                #ITnet {
-
-                                    width:              50%;
-                                    margin:             2vh 9% 3vh 1%;
-
-                                    img {
-                                        width:              100%;
-                                    }
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-
-                    #aboutScreen::-webkit-scrollbar {
-                        display:            none;
-                    }
-
-                    #chargingSessionReport {
-
-                        display:            none;
-                        flex-direction:     column;
-                        width:              100%;
-
-                        #description {
-                            padding:        0px 0px 5px 0px;
-                            font-size:      120%;
-                            font-weight:    bold;
-                        }
-
-                        #chargingSessions {
-
-                            padding:            0px 0px 0px 10px;
-                            height:             100%;
-                            // overflow-y:         scroll;
-                            margin:             10px 0px 50px 0px;
-
-                            .chargingSessions {
-
-                                position:           relative;
-                                margin-bottom:      4px;
-                                padding:            7px 11px;
-                                background-color:   #d6e4ef;
-                                border-radius:      6px;
-                                cursor:             pointer;
-
-                                .date {
-                                    font-weight:        bold;
-                                    padding:            2px 0px 3px 0px;
-                                    font-size:          105%;
-                                }
-
-                                .table {
-
-                                    display:            table;
-                                    border-collapse:    separate;
-                                    border-spacing:     4px 4px;
-
-                                    .productInfos {
-
-                                        display:            table-row;
-
-                                        .icon {
-                                            display:            table-cell;
-                                            padding:            6px 7px 0px 3px;
-                                            text-align:         center;
-                                            vertical-align:     top;
-                                        }
-
-                                        .text {
-                                            display:            table-cell;
-                                            color:            #212427;
-                                        }
-
-                                    }
-
-                                    .authorizationStart {
-
-                                        display:            table-row;
-
-                                        .icon {
-                                            display:            table-cell;
-                                            padding:            0px 7px 0px 3px;
-                                            text-align:         center;
-                                            vertical-align:     top;
-                                        }
-
-                                        .id {
-                                            display:            table-cell;
-                                        }
-                                    }
-
-                                    .authorizationStop {
-
-                                        display:            table-row;
-
-                                        .icon {
-                                            display:            table-cell;
-                                            padding:            0px 7px 0px 3px;
-                                            text-align:         center;
-                                            vertical-align:     top;
-                                        }
-
-                                        .id {
-                                            display:            table-cell;
-                                        }
-                                    }
-
-                                    .locationInfos {
-
-                                        display:            table-row;
-
-                                        .icon {
-                                            display:            table-cell;
-                                            padding:            6px 7px 0px 3px;
-                                            text-align:         center;
-                                            vertical-align:     top;
-                                        }
-
-                                        .text {
-                                            display:            table-cell;
-                                            color:            #212427;
-                                        }                                        
-
-                                    }
-
-                                }
-
-                                .verificationStatus {
-
-                                    position:           absolute;
-                                    top:                10px;
-                                    right:              12px;
-                                    text-align:         center;
-                                    font-size:          80%;
-
-                                    i {
-                                        display:            block;
-                                        font-size:          250%;
-                                        padding-bottom:     4px;
-                                    }
-
-                                }
-
-                            }
-
-                            .chargingSessions:hover {
-                                background-color:       #b8cdde;
-                            }
-
-                            .activated {
-                                background-color:       #b5d4ec;
-                            }
-
-                        }
-
-                        #chargingSessions::-webkit-scrollbar {
-                            display:            none;
-                        }
-
-                    }
-
-                    #backButtonDiv {
-
-                        display:        none;
-                        position:       absolute;
-                        left:           0px;
-                        bottom:         0px;
-
-                        #backButton {
-                            border:             0;
-                            // background-color:   #cce5f7;
-                            // padding:            7px 14px 8px 13px;
-                            // border-radius:      50%;
-                            background-color:   transparent;
-                            color:            #b6d8f1;
-                            margin:             4px;
-                            font-size:          280%;
-                        }
-
-                        #backButton:hover {
-                            // background-color:   #519ad0;
-                            color:            #519ad0;
-                        }
-
-                    }
-
-                }
-
-                #input::-webkit-scrollbar {
-                    display:            none;
-                }
-
-                .over {
-                    background-color:   cornflowerblue !important;
-                    /*border:             1px solid #2c4a60 !important;*/
-                }
-
-                #buttonsDiv {
-
-                    padding:            8px 17px 15px 15px;
-                    text-align:         right;
-
-                    button {
-                        border:             0;
-                        padding:            8px 15px;
-                        /*font-size:          120%;*/
-                        border-radius:      4px;
-                        box-shadow:         2px 2px 6px #999;
-                    }
-
-                }
-
-            }
-
-            #leftbar::-webkit-scrollbar {
-                display:            none;
-            }
-
-            #rightbar {
-
-                width:              50%;
-                background-color:   #c7e1f3;
-                border-radius:      8px 0px 0px 0px;
-
-                #map {
+                    flex-direction:     column;
+                    justify-content:    space-evenly;
                     width:              100%;
-                    min-height:         33%;
-                    border-radius:      8px 0px 0px 0px;
-                }
 
-                #evseTarifInfos {
-
-                    width:              100%;
-                    height:             38%;
-                    padding:            20px 20px;
-                    width:              calc(100% - 40px);
-                    font-family:        Arial;
-                    font-size:          95%;
-                    color:              #2c4a60;
-                    overflow-y:         scroll;
-
-                    #headline {
-                        color:              #2e71a2;
-                        font-weight:        bold;
-                        padding:            2px 10px 12px 0px;
-                    }
-
-                    .measurementInfos {
-
-                        display:            table;
-
-                        .chargingStation {
-
-                            display:            table-row-group;
-
-                            .chargingStationHeadline {
-                                font-weight:        bold
-                            }
-
-                            .chargingStationId {
-
-                                display:            table-row;
-
-                                .chargingStationIdId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .chargingStationIdValue {
-                                    display:            table-cell;
-                                }
-
-                            }
-
-                            .firmwareVersion {
-
-                                display:            table-row;
-
-                                .firmwareVersionId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .firmwareVersionValue {
-                                    display:            table-cell;
-                                }
-
-                            }
-
-                        }
-
-                        .meter {
-
-                            display:            table-row-group;
-
-                            .meterHeadline {
-                                margin-top:         .6vh;
-                                font-weight:        bold;
-                            }
-
-                            .meterId {
-
-                                display:            table-row;
-
-                                .meterIdId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .meterIdValue {
-                                    display:            table-cell;
-                                }
-
-                            }
-
-                            .meterVendor {
-
-                                display:            table-row;
-
-                                .meterVendorId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .meterVendorValue {
-                                    display:            table-cell;
-                                }
-
-                            }
-
-                            .meterModel {
-
-                                display:            table-row;
-
-                                .meterModelId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .meterModelValue {
-                                    display:            table-cell;
-                                }
-
-                            }
-
-                            .measurement {
-
-                                display:            table-row;
-
-                                .measurementId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .measurementIdValue {
-                                    display:            table-cell;
-                                }
-
-                            }
-
-                            .OBIS {
-
-                                display:            table-row;
-
-                                .OBISId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .OBISValue {
-                                    display:            table-cell;
-                                }
-
-                            }
-
-                        }
-
-                    }
-
-                    #measurementValues-headline {
-                        margin-top:         0.6vh;
-                        font-weight:        bold;
-                    }
-
-                    .measurementValues {
-
-                        display:            table;
-                        width:              100%;
-                        cursor:             zoom-in;
-
-                        .measurementValue {
-
-                            display:            table-row;
-                            padding:            3px 4px;
-                            border-radius:      3px;
-
-                            .timestamp {
-                                display:            table-cell;
-                                padding:            2px 16px 2px 12px;
-                                border-radius:      4px 0px 0px 4px;
-                                white-space:        nowrap
-                            }
-
-                            .value1 {
-                                display:            table-cell;
-                                text-align:         right;
-                                padding-right:      5px;
-                                white-space:        nowrap
-                            }
-
-                            .unit1 {
-                                display:            table-cell;
-                                padding-right:      10px;
-                                white-space:        nowrap
-                            }
-
-                            .value2 {
-                                display:            table-cell;
-                                text-align:         right;
-                                padding-right:      5px;
-                                white-space:        nowrap
-                            }
-
-                            .unit2 {
-                                display:            table-cell;
-                                padding-right:      10px;
-                                white-space:        nowrap
-                            }
-
-                            .verificationStatus {
-                                display:            table-cell;
-                                padding:            2px 6px;
-                                border-radius:      0px 4px 4px 0px;
-                                width:              100%;
-                                white-space:        nowrap
-                            }
-
-                        }
-
-                        .measurementValue:hover {
-                            background-color:     #72b3e2;
-                        }
-
-                        .measurementValue:first-child {
-                            .value2, .unit2 {
-                                color:            rgba(44, 74, 96, 0.5);
-                            }
-                        }
-
-                    }
-
-                }
-
-                #evseTarifInfos::-webkit-scrollbar {
-                    display:            none;
-                }
-
-                #feedback {
-
-                    width:              100%;
-                    min-height:         34%;
-                    padding:            20px 20px;
-                    width:              calc(100% - 40px);
-                    font-family:        Arial;
-                    font-size:          90%;
-                    font-weight:        bold;
-                    color:            #6488a3;
-                    line-height:        130%;
-
-                    #feedbackMethods {
-
-                        display:            flex;
-                        flex-direction:     column;
-                        margin:             0.8vh 0 0 15px;
-                        color:              #34668a;
-
-                        i {
-                            width:              20px;
-                        }
-
-                        a {
-                            text-decoration:    none;
-                            color:            #34668a;
-                        }
-
-                        button {
-                            background-color:   transparent;
-                            padding:            0px;
-                            font-weight:        bold;
-                            font-size:          100%;
-                            color:            #34668a;
-                            border:             0;
-                            text-align:         left;
-                        }
-
-                        button:hover, a:hover {
-                            color:            rgba(52, 102, 138, 0.6);
-                        }
-
-                        #eMail {
-                            i {
-                                position:           relative;
-                                top:                1px;
-                            }
-                        }
-
-                        #phone {
-                            i {
-                                position:           relative;
-                                top:                2px;
-                                left:               -2px;
-                            }
-                        }
-
-                        #github {
-                            i {
-                                position:           relative;
-                                left:               1px;
-                            }
-                        }
-
-                    }
-
-                }
-
-            }
-
-        }
-
-        #overlay {
-
-            position:               absolute;
-            font-family:            sans-serif;
-            font-size:              90%;
-            background-color:     rgba(0, 0, 0, 0.3);
-            width:                  100vw;
-            height:                 100vh;
-            margin:                 auto;
-            //border-radius:          8px;
-
-            #overlayText {
-
-                position:               relative;
-                top:                    5%;
-                width:                  calc(90% - 40px);
-                height:                 calc(90% - 50px);                
-                margin:                 auto;
-                padding:                1px;
-                background-color:     #f5f5f5;
-                border:                 20px solid #f5f5f5;
-                border-radius:          6px;
-                box-shadow:             2px 0 16px 0 rgba(0,0,0,.3);
-                overflow-y:             scroll;
-                z-index:                9000;
-
-                #intro {
-
-                    margin:                 5px 0px 10px 0px;
-                    font-size:              105%;
-
-                    .important {
-                        font-weight:            bold;
-                    }
-
-                }
-
-                #cryptoData {
-
-                    display:                table;
-                    margin-bottom:          5px;
-
-                    .row {
-
-                        display:                table-row;
-
-                        .id {
-                            display:                table-cell;
-                            padding:                2px 10px 1px 8px;
-                            font-weight:            bold;
-                            border-radius:          4px 0px 0px 4px;
-                        }
-
-                        .value {
-
-                            display:                table-cell;
-                            padding:                2px 8px 1px 0px;
-                            border-radius:          0px 4px 4px 0px;
-
-                            .statusInfos {
-                                font-style:             italic;
-                                font-size:              90%;
-                            }                            
-
-                        }
-
-                    }
-
-                    .row:hover {
-                        background-color:       orange;        
-                    }
-
-                    .overEntry {
-                        background-color:       orange;        
-                    }
-
-                }
-
-                .infoblock {
-
-                    font-family:            monospace;
-                    font-size:              110%;
-                    margin-bottom:          10px;
-
-                    .description {
-                        position:               relative;
-                        top:                    8px;
-                        left:                   10px;
-                        background-color:     #98c3e2;
-                        display:                inline-block;
-                        padding:                1px 6px;
-                        border-radius:          4px;
-                        font-size:              85%;
-                    }
-
-                    .value {
-                        overflow-wrap:          break-word;
-                        background-color:     #E1E1E1;
-                        border-radius:          4px;
-                        padding:                11px 10px 6px 10px;
-                        width:                  calc(100% - 20px);
-                    }
-                    
-                }
-
-                #buffer {
-                    .value {
-
-                        .entry {
-                            display:            inline-block;
-                            padding:            1px 4px 1px 4px;
-                            margin-left:        -4px;
-                            border-radius:      4px;
-                        }
-
-                        .entry:hover {
-                            background-color: orange;        
-                        }
-
-                        .overEntry {
-                            background-color: orange;        
-                        }
-
-                    }
-                }
-
-                #signatureCheck {
-
-                    margin-top:     30px;
-                    text-align:     center;
-                    font-size:      150%;
-                    
-                    i {
-                        font-size: 200%;
-                    }
-
-                    #description {
-                        position: relative;
-                        line-height: 200%;
-                    }
-     
-                }
-
-                #overlayOkButtonDiv {
-
-                    position:       absolute;
-                    left:           0px;
-                    bottom:         0px;
-
-                    #overlayOkButton {
-                        border:             0;
-                        background-color:   transparent;
-                        color:            #b6d8f1;
-                        margin:             4px;
-                        font-size:          280%;
-                    }
-
-                    #overlayOkButton:hover {
-                        color:            #519ad0;
-                    }
-
-                }
-
-            }
-
-            #overlayText::-webkit-scrollbar {
-                display:            none;
-            }
-
-        }
-
-        #issueTracker {
-
-            position:               absolute;
-            font-family:            sans-serif;
-            font-size:              90%;
-            background-color:     rgba(0, 0, 0, 0.3);
-            width:                  100vw;
-            height:                 100vh;
-            margin:                 auto;
-            //border-radius:          8px;
-
-            #issueTrackerText {
-
-                position:               relative;
-                top:                    5%;
-                width:                  calc(90% - 20px);
-                height:                 calc(90% - 50px);                
-                margin:                 auto;
-                padding:                1px;
-                background-color:     #f5f5f5;
-                border:                 10px solid #f5f5f5;
-                border-radius:          6px;
-                box-shadow:             2px 0 16px 0 rgba(0,0,0,.3);
-                overflow-y:             scroll;
-                z-index:                9000;
-
-                form {
-
-                    padding:            20px;
-
-                    .label {
-                        margin:             15px 0px 4px 0px;
-                    }
-
-                    textarea {
-                        width:              100%;
-                        min-height:         20vh;
-                        resize:             vertical;
-                        border:             0;
-                        border-radius:      4px;
-                    }
-
-                    input[type="text"] {
-                        padding:            2px 3px;
-                        border:             0;
-                        border-radius:      3px;
-                        margin-bottom:      3px;
-                    } 
-
-                    #sendIssueBox {
-
-                        margin-top:         25px;
+                    #text {
                         text-align:         center;
+                        font-size:          110%;
+                        line-height:        130%;
+                    }
 
+                    #buttonsDiv {
+
+                        padding:            8px 0px 15px 0px;
+                        display:            flex;
+                        width:              100%;
+                        justify-content:    space-evenly;
+    
                         button {
-                            margin-top:         10px;
-                            padding:            8px 15px;
+
+                            font-size:          1.1vw;
+                            line-height:        125%;
+                            width:              10vw;
+                            height:             10vw;
+                            padding:            0;
+                            margin:             0;
+                            outline:            0;
                             border:             0;
-                            border-radius:      4px;
-                            background-color:   #b6d8f1;
+                            border-radius:      50%;
+                            background-color:   #aeddff;
+                            box-shadow:         none;
+                            align-self:         center;
+
+                            i {
+                                font-size:          150%;
+                                padding-bottom:     7px;
+                            }
+
                         }
 
                         button:hover {
-                            background-color: #519ad0;
+                            color:              #f7f7f7;
+                            background-color:   #519ad0;
+                        }
+
+                    }
+
+                    #loadingErrors {
+                        
+                        min-height:         7vh;
+                        font-family:        Arial;
+                        font-size:          120%;
+                        text-align:         center;
+
+                        #errorText {
+                            
+                            display:            none;
+                            padding:            10px 30px 17px 30px;
+                            background-color:   #e46464a6;
+                            border-radius:      6px;
+
+                            i {
+                                position:           relative;
+                                font-size:          160%;
+                                top:                5px;
+                                padding-right:      3px;
+                            }
+
+                        }
+
+                    }
+
+                }
+                
+                #aboutScreen {
+
+                    display:        none;
+                    width:          100%;
+                    margin-top:     10px;
+                    overflow-y:     scroll;
+                    overflow-x:     hidden;
+
+                    #softwareInfos {
+
+                        margin:         5px 0px 20px 0px;
+                        font-size:      110%;
+
+                        #product {
+                            font-weight:    bold;
+                        }
+                        #copyright {
+                            font-size:      80%;
+                        }
+
+                    }
+
+                    #OpenSourceLibs {
+
+                        display:        table;
+                        margin:         10px 20px;
+                        border-spacing: 2px;
+
+                        .lib {
+
+                            display:        table-row;
+
+                            .name {
+                                display:        table-cell;
+                                vertical-align: middle;
+                            }
+
+                            .license {
+                                display:        table-cell;
+                                vertical-align: middle;
+                                padding-left:   12px;
+                            }
+
+                        }
+
+                    }
+
+                    .linkButton {
+                        border:             0;
+                        border-radius:      4px;
+                        padding:            3px 7px;
+                        background-color:   #b9dbf5;
+                        font-size:          75%;
+                        text-align:         left;
+                    }
+
+                    .linkButton:hover {
+                        color:              #aad0ec;
+                        background-color:   #3c75a0;
+                    }
+
+                    #chargySHA512 {
+
+                        margin:             1em 0 1em 0;
+
+                        #value {
+                            font-family:        monospace;
+                            font-size:          110%;
+                            margin-top:         3px;
+                        }
+
+                    }
+
+                    #chargySignature {
+
+                        margin:             1em 0 1em 0;
+
+                        #value {
+                            font-family:        monospace;
+                            font-size:          110%;
+                            margin-top:         3px;
+                        }
+
+                    }
+
+                    #TOSP {
+
+                        margin-top:         7vh;
+                        font-size:          80%;
+
+                        a {
+                            color:              #517692;
+                            font-weight:        bold;
+                            text-decoration:    none;
+                        }
+
+                        #logos {
+
+                            display:                flex;
+                            justify-content:        space-evenly;
+                            align-items:            center;
+                            margin-top:             0.5vh;
+                            margin-bottom:          40px;
+
+                            #TMWWDG {
+
+                                margin:             2vh 7% 3vh 7%;
+
+                                img {
+                                    width:              100%;
+                                }
+
+                            }
+
+                            #ITnet {
+
+                                width:              50%;
+                                margin:             2vh 9% 3vh 1%;
+
+                                img {
+                                    width:              100%;
+                                }
+
+                            }
+
                         }
 
                     }
 
                 }
 
-                #issueBackButtonDiv {
+                #aboutScreen::-webkit-scrollbar {
+                    display:            none;
+                }
 
+                #chargingSessionReport {
+
+                    display:            none;
+                    flex-direction:     column;
+                    width:              100%;
+
+                    #description {
+                        padding:        0px 0px 5px 0px;
+                        font-size:      120%;
+                        font-weight:    bold;
+                    }
+
+                    #chargingSessions {
+
+                        padding:            0px 0px 0px 10px;
+                        height:             100%;
+                        // overflow-y:         scroll;
+                        margin:             10px 0px 50px 0px;
+
+                        .chargingSessions {
+
+                            position:           relative;
+                            margin-bottom:      4px;
+                            padding:            7px 11px;
+                            background-color:   #d6e4ef;
+                            border-radius:      6px;
+                            cursor:             pointer;
+
+                            .date {
+                                font-weight:        bold;
+                                padding:            2px 0px 3px 0px;
+                                font-size:          105%;
+                            }
+
+                            .table {
+
+                                display:            table;
+                                border-collapse:    separate;
+                                border-spacing:     4px 4px;
+
+                                .productInfos {
+
+                                    display:            table-row;
+
+                                    .icon {
+                                        display:            table-cell;
+                                        padding:            6px 7px 0px 3px;
+                                        text-align:         center;
+                                        vertical-align:     top;
+                                    }
+
+                                    .text {
+                                        display:            table-cell;
+                                        color:            #212427;
+                                    }
+
+                                }
+
+                                .authorizationStart {
+
+                                    display:            table-row;
+
+                                    .icon {
+                                        display:            table-cell;
+                                        padding:            0px 7px 0px 3px;
+                                        text-align:         center;
+                                        vertical-align:     top;
+                                    }
+
+                                    .id {
+                                        display:            table-cell;
+                                    }
+                                }
+
+                                .authorizationStop {
+
+                                    display:            table-row;
+
+                                    .icon {
+                                        display:            table-cell;
+                                        padding:            0px 7px 0px 3px;
+                                        text-align:         center;
+                                        vertical-align:     top;
+                                    }
+
+                                    .id {
+                                        display:            table-cell;
+                                    }
+                                }
+
+                                .locationInfos {
+
+                                    display:            table-row;
+
+                                    .icon {
+                                        display:            table-cell;
+                                        padding:            6px 7px 0px 3px;
+                                        text-align:         center;
+                                        vertical-align:     top;
+                                    }
+
+                                    .text {
+                                        display:            table-cell;
+                                        color:            #212427;
+                                    }                                        
+
+                                }
+
+                            }
+
+                            .verificationStatus {
+
+                                position:           absolute;
+                                top:                10px;
+                                right:              12px;
+                                text-align:         center;
+                                font-size:          80%;
+
+                                i {
+                                    display:            block;
+                                    font-size:          250%;
+                                    padding-bottom:     4px;
+                                }
+
+                            }
+
+                        }
+
+                        .chargingSessions:hover {
+                            background-color:       #b8cdde;
+                        }
+
+                        .activated {
+                            background-color:       #b5d4ec;
+                        }
+
+                    }
+
+                    #chargingSessions::-webkit-scrollbar {
+                        display:            none;
+                    }
+
+                }
+
+                #backButtonDiv {
+
+                    display:        none;
                     position:       absolute;
                     left:           0px;
                     bottom:         0px;
 
-                    #issueBackButton {
+                    #backButton {
                         border:             0;
+                        // background-color:   #cce5f7;
+                        // padding:            7px 14px 8px 13px;
+                        // border-radius:      50%;
                         background-color:   transparent;
                         color:            #b6d8f1;
                         margin:             4px;
                         font-size:          280%;
                     }
 
-                    #issueBackButton:hover {
+                    #backButton:hover {
+                        // background-color:   #519ad0;
                         color:            #519ad0;
                     }
 
@@ -1104,16 +488,626 @@ body {
 
             }
 
-            #issueTrackerText::-webkit-scrollbar {
+            #input::-webkit-scrollbar {
                 display:            none;
+            }
+
+            .over {
+                background-color:   cornflowerblue !important;
+                /*border:             1px solid #2c4a60 !important;*/
+            }
+
+            #buttonsDiv {
+
+                padding:            8px 17px 15px 15px;
+                text-align:         right;
+
+                button {
+                    border:             0;
+                    padding:            8px 15px;
+                    /*font-size:          120%;*/
+                    border-radius:      4px;
+                    box-shadow:         2px 2px 6px #999;
+                }
+
             }
 
         }
 
-        .fullScreen {
-            width:              100vw !important;
-            height:             100vh !important;
-            border-radius:      0     !important;
+        #leftbar::-webkit-scrollbar {
+            display:            none;
+        }
+
+        #rightbar {
+
+            width:              50%;
+            background-color:   #c7e1f3;
+            border-radius:      8px 0px 0px 0px;
+
+            #map {
+                width:              100%;
+                min-height:         33%;
+                border-radius:      8px 0px 0px 0px;
+            }
+
+            #evseTarifInfos {
+
+                width:              100%;
+                height:             38%;
+                padding:            20px 20px;
+                width:              calc(100% - 40px);
+                font-family:        Arial;
+                font-size:          95%;
+                color:              #2c4a60;
+                overflow-y:         scroll;
+
+                #headline {
+                    color:              #2e71a2;
+                    font-weight:        bold;
+                    padding:            2px 10px 12px 0px;
+                }
+
+                .measurementInfos {
+
+                    display:            table;
+
+                    .chargingStation {
+
+                        display:            table-row-group;
+
+                        .chargingStationHeadline {
+                            font-weight:        bold
+                        }
+
+                        .chargingStationId {
+
+                            display:            table-row;
+
+                            .chargingStationIdId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .chargingStationIdValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                        .firmwareVersion {
+
+                            display:            table-row;
+
+                            .firmwareVersionId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .firmwareVersionValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                    }
+
+                    .meter {
+
+                        display:            table-row-group;
+
+                        .meterHeadline {
+                            margin-top:         .6vh;
+                            font-weight:        bold;
+                        }
+
+                        .meterId {
+
+                            display:            table-row;
+
+                            .meterIdId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .meterIdValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                        .meterVendor {
+
+                            display:            table-row;
+
+                            .meterVendorId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .meterVendorValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                        .meterModel {
+
+                            display:            table-row;
+
+                            .meterModelId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .meterModelValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                        .measurement {
+
+                            display:            table-row;
+
+                            .measurementId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .measurementIdValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                        .OBIS {
+
+                            display:            table-row;
+
+                            .OBISId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .OBISValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                #measurementValues-headline {
+                    margin-top:         0.6vh;
+                    font-weight:        bold;
+                }
+
+                .measurementValues {
+
+                    display:            table;
+                    width:              100%;
+                    cursor:             zoom-in;
+
+                    .measurementValue {
+
+                        display:            table-row;
+                        padding:            3px 4px;
+                        border-radius:      3px;
+
+                        .timestamp {
+                            display:            table-cell;
+                            padding:            2px 16px 2px 12px;
+                            border-radius:      4px 0px 0px 4px;
+                            white-space:        nowrap
+                        }
+
+                        .value1 {
+                            display:            table-cell;
+                            text-align:         right;
+                            padding-right:      5px;
+                            white-space:        nowrap
+                        }
+
+                        .unit1 {
+                            display:            table-cell;
+                            padding-right:      10px;
+                            white-space:        nowrap
+                        }
+
+                        .value2 {
+                            display:            table-cell;
+                            text-align:         right;
+                            padding-right:      5px;
+                            white-space:        nowrap
+                        }
+
+                        .unit2 {
+                            display:            table-cell;
+                            padding-right:      10px;
+                            white-space:        nowrap
+                        }
+
+                        .verificationStatus {
+                            display:            table-cell;
+                            padding:            2px 6px;
+                            border-radius:      0px 4px 4px 0px;
+                            width:              100%;
+                            white-space:        nowrap
+                        }
+
+                    }
+
+                    .measurementValue:hover {
+                        background-color:     #72b3e2;
+                    }
+
+                    .measurementValue:first-child {
+                        .value2, .unit2 {
+                            color:            rgba(44, 74, 96, 0.5);
+                        }
+                    }
+
+                }
+
+            }
+
+            #evseTarifInfos::-webkit-scrollbar {
+                display:            none;
+            }
+
+            #feedback {
+
+                width:              100%;
+                min-height:         34%;
+                padding:            20px 20px;
+                width:              calc(100% - 40px);
+                font-family:        Arial;
+                font-size:          90%;
+                font-weight:        bold;
+                color:            #6488a3;
+                line-height:        130%;
+
+                #feedbackMethods {
+
+                    display:            flex;
+                    flex-direction:     column;
+                    margin:             0.8vh 0 0 15px;
+                    color:              #34668a;
+
+                    i {
+                        width:              20px;
+                    }
+
+                    a {
+                        text-decoration:    none;
+                        color:            #34668a;
+                    }
+
+                    button {
+                        background-color:   transparent;
+                        padding:            0px;
+                        font-weight:        bold;
+                        font-size:          100%;
+                        color:            #34668a;
+                        border:             0;
+                        text-align:         left;
+                    }
+
+                    button:hover, a:hover {
+                        color:            rgba(52, 102, 138, 0.6);
+                    }
+
+                    #eMail {
+                        i {
+                            position:           relative;
+                            top:                1px;
+                        }
+                    }
+
+                    #phone {
+                        i {
+                            position:           relative;
+                            top:                2px;
+                            left:               -2px;
+                        }
+                    }
+
+                    #github {
+                        i {
+                            position:           relative;
+                            left:               1px;
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
+    #overlay {
+
+        position:               absolute;
+        font-family:            sans-serif;
+        font-size:              90%;
+        background-color:     rgba(0, 0, 0, 0.3);
+        width:                  100vw;
+        height:                 100vh;
+        margin:                 auto;
+        //border-radius:          8px;
+
+        #overlayText {
+
+            position:               relative;
+            top:                    5%;
+            width:                  calc(90% - 40px);
+            height:                 calc(90% - 50px);                
+            margin:                 auto;
+            padding:                1px;
+            background-color:     #f5f5f5;
+            border:                 20px solid #f5f5f5;
+            border-radius:          6px;
+            box-shadow:             2px 0 16px 0 rgba(0,0,0,.3);
+            overflow-y:             scroll;
+            z-index:                9000;
+
+            #intro {
+
+                margin:                 5px 0px 10px 0px;
+                font-size:              105%;
+
+                .important {
+                    font-weight:            bold;
+                }
+
+            }
+
+            #cryptoData {
+
+                display:                table;
+                margin-bottom:          5px;
+
+                .row {
+
+                    display:                table-row;
+
+                    .id {
+                        display:                table-cell;
+                        padding:                2px 10px 1px 8px;
+                        font-weight:            bold;
+                        border-radius:          4px 0px 0px 4px;
+                    }
+
+                    .value {
+
+                        display:                table-cell;
+                        padding:                2px 8px 1px 0px;
+                        border-radius:          0px 4px 4px 0px;
+
+                        .statusInfos {
+                            font-style:             italic;
+                            font-size:              90%;
+                        }                            
+
+                    }
+
+                }
+
+                .row:hover {
+                    background-color:       orange;        
+                }
+
+                .overEntry {
+                    background-color:       orange;        
+                }
+
+            }
+
+            .infoblock {
+
+                font-family:            monospace;
+                font-size:              110%;
+                margin-bottom:          10px;
+
+                .description {
+                    position:               relative;
+                    top:                    8px;
+                    left:                   10px;
+                    background-color:     #98c3e2;
+                    display:                inline-block;
+                    padding:                1px 6px;
+                    border-radius:          4px;
+                    font-size:              85%;
+                }
+
+                .value {
+                    overflow-wrap:          break-word;
+                    background-color:     #E1E1E1;
+                    border-radius:          4px;
+                    padding:                11px 10px 6px 10px;
+                    width:                  calc(100% - 20px);
+                }
+                
+            }
+
+            #buffer {
+                .value {
+
+                    .entry {
+                        display:            inline-block;
+                        padding:            1px 4px 1px 4px;
+                        margin-left:        -4px;
+                        border-radius:      4px;
+                    }
+
+                    .entry:hover {
+                        background-color: orange;        
+                    }
+
+                    .overEntry {
+                        background-color: orange;        
+                    }
+
+                }
+            }
+
+            #signatureCheck {
+
+                margin-top:     30px;
+                text-align:     center;
+                font-size:      150%;
+                
+                i {
+                    font-size: 200%;
+                }
+
+                #description {
+                    position: relative;
+                    line-height: 200%;
+                }
+    
+            }
+
+            #overlayOkButtonDiv {
+
+                position:       absolute;
+                left:           0px;
+                bottom:         0px;
+
+                #overlayOkButton {
+                    border:             0;
+                    background-color:   transparent;
+                    color:            #b6d8f1;
+                    margin:             4px;
+                    font-size:          280%;
+                }
+
+                #overlayOkButton:hover {
+                    color:            #519ad0;
+                }
+
+            }
+
+        }
+
+        #overlayText::-webkit-scrollbar {
+            display:            none;
+        }
+
+    }
+
+    #issueTracker {
+
+        position:               absolute;
+        font-family:            sans-serif;
+        font-size:              90%;
+        background-color:     rgba(0, 0, 0, 0.3);
+        width:                  100vw;
+        height:                 100vh;
+        margin:                 auto;
+        //border-radius:          8px;
+
+        #issueTrackerText {
+
+            position:               relative;
+            top:                    5%;
+            width:                  calc(90% - 20px);
+            height:                 calc(90% - 50px);                
+            margin:                 auto;
+            padding:                1px;
+            background-color:     #f5f5f5;
+            border:                 10px solid #f5f5f5;
+            border-radius:          6px;
+            box-shadow:             2px 0 16px 0 rgba(0,0,0,.3);
+            overflow-y:             scroll;
+            z-index:                9000;
+
+            form {
+
+                padding:            20px;
+
+                .label {
+                    margin:             15px 0px 4px 0px;
+                }
+
+                textarea {
+                    width:              100%;
+                    min-height:         20vh;
+                    resize:             vertical;
+                    border:             0;
+                    border-radius:      4px;
+                }
+
+                input[type="text"] {
+                    padding:            2px 3px;
+                    border:             0;
+                    border-radius:      3px;
+                    margin-bottom:      3px;
+                } 
+
+                #sendIssueBox {
+
+                    margin-top:         25px;
+                    text-align:         center;
+
+                    button {
+                        margin-top:         10px;
+                        padding:            8px 15px;
+                        border:             0;
+                        border-radius:      4px;
+                        background-color:   #b6d8f1;
+                    }
+
+                    button:hover {
+                        background-color: #519ad0;
+                    }
+
+                }
+
+            }
+
+            #issueBackButtonDiv {
+
+                position:       absolute;
+                left:           0px;
+                bottom:         0px;
+
+                #issueBackButton {
+                    border:             0;
+                    background-color:   transparent;
+                    color:            #b6d8f1;
+                    margin:             4px;
+                    font-size:          280%;
+                }
+
+                #issueBackButton:hover {
+                    color:            #519ad0;
+                }
+
+            }
+
+        }
+
+        #issueTrackerText::-webkit-scrollbar {
+            display:            none;
         }
 
     }
@@ -1121,19 +1115,25 @@ body {
     .fullScreen {
         width:              100vw !important;
         height:             100vh !important;
-        margin-top:         0     !important;
         border-radius:      0     !important;
     }
 
+}
 
-    .fa-check-circle {
-        color:          #5ab337;
-    }
+.fullScreen {
+    width:              100vw !important;
+    height:             100vh !important;
+    margin-top:         0     !important;
+    border-radius:      0     !important;
+}
 
-    .fa-times-circle {
-        color:          #CC0000;
-    }
 
-//}
+.fa-check-circle {
+    color:          #5ab337;
+}
+
+.fa-times-circle {
+    color:          #CC0000;
+}
 
 @import 'custom';
