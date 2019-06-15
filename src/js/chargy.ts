@@ -28,28 +28,26 @@ import { readSync } from "fs";
 var map:     any = "";
 var leaflet: any = "";
 
-function fileHash(filename:  string,
-                  onSuccess: { (hash:         string): any; },
-                  OnFailed:  { (errorMessage: string): any; })
+function calcSHA512Hash(filename:  string,
+                        OnSuccess: { (hash:         string): any; },
+                        OnFailed:  { (errorMessage: string): any; })
 {
 
-    const fs          = require('original-fs');
-    const _crypt2     = require('electron').remote.require('crypto');
-    let   sha512hash  = _crypt2.createHash('sha512');
-    let   s           = fs.createReadStream(filename);
-    s.on('data', function(data: any) {
-        sha512hash.update(data)
+    const fs      = require('original-fs');
+    let   sha512  = require('electron').remote.
+                    require('crypto').createHash('sha512');
+    let   stream  = fs.createReadStream(filename);
+
+    stream.on('data', function(data: any) {
+        sha512.update(data)
     })
 
-    s.on('error', function() {
-        console.log(filename + " => File not found!");
+    stream.on('error', function() {
         OnFailed("File not found!");
     })
 
-    s.on('end', function() {
-        var hash = sha512hash.digest('hex');
-        console.log(filename + " => " + hash);
-        onSuccess(hash);
+    stream.on('end', function() {
+        OnSuccess(sha512.digest('hex'));
     })
 
 }
@@ -89,17 +87,18 @@ function StartDashboard() {
     {
 
         case "win32":
-            fileHash('Chargy Transparenzsoftware.exe',                             hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-            fileHash(path.join('resources', 'app.asar'),                           hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-            fileHash(path.join('resources', 'electron.asar'),                      hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            calcSHA512Hash('Chargy Transparenzsoftware.exe',                             hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            calcSHA512Hash(path.join('resources', 'app.asar'),                           hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            calcSHA512Hash(path.join('resources', 'electron.asar'),                      hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
             break;
 
         case "linux":
         case "darwin":
         case "freebsd":
-            fileHash('/opt/Chargy\ Transparenzsoftware/chargytransparenzsoftware', hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-            fileHash('/opt/Chargy\ Transparenzsoftware/resources/app.asar',        hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-            fileHash('/opt/Chargy\ Transparenzsoftware/resources/electron.asar',   hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+        case "openbsd":
+            calcSHA512Hash('/opt/Chargy\ Transparenzsoftware/chargytransparenzsoftware', hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            calcSHA512Hash('/opt/Chargy\ Transparenzsoftware/resources/app.asar',        hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            calcSHA512Hash('/opt/Chargy\ Transparenzsoftware/resources/electron.asar',   hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
             break;
 
         default:

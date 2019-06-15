@@ -188,6 +188,20 @@ body {
                         overflow-y:     scroll;
                         overflow-x:     hidden;
 
+                        #softwareInfos {
+
+                            margin:         5px 0px 20px 0px;
+                            font-size:      110%;
+
+                            #product {
+                                font-weight:    bold;
+                            }
+                            #copyright {
+                                font-size:      80%;
+                            }
+
+                        }
+
                         #OpenSourceLibs {
 
                             display:        table;
