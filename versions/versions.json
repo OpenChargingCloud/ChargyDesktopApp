@@ -28,8 +28,12 @@
                         "de":               "Dies betrifft die Datei 'Chargy Transparenzsoftware Setup x.y.z.exe'.",
                         "en":               "In general this means the 'Chargy Transparenzsoftware Setup x.y.z.exe' file."
                     },
+                    "downloadURLs": [
+                        "https://www.example.com/Chargy%20Transparenzsoftware%20Setup%20x.y.z.exe"
+                    ],
                     "cryptoHashes": {
-                        "sha512":           "0x000"
+                        "SHA256":           "0x0000000011111111222222223333333344444444",
+                        "SHA512":           "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                     },
                     "signatures": [
                         {
@@ -38,34 +42,34 @@
                             "comment": {
                                 "en":           "Greates version ever!"
                             },
-                            "publicKey":        "0x000",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
                             "algorithm":        "secp192r1",
                             "format":           "DER",
-                            "signature":        "0x000"
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                         },
                         {
                             "signer":           "chargeIT mobility GmbH",
                             "timestamp":        "2019-06-15T00:00:00Z",
-                            "publicKey":        "0x000",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
                             "algorithm":        "secp192r1",
                             "format":           "DER",
-                            "signature":        "0x000"
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                         },
                         {
                             "signer":           "Physikalisch-Technische Bundesanstalt",
                             "timestamp":        "2019-06-15T00:00:00Z",
-                            "publicKey":        "0x000",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
                             "algorithm":        "secp192r1",
                             "format":           "DER",
-                            "signature":        "0x000"
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                         },
                         {
                             "signer":           "Hubject GmbH",
                             "timestamp":        "2019-06-15T00:00:00Z",
-                            "publicKey":        "0x000",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
                             "algorithm":        "secp192r1",
                             "format":           "DER",
-                            "signature":        "0x000"
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                         }
                     ]
                 },
@@ -77,40 +81,40 @@
                         "en":               "In general this means the 'Chargy Transparenzsoftware.exe', the '~\\resources\\app.asar' and the '~\\resources\\electron.asar' files within the '%AppData%\\..\\Local\\Programs\\chargytransparenzsoftware' application directory on Microsoft Windows 10 and newer."
                     },
                     "cryptoHashes": {
-                        "sha512":           "0x000"
+                        "SHA512":           "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                     },
                     "signatures": [
                         {
                             "signer":           "Open Charging Cloud by GraphDefined GmbH",
                             "timestamp":        "2019-06-15T00:00:00Z",
-                            "publicKey":        "0x000",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
                             "algorithm":        "secp192r1",
                             "format":           "DER",
-                            "signature":        "0x000"
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                         },
                         {
                             "signer":           "chargeIT mobility GmbH",
                             "timestamp":        "2019-06-15T00:00:00Z",
-                            "publicKey":        "0x000",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
                             "algorithm":        "secp192r1",
                             "format":           "DER",
-                            "signature":        "0x000"
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                         },
                         {
                             "signer":           "Physikalisch-Technische Bundesanstalt",
                             "timestamp":        "2019-06-15T00:00:00Z",
-                            "publicKey":        "0x000",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
                             "algorithm":        "secp192r1",
                             "format":           "DER",
-                            "signature":        "0x000"
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                         },
                         {
                             "signer":           "Hubject GmbH",
                             "timestamp":        "2019-06-15T00:00:00Z",
-                            "publicKey":        "0x000",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
                             "algorithm":        "secp192r1",
                             "format":           "DER",                            
-                            "signature":        "0x000"
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                         }
                     ]
                 }
