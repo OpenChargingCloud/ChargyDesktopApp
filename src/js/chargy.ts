@@ -24,6 +24,7 @@
 import { debug } from "util";
 import * as crypto from "crypto";
 import { readSync } from "fs";
+import { version } from "punycode";
 
 var map:     any = "";
 var leaflet: any = "";
@@ -71,7 +72,7 @@ function OpenLink(url: string)
     require('electron').shell.openExternal(url);
 }
 
-function StartDashboard() {
+function StartChargyApplication() {
 
     var el      = require('elliptic');
     let moment  = require('moment');
@@ -108,6 +109,141 @@ function StartDashboard() {
     }
 
     //#endregion
+
+    //#region Get list of versions from GitHub
+
+    let GetListOfVersionsFromGitHub = new XMLHttpRequest();
+    GetListOfVersionsFromGitHub.open("GET",
+                                     "https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
+                                     true);
+
+    GetListOfVersionsFromGitHub.onreadystatechange = function () {
+
+        // 0 UNSENT | 1 OPENED | 2 HEADERS_RECEIVED | 3 LOADING | 4 DONE
+        if (this.readyState == 4) {
+            if (this.status == 200) { // HTTP 200 - OK
+
+                try {
+
+                    var versionsDiv = updateAvailableScreen.querySelector("#versions") as HTMLDivElement;
+                    if (versionsDiv != null)
+                    {
+
+                        let ChargyDesktopAppVersions = JSON.parse(GetListOfVersionsFromGitHub.responseText) as IVersions;
+
+                        for (let version of ChargyDesktopAppVersions.versions)
+                        {
+
+                            let versionDiv = versionsDiv.appendChild(document.createElement('div'));
+                            versionDiv.className = "version";
+
+                            let headlineDiv = versionDiv.appendChild(document.createElement('div'));
+                            headlineDiv.className = "headline";
+
+                            let versionnumberDiv = headlineDiv.appendChild(document.createElement('div'));
+                            versionnumberDiv.className = "versionnumber";
+                            versionnumberDiv.innerHTML = "Version " + version.version;
+
+                            let releaseDateDiv = headlineDiv.appendChild(document.createElement('div'));
+                            releaseDateDiv.className = "releaseDate";
+                            releaseDateDiv.innerHTML = parseUTC(version.releaseDate).format("ll");
+
+                            let descriptionDiv = versionDiv.appendChild(document.createElement('div'));
+                            descriptionDiv.className = "description";
+                            descriptionDiv.innerHTML = version.description["de"];
+
+                            let tagsDiv = versionDiv.appendChild(document.createElement('div'));
+                            tagsDiv.className = "tags";
+
+                            for (let tag of version.tags)
+                            {
+                                let tagDiv = tagsDiv.appendChild(document.createElement('div'));
+                                tagDiv.className = "tag";
+                                tagDiv.innerHTML = tag;
+                            }
+
+                            let packagesDiv = versionDiv.appendChild(document.createElement('div'));
+                            packagesDiv.className = "packages";
+
+                            for (let versionpackage of version.packages)
+                            {
+
+                                let packageDiv = packagesDiv.appendChild(document.createElement('div'));
+                                packageDiv.className = "package";
+
+                                let nameDiv = packageDiv.appendChild(document.createElement('div'));
+                                nameDiv.className = "name";
+                                nameDiv.innerHTML = versionpackage.name;
+
+                                let descriptionDiv = packageDiv.appendChild(document.createElement('div'));
+                                descriptionDiv.className = "description";
+                                descriptionDiv.innerHTML = versionpackage.description["de"];
+
+
+                                let cryptoHashesDiv = packageDiv.appendChild(document.createElement('div'));
+                                cryptoHashesDiv.className = "cryptoHashes";
+
+                                for (let cryptoHash in versionpackage.cryptoHashes)
+                                {
+
+                                    let cryptoHashDiv = cryptoHashesDiv.appendChild(document.createElement('div'));
+                                    cryptoHashDiv.className = "cryptoHash";
+
+                                    let cryptoHashNameDiv = cryptoHashDiv.appendChild(document.createElement('div'));
+                                    cryptoHashNameDiv.className = "name";
+                                    cryptoHashNameDiv.innerHTML = cryptoHash;
+
+                                    let cryptoHashValueDiv = cryptoHashDiv.appendChild(document.createElement('div'));
+                                    cryptoHashValueDiv.className = "value";
+                                    cryptoHashValueDiv.innerHTML = versionpackage.cryptoHashes[cryptoHash];
+
+                                }
+
+
+                                let signaturesTextDiv = packageDiv.appendChild(document.createElement('div'));
+                                signaturesTextDiv.className = "signaturesText";
+                                signaturesTextDiv.innerHTML = "Die Authentizität diese Software wurden von folgenden Organisationen bestätigt...";
+
+                                let signaturesDiv = packageDiv.appendChild(document.createElement('div'));
+                                signaturesDiv.className = "signatures";
+
+                                for (let signature of versionpackage.signatures)
+                                {
+
+                                    let signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
+                                    signatureDiv.className = "signature";
+
+                                    let signatureCheckDiv = signatureDiv.appendChild(document.createElement('div'));
+                                    signatureCheckDiv.className = "signatureCheck";
+                                    signatureCheckDiv.innerHTML = "ok";
+
+                                    let authorDiv = signatureDiv.appendChild(document.createElement('div'));
+                                    authorDiv.className = "author";
+                                    authorDiv.innerHTML = signature.signer;
+
+                                }
+
+                            }                            
+
+                        }
+
+                    }
+
+                }
+                catch (exception)
+                { 
+                    // Just do nothing!
+                }
+
+            }
+        }
+
+    }
+
+    GetListOfVersionsFromGitHub.send();
+
+    //#endregion
+
 
     //#region GetMethods...
 
@@ -311,8 +447,8 @@ function StartDashboard() {
 
             //#region Prepare View
 
-            chargingSessionReportDiv.style.display  = "flex";
-            chargingSessionReportDiv.innerText      = "";
+            chargingSessionScreenDiv.style.display  = "flex";
+            chargingSessionScreenDiv.innerText      = "";
             backButtonDiv.style.display             = "block";
 
             //#endregion
@@ -320,20 +456,20 @@ function StartDashboard() {
             //#region Show CTR infos
 
             if (CTR.description) {
-                let descriptionDiv = chargingSessionReportDiv.appendChild(document.createElement('div'));
+                let descriptionDiv = chargingSessionScreenDiv.appendChild(document.createElement('div'));
                 descriptionDiv.id  = "description";
                 descriptionDiv.innerText = firstValue(CTR.description);
             }
 
             if (CTR.begin) {
-                let beginDiv = chargingSessionReportDiv.appendChild(document.createElement('div'));
+                let beginDiv = chargingSessionScreenDiv.appendChild(document.createElement('div'));
                 beginDiv.id        = "begin";
                 beginDiv.className = "defi";
                 beginDiv.innerHTML = "von " + parseUTC(CTR.begin).format('dddd, D. MMMM YYYY');
             }
 
             if (CTR.end) {
-                let endDiv = chargingSessionReportDiv.appendChild(document.createElement('div'));
+                let endDiv = chargingSessionScreenDiv.appendChild(document.createElement('div'));
                 endDiv.id          = "begin";
                 endDiv.className   = "defi";
                 endDiv.innerHTML   = "bis " + parseUTC(CTR.end).format('dddd, D. MMMM YYYY');
@@ -591,7 +727,7 @@ function StartDashboard() {
 
             if (CTR.chargingSessions) {
 
-                let chargingSessionsDiv  = chargingSessionReportDiv.appendChild(document.createElement('div'));
+                let chargingSessionsDiv  = chargingSessionScreenDiv.appendChild(document.createElement('div'));
                 chargingSessionsDiv.id   = "chargingSessions";
 
                 for (var chargingSession of CTR.chargingSessions)
@@ -1976,8 +2112,8 @@ function StartDashboard() {
     {
 
         inputInfosDiv.style.display             = 'flex';
-        chargingSessionReportDiv.style.display  = 'none';
-        chargingSessionReportDiv.innerHTML      = '';
+        chargingSessionScreenDiv.style.display  = 'none';
+        chargingSessionScreenDiv.innerHTML      = '';
         errorTextDiv.style.display              = 'inline-block';
         errorTextDiv.innerHTML                  = '<i class="fas fa-times-circle"></i> ' + text;
 
@@ -2086,8 +2222,11 @@ function StartDashboard() {
         updateAvailableScreen.style.display     = "block";
         inputInfosDiv.style.display             = "none";
         aboutScreenDiv.style.display            = "none";
-        chargingSessionReportDiv.style.display  = "none";
+        chargingSessionScreenDiv.style.display  = "none";
         backButtonDiv.style.display             = "block";
+
+        var versionsDiv = updateAvailableScreen.querySelector("#versions") as HTMLDivElement;
+
     }
 
     var aboutButton               = <HTMLButtonElement>   document.getElementById('aboutButton');
@@ -2095,7 +2234,7 @@ function StartDashboard() {
         updateAvailableScreen.style.display     = "none";
         inputInfosDiv.style.display             = "none";
         aboutScreenDiv.style.display            = "block";
-        chargingSessionReportDiv.style.display  = "none";
+        chargingSessionScreenDiv.style.display  = "none";
         backButtonDiv.style.display             = "block";
 
         if (complete_hash == null)
@@ -2158,7 +2297,7 @@ function StartDashboard() {
     var updateAvailableScreen     = <HTMLDivElement>      document.getElementById('updateAvailableScreen');
     var aboutScreenDiv            = <HTMLDivElement>      document.getElementById('aboutScreen');
     var chargySHA512Div           = <HTMLDivElement>      document.getElementById('chargySHA512');
-    var chargingSessionReportDiv  = <HTMLDivElement>      document.getElementById('chargingSessionReport');
+    var chargingSessionScreenDiv  = <HTMLDivElement>      document.getElementById('chargingSessionScreen');
     var rightbar                  = <HTMLDivElement>      document.getElementById('rightbar');
     var evseTarifInfosDiv         = <HTMLDivElement>      document.getElementById('evseTarifInfos');
 
@@ -2179,7 +2318,7 @@ function StartDashboard() {
         updateAvailableScreen.style.display     = "none";
         inputInfosDiv.style.display             = 'flex';
         aboutScreenDiv.style.display            = "none";
-        chargingSessionReportDiv.style.display  = "none";
+        chargingSessionScreenDiv.style.display  = "none";
         backButtonDiv.style.display             = "none";
         fileInput.value                         = "";
         evseTarifInfosDiv.innerHTML             = "";

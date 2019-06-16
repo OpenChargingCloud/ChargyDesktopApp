@@ -10,10 +10,11 @@
 
         {
 
-            "version":          "0.31.0",
+            "version":          "0.32.0",
             "releaseDate":      "2019-06-15T00:00:00Z",
             "description": {
-                "de":               "This version comes with many security and usability enhancements."
+                "de":               "Diese Version verbessert die Sicherheit und Benutzerfreundlichkeit der Transparenzsoftware.",
+                "en":               "This version of the transparency software comes with many security and usability enhancements."
             },
             "tags": [
                 "security", "usability"

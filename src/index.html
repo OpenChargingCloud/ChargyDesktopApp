@@ -26,7 +26,7 @@
     <meta name="description" content="Transparenzsoftware für die Elektromobilität">
     <meta name="author"      content="achim.friedland@graphdefined.com">
     <meta name="viewport"    content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'  data: https: *; script-src 'self' 'unsafe-inline' *; style-src 'self' 'unsafe-inline' *;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://updates.chargy.charging.cloud https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
 
     <!--<link rel="icon"       href="/favicon.png"                 type="image/png" />-->
     <link rel="stylesheet" href="css/fontawesome-all.min.css"            type="text/css" />
@@ -194,12 +194,14 @@
                 <div id="updateAvailableScreen">
 
                     <p>
-                        Ein Update für diese Software ist verfügbar.
+                        Ein Update für diese Software ist verfügbar...
                     </p>
+
+                    <div id="versions"></div>
 
                 </div>
 
-                <div id="chargingSessionReport"></div>
+                <div id="chargingSessionScreen"></div>
 
                 <div id="backButtonDiv">
                     <button id="backButton"><i class="fas fa-arrow-alt-circle-left"></i></button>
@@ -327,7 +329,7 @@
           id: 'ahzf.nc811hb2'
       }).addTo(map);
 
-      var test = new StartDashboard();
+      var chargyApplication = new StartChargyApplication();
 
     </script>
 

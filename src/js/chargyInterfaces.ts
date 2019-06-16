@@ -297,3 +297,38 @@ enum VerificationResult {
     InvalidSignature,
     ValidSignature
 }
+
+interface IVersions {
+    name:           string,
+    description:    any,
+    versions:       Array<IVersion>
+}
+
+interface IVersion {
+    version:        string,
+    releaseDate:    string,
+    description:    any,
+    tags:           Array<string>,
+    packages:       Array<IVersionPackage>
+}
+
+interface IVersionPackage {
+    name:           string,
+    description:    any,
+    cryptoHashes:   ICryptoHashes,
+    signatures:     Array<IVersionSignature>
+}
+
+interface ICryptoHashes {
+    sha256?:        string,
+    sha512?:        string
+}
+
+interface IVersionSignature {
+    signer:         string,
+    timestamp:      string,
+    publicKey:      string,
+    algorithm:      string,
+    format:         string,
+    signature:      string
+}

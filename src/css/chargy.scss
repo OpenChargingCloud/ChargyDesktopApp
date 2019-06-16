@@ -317,7 +317,138 @@ body {
                     display:            none;
                 }
 
-                #chargingSessionReport {
+
+                #updateAvailableScreen {
+
+                    display:            none;
+                    width:              100%;
+                    overflow-y:         scroll;
+                    overflow-x:         hidden;
+
+                    #versions {
+
+                        margin-bottom:      60px;
+
+                        .version {
+
+                            background-color:   #d8d8d8;
+                            border-radius:      6px;
+                            padding:            1vh 1vw 1vh 1vw;
+                            margin-bottom:      10px;
+
+                            .headline {
+
+                                display:            flex;
+
+                                .versionnumber {
+                                    flex-grow:          1;
+                                    font-weight:        bold;
+                                }
+
+                                .releaseDate {
+                                    font-size:          90%;
+                                }
+
+                            }
+
+                            .description {
+                                display:        inline-block;
+                                padding:        10px 0px 5px 0px;
+                            }
+
+                            .tags {
+
+                                margin-left:        -2px;
+                                display:            flex;
+                                justify-content:    flex-start;
+
+                                .tag {
+                                    //display:            inline-block;
+                                    font-size:          70%;
+                                    padding:            2px 5px;
+                                    margin:             2px;
+                                    color:              #ddddf3;
+                                    background-color:   #4040A0;
+                                    border-radius:      6px;
+                                }
+
+                            }
+
+                            .packages {
+
+                                .package {
+
+                                    margin-top:         5px;
+
+                                    .name {
+                                        font-size:          80%;
+                                        font-weight:        bold;
+                                    }
+
+                                    .description {
+                                        font-size:          80%;
+                                    }
+
+                                    .cryptoHashes {
+
+                                        font-size:          80%;
+                                        display:            table;
+
+                                        .cryptoHash {
+
+                                            display:        table-row;
+
+                                            .name {
+                                                display:        table-cell;
+                                            }
+                                            .value {
+                                                display:        table-cell;
+                                            }
+
+                                        }
+                                    }
+
+
+                                    .signaturesText {
+                                        margin-top:         5px;
+                                    }
+
+                                    .signatures {
+
+                                        display:            table;
+
+                                        .signature {
+
+                                            display:        table-row;
+
+                                            .signatureCheck {
+                                                display:        table-cell;
+                                            }
+
+                                            .signer {
+                                                display:        table-cell;
+                                            }
+
+                                        }
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                #updateAvailableScreen::-webkit-scrollbar {
+                    display:            none;
+                }
+
+
+                #chargingSessionScreen {
 
                     display:            none;
                     flex-direction:     column;
