@@ -315,8 +315,10 @@ interface IVersion {
 interface IVersionPackage {
     name:           string,
     description:    any,
+    additionalInfo: any,
     cryptoHashes:   ICryptoHashes,
-    signatures:     Array<IVersionSignature>
+    signatures:     Array<IVersionSignature>,
+    downloadURLs:   any
 }
 
 interface ICryptoHashes {

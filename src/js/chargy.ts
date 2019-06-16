@@ -26,32 +26,8 @@ import * as crypto from "crypto";
 import { readSync } from "fs";
 import { version } from "punycode";
 
-var map:     any = "";
-var leaflet: any = "";
-
-function calcSHA512Hash(filename:  string,
-                        OnSuccess: { (hash:         string): any; },
-                        OnFailed:  { (errorMessage: string): any; })
-{
-
-    const fs      = require('original-fs');
-    let   sha512  = require('electron').remote.
-                    require('crypto').createHash('sha512');
-    let   stream  = fs.createReadStream(filename);
-
-    stream.on('data', function(data: any) {
-        sha512.update(data)
-    })
-
-    stream.on('error', function() {
-        OnFailed("File not found!");
-    })
-
-    stream.on('end', function() {
-        OnSuccess(sha512.digest('hex'));
-    })
-
-}
+var map:     any        = "";
+var leaflet: any        = "";
 
 var exe_hash            = "";
 var app_asar_hash       = "";
@@ -69,16 +45,42 @@ var chargingSessions          = new Array<IChargingSession>();
 
 function OpenLink(url: string)
 {
-    require('electron').shell.openExternal(url);
+    if (url.startsWith("https://"))
+        require('electron').shell.openExternal(url);
 }
 
-function StartChargyApplication() {
+export function StartChargyApplication() {
 
-    var el      = require('elliptic');
-    let moment  = require('moment');
+    function calcSHA512Hash(filename:  string,
+                            OnSuccess: { (hash:         string): any; },
+                            OnFailed:  { (errorMessage: string): any; })
+    {
+
+        const fs      = require('original-fs');
+        let   sha512  = require('electron').remote.
+                        require('crypto').createHash('sha512');
+        let   stream  = fs.createReadStream(filename);
+
+        stream.on('data', function(data: any) {
+            sha512.update(data)
+        })
+
+        stream.on('error', function() {
+            OnFailed("File not found!");
+        })
+
+        stream.on('end', function() {
+            OnSuccess(sha512.digest('hex'));
+        })
+
+    }
+
+    var   el          = require('elliptic');
+    let   moment      = require('moment');
 
     // variable 'crypto' is already defined differently in Google Chrome!
-    const crypt = require('electron').remote.require('crypto');
+    const crypt       = require('electron').remote.require('crypto');
+    const appVersion  = require('electron').remote.app.getVersion().split('.');
 
     //#region Calculate application hash
 
@@ -134,92 +136,140 @@ function StartChargyApplication() {
                         for (let version of ChargyDesktopAppVersions.versions)
                         {
 
-                            let versionDiv = versionsDiv.appendChild(document.createElement('div'));
-                            versionDiv.className = "version";
+                            var versionElements = version.version.split('.');
 
-                            let headlineDiv = versionDiv.appendChild(document.createElement('div'));
-                            headlineDiv.className = "headline";
-
-                            let versionnumberDiv = headlineDiv.appendChild(document.createElement('div'));
-                            versionnumberDiv.className = "versionnumber";
-                            versionnumberDiv.innerHTML = "Version " + version.version;
-
-                            let releaseDateDiv = headlineDiv.appendChild(document.createElement('div'));
-                            releaseDateDiv.className = "releaseDate";
-                            releaseDateDiv.innerHTML = parseUTC(version.releaseDate).format("ll");
-
-                            let descriptionDiv = versionDiv.appendChild(document.createElement('div'));
-                            descriptionDiv.className = "description";
-                            descriptionDiv.innerHTML = version.description["de"];
-
-                            let tagsDiv = versionDiv.appendChild(document.createElement('div'));
-                            tagsDiv.className = "tags";
-
-                            for (let tag of version.tags)
-                            {
-                                let tagDiv = tagsDiv.appendChild(document.createElement('div'));
-                                tagDiv.className = "tag";
-                                tagDiv.innerHTML = tag;
-                            }
-
-                            let packagesDiv = versionDiv.appendChild(document.createElement('div'));
-                            packagesDiv.className = "packages";
-
-                            for (let versionpackage of version.packages)
+                            if (versionElements[0] >  appVersion[0] ||
+                               (versionElements[0] >= appVersion[0] && versionElements[1] >  appVersion[1]) ||
+                               (versionElements[0] >= appVersion[0] && versionElements[1] >= appVersion[1] && versionElements[2] > appVersion[2]))
                             {
 
-                                let packageDiv = packagesDiv.appendChild(document.createElement('div'));
-                                packageDiv.className = "package";
+                                updateAvailableButton.style.display = "block";
 
-                                let nameDiv = packageDiv.appendChild(document.createElement('div'));
-                                nameDiv.className = "name";
-                                nameDiv.innerHTML = versionpackage.name;
+                                let versionDiv = versionsDiv.appendChild(document.createElement('div'));
+                                versionDiv.className = "version";
 
-                                let descriptionDiv = packageDiv.appendChild(document.createElement('div'));
+                                let headlineDiv = versionDiv.appendChild(document.createElement('div'));
+                                headlineDiv.className = "headline";
+
+                                let versionnumberDiv = headlineDiv.appendChild(document.createElement('div'));
+                                versionnumberDiv.className = "versionnumber";
+                                versionnumberDiv.innerHTML = "Version " + version.version;
+
+                                let releaseDateDiv = headlineDiv.appendChild(document.createElement('div'));
+                                releaseDateDiv.className = "releaseDate";
+                                releaseDateDiv.innerHTML = parseUTC(version.releaseDate).format("ll");
+
+                                let descriptionDiv = versionDiv.appendChild(document.createElement('div'));
                                 descriptionDiv.className = "description";
-                                descriptionDiv.innerHTML = versionpackage.description["de"];
+                                descriptionDiv.innerHTML = version.description["de"];
 
+                                let tagsDiv = versionDiv.appendChild(document.createElement('div'));
+                                tagsDiv.className = "tags";
 
-                                let cryptoHashesDiv = packageDiv.appendChild(document.createElement('div'));
-                                cryptoHashesDiv.className = "cryptoHashes";
-
-                                for (let cryptoHash in versionpackage.cryptoHashes)
+                                for (let tag of version.tags)
                                 {
-
-                                    let cryptoHashDiv = cryptoHashesDiv.appendChild(document.createElement('div'));
-                                    cryptoHashDiv.className = "cryptoHash";
-
-                                    let cryptoHashNameDiv = cryptoHashDiv.appendChild(document.createElement('div'));
-                                    cryptoHashNameDiv.className = "name";
-                                    cryptoHashNameDiv.innerHTML = cryptoHash;
-
-                                    let cryptoHashValueDiv = cryptoHashDiv.appendChild(document.createElement('div'));
-                                    cryptoHashValueDiv.className = "value";
-                                    cryptoHashValueDiv.innerHTML = versionpackage.cryptoHashes[cryptoHash];
-
+                                    let tagDiv = tagsDiv.appendChild(document.createElement('div'));
+                                    tagDiv.className = "tag";
+                                    tagDiv.innerHTML = tag;
                                 }
 
+                                let packagesDiv = versionDiv.appendChild(document.createElement('div'));
+                                packagesDiv.className = "packages";
 
-                                let signaturesTextDiv = packageDiv.appendChild(document.createElement('div'));
-                                signaturesTextDiv.className = "signaturesText";
-                                signaturesTextDiv.innerHTML = "Die Authentizität diese Software wurden von folgenden Organisationen bestätigt...";
-
-                                let signaturesDiv = packageDiv.appendChild(document.createElement('div'));
-                                signaturesDiv.className = "signatures";
-
-                                for (let signature of versionpackage.signatures)
+                                for (let versionpackage of version.packages)
                                 {
 
-                                    let signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
-                                    signatureDiv.className = "signature";
+                                    let packageDiv = packagesDiv.appendChild(document.createElement('div'));
+                                    packageDiv.className = "package";
 
-                                    let signatureCheckDiv = signatureDiv.appendChild(document.createElement('div'));
-                                    signatureCheckDiv.className = "signatureCheck";
-                                    signatureCheckDiv.innerHTML = "ok";
+                                    let nameDiv = packageDiv.appendChild(document.createElement('div'));
+                                    nameDiv.className = "name";
+                                    nameDiv.innerHTML = versionpackage.name;
 
-                                    let authorDiv = signatureDiv.appendChild(document.createElement('div'));
-                                    authorDiv.className = "author";
-                                    authorDiv.innerHTML = signature.signer;
+                                    if (versionpackage.description &&
+                                        versionpackage.description["de"])
+                                    {
+                                        let descriptionDiv = packageDiv.appendChild(document.createElement('div'));
+                                        descriptionDiv.className = "description";
+                                        descriptionDiv.innerHTML = versionpackage.description["de"];
+                                    }
+
+                                    if (versionpackage.additionalInfo &&
+                                        versionpackage.additionalInfo["de"])
+                                    {
+                                        let additionalInfoDiv = packageDiv.appendChild(document.createElement('div'));
+                                        additionalInfoDiv.className = "additionalInfo";
+                                        additionalInfoDiv.innerHTML = versionpackage.additionalInfo["de"];
+                                    }
+
+
+                                    let cryptoHashesDiv = packageDiv.appendChild(document.createElement('div'));
+                                    cryptoHashesDiv.className = "cryptoHashes";
+
+                                    for (let cryptoHash in versionpackage.cryptoHashes)
+                                    {
+
+                                        let cryptoHashDiv = cryptoHashesDiv.appendChild(document.createElement('div'));
+                                        cryptoHashDiv.className = "cryptoHash";
+
+                                        let cryptoHashNameDiv = cryptoHashDiv.appendChild(document.createElement('div'));
+                                        cryptoHashNameDiv.className = "name";
+                                        cryptoHashNameDiv.innerHTML = cryptoHash;
+
+                                        let value = versionpackage.cryptoHashes[cryptoHash].replace(/\s+/g, '');
+
+                                        if (value.startsWith("0x"))
+                                            value = value.substring(2);
+
+                                        let cryptoHashValueDiv = cryptoHashDiv.appendChild(document.createElement('div'));
+                                        cryptoHashValueDiv.className = "value";
+                                        cryptoHashValueDiv.innerHTML = value.match(/.{1,8}/g).join(" ");
+
+                                    }
+
+
+                                    let signaturesTextDiv = packageDiv.appendChild(document.createElement('div'));
+                                    signaturesTextDiv.className = "signaturesText";
+                                    signaturesTextDiv.innerHTML = "Die Authentizität diese Software wurde durch folgende digitale Signaturen bestätigt";
+
+                                    let signaturesDiv = packageDiv.appendChild(document.createElement('div'));
+                                    signaturesDiv.className = "signatures";
+
+                                    for (let signature of versionpackage.signatures)
+                                    {
+
+                                        let signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
+                                        signatureDiv.className = "signature";
+
+                                        let signatureCheckDiv = signatureDiv.appendChild(document.createElement('div'));
+                                        signatureCheckDiv.className = "signatureCheck";
+                                        signatureCheckDiv.innerHTML = "<i class=\"fas fa-question-circle fa-question-circle-orange\"></i>";
+
+                                        let authorDiv = signatureDiv.appendChild(document.createElement('div'));
+                                        authorDiv.className = "signer";
+                                        authorDiv.innerHTML = signature.signer;
+
+                                    }
+
+
+                                    if (versionpackage.downloadURLs)
+                                    {
+
+                                        let downloadURLsTextDiv = packageDiv.appendChild(document.createElement('div'));
+                                        downloadURLsTextDiv.className = "downloadURLsText";
+                                        downloadURLsTextDiv.innerHTML = "Diese Software kann über folgende Weblinks runtergeladen werden";
+
+                                        let downloadURLsDiv = packageDiv.appendChild(document.createElement('div'));
+                                        downloadURLsDiv.className = "downloadURLs";
+
+                                        for (let downloadURLName in versionpackage.downloadURLs)
+                                        {
+                                            let downloadURLDiv = downloadURLsDiv.appendChild(document.createElement('div'));
+                                            downloadURLDiv.className = "downloadURL";
+                                            downloadURLDiv.innerHTML = "<a href=\"javascript:OpenLink('" + versionpackage.downloadURLs[downloadURLName] + "')\" title=\"" + versionpackage.downloadURLs[downloadURLName] + "\"><i class=\"fas fa-globe\"></i>" + downloadURLName + "</a>";
+                                        }
+
+                                    }
 
                                 }
 
@@ -2096,15 +2146,7 @@ function StartChargyApplication() {
     //#endregion
 
 
-    function showIssueTracker()
-    {
-
-        issueTracker.style.display = 'block';
-
-    }
-
-
-
+ 
     //#region Global error handling...
 
     function doGlobalError(text:      String,
@@ -2225,7 +2267,7 @@ function StartChargyApplication() {
         chargingSessionScreenDiv.style.display  = "none";
         backButtonDiv.style.display             = "block";
 
-        var versionsDiv = updateAvailableScreen.querySelector("#versions") as HTMLDivElement;
+      //  var versionsDiv = updateAvailableScreen.querySelector("#versions") as HTMLDivElement;
 
     }
 
@@ -2306,7 +2348,7 @@ function StartChargyApplication() {
     var issueTracker              = <HTMLDivElement>      document.getElementById('issueTracker');
     var showIssueTrackerButton    = <HTMLButtonElement>   document.getElementById('showIssueTracker');
     showIssueTrackerButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
-        showIssueTracker();
+        issueTracker.style.display = 'block';
     }
     var issueBackButton           = <HTMLButtonElement>   document.getElementById('issueBackButton');
     issueBackButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
