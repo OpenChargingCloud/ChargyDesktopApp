@@ -28,9 +28,10 @@
                         "de":               "Dies betrifft die Datei 'Chargy Transparenzsoftware Setup x.y.z.exe'.",
                         "en":               "In general this means the 'Chargy Transparenzsoftware Setup x.y.z.exe' file."
                     },
-                    "downloadURLs": [
-                        "https://www.example.com/Chargy%20Transparenzsoftware%20Setup%20x.y.z.exe"
-                    ],
+                    "downloadURLs": {
+                        "example.com":          "https://www.example.com/Chargy%20Transparenzsoftware%20Setup%20x.y.z.exe",
+                        "open.charging.clould": "https://open.charging.clould/Chargy%20Transparenzsoftware%20Setup%20x.y.z.exe"
+                    },
                     "cryptoHashes": {
                         "SHA256":           "0x0000000011111111222222223333333344444444",
                         "SHA512":           "0x9c676d38 3dfb28d1 dd7a96a9 01f22392 9650e444 1ff5da3e 01a5df25 e500b4ec ea29d05e 6ea13e3a e744b01a d19b631c 0a7f0a8f 925f8ad1 70163ca5 854b3086"
