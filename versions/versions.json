@@ -9,7 +9,6 @@
     "versions": [
 
         {
-
             "version":          "0.33.0",
             "releaseDate":      "2019-06-15T00:00:00Z",
             "description": {
@@ -25,12 +24,16 @@
                 {
                     "name":                 "Windows Installer",
                     "description": {
-                        "de":               "Dies betrifft die Datei 'Chargy Transparenzsoftware Setup x.y.z.exe'.",
-                        "en":               "In general this means the 'Chargy Transparenzsoftware Setup x.y.z.exe' file."
+                        "de":               "Der Windows Installer betrifft die Datei 'Chargy Transparenzsoftware Setup 0.33.0.exe'.",
+                        "en":               "The Windows Installer is the file 'Chargy Transparenzsoftware Setup 0.33.0.exe'."
                     },
+                    "additionalInfo": {
+                        "de":               "Sie können den Hashwert des Windows Installers durch folgendes Kommando verifizieren: 'certutil.exe -hashfile „Chargy Transparenzsoftware Setup 0.33.0.exe“ SHA512'",
+                        "en":               "You can verify the hash value of the Windows Installer via the following command: 'certutil.exe -hashfile „Chargy Transparenzsoftware Setup 0.33.0.exe“ SHA512'"
+                    },                    
                     "downloadURLs": {
                         "example.com":          "https://www.example.com/Chargy%20Transparenzsoftware%20Setup%20x.y.z.exe",
-                        "open.charging.clould": "https://open.charging.clould/Chargy%20Transparenzsoftware%20Setup%20x.y.z.exe"
+                        "open.charging.cloud":  "https://open.charging.clould/Chargy%20Transparenzsoftware%20Setup%20x.y.z.exe"
                     },
                     "cryptoHashes": {
                         "SHA256":           "0x0000000011111111222222223333333344444444",
@@ -81,6 +84,10 @@
                         "de":               "Dies betrifft die Dateien 'Chargy Transparenzsoftware.exe', '~\\resources\\app.asar' und '~\\resources\\electron.asar' im Verzeichnis '%AppData%\\..\\Local\\Programs\\chargytransparenzsoftware' von Microsoft Windows 10 und neuer.",
                         "en":               "In general this means the 'Chargy Transparenzsoftware.exe', the '~\\resources\\app.asar' and the '~\\resources\\electron.asar' files within the '%AppData%\\..\\Local\\Programs\\chargytransparenzsoftware' application directory on Microsoft Windows 10 and newer."
                     },
+                    "additionalInfo": {
+                        "de":               "Dies betrifft die Dateien 'Chargy Transparenzsoftware.exe', '~\\resources\\app.asar' und '~\\resources\\electron.asar' im Verzeichnis '%AppData%\\..\\Local\\Programs\\chargytransparenzsoftware' von Microsoft Windows 10 und neuer.",
+                        "en":               "In general this means the 'Chargy Transparenzsoftware.exe', the '~\\resources\\app.asar' and the '~\\resources\\electron.asar' files within the '%AppData%\\..\\Local\\Programs\\chargytransparenzsoftware' application directory on Microsoft Windows 10 and newer."
+                    },
                     "cryptoHashes": {
                         "SHA512":           "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                     },
@@ -120,10 +127,45 @@
                     ]
                 }
 
-            ]
+            ],
 
+            "signatures": [
+                {
+                    "signer":           "Open Charging Cloud by GraphDefined GmbH",
+                    "timestamp":        "2019-06-15T00:00:00Z",
+                    "comment": {
+                        "en":           "Greates version ever!"
+                    },
+                    "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
+                    "algorithm":        "secp192r1",
+                    "format":           "DER",
+                    "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
+                },
+                {
+                    "signer":           "chargeIT mobility GmbH",
+                    "timestamp":        "2019-06-15T00:00:00Z",
+                    "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
+                    "algorithm":        "secp192r1",
+                    "format":           "DER",
+                    "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
+                }
+            ]
         }
 
+    ],
+
+    "signatures": [
+        {
+            "signer":           "Open Charging Cloud by GraphDefined GmbH",
+            "timestamp":        "2019-06-15T00:00:00Z",
+            "comment": {
+                "en":           "Greates version ever!"
+            },
+            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
+            "algorithm":        "secp192r1",
+            "format":           "DER",
+            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
+        }
     ]
 
 }
