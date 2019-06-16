@@ -33,7 +33,7 @@ The Chargy Desktop project has a sister project called [Chargy Mobile](https://g
 
 ### System Requirements
 
-Using node.js 12.1.0 (includes npm 6.9.0) for Microsoft Windows: https://nodejs.org/en/download/current/    
+Using node.js 12.4.0 (includes npm 6.9.0) for Microsoft Windows: https://nodejs.org/en/download/current/    
 Or install nodejs on your Linux / Mac OS X system via
 ```
 sudo apt install git curl
@@ -44,17 +44,17 @@ sudo apt install -y nodejs
 Afterwards you can install the remaining software using the node packet manager
 ```
 $ sudo npm install -g electron@latest
-+ electron@5.0.2
-(If this fails try: sudo npm install -g electron --unsafe-perm=true --allow-root)
++ electron@5.0.4
+(If this fails on Linux try: sudo npm install -g electron --unsafe-perm=true --allow-root)
 
 $ sudo npm install -g electron-builder@latest
-+ electron-builder@20.41.0
++ electron-builder@20.43.0
 
 $ sudo npm install -g typescript@latest
-+ typescript@3.5.1
++ typescript@3.5.2
 
 $ sudo npm install -g sass@latest
-+ sass@1.20.3
++ sass@1.21.0
 ```
 
 
