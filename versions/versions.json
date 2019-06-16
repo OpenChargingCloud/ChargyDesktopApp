@@ -28,8 +28,8 @@
                         "en":               "The Windows Installer is the file 'Chargy Transparenzsoftware Setup 0.33.0.exe'."
                     },
                     "additionalInfo": {
-                        "de":               "Sie können den Hashwert des Windows Installers durch folgendes Kommando verifizieren: 'certutil.exe -hashfile „Chargy Transparenzsoftware Setup 0.33.0.exe“ SHA512'",
-                        "en":               "You can verify the hash value of the Windows Installer via the following command: 'certutil.exe -hashfile „Chargy Transparenzsoftware Setup 0.33.0.exe“ SHA512'"
+                        "de":               "Sie können den Hashwert des Windows Installers durch folgendes Kommando verifizieren:<br /><i>certutil.exe -hashfile „Chargy Transparenzsoftware Setup 0.33.0.exe“ SHA512</i>",
+                        "en":               "You can verify the hash value of the Windows Installer via the following command:<br /><i>certutil.exe -hashfile „Chargy Transparenzsoftware Setup 0.33.0.exe“ SHA512</i>"
                     },                    
                     "downloadURLs": {
                         "example.com":          "https://www.example.com/Chargy%20Transparenzsoftware%20Setup%20x.y.z.exe",
