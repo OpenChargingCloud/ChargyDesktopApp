@@ -82,6 +82,8 @@ export function StartChargyApplication() {
     const crypt       = require('electron').remote.require('crypto');
     const appVersion  = require('electron').remote.app.getVersion().split('.') as string[];
 
+    let currentCTR    = {} as IChargeTransparencyRecord;
+
     //#region Calculate application hash
 
     var path  = require('path');
@@ -494,6 +496,8 @@ export function StartChargyApplication() {
             var maxlat                    = -1000;
             var minlng                    = +1000;
             var maxlng                    = -1000;
+
+            currentCTR = {} as IChargeTransparencyRecord;
 
             //#region Prepare View
 
@@ -1102,6 +1106,8 @@ export function StartChargyApplication() {
             }
 
             //#endregion
+
+            currentCTR = CTR;
 
         }
 
@@ -2266,9 +2272,6 @@ export function StartChargyApplication() {
         aboutScreenDiv.style.display            = "none";
         chargingSessionScreenDiv.style.display  = "none";
         backButtonDiv.style.display             = "block";
-
-      //  var versionsDiv = updateAvailableScreen.querySelector("#versions") as HTMLDivElement;
-
     }
 
     var aboutButton               = <HTMLButtonElement>   document.getElementById('aboutButton');
@@ -2391,7 +2394,7 @@ export function StartChargyApplication() {
             data["description"]                = (newIssueForm.querySelector("#issueDescription")          as HTMLTextAreaElement).value;
 
             if ((newIssueForm.querySelector("#includeCTR") as HTMLSelectElement).value == "yes")
-                data["chargeTransparencyRecord"] = "lala";
+                data["chargeTransparencyRecord"] = currentCTR;
 
             data["name"]                       = (newIssueForm.querySelector("#issueName")                 as HTMLInputElement).value;
             data["phone"]                      = (newIssueForm.querySelector("#issuePhone")                as HTMLInputElement).value;
