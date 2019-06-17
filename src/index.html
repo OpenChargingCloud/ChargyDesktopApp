@@ -26,7 +26,7 @@
     <meta name="description" content="Transparenzsoftware für die Elektromobilität">
     <meta name="author"      content="achim.friedland@graphdefined.com">
     <meta name="viewport"    content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://updates.chargy.charging.cloud https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://chargeit.charging.cloud/chargy/ https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
 
     <!--<link rel="icon"       href="/favicon.png"                 type="image/png" />-->
     <link rel="stylesheet" href="css/fontawesome-all.min.css"            type="text/css" />
@@ -275,29 +275,90 @@
         <div id="issueTrackerText">
 
             <div id="headline">
-                Einen oder mehrere Mängel melden...
+                Sie wollen einen oder mehrere Mängel melden?
             </div>
 
-            <form id="newIssue">
+            <form id="newIssueForm">
 
                 <div class="label">Bitte wählen sie eine oder mehrere Kategorien...</div>
-                <input type="checkbox" name="category" value="invalidCTR"> Transparenzdatensatz konnte nicht geladen werden<br>
-                <input type="checkbox" name="category" value="invalidSignatures"> Signatur(en) im Transparenzdatensatz sind ungültig<br>
-                <input type="checkbox" name="category" value="InvalidStationData"> Falsche Daten zu einer Ladestation<br>
-                <input type="checkbox" name="category" value="InvalidStationData"> Fehler in der Transparenzsoftware<br>
-                <input type="checkbox" name="category" value="other"> Sonstiges Problem<br>
+                <input type="checkbox" id="invalidCTR"                value="invalidCTR"> Transparenzdatensatz konnte nicht geladen werden<br>
+                <input type="checkbox" id="InvalidStationData"        value="InvalidStationData"> Falsche Daten zu einer Ladestation<br>
+                <input type="checkbox" id="invalidSignatures"         value="invalidSignatures"> Signatur(en) im Transparenzdatensatz sind ungültig<br>
+                <input type="checkbox" id="invalidCertificates"       value="invalidCertificates"> Fehler bei der Überprüfung von digitalen Zertifikaten<br>
+                <input type="checkbox" id="transparencenySoftwareBug" value="transparencenySoftwareBug"> Allgemeiner Fehler in der Transparenzsoftware<br>
+                <input type="checkbox" id="DSGVO"                     value="DSGVO"> Anfrage nach der Datenschutzgrundverordnung (DSGVO)<br>
+                <input type="checkbox" id="BITV"                      value="BITV"> Anfrage bezüglich barrierefreier Informationstechnik (BITV 2.0, EU Direktive 2016/2102)<br>
 
-                <div class="label">Bitte beschreiben Sie die Fehler oder Probleme ein wenig genauer...</div>
-                <textarea id="description"></textarea>
+                <div class="label">Bitte beschreiben Sie die aufgetretenen Fehler oder Probleme ein wenig genauer...</div>
+                <textarea id="issueDescription"></textarea>
+
+                <!-- <input type="checkbox"> -->
+                Sollen die Daten Ihres Ladevorgangs zur einfacheren Klärung des Problems mit übermittelt werden? 
+                <select id="includeCTR">
+                    <option value="yes">ja</option>
+                    <option value="no" selected>nein</option>
+                </select>
 
                 <div class="label">Ihre Kontaktdaten, falls Rückfragen notwendig sein sollten...</div>
-                <input type="text" id="name"  placeholder="Ihr Name"><br /> 
-                <input type="text" id="phone" placeholder="Ihre Telefonnummer"><br /> 
-                <input type="text" id="email" placeholder="Ihre E-Mail Adresse"><br /> 
+                <input type="text" id="issueName"  placeholder="Ihr Name"><br /> 
+                <input type="text" id="issuePhone" placeholder="Ihre Telefonnummer"><br /> 
+                <input type="text" id="issueEMail" placeholder="Ihre E-Mail Adresse"><br /> 
+
+                <div id="privacyStatement">
+                    <h1>Datenschutzerklärung für diesen Mängelmelder</h1>
+                    <p>
+                        Wenn Sie unsere Mängelmelder nutzen, werden auf unserem Webserver temporär sogenannte Nutzungsdaten zu statistischen
+                        Zwecken und zur Fehleranalyse in Protokolldateien gespeichert. Persönliche Angaben, die Sie uns übermitteln, behandeln
+                        wir selbstverständlich vertraulich. Wir verwenden Ihre Daten ausschließlich zweckgebunden, um Ihre Anfrage zu bearbeiten.
+                        Rechtsgrundlage für die Datenverarbeitung ist Art. 6 Abs. 1 f) DSGVO. Das berechtigte Interesse seitens unseres
+                        Unternehmens ergibt sich hierbei aus dem Interesse, Anfragen unserer Kunden, Geschäftspartner und Interessenten zu
+                        beantworten und somit die Kundenzufriedenheit zu erhalten und zu fördern.
+                    </p>
+                    <p>
+                        Eine Weitergabe der Daten an Dritte außerhalb von der chargeIT mobility GmbH schließen wir grundsätzlich aus.
+                        Ausnahmsweise werden Daten in unserem Auftrag von Auftragsverarbeitern verarbeitet. Diese sind jeweils sorgfältig
+                        ausgesucht, werden von uns zudem auditiert und vertraglich nach Art. 28 DSGVO verpflichtet. Sollten Sie kein
+                        direkter Kunde von uns, sondern ein Roamingkunde sein, so zählen zu den Auftragsverarbeitern auch Roaminganbieter
+                        wie Hubject oder e-clearing.net und Ihr eigener E-Mobility Provider.
+                    </p>
+                    <p>
+                        Alle personenbezogenen Angaben, die Sie uns gegenüber bei Anfragen zukommen lassen, werden von uns spätestens 90
+                        Tage nach der erteilten finalen Rückantwort an Sie gelöscht, bzw. sicher anonymisiert. Die Aufbewahrung von 90
+                        Tagen erklärt sich aus dem Umstand, dass es vereinzelt vorkommen kann, dass Sie uns nach einer Antwort nochmals
+                        zu der gleichen Sache kontaktieren und wir dann auf die Vorkorrespondenz beziehen können müssen. Die Erfahrung hat
+                        gezeigt, dass in der Regel nach 90 Tagen Rückfragen zu unseren Antworten nicht mehr vorkommen.
+                    </p>
+                    <p>
+                        Sie haben das Recht, nach Art. 15 DSGVO auf Antrag unentgeltlich Auskunft über die bei uns zu Ihrer Person
+                        gespeicherten personenbezogenen Daten zu erhalten. Zusätzlich haben Sie bei Vorliegen der gesetzlichen
+                        Voraussetzungen ein Recht auf Berichtigung (Art. 16 DSGVO), Löschung (Art. 17 DSGVO) und Einschränkung der
+                        Verarbeitung (Art. 18 DSGVO) Ihrer personenbezogenen Daten. Wenden Sie sich bitte in den zuvor genannten
+                        Fällen, bei offenen Fragen oder im Falle von Beschwerden schriftlich oder per E-Mail an den Datenschutzbeauftragten.
+                        Zudem steht Ihnen ein Recht zur Beschwerde bei einer Datenschutz-Aufsichtsbehörde zu. Zuständig ist die
+                        Datenschutz-Aufsichtsbehörde des Bundeslandes, in dem Sie wohnen oder in dem der Verantwortliche seinen Sitz hat.
+                    </p>
+                    <p>
+                        Unser betrieblicher Datenschutzbeauftragter steht Ihnen gerne für Auskünfte oder Anregungen zum Thema Datenschutz zur Verfügung:<br />
+                        <br />
+                        Dr. iur. Christian Borchers<br />
+                        datenschutz süd GmbH<br />
+                        Wörthstrasse 15<br />
+                        97082 Würzburg<br />
+                        <a href="mailto:datenschutz@chargeit-mobility.com">datenschutz@chargeit-mobility.com</a>
+                        <br />
+                        Verantwortlicher i.S.d. Art. 4 Ziff. 7 DSGVO<br />
+                        <br />
+                        chargeIT mobility GmbH<br />
+                        Steigweg 24<br />
+                        97318 Kitzingen, Deutschland<br />
+                        Telefon: <a href="tel:+4993212680700">+49 (0) 9321 2680 700</a><br />
+                        <a href="mailto:info@chargeit-mobility.com">info@chargeit-mobility.com</a>
+                    </p>
+                </div>
 
                 <div id="sendIssueBox">
-                    <input type="checkbox" name="acceptsPrivacy"> Datenschutzerklärung akzeptiert?<br />
-                    <button id="sendIssue">Mängel melden</button>
+                    <input id="privacyStatementAccepted" type="checkbox" name="privacyStatementAccepted"><button id="showPrivacyStatement">Datenschutzerklärung</button> gelesen und akzeptiert?<br />
+                    <button id="sendIssueButton" disabled>Mängel melden</button>
                 </div>
 
             </form>

@@ -80,7 +80,7 @@ export function StartChargyApplication() {
 
     // variable 'crypto' is already defined differently in Google Chrome!
     const crypt       = require('electron').remote.require('crypto');
-    const appVersion  = require('electron').remote.app.getVersion().split('.');
+    const appVersion  = require('electron').remote.app.getVersion().split('.') as string[];
 
     //#region Calculate application hash
 
@@ -2348,7 +2348,95 @@ export function StartChargyApplication() {
     var issueTracker              = <HTMLDivElement>      document.getElementById('issueTracker');
     var showIssueTrackerButton    = <HTMLButtonElement>   document.getElementById('showIssueTracker');
     showIssueTrackerButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
-        issueTracker.style.display = 'block';
+        issueTracker.style.display     = 'block';
+        privacyStatement.style.display = "none";
+    }
+    var newIssueForm              = <HTMLFormElement>     document.getElementById('newIssueForm');
+    var issueTrackerText          = <HTMLDivElement>      document.getElementById('issueTrackerText');
+    var privacyStatement          = <HTMLDivElement>      document.getElementById('privacyStatement');
+    var showPrivacyStatement      = <HTMLButtonElement>   document.getElementById('showPrivacyStatement');
+    showPrivacyStatement.onclick = function(this: GlobalEventHandlers, ev: MouseEvent) {
+        ev.preventDefault();
+        privacyStatement.style.display = "block";
+        issueTrackerText.scrollTop = issueTrackerText.scrollHeight;
+    }
+    var privacyStatementAccepted  = <HTMLInputElement>    document.getElementById('privacyStatementAccepted');
+    privacyStatementAccepted.onchange = function(this: GlobalEventHandlers, ev: Event) {
+        sendIssueButton.disabled  = !privacyStatementAccepted.checked;
+    }
+    var sendIssueButton           = <HTMLButtonElement>   document.getElementById('sendIssueButton');
+    sendIssueButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
+
+        ev.preventDefault();
+
+        try
+        {
+
+            //#region Collect issue data...
+
+            var data = {};
+
+            data["timestamp"]                  = new Date().toISOString();
+            data["chargyVersion"]              = appVersion.join(".");
+            data["platform"]                   = process.platform;
+
+            data["invalidCTR"]                 = (newIssueForm.querySelector("#invalidCTR")                as HTMLInputElement).checked;
+            data["InvalidStationData"]         = (newIssueForm.querySelector("#InvalidStationData")        as HTMLInputElement).checked;
+            data["invalidSignatures"]          = (newIssueForm.querySelector("#invalidSignatures")         as HTMLInputElement).checked;
+            data["invalidCertificates"]        = (newIssueForm.querySelector("#invalidCertificates")       as HTMLInputElement).checked;
+            data["transparencenySoftwareBug"]  = (newIssueForm.querySelector("#transparencenySoftwareBug") as HTMLInputElement).checked;
+            data["DSGVO"]                      = (newIssueForm.querySelector("#DSGVO")                     as HTMLInputElement).checked;
+            data["BITV"]                       = (newIssueForm.querySelector("#BITV")                      as HTMLInputElement).checked;
+
+            data["description"]                = (newIssueForm.querySelector("#issueDescription")          as HTMLTextAreaElement).value;
+
+            if ((newIssueForm.querySelector("#includeCTR") as HTMLSelectElement).value == "yes")
+                data["chargeTransparencyRecord"] = "lala";
+
+            data["name"]                       = (newIssueForm.querySelector("#issueName")                 as HTMLInputElement).value;
+            data["phone"]                      = (newIssueForm.querySelector("#issuePhone")                as HTMLInputElement).value;
+            data["eMail"]                      = (newIssueForm.querySelector("#issueEMail")                as HTMLInputElement).value;
+
+            //#endregion
+
+            //#region Send issue to API
+
+            let sendIssue = new XMLHttpRequest();
+
+            sendIssue.open("ADD",
+                           "https://chargeit.charging.cloud/chargy/issues",
+                           true);
+            sendIssue.setRequestHeader('Content-type', 'application/json');
+        
+            sendIssue.onreadystatechange = function () {
+        
+                // 0 UNSENT | 1 OPENED | 2 HEADERS_RECEIVED | 3 LOADING | 4 DONE
+                if (this.readyState == 4) {
+
+                    if (this.status == 201) { // HTTP 201 - Created
+                        issueTracker.style.display     = 'none';
+                        // Show thank you for your issue
+                    }
+
+                    else
+                    {
+                        alert("Leider ist ein Fehler bei der Datenübertragung aufgetreten.<br />Bitte probieren Sie es erneut...");
+                    }
+
+                }
+
+            }
+
+            sendIssue.send(JSON.stringify(data));
+
+            //#endregion
+
+        }
+        catch (exception)
+        { 
+            // Just do nothing!
+        }
+
     }
     var issueBackButton           = <HTMLButtonElement>   document.getElementById('issueBackButton');
     issueBackButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
