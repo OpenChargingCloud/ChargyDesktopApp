@@ -989,12 +989,13 @@ body {
                     color:              #34668a;
 
                     i {
-                        width:              20px;
+                        width:              22px;
                     }
 
                     a {
                         text-decoration:    none;
                         color:            #34668a;
+                        margin-bottom:      3px;
                     }
 
                     button {
@@ -1005,6 +1006,7 @@ body {
                         color:            #34668a;
                         border:             0;
                         text-align:         left;
+                        margin-bottom:      3px;
                     }
 
                     button:hover, a:hover {
@@ -1023,13 +1025,6 @@ body {
                             position:           relative;
                             top:                2px;
                             left:               -2px;
-                        }
-                    }
-
-                    #github {
-                        i {
-                            position:           relative;
-                            left:               1px;
                         }
                     }
 
@@ -1238,45 +1233,51 @@ body {
             overflow-y:             scroll;
             z-index:                9000;
 
+            #headline {
+                padding:                8px 8px 0px 8px;
+            }
+
             form {
 
-                padding:            20px;
+                padding:            5px 20px 20px 20px;
 
                 .label {
-                    margin:             15px 0px 4px 0px;
+                    margin:             15px 0px 5px 0px;
                 }
 
                 input[type="checkbox"] {
                     transform:          scale(1.2);
                     position:           relative;
                     top:                2px;
+                    margin:             3px 3px 3px 10px;
                 }
 
                 #includeCTR {
                     border-radius:      4px;
+                    margin:             0px 0px 3px 10px;
                 }
 
                 textarea {
-                    width:              100%;
+                    width:              calc(100% - 10px);
                     min-height:         20vh;
                     resize:             vertical;
                     border:             0;
                     border-radius:      4px;
-                    margin-bottom:      5px;
+                    margin:             0px 0px 3px 10px;
                 }
 
                 input[type="text"] {
-                    padding:            2px 3px;
+                    padding:            3px 5px;
                     border:             0;
                     border-radius:      3px;
-                    margin-bottom:      3px;
+                    margin:             0px 0px 3px 10px;
                 }
 
                 #privacyStatement {
 
                     display:            none;
                     width:              100%;
-                    height:             20vh;
+                    height:             23vh;
                     font-size:          80%;
                     margin-top:         20px;
                     overflow-y:         scroll;
@@ -1342,9 +1343,9 @@ body {
 
             #issueBackButtonDiv {
 
-                position:       fixed;
-                left:           6%;
-                bottom:         10%;
+                // position:       fixed;
+                // left:           6%;
+                // bottom:         10%;
 
                 #issueBackButton {
                     border:             0;

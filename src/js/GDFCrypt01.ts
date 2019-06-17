@@ -340,7 +340,7 @@ class GDFCrypt01 extends ACrypt {
                                                                        "s: " + result.signature!.s!.toLowerCase().match(/.{1,8}/g)!.join(" ");
 
         else if (result.signature!.value)
-            signatureExpectedValue.innerHTML                        = result.signature!.value!.toLowerCase().match(/.{1,8}/g)!.join(" ");
+            signatureExpectedValue.innerHTML                         = result.signature!.value!.toLowerCase().match(/.{1,8}/g)!.join(" ");
 
 
         // Result

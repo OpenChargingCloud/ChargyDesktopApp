@@ -2343,16 +2343,14 @@ export function StartChargyApplication() {
     var aboutScreenDiv            = <HTMLDivElement>      document.getElementById('aboutScreen');
     var chargySHA512Div           = <HTMLDivElement>      document.getElementById('chargySHA512');
     var chargingSessionScreenDiv  = <HTMLDivElement>      document.getElementById('chargingSessionScreen');
-    var rightbar                  = <HTMLDivElement>      document.getElementById('rightbar');
     var evseTarifInfosDiv         = <HTMLDivElement>      document.getElementById('evseTarifInfos');
-
-    var feedbackDiv               = <HTMLDivElement>      document.getElementById('feedback');
 
     var issueTracker              = <HTMLDivElement>      document.getElementById('issueTracker');
     var showIssueTrackerButton    = <HTMLButtonElement>   document.getElementById('showIssueTracker');
     showIssueTrackerButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
         issueTracker.style.display     = 'block';
         privacyStatement.style.display = "none";
+        issueTrackerText.scrollTop = 0;
     }
     var newIssueForm              = <HTMLFormElement>     document.getElementById('newIssueForm');
     var issueTrackerText          = <HTMLDivElement>      document.getElementById('issueTrackerText');
