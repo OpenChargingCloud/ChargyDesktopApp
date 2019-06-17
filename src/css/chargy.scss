@@ -24,9 +24,7 @@ body {
     width:              100vw;
     height:             100vh;
     margin:             auto;
-    //margin-top:         10vh;
     background-color:   #87cafa;
-    //border-radius:      8px;
     display:            flex;
     flex-direction:     column;
 
@@ -72,6 +70,10 @@ body {
             #updateAvailableButton {
                 display:            none;
                 color:              #ac3b3b;
+            }
+
+            #updateAvailableButton:hover {
+                color:              #ce5b5b;
             }
 
         }
