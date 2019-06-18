@@ -1,13 +1,8 @@
 # Rebuilding the Chargy Desktop App
 
 ```
-$ npm install electron-builder -g --save-dev
-+ electron-builder@20.39.0
-```
-
-# Build the app
-```
-electron-builder
+$ npm install @types/node --save-dev
++ @types/node@12.0.8
 ```
 
 # Verify the SHA512 hash value
