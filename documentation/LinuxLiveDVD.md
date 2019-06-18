@@ -2,7 +2,7 @@
 
 This documentation is based on the following HowTo ["How to customize the Ubuntu Live CD?"](https://askubuntu.com/questions/48535/how-to-customize-the-ubuntu-live-cd#) and the documentation of the [TRuDI Live CD](https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master), which is a similar project of the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) for the transparency of smart meters, but was updated to support newer versions of Ubuntu Linux.
 
-![](documentation/Screenshot_VirtualBox01.png)
+![](Screenshot_VirtualBox01.png)
 
 ### Preparing the Linux Live ISO Image
 
@@ -76,10 +76,11 @@ echo "yes" >> /etc/skel/.config/gnome-initial-setup-done
 ### Install Chargy Transparency Software
 ```
 apt install -y /opt/chargytransparenzsoftware_1.0.0_amd64.deb
-sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/chargy_icon.png/g' /usr/share/applications/chargytransparenzsoftware.desktop 
+
+# If the Chargy application icon is broken, try the following work-around
+sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\/build\/chargy_icon.png/g' /usr/share/applications/chargytransparenzsoftware.desktop 
 
 mkdir /etc/skel/Desktop
-cp /opt/Chargy\ Transparenzsoftware/build/chargy_icon.png /opt
 cp /opt/Chargy\ Transparenzsoftware/documentation/chargeIT-Testdatensatz-01.json /etc/skel/Desktop/
 cp /opt/Chargy\ Transparenzsoftware/documentation/chargy-Nutzerhandbuch.pdf /etc/skel/Desktop/
 

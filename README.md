@@ -99,6 +99,6 @@ sudo apt install ./chargytransparenzsoftware_X.Y.Z_amd64.deb
 ```
 
 
-### Building a Linux Live ISO Image
+### Building a Linux Live DVD / ISO Image
 
-For special users like the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) Chargy is also available as a Linux Live CD/DVD. The creation of the ISO image is described in the following document [linux-live-image](https://github.com/OpenChargingCloud/ChargyDesktopApp/blob/master/linux-live-image.md).
+For special users like the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) Chargy is also available as a Linux Live CD/DVD. The creation of the ISO image is described in the following document [Linux Live DVD](https://github.com/OpenChargingCloud/ChargyDesktopApp/blob/master/documentation/LinuxLiveDVD.md).
