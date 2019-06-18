@@ -87,6 +87,8 @@ mkdir /etc/skel/.config/autostart
 cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/.config/autostart/
 
 echo -e "[org.gnome.shell]\nfavorite-apps=[ 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'yelp.desktop', 'org.gnome.Terminal.desktop', 'firefox.desktop', 'chargytransparenzsoftware.desktop' ]" > /usr/share/glib-2.0/schemas/90_gnome-shell.gschema.override
+
+echo -e "[org.gnome.software]\nallow-updates false\ndownload-updates false\ndownload-updates-notify false\n" > /usr/share/glib-2.0/schemas/91_gnome-software.gschema.override
 ```
 
 ### Optional PTB-Security Settings
