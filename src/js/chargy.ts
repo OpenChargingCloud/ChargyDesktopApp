@@ -21,10 +21,10 @@
 ///<reference path="GDFCrypt01.ts" />
 ///<reference path="EMHCrypt01.ts" />
 
-import { debug } from "util";
-import * as crypto from "crypto";
-import { readSync } from "fs";
-import { version } from "punycode";
+// import { debug } from "util";
+// import * as crypto from "crypto";
+// import { readSync } from "fs";
+// import { version } from "punycode";
 
 var map:     any        = "";
 var leaflet: any        = "";

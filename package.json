@@ -26,18 +26,21 @@
   "license": "AGPL-3.0-or-later",
   "homepage": "https://github.com/OpenChargingCloud/ChargyDesktopApp",
   "dependencies": {
-    "@types/chart.js": "^2.7.52",
-    "@types/elliptic": "^6.4.6",
+    "@types/chart.js": "^2.7.54",
+    "@types/elliptic": "^6.4.9",
     "@types/leaflet": "^1.4.4",
     "chart.js": "^2.8.0",
     "elliptic": "^6.4.1",
-    "leaflet": "^1.4.0",
+    "leaflet": "^1.5.1",
     "leaflet.awesome-markers": "^2.0.5",
     "moment": "^2.24.0"
   },
   "devDependencies": {
-    "electron": "^5.0.0",
-    "electron-builder": "^20.39.0"
+    "@types/node": "^12.0.8",
+    "electron": "^5.0.4",
+    "electron-builder": "^20.43.0",
+    "sass": "^1.21.0",
+    "typescript": "^3.5.2"
   },
   "build": {
     "appId": "cloud.charging.open.chargy.desktop",
