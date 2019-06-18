@@ -2421,7 +2421,7 @@ export function StartChargyApplication() {
 
                     else
                     {
-                        alert("Leider ist ein Fehler bei der Datenübertragung aufgetreten.<br />Bitte probieren Sie es erneut...");
+                        alert("Leider ist ein Fehler bei der Datenübertragung aufgetreten. Bitte probieren Sie es erneut...");
                     }
 
                 }
