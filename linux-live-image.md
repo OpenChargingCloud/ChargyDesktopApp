@@ -76,10 +76,11 @@ echo "yes" >> /etc/skel/.config/gnome-initial-setup-done
 ### Install Chargy Transparency Software
 ```
 apt install -y /opt/chargytransparenzsoftware_1.0.0_amd64.deb
-sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/chargy_icon.png/g' /usr/share/applications/chargytransparenzsoftware.desktop 
+
+# If the Chargy application icon is broken, try the following work-around
+sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\/build\/chargy_icon.png/g' /usr/share/applications/chargytransparenzsoftware.desktop 
 
 mkdir /etc/skel/Desktop
-cp /opt/Chargy\ Transparenzsoftware/build/chargy_icon.png /opt
 cp /opt/Chargy\ Transparenzsoftware/documentation/chargeIT-Testdatensatz-01.json /etc/skel/Desktop/
 cp /opt/Chargy\ Transparenzsoftware/documentation/chargy-Nutzerhandbuch.pdf /etc/skel/Desktop/
 
