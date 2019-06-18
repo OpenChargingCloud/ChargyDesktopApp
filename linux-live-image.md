@@ -89,7 +89,7 @@ cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/.config/a
 echo -e "[org.gnome.shell]\nfavorite-apps=[ 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'yelp.desktop', 'org.gnome.Terminal.desktop', 'firefox.desktop', 'chargytransparenzsoftware.desktop' ]" > /usr/share/glib-2.0/schemas/90_gnome-shell.gschema.override
 ```
 
-### Optional PTB-Security Settings
+### Optional PTB Security Settings
 
 The PTB (Paternalistische Technische Bundesanstalt) demands that the logged-in Linux user is not able to install and run malicious software. The following settings should limit the risks.    
 *Disclaimer: We do not recommend these changes!*
