@@ -87,8 +87,6 @@ mkdir /etc/skel/.config/autostart
 cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/.config/autostart/
 
 echo -e "[org.gnome.shell]\nfavorite-apps=[ 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'yelp.desktop', 'org.gnome.Terminal.desktop', 'firefox.desktop', 'chargytransparenzsoftware.desktop' ]" > /usr/share/glib-2.0/schemas/90_gnome-shell.gschema.override
-
-echo -e "[org.gnome.software]\nallow-updates false\ndownload-updates false\ndownload-updates-notify false" > /usr/share/glib-2.0/schemas/91_gnome-software.gschema.override
 ```
 
 ### Optional PTB-Security Settings
@@ -96,6 +94,8 @@ echo -e "[org.gnome.software]\nallow-updates false\ndownload-updates false\ndown
 The PTB (Paternalistische Technische Bundesanstalt) demands that the logged-in Linux user is not able to install and run malicious software. The following settings should limit the risks.    
 *Disclaimer: We do not recommend these changes!*
 ```
+echo -e "[org.gnome.software]\nallow-updates false\ndownload-updates false\ndownload-updates-notify false" > /usr/share/glib-2.0/schemas/91_gnome-software.gschema.override
+
 adduser --disabled-password --gecos "" chargy
 sed -i 's/#  AutomaticLogin = user1/AutomaticLogin = chargy/g' /etc/gdm3/custom.conf
 ```
