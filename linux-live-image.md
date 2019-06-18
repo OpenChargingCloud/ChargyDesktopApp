@@ -41,8 +41,7 @@ sudo cp /etc/resolv.conf new/etc/
 sudo mount -t proc -o bind /proc new/proc
 sudo mount -o bind /dev/pts new/dev/pts
 
-sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_0.29.0_amd64.deb new/opt/
-sudo cp ../ChargyDesktopApp/build/chargy_icon.png new/opt/
+sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_1.0.0_amd64.deb new/opt/
 ```
 
 ### Change root into the new Linux system and update all software packages
@@ -76,12 +75,13 @@ echo "yes" >> /etc/skel/.config/gnome-initial-setup-done
 
 ### Install Chargy Transparency Software
 ```
-apt install -y /opt/chargytransparenzsoftware_0.29.0_amd64.deb
+apt install -y /opt/chargytransparenzsoftware_1.0.0_amd64.deb
 sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/chargy_icon.png/g' /usr/share/applications/chargytransparenzsoftware.desktop 
 
 mkdir /etc/skel/Desktop
-cp /opt/chargeIT-ChargingSession03.json /etc/skel/Desktop/
-cp /opt/chargy-Nutzerhandbuch.pdf /etc/skel/Desktop/
+cp /opt/Chargy\ Transparenzsoftware/build/chargy_icon.png /opt
+cp /opt/Chargy\ Transparenzsoftware/documentation/chargeIT-ChargingSessions-03.json /etc/skel/Desktop/
+cp /opt/Chargy\ Transparenzsoftware/documentation/chargy-Nutzerhandbuch.pdf /etc/skel/Desktop/
 
 mkdir /etc/skel/.config/autostart
 cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/.config/autostart/
