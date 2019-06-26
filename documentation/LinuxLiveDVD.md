@@ -152,6 +152,13 @@ sudo umount new
 
 # This is optional. While debugging better skip this step...
 rmdir new
+
+# If you are still debugging and need to start over just use the following commands...
+sudo mount -o loop ubuntu-fs.ext2 new
+sudo cp /etc/resolv.conf new/etc/
+sudo mount -t proc -o bind /proc new/proc
+sudo mount -o bind /dev/pts new/dev/pts
+sudo chroot new /bin/bash
 ```
 
 ### Create ISO image
