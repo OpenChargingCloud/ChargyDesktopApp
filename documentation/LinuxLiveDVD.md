@@ -102,6 +102,7 @@ echo -e "[org.gnome.software]\nallow-updates=false\ndownload-updates=false\ndown
 echo -e "[org.gnome.desktop.media-handling]\nautorun-never=true" > /usr/share/glib-2.0/schemas/92_gnome-desktop-media-handling.gschema.override
 
 adduser --disabled-password --gecos "" chargy
+sed -i 's/#  AutomaticLoginEnable = true/AutomaticLoginEnable = true/g' /etc/gdm3/custom.conf
 sed -i 's/#  AutomaticLogin = user1/AutomaticLogin = chargy/g' /etc/gdm3/custom.conf
 ```
 
