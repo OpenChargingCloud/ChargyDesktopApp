@@ -105,6 +105,10 @@ echo -e "[org.gnome.desktop.media-handling]\nautorun-never=true" > /usr/share/gl
 adduser --disabled-password --gecos "" chargy
 sed -i 's/#  AutomaticLoginEnable = true/AutomaticLoginEnable = true/g' /etc/gdm3/custom.conf
 sed -i 's/#  AutomaticLogin = user1/AutomaticLogin = chargy/g' /etc/gdm3/custom.conf
+
+echo -e "Section \"ServerFlags\"\n    Option \"DontVTSwitch\" \"true\"\nEndSection" > /etc/X11/xorg.conf
+sed -i 's/#NAutoVTs=6/NAutoVTs=0/g' /etc/systemd/logind.conf
+sed -i 's/#ReserveVT=6/ReserveVT=0/g' /etc/systemd/logind.conf
 ```
 
 ### Remove legacy applications
