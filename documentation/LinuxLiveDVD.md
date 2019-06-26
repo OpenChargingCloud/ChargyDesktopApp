@@ -45,7 +45,7 @@ sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_1.0.0_amd64.deb new/o
 ```
 
 ### Change root into the new Linux system and update all software packages
-
+All updates are on your own risk of breaking the remaing procedures of this how-to.
 ```
 sudo chroot new /bin/bash 
 apt update
@@ -59,6 +59,7 @@ apt install -y joe mc
 ```
 
 ### Change system settings
+Currently the "Eichrecht" is just a very German way to e-mobility. Therefore set the system language to German.
 ```
 echo "Europe/Berlin" > /etc/timezone
 rm -f /etc/localtime
@@ -74,6 +75,7 @@ echo "yes" >> /etc/skel/.config/gnome-initial-setup-done
 ```
 
 ### Install Chargy Transparency Software
+Install Chargy and make it easily accessible from the Desktop and via AutoStart.
 ```
 apt install -y /opt/chargytransparenzsoftware_1.0.0_amd64.deb
 
@@ -91,7 +93,6 @@ echo -e "[org.gnome.shell]\nfavorite-apps=[ 'org.gnome.Nautilus.desktop', 'org.g
 ```
 
 ### Optional PTB Security Settings
-
 The PTB (Paternalistische Technische Bundesanstalt) demands that the logged-in Linux user is not able to install and run malicious software. The following settings should limit the risks.    
 *Disclaimer: We do not recommend these changes!*
 ```
@@ -107,6 +108,7 @@ sed -i 's/#  AutomaticLogin = user1/AutomaticLogin = chargy/g' /etc/gdm3/custom.
 ```
 
 ### Remove legacy applications
+The following applications are not required for runnung Chargy and therefore can safely be removed.
 ```
 apt purge -y libreoffice-common thunderbird aisleriot gnome-mahjongg gnome-mines gnome-sudoku libgnome-games-support-common
 apt purge -y ubuntu-web-launchers gdb gdbserver gparted simple-scan sane-utils bolt bluez bluez-cups bluez-obexd transmission-common deja-dup cheese remmina remmina-common totem totem-common rhythmbox rhythmbox-data shotwell shotwell-common gnome-todo gnome-todo-common libgnome-todo
@@ -117,6 +119,7 @@ apt purge -y ubiquity ubiquity-casper ubiquity-slideshow-ubuntu ubiquity-ubuntu-
 ```
 
 ### Do not do this!
+Some Ubuntu Linux dependencies are broken now and any automatic removal would very likely make your system unusable!
 ```
 apt autoremove
 ```
@@ -146,6 +149,8 @@ cd new
 sudo mksquashfs . ../ubuntu-livecd/casper/filesystem.squashfs -comp xz
 cd ..
 sudo umount new
+
+# This is optional. While debugging better skip this step...
 rmdir new
 ```
 
