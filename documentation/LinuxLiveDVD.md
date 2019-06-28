@@ -156,16 +156,6 @@ sudo umount new
 rmdir new
 ```
 
-### If you are still debugging and need to change some more files
-```
-mkdir new
-sudo mount -o loop ubuntu-fs.ext2 new
-sudo cp /etc/resolv.conf new/etc/
-sudo mount -t proc -o bind /proc new/proc
-sudo mount -o bind /dev/pts new/dev/pts
-sudo chroot new /bin/bash
-```
-
 ### Create ISO image
 ```
 sudo genisoimage \
@@ -183,16 +173,12 @@ sudo genisoimage \
     ubuntu-livecd
 ```
 
-OLD TRuDI HowTo... do not use!!!
-
-## Hinweise für die Erstellung eines Live-USB Mediums
-
-Damit das ISO-Image immer von der USB starten kann, erzeugen Sie ein _Hybrid_-Image daraus:
-
+### If you are still debugging and need to change some more files
 ```
-sudo apt install syslinux-utils
-sudo isohybrid --uefi --verbose live.iso
+mkdir new
+sudo mount -o loop ubuntu-fs.ext2 new
+sudo cp /etc/resolv.conf new/etc/
+sudo mount -t proc -o bind /proc new/proc
+sudo mount -o bind /dev/pts new/dev/pts
+sudo chroot new /bin/bash
 ```
-
-Danach wird empfohlen, das Hybrid-Image auf das USB-Medium zu __klonen__. Dafür können Sie das Programm _mkusb_ direkt von ihrem Ubuntu Host-Rechner benutzen.
-Sie können zwar Programme wie das _Unetbootin_ verwenden, um das Image auf das USB-Medium zu übertragen. Das _Unetbootin_ benötigt sogar das Hybrid-Image nicht, sondern Sie können ein normales ISO-Image auf das USB-Medium damit übertragen. Nachteil von diesen Programmen ist, dass Sie meistens einen eigenen Bootloader anlegen, und damit nicht weiter sichergestellt ist was in dem Absatz: **_Bootvorgang und Laden der rechtlich relevanten Software_** _(PTB-8.51-MB08-BSLM-DE-V01)_ gefordert wird.
