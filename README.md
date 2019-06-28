@@ -15,6 +15,13 @@ Chargy is a transparency software for secure and transparent e-mobility charging
 7. Chargy is __*accessible*__. For public sector bodies Chargy fully supports the [EU directive 2016/2102](https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32016L2102) on the accessibility of websites and mobile applications and provides a context-sensitive feedback-mechanism and methods for dispute resolution.
 
 
+## Versions and Milestones
+
+The current version of the Chargy Transparency Software is 1.0.x. This version is *feature complete* and currently under review by the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) and other regulators. If you are a charge point vendor and want to use this software to verify your compliance to the German Eichrecht you can talk to your partner [chargeIT mobility](https://www.chargeit-mobility.com) and obtain the required legal documents. If you need help with the Chargy software, talk to us.
+
+The development of version 1.1.x already started and will focus on a better seperation of core software and the chargeIT edition (white labeling), better security concepts and more digital certificates.
+
+
 ## Compiling from source
 
 This application is based on [Electron](https://github.com/electron-userland/electron-forge/tree/5.x), a cross platform Open Source framework for creating native applications with web technologies like Java-/TypeScript, HTML, and (S)CSS.    
@@ -71,6 +78,9 @@ Now you can test the software via...
 ```
 ./run.sh
 ```
+
+**Please be aware**, that Electron comes with its own internal version of Node.js. This version is currently still 12.0.0. Therefore Chargy will also show "12.0.0" and not the version number of the Node.js installation on your computer, e.g. "12.4.0". It is possible to rebuild the internal Node.js version, but we do not recommend this.
+
 
 ### Building a Windows Installer
 
