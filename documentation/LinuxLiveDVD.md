@@ -153,11 +153,10 @@ cd new
 sudo mksquashfs . ../ubuntu-livecd/casper/filesystem.squashfs -comp xz
 cd ..
 sudo umount new
-
-# This is optional. While debugging better skip this step...
 rmdir new
 
 # If you are still debugging and need to start over just use the following commands...
+mkdir new
 sudo mount -o loop ubuntu-fs.ext2 new
 sudo cp /etc/resolv.conf new/etc/
 sudo mount -t proc -o bind /proc new/proc
