@@ -55,7 +55,7 @@
       {
         "ext": "chargy",
         "description": "Charge Transparency File",
-        "mimeType": "application/chargy",
+        "mimeType": "application/x-chargy",
         "role": "Viewer"
       }
     ],
