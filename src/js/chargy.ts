@@ -81,6 +81,7 @@ export function StartChargyApplication() {
     // variable 'crypto' is already defined differently in Google Chrome!
     const crypt       = require('electron').remote.require('crypto');
     const appVersion  = require('electron').remote.app.getVersion().split('.') as string[];
+    const ipcRenderer = require('electron').ipcRenderer;
 
     let currentCTR    = {} as IChargeTransparencyRecord;
 
@@ -2235,8 +2236,12 @@ export function StartChargyApplication() {
         fileInput.value = '';
         fileInput.click();
     }
-    //@ts-ignore
-    fileInput.onchange            = readFileFromDisk;
+    //@ts-ignokjre
+    fileInput.onchange            = function (this: GlobalEventHandlers, ev: Event) {
+        var files = ev!.target!["files"];
+        if (files != null)
+            readAndParseFile(files[0]);
+    }
 
     var pasteButton               = <HTMLButtonElement>   document.getElementById('pasteButton');
     pasteButton.onclick           = PasteFile;
@@ -2395,14 +2400,6 @@ export function StartChargyApplication() {
     //#endregion
 
 
-    //#region Process loaded CTR file...
-
-    function readFileFromDisk(event: { target: { files: File[]; }; }) {
-        readAndParseFile(event.target.files[0]);
-    }
-
-    //#endregion
-
     //#region Process dropped CTR file...
 
     function handleDroppedFile(event: DragEvent) {
@@ -2481,14 +2478,8 @@ export function StartChargyApplication() {
 
     //#region Process .chargy file extentions/associations opened via this app
     
-    // Note: This is synchronous. Therefore must be at the end of this file...
-
-    var cliArguments = require('electron').remote.process.argv;
-    if (cliArguments.length >= 2)
-    {
-
-        var filename = cliArguments[1];
-        if (filename != null && filename[0] != '-')
+    function readFileFromDisk(filename: string): void {
+        if (filename != null && filename.trim() != "" && filename != "." && filename[0] != '-')
         {
             try
             {
@@ -2499,38 +2490,23 @@ export function StartChargyApplication() {
                 doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
             }
         }
-
     }
 
-    const { ipcRenderer } = require('electron');
-    var filename = ipcRenderer.sendSync('get-chargy-filename');
 
-//    require('electron').remote.app.on('open-chargy-file', (filename:string) => {
-    if (filename != null) {
-            try
-            {
-                let content = require('original-fs').readFileSync(filename.replace("file://", ""), 'utf-8');
-                detectContentFormat(JSON.parse(content));
-            }
-            catch (exception) {
-                doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-            }
+    // Note: The following is synchronous, therefore must be at the end of the file...
 
-}
+    // Windows and Linux
+    var cliArguments = require('electron').remote.process.argv;
+    if (cliArguments.length >= 2)
+        readFileFromDisk(cliArguments[1]);
 
+    // Mac OS X - first file to open
+    readFileFromDisk(ipcRenderer.sendSync('get-chargy-filename'));
+
+    // Mac OS X - when app is running
     ipcRenderer.on('send-chargy-filename', (event:any, filename:string) => {
-        if (filename != null) {
-            try
-            {
-                let content = require('original-fs').readFileSync(filename.replace("file://", ""), 'utf-8');
-                detectContentFormat(JSON.parse(content));
-            }
-            catch (exception) {
-                doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-            }
-        }
+        readFileFromDisk(filename);
     });
-
 
     //#endregion
 

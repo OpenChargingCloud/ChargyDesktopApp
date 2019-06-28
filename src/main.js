@@ -60,11 +60,10 @@ app.on('activate', function () {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 
-var filename = "xxx";
+// IPC communication for Mac OS X
+var filename = "";
 app.on('open-file', (event, path) => {
     event.preventDefault();
-    console.log(path);
-    //app.emit('open-chargy-file', path);
     filename = path;
     if (mainWindow != null)
         mainWindow.webContents.send('send-chargy-filename', path);
