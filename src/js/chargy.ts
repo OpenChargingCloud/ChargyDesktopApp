@@ -2488,7 +2488,7 @@ export function StartChargyApplication() {
     {
 
         var filename = cliArguments[1];
-        if (filename != null)
+        if (filename != null && filename[0] != '-')
         {
             try
             {
@@ -2502,6 +2502,40 @@ export function StartChargyApplication() {
 
     }
 
+    const { ipcRenderer } = require('electron');
+    var filename = ipcRenderer.sendSync('get-chargy-filename');
+
+//    require('electron').remote.app.on('open-chargy-file', (filename:string) => {
+    if (filename != null) {
+            try
+            {
+                let content = require('original-fs').readFileSync(filename.replace("file://", ""), 'utf-8');
+                detectContentFormat(JSON.parse(content));
+            }
+            catch (exception) {
+                doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+            }
+
+}
+
+    ipcRenderer.on('send-chargy-filename', (event:any, filename:string) => {
+        if (filename != null) {
+            try
+            {
+                let content = require('original-fs').readFileSync(filename.replace("file://", ""), 'utf-8');
+                detectContentFormat(JSON.parse(content));
+            }
+            catch (exception) {
+                doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+            }
+        }
+    });
+
+
     //#endregion
 
 }
+
+
+
+

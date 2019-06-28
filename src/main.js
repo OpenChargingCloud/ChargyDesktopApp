@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow, ipcMain} = require('electron')
+const { app, BrowserWindow, ipcMain } = require('electron')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -59,3 +59,17 @@ app.on('activate', function () {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+var filename = "xxx";
+app.on('open-file', (event, path) => {
+    event.preventDefault();
+    console.log(path);
+    //app.emit('open-chargy-file', path);
+    filename = path;
+    if (mainWindow != null)
+        mainWindow.webContents.send('send-chargy-filename', path);
+});
+
+ipcMain.on('get-chargy-filename', (event) => {
+    event.returnValue = filename;
+});
