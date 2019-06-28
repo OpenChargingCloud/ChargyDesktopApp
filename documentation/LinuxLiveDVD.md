@@ -84,7 +84,7 @@ sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware
 
 mkdir /etc/skel/Desktop
 cp /opt/Chargy\ Transparenzsoftware/documentation/chargeIT-Testdatensatz-01.json /etc/skel/Desktop/
-cp /opt/Chargy\ Transparenzsoftware/documentation/Chargy\ Transparenzsoftware\ Nutzerhandbuch\ v1.0.0.pdf /etc/skel/Desktop/
+cp /opt/Chargy\ Transparenzsoftware/documentation/Chargy\ Transparenzsoftware\ Nutzerhandbuch\ v1.0.0.pdf /etc/skel/Desktop/Chargy_Transparenzsoftware_Nutzerhandbuch_v1.0.0.pdf
 
 mkdir /etc/skel/.config/autostart
 cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/.config/autostart/
