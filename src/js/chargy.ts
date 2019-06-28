@@ -2492,7 +2492,7 @@ export function StartChargyApplication() {
         {
             try
             {
-                let content = require('original-fs').readFileSync(filename, 'utf-8');
+                let content = require('original-fs').readFileSync(filename.replace("file://", ""), 'utf-8');
                 detectContentFormat(JSON.parse(content));
             }
             catch (exception) {
