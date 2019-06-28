@@ -51,6 +51,14 @@
       "documentation",
       "versions"
     ],
+    "fileAssociations": [
+      {
+        "ext": "chargy",
+        "description": "Charge Transparency File",
+        "mimeType": "application/chargy",
+        "role": "Viewer"
+      }
+    ],
     "win": {
       "target": [
         "nsis"
@@ -58,6 +66,7 @@
       "icon": "build/chargy.ico"
     },
     "nsis": {
+      "perMachine": true,
       "installerIcon": "build/chargy.ico",
       "deleteAppDataOnUninstall": true,
       "runAfterFinish": true

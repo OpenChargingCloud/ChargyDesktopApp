@@ -2157,111 +2157,8 @@ export function StartChargyApplication() {
     //#endregion
 
 
+
  
-    //#region Global error handling...
-
-    function doGlobalError(text:      String,
-                           context?:  any)
-    {
-
-        inputInfosDiv.style.display             = 'flex';
-        chargingSessionScreenDiv.style.display  = 'none';
-        chargingSessionScreenDiv.innerHTML      = '';
-        errorTextDiv.style.display              = 'inline-block';
-        errorTextDiv.innerHTML                  = '<i class="fas fa-times-circle"></i> ' + text;
-
-        console.log(text);
-        console.log(context);
-
-    }
-
-    //#endregion
-
-    //#region Process loaded CTR file...
-
-    function readFileFromDisk(event: { target: { files: File[]; }; }) {
-        readAndParseFile(event.target.files[0]);
-    }
-
-    //#endregion
-
-    //#region Process dropped CTR file...
-
-    function handleDroppedFile(event: DragEvent) {
-        event.stopPropagation();
-        event.preventDefault();
-        (event.target as HTMLDivElement).classList.remove('over');
-        readAndParseFile(event.dataTransfer!.files[0]);
-    }
-
-    function handleDragEnter(event: DragEvent) {
-        event.preventDefault();
-        (event.target as HTMLDivElement).classList.add('over');
-    }
-
-    function handleDragOver(event: DragEvent) {
-        event.stopPropagation();
-        event.preventDefault();
-        event.dataTransfer!.dropEffect = 'copy';
-        (event.target as HTMLDivElement).classList.add('over');
-    }
-
-    function handleDragLeave(event: DragEvent) {
-        (event.target as HTMLDivElement).classList.remove('over');
-    }
-
-    //#endregion
-
-    //#region Read and parse CTR file
-
-    function readAndParseFile(file: File) {
-
-        if (!file)
-            return;
-
-        var reader = new FileReader();
-
-        reader.onload = function(event) {
-            try
-            {
-                detectContentFormat(JSON.parse((event.target as any).result));
-            }
-            catch (exception) {
-                doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-            }
-        }
-
-        reader.onerror = function(event) {
-            doGlobalError("Fehlerhafter Transparenzdatensatz!", event);
-        }
-
-        reader.readAsText(file, 'UTF-8');
-
-    }
-
-    //#endregion
-
-    //#region Process pasted CTR file
-
-    function PasteFile(this: GlobalEventHandlers, ev: MouseEvent) {
-
-        (navigator as any).clipboard.readText().then(function (clipText: string) {
-
-            try
-            {
-                detectContentFormat(JSON.parse(clipText));
-            }
-            catch (exception) {
-                doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-            }
-
-        });
-
-    }
-
-    //#endregion
-
-
     var d                         = document as any;
 
     var input                     = <HTMLDivElement>      document.getElementById('input');
@@ -2475,5 +2372,135 @@ export function StartChargyApplication() {
         }
 
     }
+
+
+
+    //#region Global error handling...
+
+    function doGlobalError(text:      String,
+                           context?:  any)
+    {
+
+        inputInfosDiv.style.display             = 'flex';
+        chargingSessionScreenDiv.style.display  = 'none';
+        chargingSessionScreenDiv.innerHTML      = '';
+        errorTextDiv.style.display              = 'inline-block';
+        errorTextDiv.innerHTML                  = '<i class="fas fa-times-circle"></i> ' + text;
+
+        console.log(text);
+        console.log(context);
+
+    }
+
+    //#endregion
+
+
+    //#region Process loaded CTR file...
+
+    function readFileFromDisk(event: { target: { files: File[]; }; }) {
+        readAndParseFile(event.target.files[0]);
+    }
+
+    //#endregion
+
+    //#region Process dropped CTR file...
+
+    function handleDroppedFile(event: DragEvent) {
+        event.stopPropagation();
+        event.preventDefault();
+        (event.target as HTMLDivElement).classList.remove('over');
+        readAndParseFile(event.dataTransfer!.files[0]);
+    }
+
+    function handleDragEnter(event: DragEvent) {
+        event.preventDefault();
+        (event.target as HTMLDivElement).classList.add('over');
+    }
+
+    function handleDragOver(event: DragEvent) {
+        event.stopPropagation();
+        event.preventDefault();
+        event.dataTransfer!.dropEffect = 'copy';
+        (event.target as HTMLDivElement).classList.add('over');
+    }
+
+    function handleDragLeave(event: DragEvent) {
+        (event.target as HTMLDivElement).classList.remove('over');
+    }
+
+    //#endregion
+
+    //#region Read and parse CTR file
+
+    function readAndParseFile(file: File) {
+
+        if (!file)
+            return;
+
+        var reader = new FileReader();
+
+        reader.onload = function(event) {
+            try
+            {
+                detectContentFormat(JSON.parse((event.target as any).result));
+            }
+            catch (exception) {
+                doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+            }
+        }
+
+        reader.onerror = function(event) {
+            doGlobalError("Fehlerhafter Transparenzdatensatz!", event);
+        }
+
+        reader.readAsText(file, 'UTF-8');
+
+    }
+
+    //#endregion
+
+    //#region Process pasted CTR file
+
+    function PasteFile(this: GlobalEventHandlers, ev: MouseEvent) {
+
+        (navigator as any).clipboard.readText().then(function (clipText: string) {
+
+            try
+            {
+                detectContentFormat(JSON.parse(clipText));
+            }
+            catch (exception) {
+                doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+            }
+
+        });
+
+    }
+
+    //#endregion
+
+    //#region Process .chargy file extentions/associations opened via this app
+    
+    // Note: This is synchronous. Therefore must be at the end of this file...
+
+    const { ipcRenderer } = require('electron')
+    var filename = ipcRenderer.sendSync('get-command-line-argument-file-name');
+    if (filename != null)
+    {
+
+        const fs      = require('original-fs');
+        let   content = fs.readFileSync(filename, 'utf-8');
+
+        try
+        {
+            detectContentFormat(JSON.parse(content));
+        }
+        catch (exception) {
+            doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+        }
+
+    }
+
+    //#endregion
 
 }
