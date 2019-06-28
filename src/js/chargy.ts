@@ -2484,7 +2484,7 @@ export function StartChargyApplication() {
     // Note: This is synchronous. Therefore must be at the end of this file...
 
     var cliArguments = require('electron').remote.process.argv;
-    if (process.argv.length >= 2)
+    if (cliArguments.length >= 2)
     {
 
         var filename = cliArguments[1];
