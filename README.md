@@ -40,8 +40,10 @@ The Chargy Desktop project has a sister project called [Chargy Mobile](https://g
 
 ### System Requirements
 
-Using node.js 12.5.0 (with npm 6.9.2) for Microsoft Windows: https://nodejs.org/en/download/current/    
-Or install nodejs on your Linux / Mac OS X system via...
+You can download node.js 12.5.0 with npm 6.9.2 for Microsoft Windows from https://nodejs.org/en/download/current/    
+Please note, that on Windows you have to reinstall this software for every update.    
+
+On Linux or Mac OS X you can install Node.js via...
 ```
 sudo apt install git curl
 sudo curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
