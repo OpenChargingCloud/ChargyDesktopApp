@@ -90,14 +90,16 @@ mkdir /etc/skel/.config/autostart
 cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/.config/autostart/
 
 echo -e "[org.gnome.shell]\nfavorite-apps=[ 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'yelp.desktop', 'org.gnome.Terminal.desktop', 'firefox.desktop', 'chargytransparenzsoftware.desktop' ]" > /usr/share/glib-2.0/schemas/90_gnome-shell.gschema.override
+```
 
-# Register Chargy MIME type and file extentions/associations
+### Register Chargy MIME type and file extentions/associations
+This should some day be part of the .deb package
+```
 echo "application/x-chargy=chargytransparencysoftware.desktop" >> /usr/share/applications/defaults.list
 
 echo -e "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n<mime-info xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">\n  <mime-type type=\"application/x-chargy\">\n    <comment>Chargy Transparency Dataset for E-Mobility</comment>\n    <glob pattern=\"*.chargy\"/>\n  </mime-type>\n</mime-info>" > /usr/share/mime/packages/application-chargy.xml
 
 update-mime-database /usr/share/mime
-
 update-desktop-database /usr/share/applications
 ```
 
