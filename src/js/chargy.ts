@@ -92,18 +92,23 @@ export function StartChargyApplication() {
     {
 
         case "win32":
-            calcSHA512Hash('Chargy Transparenzsoftware.exe',                             hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-            calcSHA512Hash(path.join('resources', 'app.asar'),                           hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-            calcSHA512Hash(path.join('resources', 'electron.asar'),                      hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            calcSHA512Hash('Chargy Transparenzsoftware.exe',        hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            calcSHA512Hash(path.join('resources', 'app.asar'),      hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            calcSHA512Hash(path.join('resources', 'electron.asar'), hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
             break;
 
         case "linux":
-        case "darwin":
         case "freebsd":
         case "openbsd":
             calcSHA512Hash('/opt/Chargy\ Transparenzsoftware/chargytransparenzsoftware', hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
             calcSHA512Hash('/opt/Chargy\ Transparenzsoftware/resources/app.asar',        hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
             calcSHA512Hash('/opt/Chargy\ Transparenzsoftware/resources/electron.asar',   hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            break;
+
+        case "darwin":
+            calcSHA512Hash('/Applications/Chargy\ Transparenzsoftware.app/MacOS/Chargy Transparenzsoftware', hash => exe_hash           = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            calcSHA512Hash('/Applications/Chargy\ Transparenzsoftware.app/Resources/app.asar',               hash => app_asar_hash      = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+            calcSHA512Hash('/Applications/Chargy\ Transparenzsoftware.app/Resources/electron.asar',          hash => electron_asar_hash = hash, errorMessage => chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
             break;
 
         default:
