@@ -2483,20 +2483,21 @@ export function StartChargyApplication() {
     
     // Note: This is synchronous. Therefore must be at the end of this file...
 
-    const { ipcRenderer } = require('electron')
-    var filename = ipcRenderer.sendSync('get-command-line-argument-file-name');
-    if (filename != null)
+    var cliArguments = require('electron').remote.process.argv;
+    if (process.argv.length >= 2)
     {
 
-        const fs      = require('original-fs');
-        let   content = fs.readFileSync(filename, 'utf-8');
-
-        try
+        var filename = cliArguments[1];
+        if (filename != null)
         {
-            detectContentFormat(JSON.parse(content));
-        }
-        catch (exception) {
-            doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+            try
+            {
+                let content = require('original-fs').readFileSync(filename, 'utf-8');
+                detectContentFormat(JSON.parse(content));
+            }
+            catch (exception) {
+                doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+            }
         }
 
     }

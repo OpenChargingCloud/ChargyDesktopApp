@@ -59,15 +59,3 @@ app.on('activate', function () {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
-
-// Read the file and send data to the render process
-ipcMain.on('get-command-line-argument-file-name', function(event) {
-
-  var data = null;
-
-  if (process.platform == 'win32' && process.argv.length >= 2)
-    data = process.argv[1];
-
-  event.returnValue = data;
-
-});
