@@ -29,14 +29,11 @@
 var map:     any        = "";
 var leaflet: any        = "";
 
-
 function OpenLink(url: string)
 {
     if (url.startsWith("https://"))
         require('electron').shell.openExternal(url);
 }
-
-//export function StartChargyApplication() {
 
 class ChargyApplication {
 
@@ -63,26 +60,25 @@ class ChargyApplication {
     private mediationServices         = new Array<IMediationService>();
     private chargingSessions          = new Array<IChargingSession>();
     
+    private input:                      HTMLDivElement;
+    private updateAvailableButton:      HTMLButtonElement;
+    private aboutButton:                HTMLButtonElement;
+    private fullScreenButton:           HTMLButtonElement;
+
+    private updateAvailableScreen:      HTMLDivElement;
+    private inputInfosDiv:              HTMLDivElement;
+    private aboutScreenDiv:             HTMLDivElement;
+    private chargySHA512Div:            HTMLDivElement;
+    private chargingSessionScreenDiv:   HTMLDivElement;
+    private backButtonDiv:              HTMLDivElement;
+    private fileInputButton:            HTMLButtonElement;
+    private fileInput:                  HTMLInputElement;
+    private evseTarifInfosDiv:          HTMLDivElement;
+    private errorTextDiv:               HTMLDivElement;
+    private overlayDiv:                 HTMLDivElement;
+    private overlayOkButton:            HTMLButtonElement;
+
     private currentCTR  = {} as IChargeTransparencyRecord;
-
-    private input:                     HTMLDivElement;
-    private updateAvailableButton:     HTMLButtonElement;
-    private aboutButton:               HTMLButtonElement;
-    private fullScreenButton:          HTMLButtonElement;
-
-    private updateAvailableScreen:  HTMLDivElement;
-    private inputInfosDiv:  HTMLDivElement;
-    private aboutScreenDiv:  HTMLDivElement;
-    private chargySHA512Div: HTMLDivElement;
-    private chargingSessionScreenDiv:  HTMLDivElement;
-    private backButtonDiv:  HTMLDivElement;
-    private fileInputButton: HTMLButtonElement;
-    private fileInput:  HTMLInputElement;
-    private evseTarifInfosDiv:  HTMLDivElement;
-    private errorTextDiv: HTMLDivElement;
-    private overlayDiv: HTMLDivElement;
-    private overlayOkButton: HTMLButtonElement;
-
     private markers: any = [];
     private minlat: number                    = +1000;
     private maxlat: number                    = -1000;
@@ -90,8 +86,6 @@ class ChargyApplication {
     private maxlng: number                    = -1000;
 
     constructor() {
-
-        let __chargyApp = this;
 
         //#region Calculate application hash
 
@@ -128,22 +122,24 @@ class ChargyApplication {
 
         //#region Get list of versions from GitHub
 
+        //#region Get list of Chargy versions from GitHub
+
         let GetListOfVersionsFromGitHub = new XMLHttpRequest();
         GetListOfVersionsFromGitHub.open("GET",
-                                        "https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
-                                        true);
+                                         "https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
+                                         true);
 
 
 
-        GetListOfVersionsFromGitHub.onreadystatechange = function () {
+        GetListOfVersionsFromGitHub.onreadystatechange = () => {
 
             // 0 UNSENT | 1 OPENED | 2 HEADERS_RECEIVED | 3 LOADING | 4 DONE
-            if (this.readyState == 4) {
-                if (this.status == 200) { // HTTP 200 - OK
+            if (GetListOfVersionsFromGitHub.readyState == 4) {
+                if (GetListOfVersionsFromGitHub.status == 200) { // HTTP 200 - OK
 
                     try {
 
-                        var versionsDiv = __chargyApp.updateAvailableScreen.querySelector("#versions") as HTMLDivElement;
+                        var versionsDiv = this.updateAvailableScreen.querySelector("#versions") as HTMLDivElement;
                         if (versionsDiv != null)
                         {
 
@@ -154,12 +150,12 @@ class ChargyApplication {
 
                                 var versionElements = version.version.split('.');
 
-                                if (versionElements[0] > __chargyApp.appVersion[0] ||
-                                (versionElements[0] >= __chargyApp.appVersion[0] && versionElements[1] >  __chargyApp.appVersion[1]) ||
-                                (versionElements[0] >= __chargyApp.appVersion[0] && versionElements[1] >= __chargyApp.appVersion[1] && versionElements[2] > __chargyApp.appVersion[2]))
+                                if (versionElements[0] > this.appVersion[0] ||
+                                (versionElements[0] >= this.appVersion[0] && versionElements[1] >  this.appVersion[1]) ||
+                                (versionElements[0] >= this.appVersion[0] && versionElements[1] >= this.appVersion[1] && versionElements[2] > this.appVersion[2]))
                                 {
 
-                                    __chargyApp.updateAvailableButton.style.display = "block";
+                                    this.updateAvailableButton.style.display = "block";
 
                                     let versionDiv = versionsDiv.appendChild(document.createElement('div'));
                                     versionDiv.className = "version";
@@ -311,10 +307,30 @@ class ChargyApplication {
         //#endregion
 
         this.input                     = <HTMLDivElement>      document.getElementById('input');
-        this.input.addEventListener('dragenter', this.handleDragEnter,   false);
-        this.input.addEventListener('dragover',  this.handleDragOver,    false);
-        this.input.addEventListener('dragleave', this.handleDragLeave,   false);
-        this.input.addEventListener('drop',      this.handleDroppedFile, false);
+
+        this.input.addEventListener('dragenter', (event: DragEvent) => {
+            event.preventDefault();
+            (event.currentTarget as HTMLDivElement)!.classList.add('over');
+        }, false);
+
+        this.input.addEventListener('dragover',  (event: DragEvent) => {
+            event.stopPropagation();
+            event.preventDefault();
+            event.dataTransfer!.dropEffect = 'copy';
+            (event.currentTarget as HTMLDivElement)!.classList.add('over');
+        }, false);
+
+        this.input.addEventListener('dragleave', (event: DragEvent) => {
+            (event.currentTarget as HTMLDivElement)!.classList.remove('over');
+        }, false);
+
+        this.input.addEventListener('drop',      (event: DragEvent) => {
+            event.stopPropagation();
+            event.preventDefault();
+            (event.currentTarget as HTMLDivElement)!.classList.remove('over');
+            this.readAndParseFile(event.dataTransfer!.files[0]);
+        }, false);
+
 
         this.updateAvailableButton     = <HTMLButtonElement>   document.getElementById('updateAvailableButton');
         this.updateAvailableButton.onclick = (ev: MouseEvent) => {
@@ -333,9 +349,9 @@ class ChargyApplication {
             this.chargingSessionScreenDiv.style.display  = "none";
             this.backButtonDiv.style.display             = "block";
 
-            if (this.complete_hash == null)
+            if (this.complete_hash == "")
             {
-                if (this.exe_hash != null && this.app_asar_hash != null && this.electron_asar_hash != null)
+                if (this.exe_hash != "" && this.app_asar_hash != "" && this.electron_asar_hash != "")
                 {
 
                     const cryp2 = require('electron').remote.require('crypto');
@@ -2453,33 +2469,6 @@ class ChargyApplication {
 
     //#endregion
 
-
-    //#region Process dropped CTR file...
-
-    private handleDroppedFile(event: DragEvent) {
-        event.stopPropagation();
-        event.preventDefault();
-        (event.target as HTMLDivElement).classList.remove('over');
-        this.readAndParseFile(event.dataTransfer!.files[0]);
-    }
-
-    private handleDragEnter(event: DragEvent) {
-        event.preventDefault();
-        (event.target as HTMLDivElement).classList.add('over');
-    }
-
-    private handleDragOver(event: DragEvent) {
-        event.stopPropagation();
-        event.preventDefault();
-        event.dataTransfer!.dropEffect = 'copy';
-        (event.target as HTMLDivElement).classList.add('over');
-    }
-
-    private handleDragLeave(event: DragEvent) {
-        (event.target as HTMLDivElement).classList.remove('over');
-    }
-
-    //#endregion
 
     //#region Read and parse CTR file
 
