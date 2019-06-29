@@ -120,8 +120,6 @@ class ChargyApplication {
 
         //#endregion
 
-        //#region Get list of versions from GitHub
-
         //#region Get list of Chargy versions from GitHub
 
         let GetListOfVersionsFromGitHub = new XMLHttpRequest();
@@ -306,6 +304,18 @@ class ChargyApplication {
 
         //#endregion
 
+
+        this.updateAvailableScreen     = <HTMLDivElement>      document.getElementById('updateAvailableScreen');
+        this.aboutScreenDiv            = <HTMLDivElement>      document.getElementById('aboutScreen');
+        this.chargySHA512Div           = <HTMLDivElement>      document.getElementById('chargySHA512');
+        this.chargingSessionScreenDiv  = <HTMLDivElement>      document.getElementById('chargingSessionScreen');
+        this.evseTarifInfosDiv         = <HTMLDivElement>      document.getElementById('evseTarifInfos');
+        this.inputInfosDiv             = <HTMLDivElement>      document.getElementById('inputInfos');
+        this.errorTextDiv              = <HTMLDivElement>      document.getElementById('errorText');
+
+
+        //#region Handle Drag'n'Drop of charge transparency files
+
         this.input                     = <HTMLDivElement>      document.getElementById('input');
 
         this.input.addEventListener('dragenter', (event: DragEvent) => {
@@ -331,6 +341,9 @@ class ChargyApplication {
             this.readAndParseFile(event.dataTransfer!.files[0]);
         }, false);
 
+        //#endregion
+
+        //#region Handle the 'Update available'-button
 
         this.updateAvailableButton     = <HTMLButtonElement>   document.getElementById('updateAvailableButton');
         this.updateAvailableButton.onclick = (ev: MouseEvent) => {
@@ -340,6 +353,10 @@ class ChargyApplication {
             this.chargingSessionScreenDiv.style.display  = "none";
             this.backButtonDiv.style.display             = "block";
         }
+
+        //#endregion
+
+        //#region Handle the 'About'-button
 
         this.aboutButton               = <HTMLButtonElement>   document.getElementById('aboutButton');
         this.aboutButton.onclick = (ev: MouseEvent) => {
@@ -368,6 +385,10 @@ class ChargyApplication {
 
         }
 
+        //#endregion
+
+        //#region Handle the 'fullScreen'-button
+
         var d                         = document as any;
         this.fullScreenButton          = <HTMLButtonElement>   document.getElementById('fullScreenButton');
         this.fullScreenButton.onclick = (ev: MouseEvent) => {
@@ -385,15 +406,19 @@ class ChargyApplication {
             }
         }
 
-        this.inputInfosDiv             = <HTMLDivElement>      document.getElementById('inputInfos');
-        var loadingErrorsDiv          = <HTMLDivElement>      document.getElementById('loadingErrors');
-        this.errorTextDiv              = <HTMLDivElement>      document.getElementById('errorText');
+        //#endregion
+
+        //#region Handle the 'Overlay Ok'-button
 
         this.overlayDiv                = <HTMLDivElement>      document.getElementById('overlay');
         this.overlayOkButton           = <HTMLButtonElement>   document.getElementById('overlayOkButton');
         this.overlayOkButton.onclick = (ev: MouseEvent) => {
             this.overlayDiv.style.display = 'none';
         }
+
+        //#endregion
+
+        //#region Handle the 'fileInput'-button
 
         this.fileInputButton           = <HTMLButtonElement>   document.getElementById('fileInputButton');
         this.fileInput                 = <HTMLInputElement>    document.getElementById('fileInput');
@@ -408,11 +433,13 @@ class ChargyApplication {
                 this.readAndParseFile(files[0]);
         }
 
+        //#endregion
+
+        //#region Handle the 'paste'-button
+
         var pasteButton               = <HTMLButtonElement>   document.getElementById('pasteButton');
         pasteButton.onclick           = (ev: MouseEvent) => {
-
             (navigator as any).clipboard.readText().then((clipText: string) => {
-    
                 try
                 {
                     this.detectContentFormat(JSON.parse(clipText));
@@ -420,17 +447,12 @@ class ChargyApplication {
                 catch (exception) {
                     this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
                 }
-    
             });
-    
         }
 
+        //#endregion
 
-        this.updateAvailableScreen     = <HTMLDivElement>      document.getElementById('updateAvailableScreen');
-        this.aboutScreenDiv            = <HTMLDivElement>      document.getElementById('aboutScreen');
-        this.chargySHA512Div           = <HTMLDivElement>      document.getElementById('chargySHA512');
-        this.chargingSessionScreenDiv  = <HTMLDivElement>      document.getElementById('chargingSessionScreen');
-        this.evseTarifInfosDiv         = <HTMLDivElement>      document.getElementById('evseTarifInfos');
+        //#region The Issue Tracker
 
         var issueTracker              = <HTMLDivElement>      document.getElementById('issueTracker');
         var showIssueTrackerButton    = <HTMLButtonElement>   document.getElementById('showIssueTracker');
@@ -531,6 +553,10 @@ class ChargyApplication {
             issueTracker.style.display = 'none';
         }
 
+        //#endregion
+
+        //#region Handle the 'Back'-button
+
         this.backButtonDiv             = <HTMLDivElement>      document.getElementById('backButtonDiv');
         this.backButtonDiv.onclick = (ev: MouseEvent) => {
 
@@ -551,7 +577,11 @@ class ChargyApplication {
             this.minlng = +1000;
             this.maxlng = -1000;
 
-        }    
+        }
+
+        //#endregion
+
+        //#region Modify external links to be opened in the external web browser
 
         var shell        = require('electron').shell;
         let linkButtons  = document.getElementsByClassName('linkButton') as HTMLCollectionOf<HTMLButtonElement>;
@@ -568,6 +598,10 @@ class ChargyApplication {
             }
 
         }
+
+        //#endregion
+
+        //#region Handle 'Open this file with Chargy'-events...
 
         // Note: The following is synchronous, therefore must be at the end of the file...
 
@@ -2444,9 +2478,6 @@ class ChargyApplication {
     
 
     //#endregion
-
-
-
 
 
 
