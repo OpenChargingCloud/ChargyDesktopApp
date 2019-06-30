@@ -32,7 +32,7 @@
                         "en":               "You can verify the hash value of the Windows Installer via the following command:<br /><i>certutil.exe -hashfile „Chargy Transparenzsoftware Setup v1.0.0.exe“ SHA512</i>"
                     },
                     "platform":             "win32",
-                    "installer":            true,
+                    "isInstaller":          true,
                     "downloadURLs": {
                         "open.charging.cloud":  "https://open.charging.clould/releases/ChargyDesktopApp/Chargy%20Transparenzsoftware%20Setup%20v1.0.0.exe"
                     },
