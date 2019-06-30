@@ -30,7 +30,9 @@
                     "additionalInfo": {
                         "de":               "Sie können den Hashwert des Windows Installers durch folgendes Kommando verifizieren:<br /><i>certutil.exe -hashfile „Chargy Transparenzsoftware Setup v1.0.0.exe“ SHA512</i>",
                         "en":               "You can verify the hash value of the Windows Installer via the following command:<br /><i>certutil.exe -hashfile „Chargy Transparenzsoftware Setup v1.0.0.exe“ SHA512</i>"
-                    },                    
+                    },
+                    "platform":             "win32",
+                    "installer":            true,
                     "downloadURLs": {
                         "open.charging.cloud":  "https://open.charging.clould/releases/ChargyDesktopApp/Chargy%20Transparenzsoftware%20Setup%20v1.0.0.exe"
                     },
@@ -86,6 +88,7 @@
                         "de":               "Dies betrifft die Dateien 'Chargy Transparenzsoftware.exe', '~\\resources\\app.asar' und '~\\resources\\electron.asar' im Verzeichnis '%AppData%\\..\\Local\\Programs\\chargytransparenzsoftware' von Microsoft Windows 10 und neuer.",
                         "en":               "In general this means the 'Chargy Transparenzsoftware.exe', the '~\\resources\\app.asar' and the '~\\resources\\electron.asar' files within the '%AppData%\\..\\Local\\Programs\\chargytransparenzsoftware' application directory on Microsoft Windows 10 and newer."
                     },
+                    "platform":             "win32",
                     "cryptoHashes": {
                         "SHA512":           "0xb1d5aa8f ccd7ae3a b11f96f0 1f95873b 2eb26963 d696e896 f2f378b9 54b6076b 7e6b2c1a 67879bcf 54113136 305e1bff cf0b4005 f7549972 6f091add afebb41b"
                     },
