@@ -33,6 +33,15 @@ interface GetMeterFunc {
     (Id: string): IMeter|null;
 }
 
+interface CheckMeterPublicKeySignatureFunc {
+    (chargingStation:  any|null,
+     evse:             any|null,
+     meter:            any|null,
+     publicKey:        any|null,
+     signature:        any|null): string;
+}
+
+
 interface IChargeTransparencyRecord
 {
     "@id":                      string;
@@ -243,6 +252,7 @@ interface IPublicKey
     format:                     string;
     previousValue:              string;
     value:                      string;
+    signatures:                 any;
 }
 
 interface ISignature

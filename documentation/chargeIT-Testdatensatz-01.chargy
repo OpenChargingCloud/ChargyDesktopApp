@@ -17,6 +17,24 @@
       "meterInfo": {
         "firmwareVersion": "123",
         "publicKey": "9EA8697F5C3126E86A37295566D560DE8EA690325791C9CBA79D30612B8EA8E00908FBAD5374812D55DCC3D809C3A36C",
+        "publicKeySignatures": [
+          {
+              "signer":           "Open Charging Cloud",
+              "publicKey":        "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+              "timestamp":        "2019-06-30T00:00:00Z",
+              "comment":          { "en": "Hello world!" },
+              "notBefore":        "2018-11-04T16:47:01Z",
+              "notAfter":         "2023-03-12T13:54:12Z",
+              "operations": {
+                  "signCertificates":  false,
+                  "signMeterValues":   true
+              },
+              "revocationURIs":   [],
+              "algorithm":        "secp256k1",
+              "format":           "DER",
+              "value":            "303502181dce9223416d64e5362bc8eb46eddf23adcb74382b602e1f021900eca85b1a48bc1f64d25951e947c7e48fa0b070b82e2cae41"
+          }
+        ],
         "meterId": "0901454D48000083E076",
         "type": "eHZ IW8E EMH",
         "manufacturer": "EMH"

@@ -85,6 +85,10 @@ class ChargyApplication {
     private minlng: number                    = +1000;
     private maxlng: number                    = -1000;
 
+    private currentAppInfos: any              = null;
+    private currentVersionInfos: any          = null;
+    private currentPackage: any               = null;
+
     constructor() {
 
         //#region Calculate application hash
@@ -141,16 +145,32 @@ class ChargyApplication {
                         if (versionsDiv != null)
                         {
 
-                            let ChargyDesktopAppVersions = JSON.parse(GetListOfVersionsFromGitHub.responseText) as IVersions;
+                            this.currentAppInfos = JSON.parse(GetListOfVersionsFromGitHub.responseText) as IVersions;
 
-                            for (let version of ChargyDesktopAppVersions.versions)
+                            for (let version of this.currentAppInfos.versions)
                             {
 
                                 var versionElements = version.version.split('.');
 
-                                if (versionElements[0] > this.appVersion[0] ||
-                                (versionElements[0] >= this.appVersion[0] && versionElements[1] >  this.appVersion[1]) ||
-                                (versionElements[0] >= this.appVersion[0] && versionElements[1] >= this.appVersion[1] && versionElements[2] > this.appVersion[2]))
+                                if (versionElements[0] == this.appVersion[0] && versionElements[1] == this.appVersion[1] && versionElements[2] == this.appVersion[2])
+                                {
+
+                                    this.currentVersionInfos = version;
+
+                                    if (this.currentVersionInfos.packages && this.currentVersionInfos.packages.length > 0)
+                                    {
+                                        for (let _package of this.currentVersionInfos.packages)
+                                        {
+                                            if (_package.platform === process.platform && _package.isInstaller == null)
+                                                this.currentPackage = _package;
+                                        }
+                                    }
+
+                                }
+
+                                else if (versionElements[0] > this.appVersion[0] ||
+                                        (versionElements[0] >= this.appVersion[0] && versionElements[1] >  this.appVersion[1]) ||
+                                        (versionElements[0] >= this.appVersion[0] && versionElements[1] >= this.appVersion[1] && versionElements[2] > this.appVersion[2]))
                                 {
 
                                     this.updateAvailableButton.style.display = "block";
@@ -283,7 +303,7 @@ class ChargyApplication {
 
                                     }
 
-                                }                            
+                                }
 
                             }
 
@@ -360,6 +380,7 @@ class ChargyApplication {
 
         this.aboutButton               = <HTMLButtonElement>   document.getElementById('aboutButton');
         this.aboutButton.onclick = (ev: MouseEvent) => {
+
             this.updateAvailableScreen.style.display     = "none";
             this.inputInfosDiv.style.display             = "none";
             this.aboutScreenDiv.style.display            = "block";
@@ -371,16 +392,58 @@ class ChargyApplication {
                 if (this.exe_hash != "" && this.app_asar_hash != "" && this.electron_asar_hash != "")
                 {
 
-                    const cryp2 = require('electron').remote.require('crypto');
-
-                    var sha512hash = cryp2.createHash('sha512');
+                    var sha512hash = this.crypt.createHash('sha512');
                     sha512hash.update(this.exe_hash);
                     sha512hash.update(this.app_asar_hash);
                     sha512hash.update(this.electron_asar_hash);
 
-                    this.chargySHA512Div.children[1].innerHTML = this.complete_hash = sha512hash.digest('hex').match(/.{1,8}/g).join(" ");
+                    this.complete_hash = this.chargySHA512Div.children[1].innerHTML = sha512hash.digest('hex').match(/.{1,8}/g).join(" ");
 
                 }
+            }
+
+            this.complete_hash = "b1d5aa8f ccd7ae3a b11f96f0 1f95873b 2eb26963 d696e896 f2f378b9 54b6076b 7e6b2c1a 67879bcf 54113136 305e1bff cf0b4005 f7549972 6f091add afebb41b";
+
+            if (this.currentAppInfos     != null &&
+                this.currentVersionInfos != null &&
+                this.currentPackage      != null)
+            {
+
+                let sigHeadDiv    = this.chargySHA512Div.children[2];
+                let signaturesDiv = this.chargySHA512Div.children[3];
+
+                // Bad hash value
+                if (this.currentPackage.cryptoHashes.SHA512.replace("0x", "") !== this.complete_hash)
+                    sigHeadDiv.innerHTML = "<i class=\"fas fa-times-circle\"></i> Ungültiger Hashwert!";
+
+                // At least the same hash value...
+                else
+                {
+
+                    if (this.currentPackage.signatures == null || this.currentPackage.signatures.length == 0)
+                    {
+                        sigHeadDiv.innerHTML = "<i class=\"fas fa-check-circle\"></i> Gültiger Hashwert!";
+                    }
+
+                    // Some crypto signatures found...
+                    else
+                    {
+
+                        sigHeadDiv.innerHTML = "Bestätigt durch...";
+
+                        for (let signature of this.currentPackage.signatures)
+                        {
+                            let signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
+                            signatureDiv.innerHTML = this.CheckApplicationHashSignature(this.currentAppInfos,
+                                                                                        this.currentVersionInfos,
+                                                                                        this.currentPackage,
+                                                                                        signature);
+                        }
+
+                    }
+
+                }
+
             }
 
         }
@@ -452,7 +515,7 @@ class ChargyApplication {
 
         //#endregion
 
-        //#region The Issue Tracker
+        //#region The Issue tracker
 
         var issueTracker              = <HTMLDivElement>      document.getElementById('issueTracker');
         var showIssueTrackerButton    = <HTMLButtonElement>   document.getElementById('showIssueTracker');
@@ -651,6 +714,174 @@ class ChargyApplication {
 
     //#endregion
 
+    //#region CheckApplicationHashSignature(...)
+
+    private CheckApplicationHashSignature(app:        any,
+                                          version:    any,
+                                          _package:   any,
+                                          signature:  any): string
+    {
+
+        if (app == null || version == null || _package == null || signature == null)
+            return "<i class=\"fas fa-times-circle\"></i>Ungültige Signatur!";
+
+        try {
+
+            var toCheck = {
+                "name":                 app.name,
+                "description":          app.description,
+
+                "version": {
+                    "version":              this.appVersion.join("."),
+                    "releaseDate":          version.releaseDate,
+                    "description":          version.description,
+                    "tags":                 version.tags,
+
+                    "package": {
+                        "name":                 _package.name,
+                        "description":          _package.description,
+                        "additionalInfo":       _package.additonalInfo,
+                        "platform":             _package.platform,
+                        "isInstaller":          _package.isInstaller, // Note: Might be null! Keep null values!
+                        "cryptoHashValue":      this.complete_hash,
+
+                        "signature": {
+                            "signer":               signature.signer,
+                            "timestamp":            signature.timestamp,
+                            "comment":              signature.comment,
+                            "algorithm":            signature.algorithm,
+                            "format":               signature.format
+                        }
+
+                    }
+
+                }
+
+            };
+
+            //ToDo: Checking the timestamp might be usefull!
+
+            var Input       = JSON.stringify(toCheck);
+            var sha256value = this.crypt.createHash('sha256').
+                                        update(Input, 'utf8').
+                                        digest('hex');
+
+            var _elliptic = require('elliptic');
+
+            // var key = new _elliptic.ec('secp256k1').genKeyPair();
+            // signature.publicKey = key.getPublic().encode('hex');
+            // signature.signature = key.sign(sha256value).toDER('hex');
+
+            var result = new _elliptic.ec('secp256k1').
+                                       keyFromPublic(signature.publicKey, 'hex').
+                                       verify       (sha256value,
+                                                     signature.signature);
+
+
+            if (result)
+                return "<i class=\"fas fa-check-circle\"></i>" + signature.signer;
+
+
+        }
+        catch (exception)
+        { }
+
+        return "<i class=\"fas fa-times-circle\"></i>" + signature.signer;
+
+    }
+
+    //#endregion
+
+    //#region CheckMeterPublicKeySignature(...)
+
+    private CheckMeterPublicKeySignature(chargingStation:  any,
+                                         evse:             any,
+                                         meter:            any,
+                                         publicKey:        any,
+                                         signature:        any): string
+    {
+
+        // For now: Do not enforce this feature!
+        if (chargingStation == null || evse == null || meter == null || publicKey == null || signature == null)
+            return "";// "<i class=\"fas fa-exclamation-circle\"></i> Unbekannter Public Key!";
+
+        try {
+
+            var toCheck = {
+
+                "@id":                  chargingStation["@id"],
+                "description":          chargingStation.description,
+                "geoLocation":          chargingStation.geoLocation,
+                "address":              chargingStation.address,
+                "softwareVersion":      chargingStation.softwareVersion,
+
+                "EVSE": {
+                    "@id":                      evse["@id"],
+                    "description":              evse.description,
+                    "sockets":                  evse.sockets,
+
+                    "meter": {
+                        "@id":                      meter["@id"],
+                        "vendor":                   meter.vendor,
+                        "model":                    meter.model,
+                        "firmwareVersion":          meter.firmwareVersion,
+                        "signatureFormat":          meter.signatureFormat,
+
+                        "publicKey": {
+                            "algorithm":                publicKey.algorithm,
+                            "format":                   publicKey.format,
+                            "value":                    publicKey.value,
+
+                            "signature": {
+                                "signer":                   signature.signer,
+                                "timestamp":                signature.timestamp,
+                                "comment":                  signature.comment,
+                                "algorithm":                signature.algorithm,
+                                "format":                   signature.format
+                            }
+
+                        }
+
+                    }
+
+                }
+ 
+            };
+
+            //ToDo: Checking the timestamp might be usefull!
+
+            var Input       = JSON.stringify(toCheck);
+            var sha256value = this.crypt.createHash('sha256').
+                                        update(Input, 'utf8').
+                                        digest('hex');
+
+            var _elliptic = require('elliptic');
+
+            // var key = new _elliptic.ec('secp256k1').genKeyPair();
+            // signature.publicKey = key.getPublic().encode('hex');
+            // signature.signature = key.sign(sha256value).toDER('hex');
+
+            var result = new _elliptic.ec('secp256k1').
+                                       keyFromPublic(signature.publicKey, 'hex').
+                                       verify       (sha256value,
+                                                     signature.signature);
+
+
+            if (result)
+                return "<i class=\"fas fa-check-circle\"></i>" + signature.signer;
+
+
+        }
+        catch (exception)
+        { }
+
+        return "<i class=\"fas fa-times-circle\"></i>" + signature.signer;
+
+    }
+
+    //#endregion
+
+
     //#region GetMethods...
 
     private GetChargingPool: GetChargingPoolFunc = (Id: string) => {
@@ -824,6 +1055,10 @@ class ChargyApplication {
         }
 
     }
+
+    //#endregion
+
+    //#region processChargeTransparencyRecord(CTR)
 
     private processChargeTransparencyRecord(CTR: IChargeTransparencyRecord)
     {
@@ -1466,6 +1701,10 @@ class ChargyApplication {
 
     }
 
+    //#endregion
+
+    //#region tryToParseAnonymousFormat(...)
+
     // e.g. the current chargeIT mobility does not provide any format identifiers
     private tryToParseAnonymousFormat(SomeJSON: { signedMeterValues: any[]; placeInfo: any; }) : boolean
     {
@@ -1482,6 +1721,7 @@ class ChargyApplication {
             //         "meterInfo": {
             //            "firmwareVersion": "123",
             //            "publicKey": "08A56CF3B51DABA44F38607BB884F62FB8BE84B4EF39D09624AB9E0910354398590DC59A5B40F43FE68A9F416F65EC76",
+            //            "publicKeySignatures": [],
             //            "meterId": "0901454D4800007F9F3E",
             //            "type": "eHZ IW8E EMH",
             //            "manufacturer": "EMH"
@@ -1562,6 +1802,8 @@ class ChargyApplication {
                     let _meterInfo_publicKey = _meterInfo["publicKey"] as string;
                     if (_meterInfo_publicKey == null || typeof _meterInfo_publicKey !== 'string')
                         throw "Missing or invalid meterInfo publicKey[" + i + "]!"
+
+                    let _meterInfo_publicKeySignatures = _meterInfo["publicKeySignatures"];
 
                     let _meterInfo_meterId = _meterInfo["meterId"] as string;
                     if (_meterInfo_meterId == null || typeof _meterInfo_meterId !== 'string')
@@ -1715,6 +1957,7 @@ class ChargyApplication {
                                 "meterInfo": {
                                     "firmwareVersion": _meterInfo_firmwareVersion,
                                     "publicKey": _meterInfo_publicKey,
+                                    "publicKeySignatures": _meterInfo_publicKeySignatures,
                                     "meterId": _meterInfo_meterId,
                                     "type": _meterInfo_type,
                                     "manufacturer": _meterInfo_manufacturer
@@ -1918,7 +2161,8 @@ class ChargyApplication {
                                                             "format":           "DER",
                                                             "value":            CTRArray[0]["meterInfo"]["publicKey"].startsWith("04")
                                                                                     ?        CTRArray[0]["meterInfo"]["publicKey"]
-                                                                                    : "04" + CTRArray[0]["meterInfo"]["publicKey"]
+                                                                                    : "04" + CTRArray[0]["meterInfo"]["publicKey"],
+                                                            "signatures":       CTRArray[0]["meterInfo"]["publicKeySignatures"]
                                                         }
                                                     ]
                                                 }
@@ -2031,6 +2275,9 @@ class ChargyApplication {
 
     }
 
+    //#endregion
+
+    //#region detectContentFormat(Content)
 
     private detectContentFormat(Content: IChargeTransparencyRecord) {
 
@@ -2059,7 +2306,7 @@ class ChargyApplication {
 
     //#endregion
 
-    //#region showChargingSessionDetails
+    //#region checkMeasurementCrypto(measurementValue)
 
     private checkMeasurementCrypto(measurementValue: IMeasurementValue)
     {
@@ -2094,6 +2341,10 @@ class ChargyApplication {
         }            
 
     }
+
+    //#endregion
+
+    //#region showChargingSessionDetails
 
     private showChargingSessionDetails(chargingSession: IChargingSession)
     {
@@ -2352,11 +2603,11 @@ class ChargyApplication {
         {
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/GDFCrypt01+json":
-                chargingSession.method = new GDFCrypt01(this.GetMeter);
+                chargingSession.method = new GDFCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
                 return chargingSession.method.VerifyChargingSession(chargingSession);
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json":
-                chargingSession.method = new EMHCrypt01(this.GetMeter);
+                chargingSession.method = new EMHCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
                 return chargingSession.method.VerifyChargingSession(chargingSession);
 
             default:
@@ -2387,7 +2638,7 @@ class ChargyApplication {
         {
 
             case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/GDFCrypt01+json":
-                 measurementValue.method = new GDFCrypt01(this.GetMeter);
+                 measurementValue.method = new GDFCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
                  return measurementValue.method.VerifyMeasurement(measurementValue);
 
             case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json":
@@ -2403,7 +2654,7 @@ class ChargyApplication {
 
                  }
 
-                 measurementValue.method = new EMHCrypt01(this.GetMeter);
+                 measurementValue.method = new EMHCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
                  return measurementValue.method.VerifyMeasurement(measurementValue);
 
             default:

@@ -39,6 +39,7 @@ interface IGDFCrypt01Result extends ICryptoResult
     authorizationStartTimestamp?:  string,
     publicKey?:                    string,
     publicKeyFormat?:              string,
+    publicKeySignatures?:          any,
     signature?:                    IECCSignature
 }
 
@@ -46,10 +47,13 @@ class GDFCrypt01 extends ACrypt {
 
     readonly curve        = new this.elliptic.ec('p256');
     
-    
-    constructor(GetMeter: GetMeterFunc) {
+    constructor(GetMeter:                      GetMeterFunc,
+                CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc) {
+
         super("ECC secp256r1",
-              GetMeter);              
+              GetMeter,
+              CheckMeterPublicKeySignature);
+
     }
 
 

@@ -20,19 +20,22 @@
 
 abstract class ACrypt {
 
-    readonly description:  string;
-    readonly GetMeter:     GetMeterFunc;
+    readonly description:                   string;
+    readonly GetMeter:                      GetMeterFunc;
+    readonly CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc;
 
     readonly elliptic  = require('elliptic');
     readonly moment    = require('moment');
     // variable 'crypto' is already defined differently in Google Chrome!
     readonly crypt     = require('electron').remote.require('crypto');
 
-    constructor(description:  string,
-                GetMeter:     GetMeterFunc) { 
+    constructor(description:                   string,
+                GetMeter:                      GetMeterFunc,
+                CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc) {
 
-        this.description  = description;
-        this.GetMeter     = GetMeter;
+        this.description                   = description;
+        this.GetMeter                      = GetMeter;
+        this.CheckMeterPublicKeySignature  = CheckMeterPublicKeySignature;
 
     }
 

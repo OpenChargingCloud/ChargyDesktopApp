@@ -113,6 +113,7 @@
                 "city":                 "Jena",
                 "country":              "Deutschland"
             },
+            "softwareVersion":          "3.0.25.2089",
             "EVSEs": [
                 {
                     "@id":                      "DE*GEF*EVSE*CI*TESTS*1*A*1",

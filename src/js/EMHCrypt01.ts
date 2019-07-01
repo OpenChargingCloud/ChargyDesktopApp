@@ -47,6 +47,7 @@ interface IEMHCrypt01Result extends ICryptoResult
     authorizationStartTimestamp?:  string,
     publicKey?:                    string,
     publicKeyFormat?:              string,
+    publicKeySignatures?:          any,
     signature?:                    IECCSignature
 }
 
@@ -55,9 +56,13 @@ class EMHCrypt01 extends ACrypt {
 
     readonly curve = new this.elliptic.ec('p192');
     
-    constructor(GetMeter: GetMeterFunc) {
+    constructor(GetMeter:                      GetMeterFunc,
+                CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc) {
+
         super("ECC secp192r1",
-              GetMeter);              
+              GetMeter,
+              CheckMeterPublicKeySignature);
+
     }
 
 
@@ -255,8 +260,9 @@ class EMHCrypt01 extends ACrypt {
                         try
                         {
 
-                            cryptoResult.publicKey        = iPublicKey.value.toLowerCase();
-                            cryptoResult.publicKeyFormat  = iPublicKey.format;
+                            cryptoResult.publicKey            = iPublicKey.value.toLowerCase();
+                            cryptoResult.publicKeyFormat      = iPublicKey.format;
+                            cryptoResult.publicKeySignatures  = iPublicKey.signatures;
 
                             try
                             {
@@ -304,6 +310,7 @@ class EMHCrypt01 extends ACrypt {
 
     }
 
+    
     private DecodeStatus(statusValue: string) : Array<string>
     {
 
@@ -394,9 +401,38 @@ class EMHCrypt01 extends ACrypt {
         var pubKey = WhenNullOrEmpty(result.publicKey, "");
 
         if (!IsNullOrEmpty(result.publicKey))
-            publicKeyValue.innerHTML                                 = pubKey.startsWith("04")
+            publicKeyValue.innerHTML                                 = pubKey.startsWith("04") // Add some space after '04' to avoid confused customers
                                                                            ? "04 " + pubKey.substring(2).match(/.{1,8}/g)!.join(" ")
-                                                                           : pubKey.match(/.{1,8}/g)!.join(" ");
+                                                                           :         pubKey.match(/.{1,8}/g)!.join(" ");
+
+
+        if (!IsNullOrEmpty(result.publicKeySignatures)) {
+
+//            publicKeyValue.parentElement!.children[2].innerHTML = "Bestätigt durch...";
+            publicKeyValue.parentElement!.children[3].innerHTML = ""; 
+
+            for (let signature of result.publicKeySignatures)
+            {
+
+                try
+                {
+
+                    let signatureDiv = publicKeyValue.parentElement!.children[3].appendChild(document.createElement('div'));
+                    signatureDiv.innerHTML = this.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
+                                                                               measurementValue.measurement.chargingSession.EVSE,
+                                                                               //@ts-ignore
+                                                                               measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                                               //@ts-ignore
+                                                                               measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                                               signature);
+
+                }
+                catch (exception)
+                { }
+
+            }
+            
+        }
 
 
         // Signature
