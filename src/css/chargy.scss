@@ -266,9 +266,9 @@ body {
                             font-size:          80%;
 
                             i {
-                                position:           relative;
-                                top:                1px;
-                                padding-left:       5px;
+                                // position:           relative;
+                                // top:                1px;
+                                padding-right:      3px;
                             }
                             
                         }
@@ -1199,13 +1199,16 @@ body {
 
                 .signatures {
 
-                    padding:            3px 0px 0px 10px;
-                    font-size:          80%;
+                    display:            flex;
+                    padding:            3px 0px 0px 0px;
+                    font-family:        sans-serif;
+                    font-size:          70%;
+                    color:              #6d6d6d;
 
                     i {
-                        position:           relative;
-                        top:                1px;
-                        padding-left:       5px;
+                        // position:           relative;
+                        // top:                0px;
+                        padding:            0px 3px 0px 10px;
                     }
 
                 }
