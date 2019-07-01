@@ -39,26 +39,35 @@ abstract class ACrypt {
 
     }
 
+    protected pad(text: string|undefined, paddingValue: number) {
 
-    CreateLine(id:         string,
-               value:      string|number,
-               valueHEX:   string,
-               infoDiv:    HTMLDivElement,
-               bufferDiv:  HTMLDivElement)
+        if (text == null || text == undefined)
+            text = "";
+
+        return (text + Array(2*paddingValue).join('0')).substring(0, 2*paddingValue);
+
+    };
+
+
+    protected CreateLine(id:         string,
+                         value:      string|number,
+                         valueHEX:   string,
+                         infoDiv:    HTMLDivElement,
+                         bufferDiv:  HTMLDivElement)
     {
 
         var lineDiv = CreateDiv(infoDiv, "row");
                       CreateDiv(lineDiv, "id",    id);
                       CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value.toString()));
 
-        this.AddToBuffer(valueHEX, bufferDiv, lineDiv);
+        this.AddToVisualBuffer(valueHEX, bufferDiv, lineDiv);
 
     }
 
 
-    AddToBuffer(valueHEX:   string,
-                bufferDiv:  HTMLDivElement,
-                lineDiv:    HTMLDivElement) 
+    protected AddToVisualBuffer(valueHEX:   string,
+                                bufferDiv:  HTMLDivElement,
+                                lineDiv:    HTMLDivElement)
     {
 
         let newText = CreateDiv(bufferDiv, "entry", valueHEX);

@@ -353,7 +353,6 @@ class EMHCrypt01 extends ACrypt {
 
     }
 
-
     ViewMeasurement(measurementValue:        IEMHMeasurementValue,
                     introDiv:                HTMLDivElement,
                     infoDiv:                 HTMLDivElement,
@@ -369,19 +368,19 @@ class EMHCrypt01 extends ACrypt {
         const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
         cryptoSpan.innerHTML = "EMHCrypt01 (" + this.description + ")";
 
-        this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId                     || "",  infoDiv, bufferValue);
-        this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp                   || "",  infoDiv, bufferValue);
+        this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId                                    || "",  infoDiv, bufferValue);
+        this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp                                  || "",  infoDiv, bufferValue);
         this.CreateLine("Status",                   hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
-                                                    this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",           result.infoStatus                  || "",  infoDiv, bufferValue);
-        this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                       result.secondsIndex                || "",  infoDiv, bufferValue);
-        this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                         result.paginationId                || "",  infoDiv, bufferValue);
-        this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis                        || "",  infoDiv, bufferValue);
-        this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded                 || "",  infoDiv, bufferValue);
-        this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale                       || "",  infoDiv, bufferValue);
-        this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value                       || "",  infoDiv, bufferValue);
-        this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                              result.logBookIndex                || "",  infoDiv, bufferValue);
-        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     result.authorizationStart          || "",  infoDiv, bufferValue);
-        this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), result.authorizationStartTimestamp || "",  infoDiv, bufferValue);
+                                                    this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",           result.infoStatus                                 || "",  infoDiv, bufferValue);
+        this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                       result.secondsIndex                               || "",  infoDiv, bufferValue);
+        this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                         result.paginationId                               || "",  infoDiv, bufferValue);
+        this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis                                       || "",  infoDiv, bufferValue);
+        this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded                                || "",  infoDiv, bufferValue);
+        this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale                                      || "",  infoDiv, bufferValue);
+        this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value                                      || "",  infoDiv, bufferValue);
+        this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                              result.logBookIndex                               || "",  infoDiv, bufferValue);
+        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     this.pad(result.authorizationStart,          128) || "",  infoDiv, bufferValue);
+        this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), this.pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, bufferValue);
 
         // Buffer
         bufferValue.parentElement!.children[0].innerHTML             = "Puffer (320 Bytes, hex)";
@@ -402,8 +401,9 @@ class EMHCrypt01 extends ACrypt {
 
         if (!IsNullOrEmpty(result.publicKey))
             publicKeyValue.innerHTML                                 = pubKey.startsWith("04") // Add some space after '04' to avoid confused customers
-                                                                           ? "04 " + pubKey.substring(2).match(/.{1,8}/g)!.join(" ")
-                                                                           :         pubKey.match(/.{1,8}/g)!.join(" ");
+                                                                           ? "<span class=\"leadingFour\">04</span> "
+                                                                             + pubKey.substring(2).match(/.{1,8}/g)!.join(" ")
+                                                                           :   pubKey.match(/.{1,8}/g)!.join(" ");
 
 
         if (!IsNullOrEmpty(result.publicKeySignatures)) {
