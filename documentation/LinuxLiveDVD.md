@@ -82,9 +82,11 @@ apt install -y /opt/chargytransparenzsoftware_1.0.0_amd64.deb
 # If the Chargy application icon is broken, try the following work-around
 sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\/build\/chargy_icon.png/g' /usr/share/applications/chargytransparenzsoftware.desktop 
 
-mkdir /etc/skel/Desktop
-cp /opt/Chargy\ Transparenzsoftware/documentation/chargeIT-Testdatensatz-01.chargy /etc/skel/Desktop/
-cp /opt/Chargy\ Transparenzsoftware/documentation/Chargy\ Transparenzsoftware\ Nutzerhandbuch\ v1.0.0.pdf /etc/skel/Desktop/Chargy_Transparenzsoftware_Nutzerhandbuch_v1.0.0.pdf
+mkdir /etc/skel/Dokumente
+cp /opt/Chargy\ Transparenzsoftware/documentation/chargeIT-Testdatensatz-01.chargy /etc/skel/Dokumente/
+cp /opt/Chargy\ Transparenzsoftware/documentation/Chargy\ Transparenzsoftware\ Nutzerhandbuch\ v1.0.0.pdf /etc/skel/Dokumente/Chargy_Transparenzsoftware_Nutzerhandbuch_v1.0.0.pdf
+chmod 644 /etc/skel/Dokumente/Chargy\ Transparenzsoftware/documentation/chargeIT-Testdatensatz-01.chargy
+chmod 644 /etc/skel/Dokumente/Chargy_Transparenzsoftware_Nutzerhandbuch_v1.0.0.pdf
 
 mkdir /etc/skel/.config/autostart
 cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/.config/autostart/
