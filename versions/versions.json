@@ -37,7 +37,7 @@
                         "open.charging.cloud":  "https://open.charging.clould/chargy/ChargyDesktopApp/releases/v1.0.0/Chargy%20Transparenzsoftware%20Setup%20v1.0.0.exe"
                     },
                     "cryptoHashes": {
-                        "SHA512":               "0x04526069 c628b89e 231d135b 1b676a00 86c387a6 b28742d6 9ed0b6e2 bc1075f0 c635b0d8 8ca4ce8e 8479ae60 23eaec1b a6c0faed dfb24ee0 cd495a60 ebfdc982"
+                        "SHA512":               "46cfd670 f88adab4 08df2c42 e74070fd ba42a65e 2d9f821e 0b8f7921 2c89fe99 0e505de4 573c2fcf ed6eca48 ca15b848 59ebb9d0 670dfbfd 7a4c0bd5 6aef24c7"
                     },
                     "signatures": [
                         {
@@ -74,7 +74,7 @@
                     },
                     "platform":             "win32",
                     "cryptoHashes": {
-                        "SHA512":           "0xb1d5aa8f ccd7ae3a b11f96f0 1f95873b 2eb26963 d696e896 f2f378b9 54b6076b 7e6b2c1a 67879bcf 54113136 305e1bff cf0b4005 f7549972 6f091add afebb41b"
+                        "SHA512":           "82c96793 ca997ec9 5afb0b98 62986c46 1eec0c7a d7d03f31 744cfb56 269e8c49 515ab42d ee1d6c15 a14ad380 889b23fc 48b4966f c7a38104 dd2deb49 e114d790"
                     },
                     "signatures": [
                         {
@@ -221,6 +221,40 @@
                         "SHA512":           "4e1eaa6f 655e506e eadb318f 00ebf507 186efeb3 1fe7ca2d 750e84d4 5387b732 6371c9e7 defd144f e9424e9d 2771433a 2efe97cd 7a1a0319 56740449 81f5fd39"
                     },
                     "signatures_notNow": [
+                        {
+                            "signer":           "Open Charging Cloud by GraphDefined GmbH",
+                            "timestamp":        "2019-07-02T00:00:00Z",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
+                            "algorithm":        "secp256k1",
+                            "format":           "DER",
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
+                        },
+                        {
+                            "signer":           "chargeIT mobility GmbH",
+                            "timestamp":        "2019-07-02T00:00:00Z",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
+                            "algorithm":        "secp256k1",
+                            "format":           "DER",
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
+                        }
+                    ]
+                },
+
+                {
+                    "name":                 "Chargy Live DVD",
+                    "description": {
+                        "de":               "Eine bootbare Linux-Live-DVD auf Basis der Ubuntu Linux 19.04 Live DVD.",
+                        "en":               "A bootable Linux Live DVD based upon the Ubuntu Linux 19.04 Live DVD."
+                    },
+                    "additionalInfo": {
+                        "de":               "Dies betrifft die Dateien 'Chargy\\ Transparenzsoftware\\ v1.0.0.iso'.",
+                        "en":               "This means the 'Chargy\\ Transparenzsoftware\\ v1.0.0.iso' file."
+                    },
+                    "platform":             "ISOImage",
+                    "cryptoHashes": {
+                        "SHA512":           "xxxxxxxx 655e506e eadb318f 00ebf507 186efeb3 1fe7ca2d 750e84d4 5387b732 6371c9e7 defd144f e9424e9d 2771433a 2efe97cd 7a1a0319 56740449 81f5fd39"
+                    },
+                    "signatures": [
                         {
                             "signer":           "Open Charging Cloud by GraphDefined GmbH",
                             "timestamp":        "2019-07-02T00:00:00Z",
