@@ -432,7 +432,7 @@ class ChargyApplication {
     
                         if (this.currentPackage.signatures == null || this.currentPackage.signatures.length == 0)
                         {
-                            sigHeadDiv.innerHTML = "<i class=\"fas fa-check-circle\"></i> Gültiger Hashwert!";
+                            sigHeadDiv.innerHTML = "<i class=\"fas fa-check-circle\"></i> Gültiger Hashwert";
                         }
     
                         // Some crypto signatures found...

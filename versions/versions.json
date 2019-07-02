@@ -97,6 +97,44 @@
                 },
 
                 {
+                    "name":                 "Mac OS X disk image",
+                    "description": {
+                        "de":               "Das Mac OS X disk image betrifft die Datei 'Chargy\\ Transparenzsoftware\\ Setup\\ v1.0.0.dmg'.",
+                        "en":               "The Mac OS X disk image is the file 'Chargy\\ Transparenzsoftware\\ Setup\\ v1.0.0.dmg'."
+                    },
+                    "additionalInfo": {
+                        "de":               "Sie können den Hashwert des Mac OS X disk images durch folgendes Kommando verifizieren:<br /><i>shasum -a 512 Chargy\\ Transparenzsoftware\\ Setup\\ v1.0.0.dmg</i>",
+                        "en":               "You can verify the hash value of the Mac OS X disk image via the following command:<br /><i>shasum -a 512 Chargy\\ Transparenzsoftware\\ Setup\\ v1.0.0.dmg</i>"
+                    },
+                    "platform":             "darwin",
+                    "isInstaller":          true,
+                    "downloadURLs": {
+                        "open.charging.cloud":  "https://open.charging.clould/chargy/ChargyDesktopApp/releases/v1.0.0/Chargy%20Transparenzsoftware%20Setup%20v1.0.0.dmg"
+                    },                    
+                    "cryptoHashes": {
+                        "SHA512":           "1ceb3f23 8e55ad88 4bccd7e9 c69bdf61 77e24bb8 b7cdb76e ee784085 94b7ba49 bdd5568f 30ebce42 cb886369 799baf5f 91275fe8 beca46f6 cb024efa ef9a90e2"
+                    },
+                    "signatures": [
+                        {
+                            "signer":           "Open Charging Cloud by GraphDefined GmbH",
+                            "timestamp":        "2019-07-02T00:00:00Z",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
+                            "algorithm":        "secp256k1",
+                            "format":           "DER",
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
+                        },
+                        {
+                            "signer":           "chargeIT mobility GmbH",
+                            "timestamp":        "2019-07-02T00:00:00Z",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
+                            "algorithm":        "secp256k1",
+                            "format":           "DER",
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
+                        }
+                    ]
+                },
+
+                {
                     "name":                 "Mac OS X Software",
                     "description": {
                         "de":               "Dies betrifft die Dateien '/Applications/Chargy\\ Transparenzsoftware.app/Contents/MacOS/Chargy Transparenzsoftware', '~/Resources/app.asar' und '~/Resourceselectron.asar'.",
@@ -108,9 +146,9 @@
                     },
                     "platform":             "darwin",
                     "cryptoHashes": {
-                        "SHA512":           "b1d5aa8f ccd7ae3a b11f96f0 1f95873b 2eb26963 d696e896 f2f378b9 54b6076b 7e6b2c1a 67879bcf 54113136 305e1bff cf0b4005 f7549972 6f091add afebb41b"
+                        "SHA512":           "c0ca9c03 af2878d5 05ef574d 88a956e5 8dc2fbee ca2bd038 8953ffd2 f4afe9b6 660ca582 302d6d79 4af18995 a0b75b4d df414baf 284beb2c e3a0dd5d 8b624f86"
                     },
-                    "signatures": [
+                    "signatures_notNow": [
                         {
                             "signer":           "Open Charging Cloud by GraphDefined GmbH",
                             "timestamp":        "2019-07-02T00:00:00Z",
@@ -142,6 +180,9 @@
                     },
                     "platform":             "linux",
                     "isInstaller":          true,
+                    "downloadURLs": {
+                        "open.charging.cloud":  "https://open.charging.clould/chargy/ChargyDesktopApp/releases/v1.0.0/Chargy%20Transparenzsoftware%20Setup%20v1.0.0.deb"
+                    },                    
                     "cryptoHashes": {
                         "SHA512":           "7e858043 fb08bb70 5da73735 44da20fb f37e3ba7 10cbecae 30922e1b a8ce97e5 20a6a165 41c3d565 09777f8f fa3ec580 0be1cb7b b295e0ca 9e5e77bd 892e4103"
                     },
