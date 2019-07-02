@@ -131,8 +131,6 @@ class ChargyApplication {
                                          "https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
                                          true);
 
-
-
         GetListOfVersionsFromGitHub.onreadystatechange = () => {
 
             // 0 UNSENT | 1 OPENED | 2 HEADERS_RECEIVED | 3 LOADING | 4 DONE
@@ -152,6 +150,8 @@ class ChargyApplication {
 
                                 var versionElements = version.version.split('.');
 
+                                //#region Find current version package
+
                                 if (versionElements[0] == this.appVersion[0] && versionElements[1] == this.appVersion[1] && versionElements[2] == this.appVersion[2])
                                 {
 
@@ -161,14 +161,22 @@ class ChargyApplication {
                                     {
                                         for (let _package of this.currentVersionInfos.packages)
                                         {
-                                            if (_package.platform === process.platform && _package.isInstaller == null)
+                                            if (_package.isInstaller == null &&
+                                                (_package.platform === process.platform ||
+                                                (_package.platforms != null && Array.isArray(_package.platforms) && _package.platforms.indexOf(process.platform) > -1)))
+                                            {
                                                 this.currentPackage = _package;
+                                            }
                                         }
                                     }
 
                                 }
 
-                                else if (versionElements[0] > this.appVersion[0] ||
+                                //#endregion
+
+                                //#region Find newer/updated version
+
+                                else if (versionElements[0] >  this.appVersion[0] ||
                                         (versionElements[0] >= this.appVersion[0] && versionElements[1] >  this.appVersion[1]) ||
                                         (versionElements[0] >= this.appVersion[0] && versionElements[1] >= this.appVersion[1] && versionElements[2] > this.appVersion[2]))
                                 {
@@ -305,6 +313,8 @@ class ChargyApplication {
 
                                 }
 
+                                //#endregion
+
                             }
 
                         }
@@ -325,13 +335,13 @@ class ChargyApplication {
         //#endregion
 
 
-        this.updateAvailableScreen     = <HTMLDivElement>      document.getElementById('updateAvailableScreen');
-        this.aboutScreenDiv            = <HTMLDivElement>      document.getElementById('aboutScreen');
-        this.chargySHA512Div           = <HTMLDivElement>      document.getElementById('chargySHA512');
-        this.chargingSessionScreenDiv  = <HTMLDivElement>      document.getElementById('chargingSessionScreen');
-        this.evseTarifInfosDiv         = <HTMLDivElement>      document.getElementById('evseTarifInfos');
-        this.inputInfosDiv             = <HTMLDivElement>      document.getElementById('inputInfos');
-        this.errorTextDiv              = <HTMLDivElement>      document.getElementById('errorText');
+        this.updateAvailableScreen     = <HTMLDivElement> document.getElementById('updateAvailableScreen');
+        this.aboutScreenDiv            = <HTMLDivElement> document.getElementById('aboutScreen');
+        this.chargySHA512Div           = <HTMLDivElement> document.getElementById('chargySHA512');
+        this.chargingSessionScreenDiv  = <HTMLDivElement> document.getElementById('chargingSessionScreen');
+        this.evseTarifInfosDiv         = <HTMLDivElement> document.getElementById('evseTarifInfos');
+        this.inputInfosDiv             = <HTMLDivElement> document.getElementById('inputInfos');
+        this.errorTextDiv              = <HTMLDivElement> document.getElementById('errorText');
 
 
         //#region Handle Drag'n'Drop of charge transparency files
@@ -387,64 +397,70 @@ class ChargyApplication {
             this.chargingSessionScreenDiv.style.display  = "none";
             this.backButtonDiv.style.display             = "block";
 
-            if (this.complete_hash == "")
-            {
-                if (this.exe_hash != "" && this.app_asar_hash != "" && this.electron_asar_hash != "")
-                {
+            //#region Calculate the over-all application hash
 
-                    var sha512hash = this.crypt.createHash('sha512');
-                    sha512hash.update(this.exe_hash);
-                    sha512hash.update(this.app_asar_hash);
-                    sha512hash.update(this.electron_asar_hash);
-
-                    this.complete_hash = this.chargySHA512Div.children[1].innerHTML = sha512hash.digest('hex').match(/.{1,8}/g).join(" ");
-
-                }
-            }
-
-            this.complete_hash = "b1d5aa8f ccd7ae3a b11f96f0 1f95873b 2eb26963 d696e896 f2f378b9 54b6076b 7e6b2c1a 67879bcf 54113136 305e1bff cf0b4005 f7549972 6f091add afebb41b";
-
-            if (this.currentAppInfos     != null &&
-                this.currentVersionInfos != null &&
-                this.currentPackage      != null)
+            if (this.complete_hash      == "" &&
+                this.exe_hash           != "" &&
+                this.app_asar_hash      != "" &&
+                this.electron_asar_hash != "")
             {
 
-                let sigHeadDiv    = this.chargySHA512Div.children[2];
-                let signaturesDiv = this.chargySHA512Div.children[3];
+                var sha512hash = this.crypt.createHash('sha512');
+                sha512hash.update(this.exe_hash);
+                sha512hash.update(this.app_asar_hash);
+                sha512hash.update(this.electron_asar_hash);
 
-                // Bad hash value
-                if (this.currentPackage.cryptoHashes.SHA512.replace("0x", "") !== this.complete_hash)
-                    sigHeadDiv.innerHTML = "<i class=\"fas fa-times-circle\"></i> Ungültiger Hashwert!";
+                this.complete_hash = this.chargySHA512Div.children[1].innerHTML = sha512hash.digest('hex').match(/.{1,8}/g).join(" ");
 
-                // At least the same hash value...
-                else
+                //#region Check application hash signatures, when given...
+
+                if (this.currentAppInfos     != null &&
+                    this.currentVersionInfos != null &&
+                    this.currentPackage      != null)
                 {
-
-                    if (this.currentPackage.signatures == null || this.currentPackage.signatures.length == 0)
-                    {
-                        sigHeadDiv.innerHTML = "<i class=\"fas fa-check-circle\"></i> Gültiger Hashwert!";
-                    }
-
-                    // Some crypto signatures found...
+    
+                    let sigHeadDiv    = this.chargySHA512Div.children[2];
+                    let signaturesDiv = this.chargySHA512Div.children[3];
+    
+                    // Bad hash value
+                    if (this.currentPackage.cryptoHashes.SHA512.replace("0x", "") !== this.complete_hash)
+                        sigHeadDiv.innerHTML = "<i class=\"fas fa-times-circle\"></i> Ungültiger Hashwert!";
+    
+                    // At least the same hash value...
                     else
                     {
-
-                        sigHeadDiv.innerHTML = "Bestätigt durch...";
-
-                        for (let signature of this.currentPackage.signatures)
+    
+                        if (this.currentPackage.signatures == null || this.currentPackage.signatures.length == 0)
                         {
-                            let signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
-                            signatureDiv.innerHTML = this.CheckApplicationHashSignature(this.currentAppInfos,
-                                                                                        this.currentVersionInfos,
-                                                                                        this.currentPackage,
-                                                                                        signature);
+                            sigHeadDiv.innerHTML = "<i class=\"fas fa-check-circle\"></i> Gültiger Hashwert!";
                         }
-
+    
+                        // Some crypto signatures found...
+                        else
+                        {
+    
+                            sigHeadDiv.innerHTML = "Bestätigt durch...";
+    
+                            for (let signature of this.currentPackage.signatures)
+                            {
+                                let signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
+                                signatureDiv.innerHTML = this.CheckApplicationHashSignature(this.currentAppInfos,
+                                                                                            this.currentVersionInfos,
+                                                                                            this.currentPackage,
+                                                                                            signature);
+                            }
+    
+                        }
+    
                     }
-
+    
                 }
 
+                //#endregion
+
             }
+
+            //#endregion
 
         }
 

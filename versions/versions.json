@@ -10,13 +10,13 @@
 
         {
             "version":          "1.0.0",
-            "releaseDate":      "2019-06-28T00:00:00Z",
+            "releaseDate":      "2019-07-02T00:00:00Z",
             "description": {
-                "de":               "Diese Version verbessert die Sicherheit und Benutzerfreundlichkeit der Transparenzsoftware.",
-                "en":               "This version of the transparency software comes with many security and usability enhancements."
+                "de":               "Diese erste offizielle Version der Chargy Transparenzsoftware.",
+                "en":               "The first official version of the transparency software."
             },
             "tags": [
-                "security", "usability"
+                "e-mobility", "Eichrecht", "usability", "security"
             ],
 
             "packages": [
@@ -34,7 +34,7 @@
                     "platform":             "win32",
                     "isInstaller":          true,
                     "downloadURLs": {
-                        "open.charging.cloud":  "https://open.charging.clould/releases/ChargyDesktopApp/Chargy%20Transparenzsoftware%20Setup%20v1.0.0.exe"
+                        "open.charging.cloud":  "https://open.charging.clould/chargy/ChargyDesktopApp/releases/v1.0.0/Chargy%20Transparenzsoftware%20Setup%20v1.0.0.exe"
                     },
                     "cryptoHashes": {
                         "SHA512":               "0x04526069 c628b89e 231d135b 1b676a00 86c387a6 b28742d6 9ed0b6e2 bc1075f0 c635b0d8 8ca4ce8e 8479ae60 23eaec1b a6c0faed dfb24ee0 cd495a60 ebfdc982"
@@ -42,36 +42,20 @@
                     "signatures": [
                         {
                             "signer":           "Open Charging Cloud by GraphDefined GmbH",
-                            "timestamp":        "2019-06-15T00:00:00Z",
+                            "timestamp":        "2019-07-02T00:00:00Z",
                             "comment": {
                                 "en":           "Greates version ever!"
                             },
                             "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
-                            "algorithm":        "secp256r1",
+                            "algorithm":        "secp256k1",
                             "format":           "DER",
                             "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                         },
                         {
                             "signer":           "chargeIT mobility GmbH",
-                            "timestamp":        "2019-06-15T00:00:00Z",
+                            "timestamp":        "2019-07-02T00:00:00Z",
                             "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
-                            "algorithm":        "secp256r1",
-                            "format":           "DER",
-                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
-                        },
-                        {
-                            "signer":           "Physikalisch-Technische Bundesanstalt",
-                            "timestamp":        "2019-06-15T00:00:00Z",
-                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
-                            "algorithm":        "secp256r1",
-                            "format":           "DER",
-                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
-                        },
-                        {
-                            "signer":           "Hubject GmbH",
-                            "timestamp":        "2019-06-15T00:00:00Z",
-                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
-                            "algorithm":        "secp256r1",
+                            "algorithm":        "secp256k1",
                             "format":           "DER",
                             "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                         }
@@ -95,58 +79,111 @@
                     "signatures": [
                         {
                             "signer":           "Open Charging Cloud by GraphDefined GmbH",
-                            "timestamp":        "2019-06-15T00:00:00Z",
+                            "timestamp":        "2019-07-02T00:00:00Z",
                             "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
-                            "algorithm":        "secp192r1",
+                            "algorithm":        "secp256k1",
                             "format":           "DER",
                             "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                         },
                         {
                             "signer":           "chargeIT mobility GmbH",
-                            "timestamp":        "2019-06-15T00:00:00Z",
+                            "timestamp":        "2019-07-02T00:00:00Z",
                             "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
-                            "algorithm":        "secp192r1",
+                            "algorithm":        "secp256k1",
+                            "format":           "DER",
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
+                        }
+                    ]
+                },
+
+                {
+                    "name":                 "Mac OS X Software",
+                    "description": {
+                        "de":               "Dies betrifft die Dateien '/Applications/Chargy\\ Transparenzsoftware.app/Contents/MacOS/Chargy Transparenzsoftware', '~/Resources/app.asar' und '~/Resourceselectron.asar'.",
+                        "en":               "In general this means the '/Applications/Chargy\\ Transparenzsoftware.app/Contents/MacOS/Chargy Transparenzsoftware', the '~/Resourcesapp.asar' and the '~/Resourceselectron.asar' files."
+                    },
+                    "additionalInfo": {
+                        "de":               "Dies betrifft die Dateien '/Applications/Chargy\\ Transparenzsoftware.app/Contents/MacOS/Chargy Transparenzsoftware', '~/Resourcesapp.asar' und '~/Resourceselectron.asar'.",
+                        "en":               "In general this means the '/Applications/Chargy\\ Transparenzsoftware.app/Contents/MacOS/Chargy Transparenzsoftware', the '~/Resourcesapp.asar' and the '~/Resourceselectron.asar' files."
+                    },
+                    "platform":             "darwin",
+                    "cryptoHashes": {
+                        "SHA512":           "0xb1d5aa8f ccd7ae3a b11f96f0 1f95873b 2eb26963 d696e896 f2f378b9 54b6076b 7e6b2c1a 67879bcf 54113136 305e1bff cf0b4005 f7549972 6f091add afebb41b"
+                    },
+                    "signatures": [
+                        {
+                            "signer":           "Open Charging Cloud by GraphDefined GmbH",
+                            "timestamp":        "2019-07-02T00:00:00Z",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
+                            "algorithm":        "secp256k1",
                             "format":           "DER",
                             "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                         },
                         {
-                            "signer":           "Physikalisch-Technische Bundesanstalt",
-                            "timestamp":        "2019-06-15T00:00:00Z",
+                            "signer":           "chargeIT mobility GmbH",
+                            "timestamp":        "2019-07-02T00:00:00Z",
                             "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
-                            "algorithm":        "secp192r1",
+                            "algorithm":        "secp256k1",
+                            "format":           "DER",
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
+                        }
+                    ]
+                },
+
+                {
+                    "name":                 "Linux, FreeBSD and OpenBSD Software",
+                    "description": {
+                        "de":               "Dies betrifft die Dateien '/opt/Chargy\\ Transparenzsoftware/chargytransparenzsoftware', '~/resources/app.asar' und '~/resources/electron.asar'.",
+                        "en":               "In general this means the '/opt/Chargy\\ Transparenzsoftware/chargytransparenzsoftware', the '~/resources/app.asar' and the '~/resources/electron.asar' files."
+                    },
+                    "additionalInfo": {
+                        "de":               "Dies betrifft die Dateien '/opt/Chargy\\ Transparenzsoftware/chargytransparenzsoftware', '~/resources/app.asar' und '~/resources/electron.asar'.",
+                        "en":               "In general this means the '/opt/Chargy\\ Transparenzsoftware/chargytransparenzsoftware', the '~/resources/app.asar' and the '~/resources/electron.asar' files."
+                    },
+                    "platforms":            [ "linux", "freebsd", "openbsd" ],
+                    "cryptoHashes": {
+                        "SHA512":           "0xb1d5aa8f ccd7ae3a b11f96f0 1f95873b 2eb26963 d696e896 f2f378b9 54b6076b 7e6b2c1a 67879bcf 54113136 305e1bff cf0b4005 f7549972 6f091add afebb41b"
+                    },
+                    "signatures": [
+                        {
+                            "signer":           "Open Charging Cloud by GraphDefined GmbH",
+                            "timestamp":        "2019-07-02T00:00:00Z",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
+                            "algorithm":        "secp256k1",
                             "format":           "DER",
                             "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                         },
                         {
-                            "signer":           "Hubject GmbH",
-                            "timestamp":        "2019-06-15T00:00:00Z",
+                            "signer":           "chargeIT mobility GmbH",
+                            "timestamp":        "2019-07-02T00:00:00Z",
                             "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
-                            "algorithm":        "secp256r1",
-                            "format":           "DER",                            
+                            "algorithm":        "secp256k1",
+                            "format":           "DER",
                             "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                         }
                     ]
                 }
+                
 
             ],
 
             "signatures": [
                 {
                     "signer":           "Open Charging Cloud by GraphDefined GmbH",
-                    "timestamp":        "2019-06-15T00:00:00Z",
+                    "timestamp":        "2019-07-02T00:00:00Z",
                     "comment": {
                         "en":           "Greates version ever!"
                     },
                     "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
-                    "algorithm":        "secp192r1",
+                    "algorithm":        "secp256k1",
                     "format":           "DER",
                     "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                 },
                 {
                     "signer":           "chargeIT mobility GmbH",
-                    "timestamp":        "2019-06-15T00:00:00Z",
+                    "timestamp":        "2019-07-02T00:00:00Z",
                     "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
-                    "algorithm":        "secp192r1",
+                    "algorithm":        "secp256k1",
                     "format":           "DER",
                     "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
                 }
@@ -158,12 +195,12 @@
     "signatures": [
         {
             "signer":           "Open Charging Cloud by GraphDefined GmbH",
-            "timestamp":        "2019-06-15T00:00:00Z",
+            "timestamp":        "2019-07-02T00:00:00Z",
             "comment": {
                 "en":           "Greates version ever!"
             },
             "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
-            "algorithm":        "secp192r1",
+            "algorithm":        "secp256k1",
             "format":           "DER",
             "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
         }
