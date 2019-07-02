@@ -76,7 +76,7 @@
                     "cryptoHashes": {
                         "SHA512":           "82c96793 ca997ec9 5afb0b98 62986c46 1eec0c7a d7d03f31 744cfb56 269e8c49 515ab42d ee1d6c15 a14ad380 889b23fc 48b4966f c7a38104 dd2deb49 e114d790"
                     },
-                    "signatures": [
+                    "signatures_notNow": [
                         {
                             "signer":           "Open Charging Cloud by GraphDefined GmbH",
                             "timestamp":        "2019-07-02T00:00:00Z",
