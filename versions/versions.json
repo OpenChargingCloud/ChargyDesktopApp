@@ -252,7 +252,7 @@
                     },
                     "platform":             "ISOImage",
                     "cryptoHashes": {
-                        "SHA512":           "xxxxxxxx 655e506e eadb318f 00ebf507 186efeb3 1fe7ca2d 750e84d4 5387b732 6371c9e7 defd144f e9424e9d 2771433a 2efe97cd 7a1a0319 56740449 81f5fd39"
+                        "SHA512":           "58e9af06 c3dcb29a 48e5fae4 23f94867 cf95d34c 51997e64 a7e46e00 ea55cb1b 77b293fa 70ba65f9 f697349c 6dcd99b3 e17a6168 1173b768 0e3f814b c3938f5f"
                     },
                     "signatures": [
                         {
