@@ -108,7 +108,42 @@
                     },
                     "platform":             "darwin",
                     "cryptoHashes": {
-                        "SHA512":           "0xb1d5aa8f ccd7ae3a b11f96f0 1f95873b 2eb26963 d696e896 f2f378b9 54b6076b 7e6b2c1a 67879bcf 54113136 305e1bff cf0b4005 f7549972 6f091add afebb41b"
+                        "SHA512":           "b1d5aa8f ccd7ae3a b11f96f0 1f95873b 2eb26963 d696e896 f2f378b9 54b6076b 7e6b2c1a 67879bcf 54113136 305e1bff cf0b4005 f7549972 6f091add afebb41b"
+                    },
+                    "signatures": [
+                        {
+                            "signer":           "Open Charging Cloud by GraphDefined GmbH",
+                            "timestamp":        "2019-07-02T00:00:00Z",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
+                            "algorithm":        "secp256k1",
+                            "format":           "DER",
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
+                        },
+                        {
+                            "signer":           "chargeIT mobility GmbH",
+                            "timestamp":        "2019-07-02T00:00:00Z",
+                            "publicKey":        "0x000000001111111122222222333333334444444455555555666666667777777788888888",
+                            "algorithm":        "secp256k1",
+                            "format":           "DER",
+                            "signature":        "0x000000001111111122222222333333334444444455555555666666667777777788888888"
+                        }
+                    ]
+                },
+
+                {
+                    "name":                 "Debian GNU/Linux package",
+                    "description": {
+                        "de":               "Der Debian GNU/Linux Installer betrifft die Datei 'Chargy\\ Transparenzsoftware\\ Setup\\ v1.0.0.deb'.",
+                        "en":               "The Debian GNU/Linux installer is the file 'Chargy\\ Transparenzsoftware\\ Setup\\ v1.0.0.deb'."
+                    },
+                    "additionalInfo": {
+                        "de":               "Sie können den Hashwert des Debian GNU/Linux Installers durch folgendes Kommando verifizieren:<br /><i>sha512sum Chargy\\ Transparenzsoftware\\ Setup\\ v1.0.0.deb</i>",
+                        "en":               "You can verify the hash value of the Debian GNU/Linux installer via the following command:<br /><i>sha512sum Chargy\\ Transparenzsoftware\\ Setup\\ v1.0.0.deb</i>"
+                    },
+                    "platform":             "linux",
+                    "isInstaller":          true,
+                    "cryptoHashes": {
+                        "SHA512":           "7e858043 fb08bb70 5da73735 44da20fb f37e3ba7 10cbecae 30922e1b a8ce97e5 20a6a165 41c3d565 09777f8f fa3ec580 0be1cb7b b295e0ca 9e5e77bd 892e4103"
                     },
                     "signatures": [
                         {
@@ -142,9 +177,9 @@
                     },
                     "platforms":            [ "linux", "freebsd", "openbsd" ],
                     "cryptoHashes": {
-                        "SHA512":           "0xb1d5aa8f ccd7ae3a b11f96f0 1f95873b 2eb26963 d696e896 f2f378b9 54b6076b 7e6b2c1a 67879bcf 54113136 305e1bff cf0b4005 f7549972 6f091add afebb41b"
+                        "SHA512":           "4e1eaa6f 655e506e eadb318f 00ebf507 186efeb3 1fe7ca2d 750e84d4 5387b732 6371c9e7 defd144f e9424e9d 2771433a 2efe97cd 7a1a0319 56740449 81f5fd39"
                     },
-                    "signatures": [
+                    "signatures_notNow": [
                         {
                             "signer":           "Open Charging Cloud by GraphDefined GmbH",
                             "timestamp":        "2019-07-02T00:00:00Z",
