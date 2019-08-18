@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<values xmlns="http://transparenz.software/schema/2018/07">
- <value>
-  <signedData encoding="base64" format="SML_EDL40_P">ENCODED STRING</signedData>
-  <publicKey>887FABF407AC82782EEFFF2220C2F856AEB0BC22364BBCC6B55761911ED651D1A922BADA88818C9671AFEE7094D7F536</publicKey>
- </value>
-</values>
