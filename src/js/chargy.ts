@@ -21,6 +21,8 @@
 ///<reference path="GDFCrypt01.ts" />
 ///<reference path="EMHCrypt01.ts" />
 
+///<reference path="OCMFTypes.ts" />
+
 // import { debug } from "util";
 // import * as crypto from "crypto";
 // import { readSync } from "fs";
@@ -2293,9 +2295,335 @@ class ChargyApplication {
 
     //#endregion
 
+    //#region tryToParseTransparenzSoftwareXML(XMLDocument)
+
+    private tryToParseTransparenzSoftwareXML(XMLDocument: Document) : boolean
+    {
+
+        // The SAFE transparency software v1.0 does not understand its own
+        // XML namespace. Therefore we have to guess the format.
+
+        try
+        {
+
+            let values = XMLDocument.querySelectorAll("values");
+            if (values.length == 1)
+            {
+                let valueList = values[0].querySelectorAll("value");
+                if (valueList.length >= 1)
+                {
+                    for (var i in valueList)
+                    {
+
+                        //#region Parse XML...
+
+                        let signedDataEncoding  = "";
+                        let signedDataFormat    = "";
+                        let signedDataValue     = "";
+                        let publicKeyEncoding   = "";
+                        let publicKeyValue      = "";
+
+                        var signedData = valueList[i].querySelector("signedData");
+                        if (signedData != null)
+                        {
+
+                            signedDataEncoding = signedData.attributes.getNamedItem("encoding") !== null ? signedData.attributes.getNamedItem("encoding")!.value.trim().toLowerCase() : "";
+                            signedDataFormat   = signedData.attributes.getNamedItem("format")   !== null ? signedData.attributes.getNamedItem("format")!.value.trim().toLowerCase()   : "";
+                            signedDataValue    = signedData.textContent                         !== null ? signedData.textContent.trim()                                              : "";
+
+                            switch (signedDataEncoding)
+                            {
+
+                                //case "base32":
+
+                                case "base64":
+                                    signedDataValue = Buffer.from(signedDataValue, 'base64').toString();
+                                    break;
+
+                                //case "hex":
+
+                            }
+
+                        }
+
+                        // Note: The public key is optional!
+                        var publicKey  = valueList[i].querySelector("publicKey");
+                        if (publicKey != null)
+                        {
+
+                            publicKeyEncoding = publicKey.attributes.getNamedItem("encoding")   !== null ? publicKey.attributes.getNamedItem("encoding")!.value.trim().toLowerCase()  : "";
+                            publicKeyValue    = publicKey.textContent                           !== null ? publicKey.textContent.trim()                                               : "";
+
+                            switch (publicKeyEncoding)
+                            {
+
+                                //case "base32":
+
+                                case "base64":
+                                    publicKeyValue = Buffer.from(publicKeyValue, 'base64').toString();
+                                    break;
+
+                                //case "hex":
+
+                            }
+
+                        }
+
+                        //#endregion
+
+                        if (signedDataValue !== "")
+                        {
+                            switch (signedDataFormat)
+                            {
+
+                                case "ocmf":
+                                    this.tryToParseOCMF(signedDataValue, publicKeyValue);
+                                    break;
+
+                            }
+                        }
+
+                    }
+                }
+            }
+
+        }
+        catch (exception)
+        {  }
+
+        return false;
+
+    }
+
+    //#endregion
+
+    //#region tryToParseOCMF(OCMF, PublicKey?)
+
+    //#region tryToParseOCMFv0_1(OCMFData, PublicKey?)
+
+    private tryToParseOCMFv0_1(OCMFData:    IOCMFData_v0_1,
+                               PublicKey?:  string) : boolean
+    {
+
+        // {
+        //     "FV": "0.1",
+        //     "VI": "ABL",
+        //     "VV": "1.4p3",
+        //
+        //     "PG": "T12345",
+        //
+        //     "MV": "Phoenix Contact",
+        //     "MM": "EEM-350-D-MCB",
+        //     "MS": "BQ27400330016",
+        //     "MF": "1.0",
+        //
+        //     "IS": "VERIFIED",
+        //     "IF": ["RFID_PLAIN", "OCPP_RS_TLS"],
+        //     "IT": "ISO14443",
+        //     "ID": "1F2D3A4F5506C7",
+        //
+        //     "RD": [{
+        //         "TM": "2018-07-24T13:22:04,000+0200 S",
+        //         "TX": "B",
+        //         "RV": 2935.6,
+        //         "RI": "1-b:1.8.e",
+        //         "RU": "kWh",
+        //         "EI": 567,
+        //         "ST": "G"
+        //     }]
+        // }
+
+        try
+        {
+
+            let VendorInformation  :string = OCMFData.VI != null ? OCMFData.VI.trim() : ""; // Some text about the manufacturer, model, variant, ... of e.g. the vendor.
+            let VendorVersion      :string = OCMFData.VV != null ? OCMFData.VV.trim() : ""; // Software version of the vendor.
+
+            let paging             :string = OCMFData.PG != null ? OCMFData.PG.trim() : ""; // Paging, as this data might be part of a larger context.
+            let transactionType     = OCMFTransactionTypes.undefined;
+            switch (paging[0].toLowerCase())
+            {
+
+                case 't':
+                    transactionType = OCMFTransactionTypes.transaction;
+                    break;
+
+                case 'f':
+                    transactionType = OCMFTransactionTypes.fiscal;
+                    break
+
+            }
+            let pagingId            = paging.substring(1);
+
+            let MeterVendor        :string = OCMFData.MV != null ? OCMFData.MV.trim() : ""; // Vendor of the device, optional.
+            let MeterModel         :string = OCMFData.MM != null ? OCMFData.MM.trim() : ""; // Model of the device, optional.
+            let MeterSerial        :string = OCMFData.MS != null ? OCMFData.MS.trim() : ""; // Serialnumber of the device, might be optional.
+            let MeterFirmware      :string = OCMFData.MF != null ? OCMFData.MF.trim() : ""; // Software version of the device.
+
+        } catch (exception)
+        { }
+
+        return false;
+
+    }
+
+    //#endregion
+
+    //#region tryToParseOCMFv1_0(OCMFData, PublicKey?)
+
+    private tryToParseOCMFv1_0(OCMFData:    IOCMFData_v1_0,
+                               PublicKey?:  string) : boolean
+    {
+
+        // {
+        //     "FV": "1.0",
+        //     "GI": "SEAL AG",
+        //     "GS": "1850006a",
+        //     "GV": "1.34",
+        //
+        //     "PG": "T9289",
+        //
+        //     "MV": "Carlo Gavazzi",
+        //     "MM": "EM340-DIN.AV2.3.X.S1.PF",
+        //     "MS": "******240084S",
+        //     "MF": "B4",
+        //
+        //     "IS": true,
+        //     "IL": "TRUSTED",
+        //     "IF": ["OCCP_AUTH"],
+        //     "IT": "ISO14443",
+        //     "ID": "56213C05",
+        //
+        //     "RD": [{
+        //         "TM": "2019-06-26T08:57:44,337+0000 U",
+        //         "TX": "B",
+        //         "RV": 268.978,
+        //         "RI": "1-b:1.8.0",
+        //         "RU": "kWh",
+        //         "RT": "AC",
+        //         "EF": "",
+        //         "ST": "G"
+        //     }]
+        // }
+
+        try
+        {
+
+            let GatewayInformation :string = OCMFData.GI != null ? OCMFData.GI.trim() : ""; // Some text about the manufacturer, model, variant, ... of e.g. the gateway.
+            let GatewaySerial      :string = OCMFData.GS != null ? OCMFData.GS.trim() : ""; // Serial number of the gateway, might be mandatory.
+            let GatewayVersion     :string = OCMFData.GV != null ? OCMFData.GV.trim() : ""; // Software version of the gateway.
+
+            let paging             :string = OCMFData.PG != null ? OCMFData.PG.trim() : ""; // Paging, as this data might be part of a larger context.
+            let transactionType     = OCMFTransactionTypes.undefined;
+            switch (paging[0].toLowerCase())
+            {
+
+                case 't':
+                    transactionType = OCMFTransactionTypes.transaction;
+                    break;
+
+                case 'f':
+                    transactionType = OCMFTransactionTypes.fiscal;
+                    break
+
+            }
+            let pagingId            = paging.substring(1);
+
+            let MeterVendor        :string = OCMFData.MV != null ? OCMFData.MV.trim() : ""; // Vendor of the device, optional.
+            let MeterModel         :string = OCMFData.MM != null ? OCMFData.MM.trim() : ""; // Model of the device, optional.
+            let MeterSerial        :string = OCMFData.MS != null ? OCMFData.MS.trim() : ""; // Serialnumber of the device, might be optional.
+            let MeterFirmware      :string = OCMFData.MF != null ? OCMFData.MF.trim() : ""; // Software version of the device.
+
+        } catch (exception)
+        { }
+
+        return false;
+
+    }
+
+    //#endregion
+
+    private tryToParseOCMF(OCMF:        string,
+                           PublicKey?:  string) : boolean
+    {
+
+        // OCMF|{"FV":"1.0","GI":"SEAL AG","GS":"1850006a","GV":"1.34","PG":"T9289","MV":"Carlo Gavazzi","MM":"EM340-DIN.AV2.3.X.S1.PF","MS":"******240084S","MF":"B4","IS":true,"IL":"TRUSTED","IF":["OCCP_AUTH"],"IT":"ISO14443","ID":"56213C05","RD":[{"TM":"2019-06-26T08:57:44,337+0000 U","TX":"B","RV":268.978,"RI":"1-b:1.8.0","RU":"kWh","RT":"AC","EF":"","ST":"G"}]}|{"SD":"304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"}
+        let elements = OCMF.split('|');
+
+        if (elements.length == 3)
+        {
+
+            try
+            {
+
+                let OCMFData       = JSON.parse(elements[1]);
+                let OCMFSignature  = JSON.parse(elements[2]);
+
+               
+                // http://hers.abl.de/SAFE/Datenformat_OCMF/Datenformat_OCMF_v1.0.pdf
+                // Ein Darstellungsformat, JSON-basiert (nachvollziehbar)
+                // Ein Übertragungsformat, JSON-basiert (vereinheitlicht)
+                //
+                // {
+                //     "FV": "1.0",
+                //     "GI": "SEAL AG",
+                //     "GS": "1850006a",
+                //     "GV": "1.34",
+                //
+                //     "PG": "T9289",
+                //
+                //     "MV": "Carlo Gavazzi",
+                //     "MM": "EM340-DIN.AV2.3.X.S1.PF",
+                //     "MS": "******240084S",
+                //     "MF": "B4",
+                //
+                //     "IS": true,
+                //     "IL": "TRUSTED",
+                //     "IF": ["OCCP_AUTH"],
+                //     "IT": "ISO14443",
+                //     "ID": "56213C05",
+                //
+                //     "RD": [{
+                //         "TM": "2019-06-26T08:57:44,337+0000 U",
+                //         "TX": "B",
+                //         "RV": 268.978,
+                //         "RI": "1-b:1.8.0",
+                //         "RU": "kWh",
+                //         "RT": "AC",
+                //         "EF": "",
+                //         "ST": "G"
+                //     }]
+                // }
+
+                // Protocol version: major.minor
+                let FormatVersion:string = OCMFData["FV"] != null ? OCMFData["FV"].trim() : ""; 
+
+                switch (FormatVersion)
+                {
+
+                    case "0.1":
+                        return this.tryToParseOCMFv0_1(OCMFData as IOCMFData_v0_1, PublicKey);
+
+                    case "1.0":
+                        return this.tryToParseOCMFv1_0(OCMFData as IOCMFData_v1_0, PublicKey);
+
+                }
+
+            }
+            catch (exception)
+            {  }
+
+        }
+
+        return false;
+
+    }
+
+    //#endregion
+
     //#region detectContentFormat(Content)
 
-    private detectContentFormat(Content: IChargeTransparencyRecord) {
+    private detectContentFormat(Content: string) {
 
         if (Content == null)
             return;
@@ -2303,20 +2631,119 @@ class ChargyApplication {
         this.inputInfosDiv.style.display  = 'none';
         this.errorTextDiv.style.display   = 'none';
 
-        switch (Content["@context"])
+        //#region Clean data
+
+        Content = Content.trim();
+
+        // Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
+	    // conversion translates it to FEFF (UTF-16 BOM)
+        if (Content.charCodeAt(0) === 0xFEFF)
+            Content = Content.substr(1);
+
+        //#endregion
+
+        //#region XML processing...
+
+        if (Content.startsWith("<?xml"))
+        {
+            try
+            {
+
+                let XMLDocument  = new DOMParser().parseFromString(Content, "text/xml");
+
+                //#region XML namespace found...
+
+                let xmlns        = XMLDocument.lookupNamespaceURI(null);
+                if (xmlns != null)
+                {
+                
+                    switch (xmlns)
+                    {
+
+                        case "http://transparenz.software/schema/2018/07":
+                            if (!this.tryToParseTransparenzSoftwareXML(XMLDocument))
+                                this.doGlobalError("Unbekanntes Transparenzdatensatzformat!");
+                            break;
+
+                        // The SAFE transparency software v1.0 does not understand its own
+                        // XML namespace. Therefore we have to guess the format.
+                        case "":
+                            if (!this.tryToParseTransparenzSoftwareXML(XMLDocument))
+                                this.doGlobalError("Unbekanntes Transparenzdatensatzformat!");
+                            break;
+
+                    }
+
+                }
+
+                //#endregion
+
+                //#region ..., or plain XML.
+
+                else
+                {
+
+                    // The SAFE transparency software v1.0 does not understand its own
+                    // XML namespace. Therefore we have to guess the format.
+                    if (!this.tryToParseTransparenzSoftwareXML(XMLDocument))
+                        this.doGlobalError("Unbekanntes Transparenzdatensatzformat!");
+
+                }
+
+                //#endregion
+
+            } catch (exception)
+            { 
+                this.doGlobalError("Unbekanntes Transparenzdatensatzformat!");
+            }
+        }
+
+        //#endregion
+
+        //#region OCMF processing
+
+        else if (Content.startsWith("OCMF|{"))
         {
 
-            case "https://open.charging.cloud/contexts/CTR+json":
-                this.processChargeTransparencyRecord(Content);
-                break;
-
-            default:
-                //@ts-ignore
-                if (!this.tryToParseAnonymousFormat(Content))
-                    this.doGlobalError("Unbekanntes Transparenzdatensatzformat!");
-                break;
+            if (!this.tryToParseOCMF(Content))
+                this.doGlobalError("Unbekanntes Transparenzdatensatzformat!");
 
         }
+
+        //#endregion
+
+        //#region JSON processing
+
+        else
+        {
+            try
+            {
+
+                let JSONContent = JSON.parse(Content);
+
+                switch (JSONContent["@context"])
+                {
+
+                    case "https://open.charging.cloud/contexts/CTR+json":
+                        this.processChargeTransparencyRecord(JSONContent);
+                        break;
+
+                    default:
+                        //@ts-ignore
+                        if (!this.tryToParseAnonymousFormat(JSONContent))
+                            this.doGlobalError("Unbekanntes Transparenzdatensatzformat!");
+                        break;
+
+                }
+
+
+            } catch (exception)
+            { 
+                this.doGlobalError("Unbekanntes Transparenzdatensatzformat!");
+            }
+        }
+
+        //#endregion
 
     }
 
@@ -2780,7 +3207,7 @@ class ChargyApplication {
         reader.onload = (event) => {
             try
             {
-                this.detectContentFormat(JSON.parse((event.target as any).result));
+                this.detectContentFormat((event.target as any).result);
             }
             catch (exception) {
                 this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
