@@ -135,7 +135,7 @@
 			"format": "rs"
 		},
 		"measurements": [{
-			"meterId": "0901454D48000083E076",
+			"energyMeterId": "0901454D48000083E076",
 			"@context": "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
 			"name": "ENERGY_TOTAL",
 			"obis": "0100011100FF",

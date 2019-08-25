@@ -26,8 +26,6 @@ abstract class ACrypt {
 
     readonly elliptic: any;
     readonly moment:   any;
-    // variable 'crypto' is already defined differently in Google Chrome!
-    readonly crypt     = require('electron').remote.require('crypto');
 
     constructor(description:                   string,
                 GetMeter:                      GetMeterFunc,
@@ -96,19 +94,19 @@ abstract class ACrypt {
     }
 
     async sha256(message: DataView) {
-        const hashBuffer = await crypto.subtle.digest('SHA-256', message);// new TextEncoder().encode(message));
+        const hashBuffer = await crypto.subtle.digest('SHA-256', message);
         const hashArray  = Array.from(new Uint8Array(hashBuffer));                                       // convert hash to byte array
         const hashHex    = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('').toLowerCase(); // convert bytes to hex string
         return hashHex;
     }
 
-    abstract VerifyChargingSession(chargingSession:   IChargingSession): ISessionCryptoResult;
+    abstract VerifyChargingSession(chargingSession:   IChargingSession): Promise<ISessionCryptoResult>;
 
     abstract SignMeasurement(measurementValue:        IMeasurementValue,
                              privateKey:              any,
-                             publicKey:               any): ICryptoResult;
+                             publicKey:               any): Promise<ICryptoResult>;
 
-    abstract VerifyMeasurement(measurementValue:      IMeasurementValue): ICryptoResult;
+    abstract VerifyMeasurement(measurementValue:      IMeasurementValue): Promise<ICryptoResult>;
 
     abstract ViewMeasurement(measurementValue:        IMeasurementValue,
                              introDiv:                HTMLDivElement,

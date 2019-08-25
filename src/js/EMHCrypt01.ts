@@ -75,17 +75,11 @@ class EMHCrypt01 extends ACrypt {
         // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
     }    
 
-    SignMeasurement(measurementValue:  IEMHMeasurementValue,
-                    privateKey:        any,
-                    publicKey:         any): IEMHCrypt01Result
+    async SignMeasurement(measurementValue:  IEMHMeasurementValue,
+                          privateKey:        any,
+                          publicKey:         any): Promise<IEMHCrypt01Result>
     {
 
-        // var keypair                      = this.curve.genKeyPair();
-        //     privateKey                   = keypair.getPrivate();
-        //     publicKey                    = keypair.getPublic();        
-        // var privateKeyHEX                = privateKey.toString('hex').toLowerCase();
-        // var publicKeyHEX                 = publicKey.encode('hex').toLowerCase();
-        
         var buffer                       = new ArrayBuffer(320);
         var cryptoBuffer                 = new DataView(buffer);
 
@@ -106,11 +100,7 @@ class EMHCrypt01 extends ACrypt {
         };
 
         // Only the first 24 bytes/192 bits are used!
-        cryptoResult.sha256value  = this.crypt.createHash ('sha256').
-                                               update     (cryptoBuffer).
-                                               digest     ('hex').
-                                               toLowerCase().
-                                               substring  (0, 48);
+        cryptoResult.sha256value  = (await this.sha256(cryptoBuffer)).substring(0, 48);
 
         cryptoResult.publicKey    = publicKey.encode('hex').
                                               toLowerCase();
@@ -155,7 +145,7 @@ class EMHCrypt01 extends ACrypt {
     }
 
 
-    VerifyChargingSession(chargingSession:   IChargingSession): ISessionCryptoResult
+    async VerifyChargingSession(chargingSession:   IChargingSession): Promise<ISessionCryptoResult>
     {
 
         var sessionResult = SessionVerificationResult.UnknownSessionFormat;
@@ -175,7 +165,7 @@ class EMHCrypt01 extends ACrypt {
                     for (var measurementValue of measurement.values)
                     {
                         measurementValue.measurement = measurement;
-                        this.VerifyMeasurement(measurementValue as IEMHMeasurementValue);
+                        await this.VerifyMeasurement(measurementValue as IEMHMeasurementValue);
                     }
 
 
@@ -206,7 +196,7 @@ class EMHCrypt01 extends ACrypt {
     }
 
 
-    VerifyMeasurement(measurementValue:  IEMHMeasurementValue): IEMHCrypt01Result
+    async VerifyMeasurement(measurementValue:  IEMHMeasurementValue): Promise<IEMHCrypt01Result>
     {
 
         function setResult(verificationResult: VerificationResult)
@@ -250,10 +240,7 @@ class EMHCrypt01 extends ACrypt {
                 };
 
                 // Only the first 24 bytes/192 bits are used!
-                cryptoResult.sha256value = this.crypt.createHash('sha256').
-                                                      update(cryptoBuffer).
-                                                      digest('hex').
-                                                      substring(0, 48);
+                cryptoResult.sha256value = (await this.sha256(cryptoBuffer)).substring(0, 48);
 
 
                 const meter = this.GetMeter(measurementValue.measurement.energyMeterId);
@@ -319,7 +306,7 @@ class EMHCrypt01 extends ACrypt {
 
     }
 
-    
+
     private DecodeStatus(statusValue: string) : Array<string>
     {
 
@@ -362,14 +349,15 @@ class EMHCrypt01 extends ACrypt {
 
     }
 
-    ViewMeasurement(measurementValue:        IEMHMeasurementValue,
-                    introDiv:                HTMLDivElement,
-                    infoDiv:                 HTMLDivElement,
-                    bufferValue:             HTMLDivElement,
-                    hashedBufferValue:       HTMLDivElement,
-                    publicKeyValue:          HTMLDivElement,
-                    signatureExpectedValue:  HTMLDivElement,
-                    signatureCheckValue:     HTMLDivElement)
+
+    async ViewMeasurement(measurementValue:        IEMHMeasurementValue,
+                          introDiv:                HTMLDivElement,
+                          infoDiv:                 HTMLDivElement,
+                          bufferValue:             HTMLDivElement,
+                          hashedBufferValue:       HTMLDivElement,
+                          publicKeyValue:          HTMLDivElement,
+                          signatureExpectedValue:  HTMLDivElement,
+                          signatureCheckValue:     HTMLDivElement)
     {
 
         const result     = measurementValue.result as IEMHCrypt01Result;
@@ -390,6 +378,7 @@ class EMHCrypt01 extends ACrypt {
         this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                              result.logBookIndex                               || "",  infoDiv, bufferValue);
         this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     this.pad(result.authorizationStart,          128) || "",  infoDiv, bufferValue);
         this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), this.pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, bufferValue);
+
 
         // Buffer
         bufferValue.parentElement!.children[0].innerHTML             = "Puffer (320 Bytes, hex)";
@@ -427,13 +416,13 @@ class EMHCrypt01 extends ACrypt {
                 {
 
                     let signatureDiv = publicKeyValue.parentElement!.children[3].appendChild(document.createElement('div'));
-                    signatureDiv.innerHTML = this.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
-                                                                               measurementValue.measurement.chargingSession.EVSE,
-                                                                               //@ts-ignore
-                                                                               measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                               //@ts-ignore
-                                                                               measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
-                                                                               signature);
+                    signatureDiv.innerHTML = await this.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
+                                                                                     measurementValue.measurement.chargingSession.EVSE,
+                                                                                     //@ts-ignore
+                                                                                     measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                                                     //@ts-ignore
+                                                                                     measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                                                     signature);
 
                 }
                 catch (exception)

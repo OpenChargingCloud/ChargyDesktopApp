@@ -66,16 +66,10 @@ class GDFCrypt01 extends ACrypt {
         // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
     }
 
-    SignMeasurement(measurementValue:  IGDFMeasurementValue,
-                    privateKey:        any,
-                    publicKey:         any): IGDFCrypt01Result
+    async SignMeasurement(measurementValue:  IGDFMeasurementValue,
+                          privateKey:        any,
+                          publicKey:         any): Promise<IGDFCrypt01Result>
     {
-
-        // var keypair                      = this.curve.genKeyPair();
-        //     privateKey                   = keypair.getPrivate();
-        //     publicKey                    = keypair.getPublic();        
-        // var privateKeyHEX                = privateKey.toString('hex').toLowerCase();
-        // var publicKeyHEX                 = publicKey.encode('hex').toLowerCase();
 
         var buffer                       = new ArrayBuffer(320);
         var cryptoBuffer                 = new DataView(buffer);
@@ -92,10 +86,7 @@ class GDFCrypt01 extends ACrypt {
             authorizationStartTimestamp:  SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
         };
 
-        cryptoResult.sha256value  = this.crypt.createHash ('sha256').
-                                               update     (cryptoBuffer).
-                                               digest     ('hex').
-                                               toLowerCase();
+        cryptoResult.sha256value  = await this.sha256(cryptoBuffer);
 
         cryptoResult.publicKey    = publicKey.encode('hex').
                                               toLowerCase();
@@ -140,7 +131,7 @@ class GDFCrypt01 extends ACrypt {
     }
 
 
-    VerifyChargingSession(chargingSession:   IChargingSession): ISessionCryptoResult
+    async VerifyChargingSession(chargingSession:   IChargingSession): Promise<ISessionCryptoResult>
     {
 
         var sessionResult = SessionVerificationResult.UnknownSessionFormat;
@@ -160,7 +151,7 @@ class GDFCrypt01 extends ACrypt {
                     for (var measurementValue of measurement.values)
                     {
                         measurementValue.measurement = measurement;
-                        this.VerifyMeasurement(measurementValue as IGDFMeasurementValue);
+                        await this.VerifyMeasurement(measurementValue as IGDFMeasurementValue);
                     }
 
 
@@ -191,7 +182,7 @@ class GDFCrypt01 extends ACrypt {
     }
 
 
-    VerifyMeasurement(measurementValue:  IGDFMeasurementValue): IGDFCrypt01Result
+    async VerifyMeasurement(measurementValue:  IGDFMeasurementValue): Promise<IGDFCrypt01Result>
     {
 
         function setResult(vr: VerificationResult)
@@ -230,9 +221,7 @@ class GDFCrypt01 extends ACrypt {
                     s:          signatureExpected.s
                 };
 
-                cryptoResult.sha256value = this.crypt.createHash('sha256').
-                                                      update(cryptoBuffer).
-                                                      digest('hex');
+                cryptoResult.sha256value = await this.sha256(cryptoBuffer);
 
 
                 const meter = this.GetMeter(measurementValue.measurement.energyMeterId);
@@ -298,14 +287,14 @@ class GDFCrypt01 extends ACrypt {
     }
 
 
-    ViewMeasurement(measurementValue:        IMeasurementValue,
-                    introDiv:                HTMLDivElement,
-                    infoDiv:                 HTMLDivElement,
-                    bufferValue:             HTMLDivElement,
-                    hashedBufferValue:       HTMLDivElement,
-                    publicKeyValue:          HTMLDivElement,
-                    signatureExpectedValue:  HTMLDivElement,
-                    signatureCheckValue:     HTMLDivElement)
+    async ViewMeasurement(measurementValue:        IMeasurementValue,
+                          introDiv:                HTMLDivElement,
+                          infoDiv:                 HTMLDivElement,
+                          bufferValue:             HTMLDivElement,
+                          hashedBufferValue:       HTMLDivElement,
+                          publicKeyValue:          HTMLDivElement,
+                          signatureExpectedValue:  HTMLDivElement,
+                          signatureCheckValue:     HTMLDivElement)
     {
 
         const result    = measurementValue.result as IGDFCrypt01Result;

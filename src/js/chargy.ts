@@ -527,7 +527,7 @@ class ChargyApplication {
             (navigator as any).clipboard.readText().then((clipText: string) => {
                 try
                 {
-                    this.detectContentFormat(JSON.parse(clipText));
+                    this.detectContentFormat(clipText);
                 }
                 catch (exception) {
                     this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
@@ -809,11 +809,11 @@ class ChargyApplication {
 
     //#region CheckMeterPublicKeySignature(...)
 
-    private CheckMeterPublicKeySignature(chargingStation:  any,
-                                         evse:             any,
-                                         meter:            any,
-                                         publicKey:        any,
-                                         signature:        any): string
+    private async CheckMeterPublicKeySignature(chargingStation:  any,
+                                               evse:             any,
+                                               meter:            any,
+                                               publicKey:        any,
+                                               signature:        any): Promise<string>
     {
 
         // For now: Do not enforce this feature!
@@ -946,10 +946,10 @@ class ChargyApplication {
 
     //#region detectContentFormat
 
-    private checkSessionCrypto(chargingSession: IChargingSession)
+    private async checkSessionCrypto(chargingSession: IChargingSession)
     {
 
-        var result = this.verifySessionCryptoDetails(chargingSession);
+        var result = await this.verifySessionCryptoDetails(chargingSession);
 
         //#region Add marker to map
 
@@ -1069,7 +1069,7 @@ class ChargyApplication {
 
     //#region processChargeTransparencyRecord(CTR)
 
-    private processChargeTransparencyRecord(CTR: IChargeTransparencyRecord)
+    private async processChargeTransparencyRecord(CTR: IChargeTransparencyRecord)
     {
 
         this.chargingStationOperators  = [];
@@ -1686,7 +1686,7 @@ class ChargyApplication {
 
                 let verificationStatusDiv = chargingSessionDiv.appendChild(document.createElement('div'));
                 verificationStatusDiv.className = "verificationStatus";
-                verificationStatusDiv.innerHTML = this.checkSessionCrypto(chargingSession);
+                verificationStatusDiv.innerHTML = await this.checkSessionCrypto(chargingSession);
 
                 //#endregion
 
@@ -2742,10 +2742,10 @@ class ChargyApplication {
 
     //#region checkMeasurementCrypto(measurementValue)
 
-    private checkMeasurementCrypto(measurementValue: IMeasurementValue)
+    private async checkMeasurementCrypto(measurementValue: IMeasurementValue)
     {
 
-        var result = this.verifyMeasurementCryptoDetails(measurementValue);
+        var result = await this.verifyMeasurementCryptoDetails(measurementValue);
 
         switch (result.status)
         {
@@ -2772,7 +2772,7 @@ class ChargyApplication {
                 default:
                     return '<i class="fas fa-times-circle"></i> Ungültige Signatur';
 
-        }            
+        }
 
     }
 
@@ -2780,7 +2780,7 @@ class ChargyApplication {
 
     //#region showChargingSessionDetails
 
-    private showChargingSessionDetails(chargingSession: IChargingSession)
+    private async showChargingSessionDetails(chargingSession: IChargingSession)
     {
 
         try
@@ -2994,7 +2994,7 @@ class ChargyApplication {
 
                             // Show signature status
                             let verificationStatusDiv        = CreateDiv(MeasurementValueDiv, "verificationStatus",
-                                                                         this.checkMeasurementCrypto(measurementValue));
+                                                                         await this.checkMeasurementCrypto(measurementValue));
 
                             previousValue                    = currentValue;
 
@@ -3020,7 +3020,7 @@ class ChargyApplication {
 
     //#region verifySessionCryptoDetails
 
-    private verifySessionCryptoDetails(chargingSession: IChargingSession) : ISessionCryptoResult
+    private async verifySessionCryptoDetails(chargingSession: IChargingSession) : Promise<ISessionCryptoResult>
     {
 
         var result: ISessionCryptoResult = {
@@ -3037,12 +3037,12 @@ class ChargyApplication {
         {
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/GDFCrypt01+json":
-                chargingSession.method = new GDFCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
-                return chargingSession.method.VerifyChargingSession(chargingSession);
+                chargingSession.method = new GDFCrypt01(this.GetMeter, await this.CheckMeterPublicKeySignature);
+                return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json":
-                chargingSession.method = new EMHCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
-                return chargingSession.method.VerifyChargingSession(chargingSession);
+                chargingSession.method = new EMHCrypt01(this.GetMeter, await this.CheckMeterPublicKeySignature);
+                return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             default:
                 return result;
@@ -3055,7 +3055,7 @@ class ChargyApplication {
 
     //#region verifyMeasurementCryptoDetails
 
-    private verifyMeasurementCryptoDetails(measurementValue:  IMeasurementValue) : ICryptoResult
+    private async verifyMeasurementCryptoDetails(measurementValue:  IMeasurementValue) : Promise<ICryptoResult>
     {
 
         var result: ICryptoResult = {

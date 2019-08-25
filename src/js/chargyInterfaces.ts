@@ -38,7 +38,7 @@ interface CheckMeterPublicKeySignatureFunc {
      evse:             any|null,
      meter:            any|null,
      publicKey:        any|null,
-     signature:        any|null): string;
+     signature:        any|null): Promise<string>;
 }
 
 
