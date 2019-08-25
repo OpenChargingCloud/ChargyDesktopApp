@@ -94,8 +94,6 @@ interface IChargingStation
 {
     "@id":                      string;
     "@context":                 string;
-    //begin:                      string;
-    //end:                        string;
     description:                {};
     firmwareVersion:            string;
     address:                    IAddress;
@@ -125,7 +123,7 @@ interface IMeter
     "@id":                      string;
     "@context":                 string;
     description:                {};
-    model:                       string;
+    model:                      string;
     vendor:                     string;
     firmwareVersion:            string;
     chargingStation:            IChargingStation;
@@ -274,7 +272,7 @@ interface IECCSignature extends ISignature
 }
 
 interface IAddress {
-    "@context":         	    string;
+    "@context":                 string;
     city:                       any;
     street?:                    string;
     houseNumber?:               string;

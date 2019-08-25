@@ -46,7 +46,7 @@ interface IGDFCrypt01Result extends ICryptoResult
 class GDFCrypt01 extends ACrypt {
 
     readonly curve        = new this.elliptic.ec('p256');
-    
+
     constructor(GetMeter:                      GetMeterFunc,
                 CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc) {
 
@@ -56,6 +56,15 @@ class GDFCrypt01 extends ACrypt {
 
     }
 
+
+    GenerateKeyPair()//options?: elliptic.ec.GenKeyPairOptions)
+    {
+        return this.curve.genKeyPair();
+        // privateKey     = keypair.getPrivate();
+        // publicKey      = keypair.getPublic();
+        // privateKeyHEX  = privateKey.toString('hex').toLowerCase();
+        // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
+    }
 
     SignMeasurement(measurementValue:  IGDFMeasurementValue,
                     privateKey:        any,
@@ -67,7 +76,7 @@ class GDFCrypt01 extends ACrypt {
         //     publicKey                    = keypair.getPublic();        
         // var privateKeyHEX                = privateKey.toString('hex').toLowerCase();
         // var publicKeyHEX                 = publicKey.encode('hex').toLowerCase();
-        
+
         var buffer                       = new ArrayBuffer(320);
         var cryptoBuffer                 = new DataView(buffer);
 
