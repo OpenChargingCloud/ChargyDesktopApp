@@ -37,8 +37,8 @@ function OpenLink(url: string)
 
 class ChargyApplication {
 
-    private el          = require('elliptic');
-    private moment      = require('moment');
+    private elliptic: any;
+    private moment:   any;
 
     // variable 'crypto' is already defined differently in Google Chrome!
     private crypt       = require('electron').remote.require('crypto');
@@ -46,11 +46,11 @@ class ChargyApplication {
     private ipcRenderer = require('electron').ipcRenderer;
     private path        = require('path');
 
-    private exe_hash            = "";
-    private app_asar_hash       = "";
-    private electron_asar_hash  = "";
-    private complete_hash       = "";
-    
+    private exe_hash                  = "";
+    private app_asar_hash             = "";
+    private electron_asar_hash        = "";
+    private complete_hash             = "";
+
     private chargingStationOperators  = new Array<IChargingStationOperator>();
     private chargingPools             = new Array<IChargingPool>();
     private chargingStations          = new Array<IChargingStation>();
@@ -59,7 +59,7 @@ class ChargyApplication {
     private eMobilityProviders        = new Array<IEMobilityProvider>();
     private mediationServices         = new Array<IMediationService>();
     private chargingSessions          = new Array<IChargingSession>();
-    
+
     private input:                      HTMLDivElement;
     private updateAvailableButton:      HTMLButtonElement;
     private aboutButton:                HTMLButtonElement;
@@ -79,17 +79,21 @@ class ChargyApplication {
     private overlayOkButton:            HTMLButtonElement;
 
     private currentCTR  = {} as IChargeTransparencyRecord;
-    private markers: any = [];
-    private minlat: number                    = +1000;
-    private maxlat: number                    = -1000;
-    private minlng: number                    = +1000;
-    private maxlng: number                    = -1000;
+    private markers:             any          = [];
+    private minlat:              number       = +1000;
+    private maxlat:              number       = -1000;
+    private minlng:              number       = +1000;
+    private maxlng:              number       = -1000;
 
-    private currentAppInfos: any              = null;
+    private currentAppInfos:     any          = null;
     private currentVersionInfos: any          = null;
-    private currentPackage: any               = null;
+    private currentPackage:      any          = null;
 
     constructor() {
+
+        this.elliptic                  = require('elliptic');
+        this.moment                    = require('moment');
+
 
         //#region Calculate application hash
 
@@ -699,7 +703,7 @@ class ChargyApplication {
 
         //#endregion
 
-    }    
+    }
 
 
     //#region calcSHA512Hash(...)
@@ -782,17 +786,10 @@ class ChargyApplication {
                                         update(Input, 'utf8').
                                         digest('hex');
 
-            var _elliptic = require('elliptic');
-
-            // var key = new _elliptic.ec('secp256k1').genKeyPair();
-            // signature.publicKey = key.getPublic().encode('hex');
-            // signature.signature = key.sign(sha256value).toDER('hex');
-
-            var result = new _elliptic.ec('secp256k1').
-                                       keyFromPublic(signature.publicKey, 'hex').
-                                       verify       (sha256value,
-                                                     signature.signature);
-
+            var result = new this.elliptic.ec('secp256k1').
+                                  keyFromPublic(signature.publicKey, 'hex').
+                                  verify       (sha256value,
+                                                signature.signature);
 
             if (result)
                 return "<i class=\"fas fa-check-circle\"></i>" + signature.signer;
@@ -871,16 +868,10 @@ class ChargyApplication {
                                         update(Input, 'utf8').
                                         digest('hex');
 
-            var _elliptic = require('elliptic');
-
-            // var key = new _elliptic.ec('secp256k1').genKeyPair();
-            // signature.publicKey = key.getPublic().encode('hex');
-            // signature.signature = key.sign(sha256value).toDER('hex');
-
-            var result = new _elliptic.ec('secp256k1').
-                                       keyFromPublic(signature.publicKey, 'hex').
-                                       verify       (sha256value,
-                                                     signature.signature);
+            var result = new this.elliptic.ec('secp256k1').
+                                  keyFromPublic(signature.publicKey, 'hex').
+                                  verify       (sha256value,
+                                                signature.signature);
 
 
             if (result)
@@ -2742,8 +2733,6 @@ class ChargyApplication {
 
     }
 
-    
-
     //#endregion
 
 
@@ -2798,7 +2787,7 @@ class ChargyApplication {
     //#endregion
 
     //#region Process .chargy file extentions/associations opened via this app
-    
+
     private readFileFromDisk(filename: string): void {
         if (filename != null && filename.trim() != "" && filename != "." && filename[0] != '-')
         {
@@ -2816,7 +2805,3 @@ class ChargyApplication {
     //#endregion
 
 }
-
-
-
-

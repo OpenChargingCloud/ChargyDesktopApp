@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-function ParseJSON_LD<T>(Text: string,
-    Context: string = ""): T {
+function ParseJSON_LD<T>(Text:     string,
+                         Context:  string = ""): T {
 
-var JObject = JSON.parse(Text);
+    var JObject = JSON.parse(Text);
 
-JObject["id"] = JObject["@id"];
+    JObject["id"] = JObject["@id"];
 
-return JObject as T;
+    return JObject as T;
 
 }
 
@@ -325,39 +325,39 @@ function Clone(obj: any) {
 
 function openFullscreen() {
 
-  var elem = document.documentElement as any;
+    var elem = document.documentElement as any;
 
-  if (elem.requestFullscreen) {
-      elem.requestFullscreen();
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
 
-  } else if (elem.mozRequestFullScreen) { /* Firefox */
-      elem.mozRequestFullScreen();
+    } else if (elem.mozRequestFullScreen) {     /* Firefox */
+        elem.mozRequestFullScreen();
 
-  } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
-      elem.webkitRequestFullscreen();
+    } else if (elem.webkitRequestFullscreen) {  /* Chrome, Safari and Opera */
+        elem.webkitRequestFullscreen();
 
-  } else if (elem.msRequestFullscreen) { /* IE/Edge */
-      elem.msRequestFullscreen();
-  }
+    } else if (elem.msRequestFullscreen) {      /* IE/Edge */
+        elem.msRequestFullscreen();
+    }
 
 }
 
 function closeFullscreen() {
 
-  var d = document as any;
+    var d = document as any;
 
-  if (d.exitFullscreen) {
-      d.exitFullscreen();
+    if (d.exitFullscreen) {
+        d.exitFullscreen();
 
-  } else if (d.mozCancelFullScreen) { /* Firefox */
-      d.mozCancelFullScreen();
+    } else if (d.mozCancelFullScreen) {         /* Firefox */
+        d.mozCancelFullScreen();
 
-  } else if (d.webkitExitFullscreen) { /* Chrome, Safari and Opera */
-      d.webkitExitFullscreen();
+    } else if (d.webkitExitFullscreen) {        /* Chrome, Safari and Opera */
+        d.webkitExitFullscreen();
 
-  } else if (d.msExitFullscreen) { /* IE/Edge */
-      d.msExitFullscreen();
-  }
+    } else if (d.msExitFullscreen) {            /* IE/Edge */
+        d.msExitFullscreen();
+    }
 
 }
 
@@ -376,7 +376,7 @@ function CreateDiv(ParentDiv:   HTMLDivElement,
         childDiv.innerHTML  = InnerHTML;
 
     return childDiv;
-    
+
 }
 
 
