@@ -57,6 +57,15 @@ class GDFCrypt01 extends ACrypt {
     }
 
 
+    GenerateKeyPair()//options?: elliptic.ec.GenKeyPairOptions)
+    {
+        return this.curve.genKeyPair();
+        // privateKey     = keypair.getPrivate();
+        // publicKey      = keypair.getPublic();
+        // privateKeyHEX  = privateKey.toString('hex').toLowerCase();
+        // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
+    }
+
     SignMeasurement(measurementValue:  IGDFMeasurementValue,
                     privateKey:        any,
                     publicKey:         any): IGDFCrypt01Result

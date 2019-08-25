@@ -55,7 +55,7 @@ interface IEMHCrypt01Result extends ICryptoResult
 class EMHCrypt01 extends ACrypt {
 
     readonly curve = new this.elliptic.ec('p192');
-    
+
     constructor(GetMeter:                      GetMeterFunc,
                 CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc) {
 
@@ -65,6 +65,15 @@ class EMHCrypt01 extends ACrypt {
 
     }
 
+
+    GenerateKeyPair()//options?: elliptic.ec.GenKeyPairOptions)
+    {
+        return this.curve.genKeyPair();
+        // privateKey     = keypair.getPrivate();
+        // publicKey      = keypair.getPublic();
+        // privateKeyHEX  = privateKey.toString('hex').toLowerCase();
+        // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
+    }    
 
     SignMeasurement(measurementValue:  IEMHMeasurementValue,
                     privateKey:        any,

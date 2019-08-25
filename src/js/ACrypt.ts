@@ -24,8 +24,8 @@ abstract class ACrypt {
     readonly GetMeter:                      GetMeterFunc;
     readonly CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc;
 
-    readonly elliptic  = require('elliptic');
-    readonly moment    = require('moment');
+    readonly elliptic: any;
+    readonly moment:   any;
     // variable 'crypto' is already defined differently in Google Chrome!
     readonly crypt     = require('electron').remote.require('crypto');
 
@@ -36,6 +36,9 @@ abstract class ACrypt {
         this.description                   = description;
         this.GetMeter                      = GetMeter;
         this.CheckMeterPublicKeySignature  = CheckMeterPublicKeySignature;
+
+        this.elliptic                      = require('elliptic');
+        this.moment                        = require('moment');
 
     }
 
@@ -90,6 +93,13 @@ abstract class ACrypt {
             newText.classList.remove("overEntry");
         }
 
+    }
+
+    async sha256(message: DataView) {
+        const hashBuffer = await crypto.subtle.digest('SHA-256', message);// new TextEncoder().encode(message));
+        const hashArray  = Array.from(new Uint8Array(hashBuffer));                                       // convert hash to byte array
+        const hashHex    = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('').toLowerCase(); // convert bytes to hex string
+        return hashHex;
     }
 
     abstract VerifyChargingSession(chargingSession:   IChargingSession): ISessionCryptoResult;
