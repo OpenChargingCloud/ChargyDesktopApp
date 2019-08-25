@@ -2390,6 +2390,7 @@ class ChargyApplication {
 
     //#region tryToParseOCMF(OCMF, PublicKey?)
 
+
     //#region tryToParseOCMFv0_1(OCMFData, PublicKey?)
 
     private tryToParseOCMFv0_1(OCMFData:    IOCMFData_v0_1,
@@ -2534,6 +2535,7 @@ class ChargyApplication {
 
     //#endregion
 
+
     private tryToParseOCMF(OCMF:        string,
                            PublicKey?:  string) : boolean
     {
@@ -2550,7 +2552,6 @@ class ChargyApplication {
                 let OCMFData       = JSON.parse(elements[1]);
                 let OCMFSignature  = JSON.parse(elements[2]);
 
-               
                 // http://hers.abl.de/SAFE/Datenformat_OCMF/Datenformat_OCMF_v1.0.pdf
                 // Ein Darstellungsformat, JSON-basiert (nachvollziehbar)
                 // Ein Übertragungsformat, JSON-basiert (vereinheitlicht)
@@ -2627,7 +2628,7 @@ class ChargyApplication {
         Content = Content.trim();
 
         // Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
-	    // conversion translates it to FEFF (UTF-16 BOM)
+        // conversion translates it to FEFF (UTF-16 BOM)
         if (Content.charCodeAt(0) === 0xFEFF)
             Content = Content.substr(1);
 
@@ -2739,6 +2740,7 @@ class ChargyApplication {
     }
 
     //#endregion
+
 
     //#region checkMeasurementCrypto(measurementValue)
 
