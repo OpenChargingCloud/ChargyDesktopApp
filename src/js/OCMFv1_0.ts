@@ -18,9 +18,10 @@
 ///<reference path="chargyInterfaces.ts" />
 ///<reference path="chargyLib.ts" />
 ///<reference path="ACrypt.ts" />
+///<reference path="OCMFTypes.ts" />
 
 
-interface IEMHMeasurementValue extends IMeasurementValue
+interface IOCMFv1_0MeasurementValue extends IMeasurementValue
 {
     infoStatus:                 string,
     secondsIndex:               number,
@@ -28,7 +29,7 @@ interface IEMHMeasurementValue extends IMeasurementValue
     logBookIndex:               string
 }
 
-interface IEMHCrypt01Result extends ICryptoResult
+interface IOCMFv1_0Result extends ICryptoResult
 {
     sha256value?:                  any,
     meterId?:                      string,
@@ -52,9 +53,9 @@ interface IEMHCrypt01Result extends ICryptoResult
 }
 
 
-class EMHCrypt01 extends ACrypt {
+class OCMFv1_0 extends ACrypt {
 
-    readonly curve = new this.elliptic.ec('p192');
+    readonly curve = new this.elliptic.ec('p256');
 
     constructor(GetMeter:                      GetMeterFunc,
                 CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc) {
@@ -75,15 +76,15 @@ class EMHCrypt01 extends ACrypt {
         // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
     }
 
-    async SignMeasurement(measurementValue:  IEMHMeasurementValue,
+    async SignMeasurement(measurementValue:  IOCMFv1_0MeasurementValue,
                           privateKey:        any,
-                          publicKey:         any): Promise<IEMHCrypt01Result>
+                          publicKey:         any): Promise<IOCMFv1_0Result>
     {
 
         var buffer                       = new ArrayBuffer(320);
         var cryptoBuffer                 = new DataView(buffer);
 
-        var cryptoResult:IEMHCrypt01Result = {
+        var cryptoResult:IOCMFv1_0Result = {
             status:                       VerificationResult.InvalidSignature,
             meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
             timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
@@ -165,7 +166,7 @@ class EMHCrypt01 extends ACrypt {
                     for (var measurementValue of measurement.values)
                     {
                         measurementValue.measurement = measurement;
-                        await this.VerifyMeasurement(measurementValue as IEMHMeasurementValue);
+                        await this.VerifyMeasurement(measurementValue as IOCMFv1_0MeasurementValue);
                     }
 
 
@@ -196,7 +197,7 @@ class EMHCrypt01 extends ACrypt {
     }
 
 
-    async VerifyMeasurement(measurementValue:  IEMHMeasurementValue): Promise<IEMHCrypt01Result>
+    async VerifyMeasurement(measurementValue:  IOCMFv1_0MeasurementValue): Promise<IOCMFv1_0Result>
     {
 
         function setResult(verificationResult: VerificationResult)
@@ -206,151 +207,183 @@ class EMHCrypt01 extends ACrypt {
             return cryptoResult;
         }
 
-        var buffer        = new ArrayBuffer(320);
-        var cryptoBuffer  = new DataView(buffer);
+        // {
+        //
+        //     "FV": "1.0",
+        //     "GI": "SEAL AG",
+        //     "GS": "1850006a",
+        //     "GV": "1.34",
+        //
+        //     "PG": "T9289",
+        //
+        //     "MV": "Carlo Gavazzi",
+        //     "MM": "EM340-DIN.AV2.3.X.S1.PF",
+        //     "MS": "******240084S",
+        //     "MF": "B4",
+        //
+        //     "IS": true,
+        //     "IL": "TRUSTED",
+        //     "IF": ["OCCP_AUTH"],
+        //     "IT": "ISO14443",
+        //     "ID": "56213C05",
+        //
+        //     "RD": [{
+        //         "TM": "2019-06-26T08:57:44,337+0000 U",
+        //         "TX": "B",
+        //         "RV": 268.978,
+        //         "RI": "1-b:1.8.0",
+        //         "RU": "kWh",
+        //         "RT": "AC",
+        //         "EF": "",
+        //         "ST": "G"
+        //     }]
+        //
+        // }
 
-        var cryptoResult:IEMHCrypt01Result = {
-            status:                       VerificationResult.InvalidSignature,
-            meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
-            timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
-            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
-            paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
-            obis:                         SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
-            unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-            scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
-            value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
-            logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
-            authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
-            authorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
+        var reading = {
+
+           "FV": "1.0",
+           "GI": "SEAL AG",
+           "GS": "1850006a",
+           "GV": "1.34",
+
+           "PG": "T9289",
+
+           "MV": "Carlo Gavazzi",
+           "MM": "EM340-DIN.AV2.3.X.S1.PF",
+           "MS": "******240084S",
+           "MF": "B4",
+
+           "IS": true,
+           "IL": "TRUSTED",
+           "IF": ["OCCP_AUTH"],
+           "IT": "ISO14443",
+           "ID": "56213C05",
+
+           "RD": [{
+               "TM": "2019-06-26T08:57:44,337+0000 U",
+               "TX": "B",
+               "RV": 268.978,
+               "RI": "1-b:1.8.0",
+               "RU": "kWh",
+               "RT": "AC",
+               "EF": "",
+               "ST": "G"
+           }]
+
         };
 
-        var signatureExpected = measurementValue.signatures[0] as IECCSignature;
-        if (signatureExpected != null)
-        {
 
-            try
-            {
+        var serialized = JSON.stringify(reading);
 
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
-                    r:          signatureExpected.r,
-                    s:          signatureExpected.s
-                };
+        var cryptoResult:IOCMFv1_0Result = {
+            status:                       VerificationResult.ValidSignature,
+        };
 
-                // Only the first 24 bytes/192 bits are used!
-                cryptoResult.sha256value = (await this.sha256(cryptoBuffer)).substring(0, 48);
+        return setResult(VerificationResult.ValidSignature);
+
+        // var buffer        = new ArrayBuffer(320);
+        // var cryptoBuffer  = new DataView(buffer);
+
+        // var cryptoResult:IOCMFv1_0Result = {
+        //     status:                       VerificationResult.InvalidSignature,
+        //     meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
+        //     timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
+        //     infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
+        //     secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
+        //     paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
+        //     obis:                         SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
+        //     unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
+        //     scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
+        //     value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
+        //     logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
+        //     authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
+        //     authorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
+        // };
+
+        // var signatureExpected = measurementValue.signatures[0] as IECCSignature;
+        // if (signatureExpected != null)
+        // {
+
+        //     try
+        //     {
+
+        //         cryptoResult.signature = {
+        //             algorithm:  measurementValue.measurement.signatureInfos.algorithm,
+        //             format:     measurementValue.measurement.signatureInfos.format,
+        //             r:          signatureExpected.r,
+        //             s:          signatureExpected.s
+        //         };
+
+        //         // Only the first 24 bytes/192 bits are used!
+        //         cryptoResult.sha256value = (await this.sha256(cryptoBuffer)).substring(0, 48);
 
 
-                const meter = this.GetMeter(measurementValue.measurement.energyMeterId);
-                if (meter != null)
-                {
+        //         const meter = this.GetMeter(measurementValue.measurement.energyMeterId);
+        //         if (meter != null)
+        //         {
 
-                    cryptoResult.meter = meter;
+        //             cryptoResult.meter = meter;
 
-                    var iPublicKey = meter.publicKeys[0] as IPublicKey;
-                    if (iPublicKey != null)
-                    {
+        //             var iPublicKey = meter.publicKeys[0] as IPublicKey;
+        //             if (iPublicKey != null)
+        //             {
 
-                        try
-                        {
+        //                 try
+        //                 {
 
-                            cryptoResult.publicKey            = iPublicKey.value.toLowerCase();
-                            cryptoResult.publicKeyFormat      = iPublicKey.format;
-                            cryptoResult.publicKeySignatures  = iPublicKey.signatures;
+        //                     cryptoResult.publicKey            = iPublicKey.value.toLowerCase();
+        //                     cryptoResult.publicKeyFormat      = iPublicKey.format;
+        //                     cryptoResult.publicKeySignatures  = iPublicKey.signatures;
 
-                            try
-                            {
+        //                     try
+        //                     {
 
-                                if (this.curve.keyFromPublic(cryptoResult.publicKey, 'hex').
-                                               verify       (cryptoResult.sha256value,
-                                                             cryptoResult.signature))
-                                {
-                                    return setResult(VerificationResult.ValidSignature);
-                                }
+        //                         if (this.curve.keyFromPublic(cryptoResult.publicKey, 'hex').
+        //                                        verify       (cryptoResult.sha256value,
+        //                                                      cryptoResult.signature))
+        //                         {
+        //                             return setResult(VerificationResult.ValidSignature);
+        //                         }
                                 
-                                return setResult(VerificationResult.InvalidSignature);
+        //                         return setResult(VerificationResult.InvalidSignature);
 
-                            }
-                            catch (exception)
-                            {
-                                return setResult(VerificationResult.InvalidSignature);
-                            }
+        //                     }
+        //                     catch (exception)
+        //                     {
+        //                         return setResult(VerificationResult.InvalidSignature);
+        //                     }
 
-                        }
-                        catch (exception)
-                        {
-                            return setResult(VerificationResult.InvalidPublicKey);
-                        }
+        //                 }
+        //                 catch (exception)
+        //                 {
+        //                     return setResult(VerificationResult.InvalidPublicKey);
+        //                 }
 
-                    }
+        //             }
 
-                    else
-                        return setResult(VerificationResult.PublicKeyNotFound);
+        //             else
+        //                 return setResult(VerificationResult.PublicKeyNotFound);
 
-                }
+        //         }
 
-                else
-                    return setResult(VerificationResult.EnergyMeterNotFound);
+        //         else
+        //             return setResult(VerificationResult.EnergyMeterNotFound);
 
-            }
-            catch (exception)
-            {
-                return setResult(VerificationResult.InvalidSignature);
-            }
+        //     }
+        //     catch (exception)
+        //     {
+        //         return setResult(VerificationResult.InvalidSignature);
+        //     }
 
-        }
+        // }
 
-        return {} as IEMHCrypt01Result;
-
-    }
-
-
-    private DecodeStatus(statusValue: string) : Array<string>
-    {
-
-        let statusArray:string[] = [];
-
-        try
-        {
-
-            let status = parseInt(statusValue);
-
-            if ((status &  1) ==  1)
-                statusArray.push("Fehler erkannt");
-
-            if ((status &  2) ==  2)
-                statusArray.push("Synchrone Messwertübermittlung");
-
-            // Bit 3 is reserved!
-
-            if ((status &  8) ==  8)
-                statusArray.push("System-Uhr ist synchron");
-            else
-                statusArray.push("System-Uhr ist nicht synchron");
-
-            if ((status & 16) == 16)
-                statusArray.push("Rücklaufsperre aktiv");
-
-            if ((status & 32) == 32)
-                statusArray.push("Energierichtung -A");
-
-            if ((status & 64) == 64)
-                statusArray.push("Magnetfeld erkannt");
-
-        }
-        catch (exception)
-        {
-            statusArray.push("Invalid status!");
-        }
-
-        return statusArray;
+        // return {} as IOCMFv1_0Result;
 
     }
 
 
-    async ViewMeasurement(measurementValue:        IEMHMeasurementValue,
+    async ViewMeasurement(measurementValue:        IOCMFv1_0MeasurementValue,
                           introDiv:                HTMLDivElement,
                           infoDiv:                 HTMLDivElement,
                           bufferValue:             HTMLDivElement,
@@ -360,15 +393,14 @@ class EMHCrypt01 extends ACrypt {
                           signatureCheckValue:     HTMLDivElement)
     {
 
-        const result     = measurementValue.result as IEMHCrypt01Result;
+        const result     = measurementValue.result as IOCMFv1_0Result;
 
         const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
         cryptoSpan.innerHTML = "EMHCrypt01 (" + this.description + ")";
 
         this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId                                    || "",  infoDiv, bufferValue);
         this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp                                  || "",  infoDiv, bufferValue);
-        this.CreateLine("Status",                   hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
-                                                    this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",           result.infoStatus                                 || "",  infoDiv, bufferValue);
+        this.CreateLine("Status",                   hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)", result.infoStatus                                 || "",  infoDiv, bufferValue);
         this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                       result.secondsIndex                               || "",  infoDiv, bufferValue);
         this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                         result.paginationId                               || "",  infoDiv, bufferValue);
         this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis                                       || "",  infoDiv, bufferValue);

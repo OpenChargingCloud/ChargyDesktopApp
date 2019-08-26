@@ -22,6 +22,31 @@ const enum OCMFTransactionTypes
     transaction
 }
 
+const enum TimeStatusTypes {
+    unknown,
+    informative,
+    syncronized,
+    relative
+}
+
+interface IOCMFReading {
+    TM:         string, // Timestamp
+    TX?:        string, // Transaction
+    RV?:        string, // typeof RV == 'number', but MUST NOT be rounded!
+    RI?:        string, // Reading-Identification == OBIS-Code
+    RU?:        string, // Reading-Unit: kWh, ...
+    RT?:        string, // Reading-Current-Type
+    EF?:        string, // Error-Flags
+    ST:         string  // Status
+}
+
+interface IOCMFSignature {
+    SA?:        string,
+    SE?:        string,
+    SM?:        string,
+    SD:         string
+}
+
 interface IOCMFData {
 
     FV:         string,
@@ -32,6 +57,20 @@ interface IOCMFData {
     MM:         string,
     MS:         string,
     MF:         string,
+
+    IS:         boolean,
+    IL?:        string,
+    IF?:        string[],
+    IT:         string,
+    ID:         string,
+
+    CT?:        string,
+    CI?:        string,
+    C2I?:        string,
+
+    RD:         Array<IOCMFReading>,
+
+    signature:  IOCMFSignature
 
 }
 
@@ -45,4 +84,3 @@ interface IOCMFData_v1_0 extends IOCMFData {
     GS:         string,
     GV:         string,
 }
-

@@ -388,3 +388,17 @@ function OpenExternal(URL: string)
     shell.openExternal(URL);
 
 }
+
+
+interface String {
+    isNullOrEmpty(): boolean;
+    isNotNullOrEmpty(): boolean;
+}
+
+String.prototype.isNullOrEmpty = function() {
+    return !(typeof this === "string" && this.length > 0);
+}
+
+String.prototype.isNotNullOrEmpty = function() {
+    return typeof this === "string" && this.length > 0;
+}
