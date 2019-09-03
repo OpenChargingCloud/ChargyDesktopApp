@@ -141,6 +141,22 @@ function buf2hex(buffer: ArrayBuffer) {
     return Array.prototype.map.call(new Uint8Array(buffer), (x:number) => ('00' + x.toString(16)).slice(-2)).join('');
 }
 
+function hexToArrayBuffer(hex: string): ArrayBuffer {
+
+    if ((hex.length % 2) !== 0) {
+        throw new RangeError('Expected string to be an even number of characters')
+    }
+
+    var view = new Uint8Array(hex.length / 2)
+
+    for (var i = 0; i < hex.length; i += 2) {
+        view[i / 2] = parseInt(hex.substring(i, i + 2), 16)
+    }
+
+    return view.buffer
+
+}
+
 function intFromBytes(x: number[]){
     var val = 0;
     for (var i = 0; i < x.length; ++i) {

@@ -1731,6 +1731,19 @@ class ChargyApplication {
             var placeInfo         = SomeJSON.placeInfo;
 
             // {
+            //     "placeInfo": {
+            //         "evseId": "DE*BDO*74778874*1",
+            //         "address": {
+            //             "street": "Musterstraße 12",
+            //             "zipCode": "74789",
+            //             "town": "Stadt" 
+            //         },
+            //         "geoLocation": {
+            //             "lat": 12.3774,
+            //             "lon": 1.3774
+            //         }
+            //     },
+            //
             //     "signedMeterValues":[{
             //         "timestamp": 1550533285,
             //         "meterInfo": {
@@ -1777,20 +1790,8 @@ class ChargyApplication {
             //            "status": "88"
             //         },
             //         "signature": "13493BBB43DA1E26C88B21ADB7AA53A7AE4FC7F6F6B916E67AD3E168421D180F021D6DD458612C53FF167781892A9DF3"
-            //     }],
+            //     }]
             //
-            //     "placeInfo": {
-            //         "evseId": "DE*BDO*74778874*1",
-            //         "address": {
-            //             "street": "Musterstraße 12",
-            //             "zipCode": "74789",
-            //             "town": "Stadt" 
-            //         },
-            //         "geoLocation": {
-            //             "lat": 12.3774,
-            //             "lon": 1.3774
-            //         }
-            //     }
             // }
 
             try {
@@ -2199,7 +2200,7 @@ class ChargyApplication {
                             "begin":                        this.moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
                             "end":                          this.moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
                             "EVSEId":                       evseId,
-                
+
                             "authorizationStart": {
                                 "@id":                      CTRArray[0]["contract"]["id"],
                                 "type":                     CTRArray[0]["contract"]["type"],
@@ -2297,6 +2298,8 @@ class ChargyApplication {
     private async tryToParseTransparenzSoftwareXML(XMLDocument: Document) : Promise<boolean>
     {
 
+        const base32Decode = require('base32-decode');
+
         // The SAFE transparency software v1.0 does not understand its own
         // XML namespace. Therefore we have to guess the format.
 
@@ -2337,15 +2340,20 @@ class ChargyApplication {
 
                                 case "":
                                 case "plain":
+                                    signedDataValue = Buffer.from(signedDataValue, 'utf8').toString().trim();
                                     break;
 
-                                //case "base32":
+                                case "base32":
+                                    signedDataValue = Buffer.from(base32Decode(signedDataValue, 'RFC4648')).toString().trim();
+                                    break;
 
                                 case "base64":
                                     signedDataValue = Buffer.from(signedDataValue, 'base64').toString().trim();
                                     break;
 
-                                //case "hex":
+                                case "hex":
+                                    signedDataValue = Buffer.from(signedDataValue, 'hex').toString().trim();
+                                    break;
 
                                 default:
                                     throw "Unkown signed data encoding within the given SAFE XML!";
@@ -2354,6 +2362,13 @@ class ChargyApplication {
 
                             switch (signedDataFormat)
                             {
+
+                                case "alfen":
+                                    if (commonFormat == "")
+                                        commonFormat = "alfen";
+                                    else if (commonFormat != "alfen")
+                                        throw "Invalid mixture of different signed data formats within the given SAFE XML!";
+                                    break;
 
                                 case "ocmf":
                                     if (commonFormat == "")
@@ -2393,15 +2408,20 @@ class ChargyApplication {
 
                                 case "":
                                 case "plain":
+                                    publicKeyValue = Buffer.from(publicKeyValue, 'utf8').toString().trim();
                                     break;
 
-                                //case "base32":
+                                case "base32":
+                                    publicKeyValue = Buffer.from(base32Decode(publicKeyValue, 'RFC4648')).toString().trim();
+                                    break;
 
                                 case "base64":
                                     publicKeyValue = Buffer.from(publicKeyValue, 'base64').toString().trim();
                                     break;
 
-                                //case "hex":
+                                case "hex":
+                                    publicKeyValue = Buffer.from(publicKeyValue, 'hex').toString().trim();
+                                    break;
 
                                 default:
                                     throw "Unkown public key encoding within the given SAFE XML!";
@@ -2427,6 +2447,9 @@ class ChargyApplication {
 
             switch (commonFormat)
             {
+
+                case "alfen":
+                    return await this.tryToParseALFENFormat(signedValues);
 
                 case "ocmf":
                     return await this.tryToParseOCMF(signedValues, commonPublicKey);
@@ -2913,6 +2936,346 @@ class ChargyApplication {
 
     //#endregion
 
+    //#region tryToParseALFENFormat(Content)
+
+    private bufferToHex (buffer: ArrayBuffer) : string {
+        return Array
+            .from (new Uint8Array (buffer))
+            .map (b => b.toString (16).padStart (2, "0"))
+            .join ("");
+    }
+
+    private async tryToParseALFENFormat(Content: string|string[]) : Promise<boolean>
+    {
+
+        const base32Decode = require('base32-decode');
+
+        // AP;
+        // 0;
+        // 3;
+        // AJ2J7LYMGCIWT4AHUJPPFIIVB3FGRV2JQ2HVZG2I;
+        // BIHEIWSHAAA2WZUZOYYDCNWTWAFACRC2I4ADGAEDQ4AAAABASMBFSAHY2JWF2AIAAEEAB7Y6ABUVEAAAAAAAAABQGQ2EMNCFIVATANRVII4DAAAAAAAAAAADAAAAABIAAAAA====;
+        // S27J5BHL22ZBNFYTHTK433G7VU7Z6NN4JKO5DNPE7FNMT3SM3ZJGVWJ6ZKUOKE2LK4W63JYP4E6CY===;
+
+        // AP;
+        // 1;
+        // 3;
+        // AJ2J7LYMGCIWT4AHUJPPFIIVB3FGRV2JQ2HVZG2I;
+        // BIHEIWSHAAA2WZUZOYYDCNWTWAFACRC2I4ADGAEDQ4AAAAAQEMWVSAASAAAAAAIAAEEAB7Y6ABXFEAAAAAAAAABQGQ2EMNCFIVATANRVII4DAAAAAAAAAAADAAAAABQAAAAA====;
+        // MVYFHY24SFHI35DSXBSXRFMQP4OLYVO77TIQ6REROGCPWHY36AXIU4FD4W4Q2AHBZSNJXWCIRXAGS===;
+
+        try
+        {
+
+            var   common = {
+                      PublicKey:          "",
+                      AdapterId:          "",
+                      AdapterFWVersion:   "",
+                      AdapterFWChecksum:  "",
+                      MeterId:            "",
+                      ObisId:             "",
+                      Unit:               "",
+                      Scalar:             "",
+                      UID:                "",
+                      SessionId:          0,
+                      dataSets:           [] as any[]
+            };
+
+            let signedValues:string[] = [];
+            if (typeof (Content) === 'string')
+                signedValues = Content.split(/\r\n|\r|\n/g);
+            else
+                signedValues = Content;
+
+            for (let i=0; i<signedValues.length; i++)
+            {
+
+                let elements = signedValues[i].split(';');
+
+                if (elements.length != 6 && elements.length != 7)
+                    return false;
+
+                let FormatId               = elements[0];                           //  2 bytes
+                let Type                   = elements[1];                           //  1 byte; "0" | "1" | "2"
+                let BlobVersion            = elements[2];                           //  1 byte
+                let PublicKey:ArrayBuffer  = base32Decode(elements[3], 'RFC4648');  // 25 bytes; base32 encoded
+                let DataSet:  ArrayBuffer  = base32Decode(elements[4], 'RFC4648');  // 82 bytes; base32 encoded
+                let Signature:ArrayBuffer  = base32Decode(elements[5], 'RFC4648');  // 48 bytes; base32 encoded; secp192r1
+
+                // Verify common public key
+                if (common.PublicKey === "")
+                    common.PublicKey = elements[3];
+                else if (elements[3] !== common.PublicKey)
+                    return false;
+
+                if (FormatId              !== "AP" ||
+                    Type.length           !==  1   ||
+                    BlobVersion.length    !==  1   ||
+                    BlobVersion           !== "3"  ||
+                    PublicKey.byteLength  !== 25   ||
+                    DataSet.byteLength    !== 82   ||
+                    Signature.byteLength  !== 48)
+                {
+                    return false;
+                }
+
+                // Everything is Little Endian
+                let AdapterId            = DataSet.slice( 0, 10);  // 0a 54 65 73 74 44 65 76 00 09
+                let AdapterFWVersion     = DataSet.slice(10, 14);  // ASCII: 76 30 31 34 (v014)
+                let AdapterFWChecksum    = DataSet.slice(14, 16);  // B9 79
+                let MeterId              = DataSet.slice(16, 26);  // 0A 01 44 5A 47 00 33 00 25 02
+                let Status               = DataSet.slice(26, 30);  // 00 00 00 10
+                let SecondIndex          = DataSet.slice(30, 34);  // 28 71 9A 02 => 43675944 dec
+                let Timestamp            = DataSet.slice(34, 38);  // UNIX timestamp: 91 91 3D 5C => 1547538833 => 2019-01-15T07:53:53Z
+                let ObisId               = DataSet.slice(38, 44);  // 01 00 01 08 00 ff
+                let Unit                 = DataSet.slice(44, 45);  // 1e == Wh
+                let Scalar               = DataSet.slice(45, 46);  // 00
+                let Value                = DataSet.slice(46, 54);  // 73 29 00 00 00 00 00 00 => 10611 Wh so 10,611 KWh
+                let UID                  = DataSet.slice(54, 74);  // ASCII: 30 35 38 39 38 41 42 42 00 00 00 00 00 00 00 00 00 00 00 00 => UID: 05 89 8A BB
+                let SessionId            = DataSet.slice(74, 78);  // 81 01 00 00 => 385(dec)
+                let Paging               = DataSet.slice(78, 82);  // 47 02 00 00 => 583(dec)
+
+                let _AdapterId           = this.bufferToHex(AdapterId);
+                let _AdapterFWVersion    = String.fromCharCode.apply(null, new Uint8Array(AdapterFWVersion) as any);
+                let _AdapterFWChecksum   = this.bufferToHex(AdapterFWChecksum);
+                let _MeterId             = this.bufferToHex(MeterId);
+                let _Status              = this.bufferToHex(Status);
+                let _SecondIndex         = new DataView(SecondIndex, 0).getInt32   (0, true);
+                let _Timestamp           = new Date(new DataView(Timestamp, 0).getInt32(0, true) * 1000).toISOString(); // this.moment.unix(timestamp).utc().format(),
+                let _ObisId              = this.bufferToHex(ObisId);
+                let _Unit                = this.bufferToHex(Unit);
+                let _Scalar              = this.bufferToHex(Scalar);
+                let _Value               = new DataView(Value,     0).getBigInt64(0, true);
+                let _UID                 = String.fromCharCode.apply(null, new Uint8Array(UID) as any).replace(/\0.*$/g, '');
+                let _SessionId           = new DataView(SessionId, 0).getInt32   (0, true);
+                let _Paging              = new DataView(Paging,    0).getInt32   (0, true);
+
+
+                if (common.AdapterId === "")
+                    common.AdapterId = _AdapterId;
+                else if (_AdapterId !== common.AdapterId)
+                    return false;
+
+                if (common.AdapterFWVersion === "")
+                    common.AdapterFWVersion = _AdapterFWVersion;
+                else if (_AdapterFWVersion !== common.AdapterFWVersion)
+                    return false;
+
+                if (common.AdapterFWChecksum === "")
+                    common.AdapterFWChecksum = _AdapterFWChecksum;
+                else if (_AdapterFWChecksum !== common.AdapterFWChecksum)
+                    return false;
+
+                if (common.MeterId === "")
+                    common.MeterId = _MeterId;
+                else if (_MeterId !== common.MeterId)
+                    return false;
+
+                if (common.ObisId === "")
+                    common.ObisId = _ObisId;
+                else if (_ObisId !== common.ObisId)
+                    return false;
+
+                if (common.Unit === "")
+                    common.Unit = _Unit;
+                else if (_Unit !== common.Unit)
+                    return false;
+
+                if (common.Scalar === "")
+                    common.Scalar = _Scalar;
+                else if (_Scalar !== common.Scalar)
+                    return false;
+
+                if (common.UID === "")
+                    common.UID = _UID;
+                else if (_UID !== common.UID)
+                    return false;
+
+                if (common.SessionId === 0)
+                    common.SessionId = _SessionId;
+                else if (_SessionId !== common.SessionId)
+                    return false;
+
+
+                common.dataSets.push({
+                    //@ts-ignore
+                    "Status":             _Status,
+                    //@ts-ignore
+                    "SecondIndex":        _SecondIndex,
+                    //@ts-ignore
+                    "Timestamp":          _Timestamp,
+                    //@ts-ignore
+                    "Value":              _Value,
+                    //@ts-ignore
+                    "Paging":             _Paging,
+                    //@ts-ignore
+                    "Signature":          this.bufferToHex(Signature)
+                });
+
+            }
+
+
+            var n = common.dataSets.length-1;
+            var _CTR: any = { //IChargeTransparencyRecord = {
+
+                 "@id":              common.SessionId,
+                 "@context":         "https://open.charging.cloud/contexts/CTR+json",
+
+                 "begin":            common.dataSets[0]["Timestamp"],
+                 "end":              common.dataSets[n]["Timestamp"],
+
+                 "description": {
+                     "de":           "Alle Ladevorgänge"
+                 },
+
+                 "contract": {
+                     "@id":          common.UID,
+                     //"type":         CTRArray[0]["contract"]["type"],
+                     "username":     "",
+                     "email":        ""
+                 },
+
+            //             "chargingStations": [
+            //                 {
+            //                     "@id":                      evseId.substring(0, evseId.lastIndexOf("*")),
+            //                     // "description": {
+            //                     //     "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
+            //                     // },
+            //                     "firmwareVersion":          CTRArray[0]["chargePoint"]["softwareVersion"],
+            //                     "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
+            //                     "address": {
+            //                         "street":               address_street,
+            //                         "postalCode":           address_zipCode,
+            //                         "city":                 address_town
+            //                     },
+            //                     "EVSEs": [
+            //                         {
+            //                             "@id":                      evseId,
+            //                             // "description": {
+            //                             //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
+            //                             // },
+            //                             "sockets":                  [ { } ],
+            //                             "meters": [
+            //                                 {
+            //                                     "@id":                      CTRArray[0]["meterInfo"]["meterId"],
+            //                                     "vendor":                   CTRArray[0]["meterInfo"]["manufacturer"],
+            //                                     "vendorURL":                "http://www.emh-metering.de",
+            //                                     "model":                    CTRArray[0]["meterInfo"]["type"],
+            //                                     "hardwareVersion":          "1.0",
+            //                                     "firmwareVersion":          CTRArray[0]["meterInfo"]["firmwareVersion"],
+            //                                     "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+            //                                     "publicKeys": [
+            //                                         {
+            //                                             "algorithm":        "secp192r1",
+            //                                             "format":           "DER",
+            //                                             "value":            CTRArray[0]["meterInfo"]["publicKey"].startsWith("04")
+            //                                                                     ?        CTRArray[0]["meterInfo"]["publicKey"]
+            //                                                                     : "04" + CTRArray[0]["meterInfo"]["publicKey"],
+            //                                             "signatures":       CTRArray[0]["meterInfo"]["publicKeySignatures"]
+            //                                         }
+            //                                     ]
+            //                                 }
+            //                             ]
+            //                         }
+            //                     ]
+            //                 }
+
+                 "chargingSessions": [
+
+                     {
+
+                         "@id":                          common.SessionId,
+                         "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/AlfenCrypt03+json",
+                         "begin":                        common.dataSets[0]["Timestamp"],
+                         "end":                          common.dataSets[n]["Timestamp"],
+            //             "EVSEId":                       evseId,
+
+                         "authorizationStart": {
+                             "@id":                      common.UID,
+                            //  "type":                     CTRArray[0]["contract"]["type"],
+                            //  "timestamp":                this.moment.unix(CTRArray[0]["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
+                            //                                               CTRArray[0]["contract"]["timestampLocal"]["localOffset"] +
+                            //                                               CTRArray[0]["contract"]["timestampLocal"]["seasonOffset"]).format(),
+                         },
+
+            //             "signatureInfos": {
+            //                 "hash":                     "SHA256",
+            //                 "hashTruncation":           "24",
+            //                 "algorithm":                "ECC",
+            //                 "curve":                    "secp192r1",
+            //                 "format":                   "rs"
+            //             },
+
+                         "measurements": [
+
+                             {
+
+                                 "energyMeterId":        common.MeterId,
+                                 "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/AlfenCrypt03+json",
+            //                     "name":                 CTRArray[0]["measurand"]["name"],
+                                 "obis":                 common.ObisId,
+            //                     "unit":                 CTRArray[0]["measuredValue"]["unit"],
+                                 "unitEncoded":          common.Unit,
+            //                     "valueType":            CTRArray[0]["measuredValue"]["valueType"],
+                                 "scale":                common.Scalar,
+
+            //                     "signatureInfos": {
+            //                         "hash":                 "SHA512",
+            //                         "hashTruncation":       "24",
+            //                         "algorithm":            "ECC",
+            //                         "curve":                "secp192r1",
+            //                         "format":               "rs"
+            //                     },
+
+                                 "values": [ ]
+
+                             }
+
+                         ]
+
+                     }
+
+                 ]
+
+            };
+
+            for (var dataSet of common.dataSets)
+            {
+
+                 _CTR["chargingSessions"][0]["measurements"][0]["values"].push(
+
+                                         {
+                                             "timestamp":      dataSet["Timestamp"],
+                                             "value":          dataSet["Value"],
+                                             "infoStatus":     dataSet["Status"],
+                                             "secondsIndex":   dataSet["SecondIndex"],
+                                             "paginationId":   dataSet["Paging"],
+            //                                 "logBookIndex":   _measurement["additionalInfo"]["indexes"]["logBook"],
+                                             "signatures": [
+                                                 {
+                                                     "r":          dataSet["Signature"].substring(0, 48),
+                                                     "s":          dataSet["Signature"].substring(48)
+                                                 }
+                                             ]
+                                         }
+
+                 );
+
+            }
+
+            await this.processChargeTransparencyRecord(_CTR);
+            return true;
+
+        }
+        catch (exception)
+        {  }
+
+        return false;
+
+    }
+
+    //#endregion
+
     //#region detectContentFormat(Content)
 
     private async detectContentFormat(Content: string) {
@@ -2953,14 +3316,14 @@ class ChargyApplication {
                     {
 
                         case "http://transparenz.software/schema/2018/07":
-                            if (! await this.tryToParseTransparenzSoftwareXML(XMLDocument))
+                            if (!await this.tryToParseTransparenzSoftwareXML(XMLDocument))
                                 this.doGlobalError("Unbekanntes Transparenzdatensatzformat!");
                             break;
 
                         // The SAFE transparency software v1.0 does not understand its own
                         // XML namespace. Therefore we have to guess the format.
                         case "":
-                            if (! await this.tryToParseTransparenzSoftwareXML(XMLDocument))
+                            if (!await this.tryToParseTransparenzSoftwareXML(XMLDocument))
                                 this.doGlobalError("Unbekanntes Transparenzdatensatzformat!");
                             break;
 
@@ -2997,7 +3360,19 @@ class ChargyApplication {
         else if (Content.startsWith("OCMF|{"))
         {
 
-            if (! await this.tryToParseOCMF(Content))
+            if (!await this.tryToParseOCMF(Content))
+                this.doGlobalError("Unbekanntes Transparenzdatensatzformat!");
+
+        }
+
+        //#endregion
+
+        //#region ALFEN processing
+
+        else if (Content.startsWith("AP;"))
+        {
+
+            if (!await this.tryToParseALFENFormat(Content))
                 this.doGlobalError("Unbekanntes Transparenzdatensatzformat!");
 
         }
@@ -3022,7 +3397,7 @@ class ChargyApplication {
 
                     default:
                         //@ts-ignore
-                        if (! await this.tryToParseAnonymousFormat(JSONContent))
+                        if (!await this.tryToParseAnonymousFormat(JSONContent))
                             this.doGlobalError("Unbekanntes Transparenzdatensatzformat!");
                         break;
 

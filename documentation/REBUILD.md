@@ -32,10 +32,10 @@ $ npm install @types/elliptic@latest --save-dev
 
 $ npm install moment@latest
 + moment@2.24.0
+
+$ npm install base32-decode
++ base32-decode@1.0.0
 ```
-
-
-
 
 
 
