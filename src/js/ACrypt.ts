@@ -20,35 +20,20 @@
 
 abstract class ACrypt {
 
-    readonly description:                   string;
-    readonly GetMeter:                      GetMeterFunc;
-    readonly CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc;
+    readonly description:  string;
+    readonly chargy:       Chargy;
+    readonly elliptic:     any;
+    readonly moment:       any;
 
-    readonly elliptic: any;
-    readonly moment:   any;
+    constructor(description:  string,
+                chargy:       Chargy) {
 
-    constructor(description:                   string,
-                GetMeter:                      GetMeterFunc,
-                CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc) {
-
-        this.description                   = description;
-        this.GetMeter                      = GetMeter;
-        this.CheckMeterPublicKeySignature  = CheckMeterPublicKeySignature;
-
-        this.elliptic                      = require('elliptic');
-        this.moment                        = require('moment');
+        this.description  = description;
+        this.chargy       = chargy;
+        this.elliptic     = require('elliptic');
+        this.moment       = require('moment');
 
     }
-
-    protected pad(text: string|undefined, paddingValue: number) {
-
-        if (text == null || text == undefined)
-            text = "";
-
-        return (text + Array(2*paddingValue).join('0')).substring(0, 2*paddingValue);
-
-    };
-
 
     protected CreateLine(id:         string,
                          value:      string|number,
@@ -64,7 +49,6 @@ abstract class ACrypt {
         this.AddToVisualBuffer(valueHEX, bufferDiv, lineDiv);
 
     }
-
 
     protected AddToVisualBuffer(valueHEX:   string,
                                 bufferDiv:  HTMLDivElement,
@@ -93,28 +77,25 @@ abstract class ACrypt {
 
     }
 
-    async sha256(message: DataView) {
-        const hashBuffer = await crypto.subtle.digest('SHA-256', message);
-        const hashArray  = Array.from(new Uint8Array(hashBuffer));                                       // convert hash to byte array
-        const hashHex    = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('').toLowerCase(); // convert bytes to hex string
-        return hashHex;
-    }
+
+    //abstract SignChargingSession(...)
 
     abstract VerifyChargingSession(chargingSession:   IChargingSession): Promise<ISessionCryptoResult>;
 
-    abstract SignMeasurement(measurementValue:        IMeasurementValue,
-                             privateKey:              any,
-                             publicKey:               any): Promise<ICryptoResult>;
 
-    abstract VerifyMeasurement(measurementValue:      IMeasurementValue): Promise<ICryptoResult>;
+    abstract SignMeasurement  (measurementValue:        IMeasurementValue,
+                               privateKey:              any,
+                               publicKey:               any): Promise<ICryptoResult>;
 
-    abstract ViewMeasurement(measurementValue:        IMeasurementValue,
-                             introDiv:                HTMLDivElement,
-                             infoDiv:                 HTMLDivElement,
-                             bufferValue:             HTMLDivElement,
-                             hashedBufferValue:       HTMLDivElement,
-                             publicKeyValue:          HTMLDivElement,
-                             signatureExpectedValue:  HTMLDivElement,
-                             signatureCheckValue:     HTMLDivElement) : void;
+    abstract VerifyMeasurement(measurementValue:        IMeasurementValue): Promise<ICryptoResult>;
+
+    abstract ViewMeasurement  (measurementValue:        IMeasurementValue,
+                               introDiv:                HTMLDivElement,
+                               infoDiv:                 HTMLDivElement,
+                               bufferValue:             HTMLDivElement,
+                               hashedBufferValue:       HTMLDivElement,
+                               publicKeyValue:          HTMLDivElement,
+                               signatureExpectedValue:  HTMLDivElement,
+                               signatureCheckValue:     HTMLDivElement) : void;
 
 }

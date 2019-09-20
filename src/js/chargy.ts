@@ -31,9 +31,10 @@ class Chargy {
     private chargingStations          = new Array<IChargingStation>();
     private EVSEs                     = new Array<IEVSE>();
     private meters                    = new Array<IMeter>();
+    private chargingSessions          = new Array<IChargingSession>();
+
     private eMobilityProviders        = new Array<IEMobilityProvider>();
     private mediationServices         = new Array<IMediationService>();
-    private chargingSessions          = new Array<IChargingSession>();
 
     public  currentCTR                = {} as IChargeTransparencyRecord;
 
@@ -99,21 +100,6 @@ class Chargy {
 
     //#endregion
 
-    async sha256(message: string|DataView) {
-
-        let hashBuffer = null;
-
-        if (typeof message === 'string')
-            hashBuffer = await crypto.subtle.digest('SHA-256', Buffer.from(message, 'utf8'));
-        else
-            hashBuffer = await crypto.subtle.digest('SHA-256', message);
-
-        const hashArray  = Array.from(new Uint8Array(hashBuffer));                                       // convert hash to byte array
-        const hashHex    = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('').toLowerCase(); // convert bytes to hex string
-
-        return hashHex;
-
-    }
 
     //#region CheckMeterPublicKeySignature(...)
 
@@ -174,8 +160,7 @@ class Chargy {
 
             //ToDo: Checking the timestamp might be usefull!
 
-            var Input       = JSON.stringify(toCheck);
-            var sha256value = await this.sha256(Input);
+            var sha256value = await sha256(JSON.stringify(toCheck));
                               //this.crypt.createHash('sha256').
                               //           update(Input, 'utf8').
                               //           digest('hex');
@@ -199,8 +184,6 @@ class Chargy {
     }
 
     //#endregion
-
-
 
 
     //#region detectContentFormat(Content)
@@ -346,9 +329,6 @@ class Chargy {
 
     //#endregion
 
-
-
-
     //#region processChargeTransparencyRecord(CTR)
 
     public async processChargeTransparencyRecord(CTR: IChargeTransparencyRecord): Promise<IChargeTransparencyRecord|ISessionCryptoResult>
@@ -361,9 +341,10 @@ class Chargy {
         this.chargingStations          = [];
         this.EVSEs                     = [];
         this.meters                    = [];
+        this.chargingSessions          = [];
+
         this.eMobilityProviders        = [];
         this.mediationServices         = [];
-        this.chargingSessions          = [];
 
         this.currentCTR = {} as IChargeTransparencyRecord;
 
@@ -374,7 +355,7 @@ class Chargy {
         try
         {
 
-            //#region Process operators, pools, stations, evse, tariffs, ...
+            //#region Process operators (pools, stations, evses, tariffs, ...)
 
             if (CTR.chargingStationOperators)
             {
@@ -516,6 +497,10 @@ class Chargy {
 
             }
 
+            //#endregion
+
+            //#region Process pools     (       stations, evses, tariffs, ...)
+
             if (CTR.chargingPools) {
 
                 for (var chargingPool of CTR.chargingPools)
@@ -552,6 +537,10 @@ class Chargy {
                 }
 
             }
+
+            //#endregion
+
+            //#region Process stations  (                 evses, tariffs, ...)
 
             if (CTR.chargingStations) {
 
@@ -611,59 +600,15 @@ class Chargy {
 
             //#endregion
 
-            //#region Process charging sessions...
-
             if (CTR.chargingSessions)
             {
                 for (let chargingSession of CTR.chargingSessions)
                 {
-
-                    chargingSession.ctr                 = CTR;
-                    chargingSession.verificationResult  = await this.processChargingSession(chargingSession);
-
-                    try
-                    {
-
-                        // if (chargingSession.measurements)
-                        // {
-                        //     for (var measurement of chargingSession.measurements)
-                        //     {
-
-                        //         measurement.chargingSession      = chargingSession;
-
-                        //         // var meter                        = this.GetMeter(measurement.energyMeterId);
-
-                        //         if (measurement.values && measurement.values.length > 0)
-                        //         {
-
-                        //             //@ts-ignore
-                        //             let currentValue: IMeasurementValue = null;
-
-                        //             for (let measurementValue of measurement.values)
-                        //             {
-                        //                 measurementValue.measurement    = measurement;
-                        //                 measurementValue.previousValue  = currentValue;
-                        //                 measurementValue.result         = await this.verifyMeasurementCryptoDetails(measurementValue);
-                        //                 currentValue                    = measurementValue;
-                        //             }
-
-                        //         }
-
-                        //     }
-                        // }
-
-                    }
-                    catch (exception)
-                    {
-                        console.log("Could not process charging session details: " + exception);
-                    }
-
+                    chargingSession.ctr                = CTR;
+                    chargingSession.verificationResult = await this.processChargingSession(chargingSession);
                     this.chargingSessions.push(chargingSession);
-
                 }
             }
-
-            //#endregion
 
             this.currentCTR = CTR;
 
@@ -681,7 +626,6 @@ class Chargy {
     }
 
     //#endregion
-
 
     //#region processChargingSession(chargingSession)
 
@@ -711,15 +655,15 @@ class Chargy {
         {
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/GDFCrypt01+json":
-                chargingSession.method = new GDFCrypt01(this.GetMeter, await this.CheckMeterPublicKeySignature);
+                chargingSession.method = new GDFCrypt01(this);
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json":
-                chargingSession.method = new EMHCrypt01(this.GetMeter, await this.CheckMeterPublicKeySignature);
+                chargingSession.method = new EMHCrypt01(this);
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/OCMFv1.0+json":
-                chargingSession.method = new OCMFv1_0  (this.GetMeter, await this.CheckMeterPublicKeySignature);
+                chargingSession.method = new OCMFv1_0  (this);
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             default:
@@ -732,71 +676,5 @@ class Chargy {
     }
 
     //#endregion
-
-    //#region verifyMeasurementCryptoDetails(measurementValue)
-
-    // private async verifyMeasurementCryptoDetails(measurementValue:  IMeasurementValue) : Promise<ICryptoResult>
-    // {
-
-    //     var result: ICryptoResult = {
-    //         status: VerificationResult.UnknownCTRFormat
-    //     };
-
-    //     if (measurementValue             == null ||
-    //         measurementValue.measurement == null)
-    //     {
-    //         return result;
-    //     }
-
-    //     switch (measurementValue.measurement["@context"])
-    //     {
-
-    //         case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/GDFCrypt01+json":
-    //              measurementValue.method = new GDFCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
-    //              return measurementValue.method.VerifyMeasurement(measurementValue);
-
-    //         case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json":
-    //              if (measurementValue.measurement.chargingSession.method != null)
-    //              {
-
-    //                 measurementValue.method = measurementValue.measurement.chargingSession.method;
-
-    //                 if (measurementValue.result == null)
-    //                     return measurementValue.method.VerifyMeasurement(measurementValue);
-
-    //                 return measurementValue.result;
-
-    //              }
-
-    //              measurementValue.method = new EMHCrypt01(this.GetMeter, this.CheckMeterPublicKeySignature);
-    //              return measurementValue.method.VerifyMeasurement(measurementValue);
-
-    //         case "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/OCMFv1.0+json":
-    //             if (measurementValue.measurement.chargingSession.method != null)
-    //             {
-
-    //                 measurementValue.method = measurementValue.measurement.chargingSession.method;
-
-    //                 if (measurementValue.result == null)
-    //                     return measurementValue.method.VerifyMeasurement(measurementValue);
-
-    //                 return measurementValue.result;
-
-    //             }
-
-    //             measurementValue.method = new OCMFv1_0(this.GetMeter, this.CheckMeterPublicKeySignature);
-    //             return measurementValue.method.VerifyMeasurement(measurementValue);
-
-    //         default:
-    //             return result;
-
-    //     }
-
-    // }
-
-    //#endregion
-
-
-
 
 }

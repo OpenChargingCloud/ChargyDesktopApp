@@ -56,12 +56,10 @@ class EMHCrypt01 extends ACrypt {
 
     readonly curve = new this.elliptic.ec('p192');
 
-    constructor(GetMeter:                      GetMeterFunc,
-                CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc) {
+    constructor(chargy:  Chargy) {
 
         super("ECC secp192r1",
-              GetMeter,
-              CheckMeterPublicKeySignature);
+              chargy);
 
     }
 
@@ -100,7 +98,7 @@ class EMHCrypt01 extends ACrypt {
         };
 
         // Only the first 24 bytes/192 bits are used!
-        cryptoResult.sha256value  = (await this.sha256(cryptoBuffer)).substring(0, 48);
+        cryptoResult.sha256value  = (await sha256(cryptoBuffer)).substring(0, 48);
 
         cryptoResult.publicKey    = publicKey.encode('hex').
                                               toLowerCase();
@@ -242,10 +240,10 @@ class EMHCrypt01 extends ACrypt {
                 };
 
                 // Only the first 24 bytes/192 bits are used!
-                cryptoResult.sha256value = (await this.sha256(cryptoBuffer)).substring(0, 48);
+                cryptoResult.sha256value = (await sha256(cryptoBuffer)).substring(0, 48);
 
 
-                const meter = this.GetMeter(measurementValue.measurement.energyMeterId);
+                const meter = this.chargy.GetMeter(measurementValue.measurement.energyMeterId);
                 if (meter != null)
                 {
 
@@ -367,19 +365,19 @@ class EMHCrypt01 extends ACrypt {
         const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
         cryptoSpan.innerHTML = "EMHCrypt01 (" + this.description + ")";
 
-        this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId                                    || "",  infoDiv, bufferValue);
-        this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp                                  || "",  infoDiv, bufferValue);
+        this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId                               || "",  infoDiv, bufferValue);
+        this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp                             || "",  infoDiv, bufferValue);
         this.CreateLine("Status",                   hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
-                                                    this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",           result.infoStatus                                 || "",  infoDiv, bufferValue);
-        this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                       result.secondsIndex                               || "",  infoDiv, bufferValue);
-        this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                         result.paginationId                               || "",  infoDiv, bufferValue);
-        this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis                                       || "",  infoDiv, bufferValue);
-        this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded                                || "",  infoDiv, bufferValue);
-        this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale                                      || "",  infoDiv, bufferValue);
-        this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value                                      || "",  infoDiv, bufferValue);
-        this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                              result.logBookIndex                               || "",  infoDiv, bufferValue);
-        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     this.pad(result.authorizationStart,          128) || "",  infoDiv, bufferValue);
-        this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), this.pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, bufferValue);
+                                                    this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",           result.infoStatus                            || "",  infoDiv, bufferValue);
+        this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                       result.secondsIndex                          || "",  infoDiv, bufferValue);
+        this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                         result.paginationId                          || "",  infoDiv, bufferValue);
+        this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis                                  || "",  infoDiv, bufferValue);
+        this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded                           || "",  infoDiv, bufferValue);
+        this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale                                 || "",  infoDiv, bufferValue);
+        this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value                                 || "",  infoDiv, bufferValue);
+        this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                              result.logBookIndex                          || "",  infoDiv, bufferValue);
+        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     pad(result.authorizationStart,          128) || "",  infoDiv, bufferValue);
+        this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, bufferValue);
 
 
         // Buffer
@@ -418,13 +416,13 @@ class EMHCrypt01 extends ACrypt {
                 {
 
                     let signatureDiv = publicKeyValue.parentElement!.children[3].appendChild(document.createElement('div'));
-                    signatureDiv.innerHTML = await this.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
-                                                                                     measurementValue.measurement.chargingSession.EVSE,
-                                                                                     //@ts-ignore
-                                                                                     measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                                     //@ts-ignore
-                                                                                     measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
-                                                                                     signature);
+                    signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
+                                                                                            measurementValue.measurement.chargingSession.EVSE,
+                                                                                            //@ts-ignore
+                                                                                            measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                                                            //@ts-ignore
+                                                                                            measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                                                            signature);
 
                 }
                 catch (exception)

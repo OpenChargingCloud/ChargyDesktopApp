@@ -45,14 +45,12 @@ interface IGDFCrypt01Result extends ICryptoResult
 
 class GDFCrypt01 extends ACrypt {
 
-    readonly curve        = new this.elliptic.ec('p256');
+    readonly curve = new this.elliptic.ec('p256');
 
-    constructor(GetMeter:                      GetMeterFunc,
-                CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc) {
+    constructor(chargy:  Chargy) {
 
         super("ECC secp256r1",
-              GetMeter,
-              CheckMeterPublicKeySignature);
+              chargy);
 
     }
 
@@ -86,7 +84,7 @@ class GDFCrypt01 extends ACrypt {
             authorizationStartTimestamp:  SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
         };
 
-        cryptoResult.sha256value  = await this.sha256(cryptoBuffer);
+        cryptoResult.sha256value  = await sha256(cryptoBuffer);
 
         cryptoResult.publicKey    = publicKey.encode('hex').
                                               toLowerCase();
@@ -223,10 +221,10 @@ class GDFCrypt01 extends ACrypt {
                     s:          signatureExpected.s
                 };
 
-                cryptoResult.sha256value = await this.sha256(cryptoBuffer);
+                cryptoResult.sha256value = await sha256(cryptoBuffer);
 
 
-                const meter = this.GetMeter(measurementValue.measurement.energyMeterId);
+                const meter = this.chargy.GetMeter(measurementValue.measurement.energyMeterId);
                 if (meter != null)
                 {
 

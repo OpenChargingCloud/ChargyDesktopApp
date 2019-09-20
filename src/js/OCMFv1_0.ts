@@ -57,12 +57,10 @@ class OCMFv1_0 extends ACrypt {
 
     readonly curve = new this.elliptic.ec('p256');
 
-    constructor(GetMeter:                      GetMeterFunc,
-                CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc) {
+    constructor(chargy:  Chargy) {
 
         super("ECC secp192r1",
-              GetMeter,
-              CheckMeterPublicKeySignature);
+              chargy);
 
     }
 
@@ -101,7 +99,7 @@ class OCMFv1_0 extends ACrypt {
         };
 
         // Only the first 24 bytes/192 bits are used!
-        cryptoResult.sha256value  = (await this.sha256(cryptoBuffer)).substring(0, 48);
+        cryptoResult.sha256value  = (await sha256(cryptoBuffer)).substring(0, 48);
 
         cryptoResult.publicKey    = publicKey.encode('hex').
                                               toLowerCase();
@@ -410,8 +408,8 @@ class OCMFv1_0 extends ACrypt {
         this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale                                      || "",  infoDiv, bufferValue);
         this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value                                      || "",  infoDiv, bufferValue);
         this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                              result.logBookIndex                               || "",  infoDiv, bufferValue);
-        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     this.pad(result.authorizationStart,          128) || "",  infoDiv, bufferValue);
-        this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), this.pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, bufferValue);
+        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     pad(result.authorizationStart,          128) || "",  infoDiv, bufferValue);
+        this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, bufferValue);
 
 
         // Buffer
@@ -450,13 +448,13 @@ class OCMFv1_0 extends ACrypt {
                 {
 
                     let signatureDiv = publicKeyValue.parentElement!.children[3].appendChild(document.createElement('div'));
-                    signatureDiv.innerHTML = await this.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
-                                                                                     measurementValue.measurement.chargingSession.EVSE,
-                                                                                     //@ts-ignore
-                                                                                     measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                                     //@ts-ignore
-                                                                                     measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
-                                                                                     signature);
+                    signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
+                                                                                            measurementValue.measurement.chargingSession.EVSE,
+                                                                                            //@ts-ignore
+                                                                                            measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                                                            //@ts-ignore
+                                                                                            measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                                                            signature);
 
                 }
                 catch (exception)
