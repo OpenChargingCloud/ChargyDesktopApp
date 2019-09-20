@@ -207,6 +207,8 @@ class OCMFv1_0 extends ACrypt {
             return cryptoResult;
         }
 
+        measurementValue.method = this;
+
         // {
         //
         //     "FV": "1.0",

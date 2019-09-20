@@ -192,6 +192,8 @@ class GDFCrypt01 extends ACrypt {
             return cryptoResult;
         }
 
+        measurementValue.method = this;
+
         var buffer        = new ArrayBuffer(320);
         var cryptoBuffer  = new DataView(buffer);
 

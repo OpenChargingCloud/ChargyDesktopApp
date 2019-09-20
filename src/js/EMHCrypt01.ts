@@ -206,6 +206,8 @@ class EMHCrypt01 extends ACrypt {
             return cryptoResult;
         }
 
+        measurementValue.method = this;
+
         var buffer        = new ArrayBuffer(320);
         var cryptoBuffer  = new DataView(buffer);
 
@@ -269,7 +271,7 @@ class EMHCrypt01 extends ACrypt {
                                 {
                                     return setResult(VerificationResult.ValidSignature);
                                 }
-                                
+
                                 return setResult(VerificationResult.InvalidSignature);
 
                             }
