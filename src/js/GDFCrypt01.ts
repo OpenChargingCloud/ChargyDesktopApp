@@ -45,7 +45,7 @@ interface IGDFCrypt01Result extends ICryptoResult
 
 class GDFCrypt01 extends ACrypt {
 
-    readonly curve = new this.elliptic.ec('p256');
+    readonly curve = new this.chargy.elliptic.ec('p256');
 
     constructor(chargy:  Chargy) {
 
@@ -64,72 +64,18 @@ class GDFCrypt01 extends ACrypt {
         // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
     }
 
-    async SignMeasurement(measurementValue:  IGDFMeasurementValue,
-                          privateKey:        any,
-                          publicKey:         any): Promise<IGDFCrypt01Result>
+
+    async SignChargingSession  (chargingSession:         IChargingSession,
+                                privateKey:              any):              Promise<ISessionCryptoResult>
     {
 
-        var buffer                       = new ArrayBuffer(320);
-        var cryptoBuffer                 = new DataView(buffer);
-
-        var cryptoResult:IGDFCrypt01Result = {
-            status:                       VerificationResult.InvalidSignature,
-            meterId:                      SetText     (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
-            timestamp:                    SetTimestamp(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            obis:                         SetHex      (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
-            unitEncoded:                  SetInt8     (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-            scale:                        SetInt8     (cryptoBuffer, measurementValue.measurement.scale,                                         30),
-            value:                        SetUInt64   (cryptoBuffer, measurementValue.value,                                                     31, true),
-            authorizationStart:           SetHex      (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
-            authorizationStartTimestamp:  SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
-        };
-
-        cryptoResult.sha256value  = await sha256(cryptoBuffer);
-
-        cryptoResult.publicKey    = publicKey.encode('hex').
-                                              toLowerCase();
-
-        const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
-                                               sign(cryptoResult.sha256value);
-
-        switch (measurementValue.measurement.signatureInfos.format)
-        {
-
-            case SignatureFormats.DER:
-
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
-                    value:      signature.toDER('hex')
-                };
-
-                return cryptoResult;
-
-
-            case SignatureFormats.rs:
-
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
-                    r:          signature.r,
-                    s:          signature.s
-                };
-
-                return cryptoResult;
-
-
-            //default:
-
-
+        return {
+            status: SessionVerificationResult.UnknownSessionFormat
         }
-
-        cryptoResult.status = VerificationResult.ValidSignature;
-        return cryptoResult;
 
     }
 
-
-    async VerifyChargingSession(chargingSession:   IChargingSession): Promise<ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession:         IChargingSession): Promise<ISessionCryptoResult>
     {
 
         var sessionResult = SessionVerificationResult.UnknownSessionFormat;
@@ -179,6 +125,69 @@ class GDFCrypt01 extends ACrypt {
 
     }
 
+
+    async SignMeasurement(measurementValue:  IGDFMeasurementValue,
+                          privateKey:        any): Promise<IGDFCrypt01Result>
+    {
+
+        var buffer                       = new ArrayBuffer(320);
+        var cryptoBuffer                 = new DataView(buffer);
+
+        var cryptoResult:IGDFCrypt01Result = {
+            status:                       VerificationResult.InvalidSignature,
+            meterId:                      SetText     (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
+            timestamp:                    SetTimestamp(cryptoBuffer, measurementValue.timestamp,                                                 10),
+            obis:                         SetHex      (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
+            unitEncoded:                  SetInt8     (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
+            scale:                        SetInt8     (cryptoBuffer, measurementValue.measurement.scale,                                         30),
+            value:                        SetUInt64   (cryptoBuffer, measurementValue.value,                                                     31, true),
+            authorizationStart:           SetHex      (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
+            authorizationStartTimestamp:  SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
+        };
+
+        cryptoResult.sha256value  = await sha256(cryptoBuffer);
+
+        // cryptoResult.publicKey    = publicKey.encode('hex').
+        //                                       toLowerCase();
+
+        const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
+                                               sign(cryptoResult.sha256value);
+
+        switch (measurementValue.measurement.signatureInfos.format)
+        {
+
+            case SignatureFormats.DER:
+
+                cryptoResult.signature = {
+                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
+                    format:     measurementValue.measurement.signatureInfos.format,
+                    value:      signature.toDER('hex')
+                };
+
+                return cryptoResult;
+
+
+            case SignatureFormats.rs:
+
+                cryptoResult.signature = {
+                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
+                    format:     measurementValue.measurement.signatureInfos.format,
+                    r:          signature.r,
+                    s:          signature.s
+                };
+
+                return cryptoResult;
+
+
+            //default:
+
+
+        }
+
+        cryptoResult.status = VerificationResult.ValidSignature;
+        return cryptoResult;
+
+    }
 
     async VerifyMeasurement(measurementValue:  IGDFMeasurementValue): Promise<IGDFCrypt01Result>
     {
@@ -285,7 +294,6 @@ class GDFCrypt01 extends ACrypt {
         return {} as IGDFCrypt01Result;
 
     }
-
 
     async ViewMeasurement(measurementValue:        IMeasurementValue,
                           introDiv:                HTMLDivElement,

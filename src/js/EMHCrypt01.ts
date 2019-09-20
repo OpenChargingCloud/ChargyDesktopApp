@@ -54,7 +54,7 @@ interface IEMHCrypt01Result extends ICryptoResult
 
 class EMHCrypt01 extends ACrypt {
 
-    readonly curve = new this.elliptic.ec('p192');
+    readonly curve = new this.chargy.elliptic.ec('p192');
 
     constructor(chargy:  Chargy) {
 
@@ -73,77 +73,18 @@ class EMHCrypt01 extends ACrypt {
         // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
     }
 
-    async SignMeasurement(measurementValue:  IEMHMeasurementValue,
-                          privateKey:        any,
-                          publicKey:         any): Promise<IEMHCrypt01Result>
+
+    async SignChargingSession  (chargingSession:         IChargingSession,
+                                privateKey:              any):              Promise<ISessionCryptoResult>
     {
 
-        var buffer                       = new ArrayBuffer(320);
-        var cryptoBuffer                 = new DataView(buffer);
-
-        var cryptoResult:IEMHCrypt01Result = {
-            status:                       VerificationResult.InvalidSignature,
-            meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
-            timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
-            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
-            paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
-            obis:                         SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
-            unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-            scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
-            value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
-            logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
-            authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
-            authorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
-        };
-
-        // Only the first 24 bytes/192 bits are used!
-        cryptoResult.sha256value  = (await sha256(cryptoBuffer)).substring(0, 48);
-
-        cryptoResult.publicKey    = publicKey.encode('hex').
-                                              toLowerCase();
-
-        const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
-                                               sign(cryptoResult.sha256value);
-
-        switch (measurementValue.measurement.signatureInfos.format)
-        {
-
-            case SignatureFormats.DER:
-
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
-                    value:      signature.toDER('hex')
-                };
-
-                return cryptoResult;
-
-
-            case SignatureFormats.rs:
-
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
-                    r:          signature.r,
-                    s:          signature.s
-                };
-
-                return cryptoResult;
-
-
-            //default:
-
-
+        return {
+            status: SessionVerificationResult.UnknownSessionFormat
         }
-
-        cryptoResult.status = VerificationResult.ValidSignature;
-        return cryptoResult;
 
     }
 
-
-    async VerifyChargingSession(chargingSession:   IChargingSession): Promise<ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession:         IChargingSession): Promise<ISessionCryptoResult>
     {
 
         var sessionResult = SessionVerificationResult.UnknownSessionFormat;
@@ -189,10 +130,78 @@ class EMHCrypt01 extends ACrypt {
 
         return {
             status: sessionResult
-        } ;
+        }
 
     }
 
+
+    async SignMeasurement  (measurementValue:  IEMHMeasurementValue,
+                            privateKey:        any): Promise<IEMHCrypt01Result>
+    {
+
+        var buffer                       = new ArrayBuffer(320);
+        var cryptoBuffer                 = new DataView(buffer);
+
+        var cryptoResult:IEMHCrypt01Result = {
+            status:                       VerificationResult.InvalidSignature,
+            meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
+            timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
+            infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
+            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
+            paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
+            obis:                         SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
+            unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
+            scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
+            value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
+            logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
+            authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
+            authorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
+        };
+
+        // Only the first 24 bytes/192 bits are used!
+        cryptoResult.sha256value  = (await sha256(cryptoBuffer)).substring(0, 48);
+
+        // cryptoResult.publicKey    = publicKey.encode('hex').
+        //                                       toLowerCase();
+
+        const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
+                                               sign(cryptoResult.sha256value);
+
+        switch (measurementValue.measurement.signatureInfos.format)
+        {
+
+            case SignatureFormats.DER:
+
+                cryptoResult.signature = {
+                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
+                    format:     measurementValue.measurement.signatureInfos.format,
+                    value:      signature.toDER('hex')
+                };
+
+                return cryptoResult;
+
+
+            case SignatureFormats.rs:
+
+                cryptoResult.signature = {
+                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
+                    format:     measurementValue.measurement.signatureInfos.format,
+                    r:          signature.r,
+                    s:          signature.s
+                };
+
+                return cryptoResult;
+
+
+            //default:
+
+
+        }
+
+        cryptoResult.status = VerificationResult.ValidSignature;
+        return cryptoResult;
+
+    }
 
     async VerifyMeasurement(measurementValue:  IEMHMeasurementValue): Promise<IEMHCrypt01Result>
     {
@@ -306,51 +315,7 @@ class EMHCrypt01 extends ACrypt {
 
     }
 
-
-    private DecodeStatus(statusValue: string) : Array<string>
-    {
-
-        let statusArray:string[] = [];
-
-        try
-        {
-
-            let status = parseInt(statusValue);
-
-            if ((status &  1) ==  1)
-                statusArray.push("Fehler erkannt");
-
-            if ((status &  2) ==  2)
-                statusArray.push("Synchrone Messwertübermittlung");
-
-            // Bit 3 is reserved!
-
-            if ((status &  8) ==  8)
-                statusArray.push("System-Uhr ist synchron");
-            else
-                statusArray.push("System-Uhr ist nicht synchron");
-
-            if ((status & 16) == 16)
-                statusArray.push("Rücklaufsperre aktiv");
-
-            if ((status & 32) == 32)
-                statusArray.push("Energierichtung -A");
-
-            if ((status & 64) == 64)
-                statusArray.push("Magnetfeld erkannt");
-
-        }
-        catch (exception)
-        {
-            statusArray.push("Invalid status!");
-        }
-
-        return statusArray;
-
-    }
-
-
-    async ViewMeasurement(measurementValue:        IEMHMeasurementValue,
+    async ViewMeasurement  (measurementValue:  IEMHMeasurementValue,
                           introDiv:                HTMLDivElement,
                           infoDiv:                 HTMLDivElement,
                           bufferValue:             HTMLDivElement,
@@ -481,5 +446,52 @@ class EMHCrypt01 extends ACrypt {
 
 
     }
+
+
+    //#region Helper methods
+
+    private DecodeStatus(statusValue: string) : Array<string>
+    {
+
+        let statusArray:string[] = [];
+
+        try
+        {
+
+            let status = parseInt(statusValue);
+
+            if ((status &  1) ==  1)
+                statusArray.push("Fehler erkannt");
+
+            if ((status &  2) ==  2)
+                statusArray.push("Synchrone Messwertübermittlung");
+
+            // Bit 3 is reserved!
+
+            if ((status &  8) ==  8)
+                statusArray.push("System-Uhr ist synchron");
+            else
+                statusArray.push("System-Uhr ist nicht synchron");
+
+            if ((status & 16) == 16)
+                statusArray.push("Rücklaufsperre aktiv");
+
+            if ((status & 32) == 32)
+                statusArray.push("Energierichtung -A");
+
+            if ((status & 64) == 64)
+                statusArray.push("Magnetfeld erkannt");
+
+        }
+        catch (exception)
+        {
+            statusArray.push("Invalid status!");
+        }
+
+        return statusArray;
+
+    }
+
+    //#endregion
 
 }

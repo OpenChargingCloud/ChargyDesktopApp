@@ -55,7 +55,7 @@ interface IOCMFv1_0Result extends ICryptoResult
 
 class OCMFv1_0 extends ACrypt {
 
-    readonly curve = new this.elliptic.ec('p256');
+    readonly curve = new this.chargy.elliptic.ec('p256');
 
     constructor(chargy:  Chargy) {
 
@@ -74,75 +74,16 @@ class OCMFv1_0 extends ACrypt {
         // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
     }
 
-    async SignMeasurement(measurementValue:  IOCMFv1_0MeasurementValue,
-                          privateKey:        any,
-                          publicKey:         any): Promise<IOCMFv1_0Result>
+
+    async SignChargingSession  (chargingSession:         IChargingSession,
+                                privateKey:              any):              Promise<ISessionCryptoResult>
     {
 
-        var buffer                       = new ArrayBuffer(320);
-        var cryptoBuffer                 = new DataView(buffer);
-
-        var cryptoResult:IOCMFv1_0Result = {
-            status:                       VerificationResult.InvalidSignature,
-            meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
-            timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
-            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
-            paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
-            obis:                         SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
-            unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-            scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
-            value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
-            logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
-            authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
-            authorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
-        };
-
-        // Only the first 24 bytes/192 bits are used!
-        cryptoResult.sha256value  = (await sha256(cryptoBuffer)).substring(0, 48);
-
-        cryptoResult.publicKey    = publicKey.encode('hex').
-                                              toLowerCase();
-
-        const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
-                                               sign(cryptoResult.sha256value);
-
-        switch (measurementValue.measurement.signatureInfos.format)
-        {
-
-            case SignatureFormats.DER:
-
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
-                    value:      signature.toDER('hex')
-                };
-
-                return cryptoResult;
-
-
-            case SignatureFormats.rs:
-
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
-                    r:          signature.r,
-                    s:          signature.s
-                };
-
-                return cryptoResult;
-
-
-            //default:
-
-
+        return {
+            status: SessionVerificationResult.UnknownSessionFormat
         }
 
-        cryptoResult.status = VerificationResult.ValidSignature;
-        return cryptoResult;
-
     }
-
 
     async VerifyChargingSession(chargingSession:   IChargingSession): Promise<ISessionCryptoResult>
     {
@@ -194,6 +135,74 @@ class OCMFv1_0 extends ACrypt {
 
     }
 
+
+    async SignMeasurement(measurementValue:  IOCMFv1_0MeasurementValue,
+                          privateKey:        any): Promise<IOCMFv1_0Result>
+    {
+
+        var buffer                       = new ArrayBuffer(320);
+        var cryptoBuffer                 = new DataView(buffer);
+
+        var cryptoResult:IOCMFv1_0Result = {
+            status:                       VerificationResult.InvalidSignature,
+            meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
+            timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
+            infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
+            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
+            paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
+            obis:                         SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
+            unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
+            scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
+            value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
+            logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
+            authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
+            authorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
+        };
+
+        // Only the first 24 bytes/192 bits are used!
+        cryptoResult.sha256value  = (await sha256(cryptoBuffer)).substring(0, 48);
+
+        // cryptoResult.publicKey    = publicKey.encode('hex').
+        //                                       toLowerCase();
+
+        const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
+                                               sign(cryptoResult.sha256value);
+
+        switch (measurementValue.measurement.signatureInfos.format)
+        {
+
+            case SignatureFormats.DER:
+
+                cryptoResult.signature = {
+                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
+                    format:     measurementValue.measurement.signatureInfos.format,
+                    value:      signature.toDER('hex')
+                };
+
+                return cryptoResult;
+
+
+            case SignatureFormats.rs:
+
+                cryptoResult.signature = {
+                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
+                    format:     measurementValue.measurement.signatureInfos.format,
+                    r:          signature.r,
+                    s:          signature.s
+                };
+
+                return cryptoResult;
+
+
+            //default:
+
+
+        }
+
+        cryptoResult.status = VerificationResult.ValidSignature;
+        return cryptoResult;
+
+    }
 
     async VerifyMeasurement(measurementValue:  IOCMFv1_0MeasurementValue): Promise<IOCMFv1_0Result>
     {
@@ -381,7 +390,6 @@ class OCMFv1_0 extends ACrypt {
         // return {} as IOCMFv1_0Result;
 
     }
-
 
     async ViewMeasurement(measurementValue:        IOCMFv1_0MeasurementValue,
                           introDiv:                HTMLDivElement,

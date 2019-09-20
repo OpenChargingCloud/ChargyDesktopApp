@@ -20,20 +20,22 @@
 
 abstract class ACrypt {
 
+    //#region Data
+
     readonly description:  string;
     readonly chargy:       Chargy;
-    readonly elliptic:     any;
-    readonly moment:       any;
+
+    //#endregion
 
     constructor(description:  string,
                 chargy:       Chargy) {
 
         this.description  = description;
         this.chargy       = chargy;
-        this.elliptic     = require('elliptic');
-        this.moment       = require('moment');
 
     }
+
+    //#region Protected methods
 
     protected CreateLine(id:         string,
                          value:      string|number,
@@ -77,25 +79,32 @@ abstract class ACrypt {
 
     }
 
-
-    //abstract SignChargingSession(...)
-
-    abstract VerifyChargingSession(chargingSession:   IChargingSession): Promise<ISessionCryptoResult>;
+    //#endregion
 
 
-    abstract SignMeasurement  (measurementValue:        IMeasurementValue,
-                               privateKey:              any,
-                               publicKey:               any): Promise<ICryptoResult>;
+    abstract GenerateKeyPair(): any;
 
-    abstract VerifyMeasurement(measurementValue:        IMeasurementValue): Promise<ICryptoResult>;
 
-    abstract ViewMeasurement  (measurementValue:        IMeasurementValue,
-                               introDiv:                HTMLDivElement,
-                               infoDiv:                 HTMLDivElement,
-                               bufferValue:             HTMLDivElement,
-                               hashedBufferValue:       HTMLDivElement,
-                               publicKeyValue:          HTMLDivElement,
-                               signatureExpectedValue:  HTMLDivElement,
-                               signatureCheckValue:     HTMLDivElement) : void;
+
+    abstract SignChargingSession  (chargingSession:         IChargingSession,
+                                   privateKey:              any):              Promise<ISessionCryptoResult>;
+
+    abstract VerifyChargingSession(chargingSession:         IChargingSession): Promise<ISessionCryptoResult>;
+
+
+
+    abstract SignMeasurement      (measurementValue:        IMeasurementValue,
+                                   privateKey:              any):               Promise<ICryptoResult>;
+
+    abstract VerifyMeasurement    (measurementValue:        IMeasurementValue): Promise<ICryptoResult>;
+
+    abstract ViewMeasurement      (measurementValue:        IMeasurementValue,
+                                   introDiv:                HTMLDivElement,
+                                   infoDiv:                 HTMLDivElement,
+                                   bufferValue:             HTMLDivElement,
+                                   hashedBufferValue:       HTMLDivElement,
+                                   publicKeyValue:          HTMLDivElement,
+                                   signatureExpectedValue:  HTMLDivElement,
+                                   signatureCheckValue:     HTMLDivElement) : void;
 
 }

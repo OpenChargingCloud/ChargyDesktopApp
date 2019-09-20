@@ -23,8 +23,8 @@ class Chargy {
 
     //#region Data
 
-    private elliptic: any;
-    private moment:   any;
+    public  elliptic: any;
+    public  moment:   any;
 
     private chargingStationOperators  = new Array<IChargingStationOperator>();
     private chargingPools             = new Array<IChargingPool>();
