@@ -538,6 +538,7 @@ class ChargyApp {
 
         //#endregion
 
+
         //#region The Issue tracker
 
         var issueTracker              = <HTMLDivElement>      document.getElementById('issueTracker');
@@ -807,12 +808,6 @@ class ChargyApp {
     }
 
     //#endregion
-
-
-
-
-
-
 
 
     //#region detectContentFormat(Content)
@@ -1558,9 +1553,45 @@ class ChargyApp {
                                                                          "kWh");
 
 
-                            // Show signature status
-                            let verificationStatusDiv        = CreateDiv(MeasurementValueDiv, "verificationStatus",
-                                                                         await this.showMeasurementCrypto(measurementValue));
+                            //#region Show signature status
+
+                            let icon = '<i class="fas fa-times-circle"></i> Ungültige Signatur';
+
+                            if (measurementValue.result)
+                                switch (measurementValue.result.status)
+                                {
+
+                                    case VerificationResult.UnknownCTRFormat:
+                                        icon = '<i class="fas fa-times-circle"></i> Unbekanntes Transparenzdatenformat';
+                                        break;
+
+                                    case VerificationResult.EnergyMeterNotFound:
+                                        icon = '<i class="fas fa-times-circle"></i> Ungültiger Energiezähler';
+                                        break;
+
+                                    case VerificationResult.PublicKeyNotFound:
+                                        icon = '<i class="fas fa-times-circle"></i> Ungültiger Public Key';
+                                        break;
+
+                                    case VerificationResult.InvalidPublicKey:
+                                        icon = '<i class="fas fa-times-circle"></i> Ungültiger Public Key';
+                                        break;
+
+                                    case VerificationResult.InvalidSignature:
+                                        icon = '<i class="fas fa-times-circle"></i> Ungültige Signatur';
+                                        break;
+
+                                    case VerificationResult.ValidSignature:
+                                        icon = '<i class="fas fa-check-circle"></i> Gültige Signatur';
+                                        break;
+
+                                }
+
+                            let verificationStatusDiv        = CreateDiv(MeasurementValueDiv,
+                                                                         "verificationStatus",
+                                                                         icon);
+
+                            //#endregion
 
                             previousValue                    = currentValue;
 
@@ -1644,52 +1675,6 @@ class ChargyApp {
     }
 
     //#endregion
-
-
-
-
-
-    //#region showMeasurementCrypto(measurementValue)
-
-    private async showMeasurementCrypto(measurementValue: IMeasurementValue)
-    {
-
-        if (measurementValue == null)
-            return '<i class="fas fa-times-circle"></i> Ungültige Signatur';
-
-        switch (measurementValue.result.status)
-        {
-
-            case VerificationResult.UnknownCTRFormat:
-                return '<i class="fas fa-times-circle"></i> Unbekanntes Transparenzdatenformat';
-
-            case VerificationResult.EnergyMeterNotFound:
-                return '<i class="fas fa-times-circle"></i> Ungültiger Energiezähler';
-
-            case VerificationResult.PublicKeyNotFound:
-                return '<i class="fas fa-times-circle"></i> Ungültiger Public Key';
-
-            case VerificationResult.InvalidPublicKey:
-                return '<i class="fas fa-times-circle"></i> Ungültiger Public Key';
-
-            case VerificationResult.InvalidSignature:
-                return '<i class="fas fa-times-circle"></i> Ungültige Signatur';
-
-            case VerificationResult.ValidSignature:
-                return '<i class="fas fa-check-circle"></i> Gültige Signatur';
-
-
-            default:
-                return '<i class="fas fa-times-circle"></i> Ungültige Signatur';
-
-        }
-
-    }
-
-    //#endregion
-
-
-
 
     //#region Global error handling...
 
