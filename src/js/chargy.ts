@@ -186,9 +186,9 @@ class Chargy {
     //#endregion
 
 
-    //#region detectContentFormat(Content)
+    //#region detectAndConvertContentFormat(Content)
 
-    public async detectContentFormat(Content: string): Promise<IChargeTransparencyRecord|ISessionCryptoResult> {
+    public async detectAndConvertContentFormat(Content: string): Promise<IChargeTransparencyRecord|ISessionCryptoResult> {
 
         //#region Clean data
 

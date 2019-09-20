@@ -104,23 +104,23 @@ class ChargyApp {
         {
 
             case "win32":
-                this.calcSHA512Hash('Chargy Transparenzsoftware.exe',             hash => this.exe_hash           = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-                this.calcSHA512Hash(this.path.join('resources', 'app.asar'),      hash => this.app_asar_hash      = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-                this.calcSHA512Hash(this.path.join('resources', 'electron.asar'), hash => this.electron_asar_hash = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+                this.calcSHA512FileHash('Chargy Transparenzsoftware.exe',             hash => this.exe_hash           = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+                this.calcSHA512FileHash(this.path.join('resources', 'app.asar'),      hash => this.app_asar_hash      = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+                this.calcSHA512FileHash(this.path.join('resources', 'electron.asar'), hash => this.electron_asar_hash = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
                 break;
 
             case "linux":
             case "freebsd":
             case "openbsd":
-                this.calcSHA512Hash('/opt/Chargy\ Transparenzsoftware/chargytransparenzsoftware', hash => this.exe_hash           = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-                this.calcSHA512Hash('/opt/Chargy\ Transparenzsoftware/resources/app.asar',        hash => this.app_asar_hash      = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-                this.calcSHA512Hash('/opt/Chargy\ Transparenzsoftware/resources/electron.asar',   hash => this.electron_asar_hash = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+                this.calcSHA512FileHash('/opt/Chargy\ Transparenzsoftware/chargytransparenzsoftware', hash => this.exe_hash           = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+                this.calcSHA512FileHash('/opt/Chargy\ Transparenzsoftware/resources/app.asar',        hash => this.app_asar_hash      = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+                this.calcSHA512FileHash('/opt/Chargy\ Transparenzsoftware/resources/electron.asar',   hash => this.electron_asar_hash = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
                 break;
 
             case "darwin":
-                this.calcSHA512Hash('/Applications/Chargy\ Transparenzsoftware.app/Contents/MacOS/Chargy Transparenzsoftware', hash => this.exe_hash           = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-                this.calcSHA512Hash('/Applications/Chargy\ Transparenzsoftware.app/Contents/Resources/app.asar',               hash => this.app_asar_hash      = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-                this.calcSHA512Hash('/Applications/Chargy\ Transparenzsoftware.app/Contents/Resources/electron.asar',          hash => this.electron_asar_hash = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+                this.calcSHA512FileHash('/Applications/Chargy\ Transparenzsoftware.app/Contents/MacOS/Chargy Transparenzsoftware', hash => this.exe_hash           = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+                this.calcSHA512FileHash('/Applications/Chargy\ Transparenzsoftware.app/Contents/Resources/app.asar',               hash => this.app_asar_hash      = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+                this.calcSHA512FileHash('/Applications/Chargy\ Transparenzsoftware.app/Contents/Resources/electron.asar',          hash => this.electron_asar_hash = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
                 break;
 
             default:
@@ -528,7 +528,7 @@ class ChargyApp {
             (navigator as any).clipboard.readText().then((clipText: string) => {
                 try
                 {
-                    this.detectContentFormat(clipText);
+                    this.detectAndConvertContentFormat(clipText);
                 }
                 catch (exception) {
                     this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
@@ -709,12 +709,11 @@ class ChargyApp {
 
     }
 
+    //#region calcSHA512FileHash(...)
 
-    //#region calcSHA512Hash(...)
-
-    private calcSHA512Hash(filename:  string,
-                           OnSuccess: { (hash:         string): any; },
-                           OnFailed:  { (errorMessage: string): any; })
+    private calcSHA512FileHash(filename:   string,
+                               OnSuccess:  { (hash:         string):  any; },
+                               OnFailed:   { (errorMessage: string):  any; })
     {
 
         const fs      = require('original-fs');
@@ -809,15 +808,62 @@ class ChargyApp {
 
     //#endregion
 
+    //#region Read and parse CTR file
 
-    //#region detectContentFormat(Content)
+    private readAndParseFile(file: File) {
 
-    private async detectContentFormat(Content: string) {
+        if (!file)
+            return;
+
+        var reader = new FileReader();
+
+        reader.onload = (event) => {
+            try
+            {
+                this.detectAndConvertContentFormat((event.target as any).result);
+            }
+            catch (exception) {
+                this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+            }
+        }
+
+        reader.onerror = (event) => {
+            this.doGlobalError("Fehlerhafter Transparenzdatensatz!", event);
+        }
+
+        reader.readAsText(file, 'UTF-8');
+
+    }
+
+    //#endregion
+
+    //#region Process .chargy file extentions/associations opened via this app
+
+    private readFileFromDisk(filename: string): void {
+        if (filename != null && filename.trim() != "" && filename != "." && filename[0] != '-')
+        {
+            try
+            {
+                let content = require('original-fs').readFileSync(filename.replace("file://", ""), 'utf-8');
+                this.detectAndConvertContentFormat(JSON.parse(content));
+            }
+            catch (exception) {
+                this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+            }
+        }
+    }
+
+    //#endregion
+
+
+    //#region detectAndConvertContentFormat(Content)
+
+    private async detectAndConvertContentFormat(Content: string) {
 
         this.inputInfosDiv.style.display  = 'none';
         this.errorTextDiv.style.display   = 'none';
 
-        var result = await this.chargy.detectContentFormat(Content);
+        var result = await this.chargy.detectAndConvertContentFormat(Content);
 
         if (IsAChargeTransparencyRecord(result))
             await this.showChargeTransparencyRecord(result);
@@ -1699,54 +1745,6 @@ class ChargyApp {
         console.log(text);
         console.log(context);
 
-    }
-
-    //#endregion
-
-
-    //#region Read and parse CTR file
-
-    private readAndParseFile(file: File) {
-
-        if (!file)
-            return;
-
-        var reader = new FileReader();
-
-        reader.onload = (event) => {
-            try
-            {
-                this.detectContentFormat((event.target as any).result);
-            }
-            catch (exception) {
-                this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-            }
-        }
-
-        reader.onerror = (event) => {
-            this.doGlobalError("Fehlerhafter Transparenzdatensatz!", event);
-        }
-
-        reader.readAsText(file, 'UTF-8');
-
-    }
-
-    //#endregion
-
-    //#region Process .chargy file extentions/associations opened via this app
-
-    private readFileFromDisk(filename: string): void {
-        if (filename != null && filename.trim() != "" && filename != "." && filename[0] != '-')
-        {
-            try
-            {
-                let content = require('original-fs').readFileSync(filename.replace("file://", ""), 'utf-8');
-                this.detectContentFormat(JSON.parse(content));
-            }
-            catch (exception) {
-                this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-            }
-        }
     }
 
     //#endregion
