@@ -17,6 +17,22 @@
 
 ///<reference path="ACrypt.ts" />
 
+function IsAChargeTransparencyRecord(thing: IChargeTransparencyRecord|ISessionCryptoResult): thing is IChargeTransparencyRecord
+{
+
+    let ctr = thing as IChargeTransparencyRecord;
+
+    return ctr.begin            !== undefined &&
+           ctr.end              !== undefined &&
+           ctr.chargingSessions !== undefined;
+
+}
+
+function IsASessionCryptoResult(thing: IChargeTransparencyRecord|ISessionCryptoResult): thing is ISessionCryptoResult
+{
+    return (thing as ISessionCryptoResult).status !== undefined;
+}
+
 interface GetChargingPoolFunc {
     (Id: string): IChargingPool|null;
 }
@@ -41,7 +57,6 @@ interface CheckMeterPublicKeySignatureFunc {
      signature:        any|null): Promise<string>;
 }
 
-
 interface IChargeTransparencyRecord
 {
     "@id":                      string;
@@ -56,6 +71,7 @@ interface IChargeTransparencyRecord
     chargingSessions:           Array<IChargingSession>;
     eMobilityProviders:         Array<IEMobilityProvider>;
     mediationServices:          Array<IMediationService>;
+    verificatinResult?:         ISessionCryptoResult;
 }
 
 interface IContract
@@ -159,22 +175,29 @@ interface IChargingSession
 {
     "@id":                      string;
     "@context":                 string;
+    ctr?:                       IChargeTransparencyRecord;
     GUI:                        HTMLDivElement;
     begin:                      string;
-    end:                        string;
+    end?:                       string;
     description:                {};
+    chargingStationOperatorId:  string;
+    chargingStationOperator?:   IChargingStationOperator|null;
     chargingPoolId:             string;
     chargingPool?:              IChargingPool|null;
     chargingStationId:          string;
     chargingStation?:           IChargingStation|null;
     EVSEId:                     string;
     EVSE?:                      IEVSE|null;
+    meterId:                    string;
+    meter?:                     IMeter|null;
+    tariffId?:                  string;
     tariff?:                    ITariff|null;
     authorizationStart:         IAuthorization;
     authorizationStop:          IAuthorization;
     product:                    IChargingProduct;
     measurements:               Array<IMeasurement>;
     method:                     ACrypt;
+    verificationResult?:        ISessionCryptoResult;
 }
 
 interface IChargingProduct
@@ -208,6 +231,7 @@ interface IMeasurement
     verifyChain:                boolean;
     signatureInfos:             ISignatureInfos;
     values:                     Array<IMeasurementValue>;
+    verificationResult?:        ICryptoResult;
 }
 
 interface ISignatureInfos {
@@ -227,6 +251,7 @@ interface IMeasurementValue
 {
     measurement:                IMeasurement;
     method:                     ACrypt;
+    previousValue:              IMeasurementValue;
     result:                     ICryptoResult;
 
     timestamp:                  string;
@@ -237,6 +262,8 @@ interface IMeasurementValue
 interface ISessionCryptoResult
 {
     status:                     SessionVerificationResult;
+    message?:                   string;
+    exception?:                 any;
 }
 
 interface ICryptoResult
@@ -290,6 +317,7 @@ interface IGeoLocation {
 
 enum SessionVerificationResult {
     UnknownSessionFormat,
+    InvalidSessionFormat,
     PublicKeyNotFound,
     InvalidPublicKey,
     InvalidSignature,
