@@ -21,15 +21,13 @@
 
 class SAFEXML  {
 
-    //#region tryToParseSAFEXML(XMLDocument)
-
     public async tryToParseSAFEXML(XMLDocument: Document) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
     {
 
         const base32Decode = require('base32-decode');
 
         // The SAFE transparency software v1.0 does not understand its own
-        // XML namespace. Therefore we have to guess the format.        
+        // XML namespace. Therefore we have to guess the format.
 
         try
         {
@@ -225,7 +223,5 @@ class SAFEXML  {
         }
 
     }
-
-    //#endregion
 
 }

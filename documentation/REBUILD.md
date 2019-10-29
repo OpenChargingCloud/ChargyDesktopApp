@@ -10,33 +10,41 @@ npm install
 ## Install additional Node modules
 ```
 $ npm install electron@latest --save-dev
-+ electron@5.0.6
++ electron@7.0.0
 
 $ npm install electron-builder@latest --save-dev
-+ electron-builder@20.44.4
++ electron-builder@21.2.0
 
 $ npm install typescript@latest --save-dev
-+ typescript@3.5.2
++ typescript@3.6.4
 
 $ npm install sass@latest --save-dev
-+ sass@1.22.1
++ sass@1.23.1
 
 $ npm install @types/node@latest --save-dev
-+ @types/node@12.0.10
++ @types/node@12.11.7
 
 $ npm install elliptic@latest
-+ elliptic@6.5.0
++ elliptic@6.5.1
 
 $ npm install @types/elliptic@latest --save-dev
-+ @types/elliptic@6.4.9
++ @types/elliptic@6.4.10
 
 $ npm install moment@latest
 + moment@2.24.0
 
 $ npm install base32-decode
 + base32-decode@1.0.0
-```
 
+$ npm install decompress@latest
++ decompress@4.2.0
+
+$ npm install chart.js@latest
++ chart.js@2.9.1
+
+$ npm install @types/chart.js@latest --save-dev
++ @types/chart.js@2.8.9
+```
 
 
 # Verify SHA512 hash values
