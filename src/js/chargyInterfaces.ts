@@ -196,6 +196,7 @@ interface IChargingSession
     authorizationStop:          IAuthorization;
     product:                    IChargingProduct;
     measurements:               Array<IMeasurement>;
+    parking:                    Array<IParking>;
     method:                     ACrypt;
     verificationResult?:        ISessionCryptoResult;
 }
@@ -204,6 +205,14 @@ interface IChargingProduct
 {
     "@id":                      string;
     "@context":                 string;
+}
+
+interface IParking
+{
+    "@id":                      string;
+    "@context":                 string;
+    begin:                      string;
+    end?:                       string;
 }
 
 interface IAuthorization
@@ -266,9 +275,17 @@ interface ISessionCryptoResult
     exception?:                 any;
 }
 
+function isISessionCryptoResult(obj: any): obj is ISessionCryptoResult {
+    return obj.status !== undefined
+}
+
 interface ICryptoResult
 {
     status:                     VerificationResult;
+}
+
+function isICryptoResult(obj: any): obj is ICryptoResult {
+    return obj.status !== undefined
 }
 
 interface IPublicKey
@@ -331,7 +348,8 @@ enum VerificationResult {
     PublicKeyNotFound,
     InvalidPublicKey,
     InvalidSignature,
-    ValidSignature
+    NoOperation,
+    ValidSignature,
 }
 
 interface IVersions {
@@ -369,4 +387,9 @@ interface IVersionSignature {
     algorithm:      string,
     format:         string,
     signature:      string
+}
+
+interface IResult {
+    status:         SessionVerificationResult,
+    message:        string
 }

@@ -21,6 +21,7 @@
 ///<reference path="chargy.ts" />
 ///<reference path="GDFCrypt01.ts" />
 ///<reference path="EMHCrypt01.ts" />
+///<reference path="chargepointCrypt01.ts" />
 ///<reference path="chargeIT.ts" />
 ///<reference path="chargepoint.ts" />
 ///<reference path="SAFE_XML.ts" />
@@ -956,7 +957,8 @@ class ChargyApp {
 
                 //#region Show session time infos
 
-                try {
+                try
+                {
 
                     if (chargingSession.begin)
                     {
@@ -973,8 +975,8 @@ class ChargyApp {
                         if (chargingSession.end)
                         {
 
-                            var endUTC   = parseUTC(chargingSession.end);
-                            var duration = this.moment.duration(endUTC - beginUTC);
+                            let endUTC   = parseUTC(chargingSession.end);
+                            let duration = this.moment.duration(endUTC - beginUTC);
 
                             dateDiv.innerHTML += " - " +
                                                 (Math.floor(duration.asDays()) > 0 ? endUTC.format("dddd") + " " : "") +
@@ -993,50 +995,63 @@ class ChargyApp {
 
                 //#endregion
 
-                var tableDiv                = chargingSessionDiv.appendChild(document.createElement('div'));
+                let tableDiv                = chargingSessionDiv.appendChild(document.createElement('div'));
                     tableDiv.className      = "table";
 
                 //#region Show energy infos
 
-                try {
+                try
+                {
 
-                    var productInfoDiv                   = tableDiv.appendChild(document.createElement('div'));
+                    let productInfoDiv                   = tableDiv.appendChild(document.createElement('div'));
                     productInfoDiv.className             = "productInfos";
 
-                    var productIconDiv                   = productInfoDiv.appendChild(document.createElement('div'));
+                    let productIconDiv                   = productInfoDiv.appendChild(document.createElement('div'));
                     productIconDiv.className             = "icon";
                     productIconDiv.innerHTML             = '<i class="fas fa-chart-pie"></i>';
 
-                    var productDiv                       = productInfoDiv.appendChild(document.createElement('div'));
+                    let productDiv                       = productInfoDiv.appendChild(document.createElement('div'));
                     productDiv.className                 = "text";
                     productDiv.innerHTML = chargingSession.product != null ? chargingSession.product["@id"] + "<br />" : "";
 
-                    productDiv.innerHTML += "Ladedauer ";
-                    if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days()    + " Tage " + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                    else if (Math.floor(duration.asDays())    > 0) productDiv.innerHTML += duration.days()    + " Tag "  + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                    else if (Math.floor(duration.asHours())   > 0) productDiv.innerHTML += duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                    else if (Math.floor(duration.asMinutes()) > 0) productDiv.innerHTML += duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                    else if (Math.floor(duration.asSeconds()) > 0) productDiv.innerHTML += duration.seconds();
+                    if (chargingSession.end)
+                    {
+
+                        let endUTC   = parseUTC(chargingSession.end);
+                        let duration = this.moment.duration(endUTC - beginUTC);
+
+                        productDiv.innerHTML += "Ladedauer ";
+                        if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days()    + " Tage " + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
+                        else if (Math.floor(duration.asDays())    > 0) productDiv.innerHTML += duration.days()    + " Tag "  + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
+                        else if (Math.floor(duration.asHours())   > 0) productDiv.innerHTML += duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
+                        else if (Math.floor(duration.asMinutes()) > 0) productDiv.innerHTML += duration.minutes() + " Min. " + duration.seconds() + " Sek.";
+                        else if (Math.floor(duration.asSeconds()) > 0) productDiv.innerHTML += duration.seconds();
+
+                    }
 
                     if (chargingSession.measurements)
                     {
-                        for (var measurement of chargingSession.measurements)
+                        for (let measurement of chargingSession.measurements)
                         {
                             //<i class="far fa-chart-bar"></i>
                             if (measurement.values && measurement.values.length > 0)
                             {
 
-                                var first  = measurement.values[0].value;
-                                var last   = measurement.values[measurement.values.length-1].value;
-                                var amount = parseFloat(((last - first) * Math.pow(10, measurement.scale)).toFixed(10));
+                                if (measurement.scale == null)
+                                    measurement.scale = 0;
+
+                                let first  = measurement.values[0].value;
+                                let last   = measurement.values[measurement.values.length-1].value;
+                                let amount = parseFloat(((last - first) * Math.pow(10, measurement.scale)).toFixed(10));
 
                                 switch (measurement.unit)
                                 {
 
+                                    case "kWh":
                                     case "KILO_WATT_HOURS":
                                         break;
 
-                                    // "WATT_HOURS"
+                                    // "WATT_HOURS" or "Wh"
                                     default:
                                         amount = parseFloat((amount / 1000).toFixed(10));
                                         break;
@@ -1054,6 +1069,52 @@ class ChargyApp {
                 catch (exception)
                 { 
                     console.log("Could not show energy infos of charging session '" + chargingSession["@id"] + "':" + exception);
+                }
+
+                //#endregion
+
+                //#region Show parking infos
+
+                try
+                {
+
+                    if (chargingSession.parking && chargingSession.parking.length > 0)
+                    {
+
+                        var parkingInfoDiv                   = tableDiv.appendChild(document.createElement('div'));
+                        parkingInfoDiv.className             = "parkingInfos";
+
+                        var parkingIconDiv                   = parkingInfoDiv.appendChild(document.createElement('div'));
+                        parkingIconDiv.className             = "icon";
+                        parkingIconDiv.innerHTML             = '<i class="fas fa-parking"></i>';
+
+                        var parkingDiv                       = parkingInfoDiv.appendChild(document.createElement('div'));
+                        parkingDiv.className                 = "text";
+                       // parkingDiv.innerHTML = chargingSession.parking != null ? chargingSession.product["@id"] + "<br />" : "";
+
+                        if (chargingSession.parking[chargingSession.parking.length-1].end != null)
+                        {
+
+                            let parkingBegin  = parseUTC(chargingSession.parking[0].begin);
+                            //@ts-ignore
+                            let parkingEnd    = parseUTC(chargingSession.parking[chargingSession.parking.length-1].end);
+                            let duration      = this.moment.duration(parkingEnd - parkingBegin);
+
+                            parkingDiv.innerHTML += "Parkdauer ";
+                            if      (Math.floor(duration.asDays())    > 1) parkingDiv.innerHTML += duration.days()    + " Tage " + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
+                            else if (Math.floor(duration.asDays())    > 0) parkingDiv.innerHTML += duration.days()    + " Tag "  + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
+                            else if (Math.floor(duration.asHours())   > 0) parkingDiv.innerHTML += duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
+                            else if (Math.floor(duration.asMinutes()) > 0) parkingDiv.innerHTML += duration.minutes() + " Min. " + duration.seconds() + " Sek.";
+                            else if (Math.floor(duration.asSeconds()) > 0) parkingDiv.innerHTML += duration.seconds();
+
+                        }
+
+                    }
+
+                }
+                catch (exception)
+                { 
+                    console.log("Could not show parking infos of charging session '" + chargingSession["@id"] + "':" + exception);
                 }
 
                 //#endregion
@@ -1133,7 +1194,7 @@ class ChargyApp {
 
                 //#endregion
 
-                //#region Show location infos...
+                //#region Show charging station infos...
 
                 try
                 {
@@ -1142,25 +1203,23 @@ class ChargyApp {
                         chargingSession.chargingStationId || chargingSession.chargingStation ||
                         chargingSession.chargingPoolId    || chargingSession.chargingPool) {
 
-                        var address:IAddress|null             = null;
+                        var chargingStationInfoDiv            = tableDiv.appendChild(document.createElement('div'));
+                        chargingStationInfoDiv.className      = "chargingStationInfos";
 
-                        var locationInfoDiv                   = tableDiv.appendChild(document.createElement('div'));
-                        locationInfoDiv.className             = "locationInfos";
+                        var chargingStationIconDiv            = chargingStationInfoDiv.appendChild(document.createElement('div'));
+                        chargingStationIconDiv.className      = "icon";
+                        chargingStationIconDiv.innerHTML      = '<i class="fas fa-charging-station"></i>';
 
-                        var locationIconDiv                   = locationInfoDiv.appendChild(document.createElement('div'));
-                        locationIconDiv.className             = "icon";
-                        locationIconDiv.innerHTML             = '<i class="fas fa-map-marker-alt"></i>';
-
-                        var locationDiv                       = locationInfoDiv.appendChild(document.createElement('div'));
-                        locationDiv.classList.add("text");
+                        var chargingStationDiv                = chargingStationInfoDiv.appendChild(document.createElement('div'));
+                        chargingStationDiv.classList.add("text");
 
                         if (chargingSession.EVSEId || chargingSession.EVSE) {
 
                             if (chargingSession.EVSE == null || typeof chargingSession.EVSE !== 'object')
                                 chargingSession.EVSE = this.chargy.GetEVSE(chargingSession.EVSEId);
 
-                            locationDiv.classList.add("EVSE");
-                            locationDiv.innerHTML             = (chargingSession.EVSE   != null && chargingSession.EVSE.description != null
+                            chargingStationDiv.classList.add("EVSE");
+                            chargingStationDiv.innerHTML      = (chargingSession.EVSE   != null && chargingSession.EVSE.description != null
                                                                     ? firstValue(chargingSession.EVSE.description) + "<br />"
                                                                     : "") +
                                                                 (chargingSession.EVSEId != null
@@ -1192,8 +1251,8 @@ class ChargyApp {
                             if (chargingSession.chargingStation != null)
                             {
 
-                                locationDiv.classList.add("chargingStation");
-                                locationDiv.innerHTML             = (chargingSession.chargingStation   != null && chargingSession.chargingStation.description != null
+                                chargingStationDiv.classList.add("chargingStation");
+                                chargingStationDiv.innerHTML      = (chargingSession.chargingStation   != null && chargingSession.chargingStation.description != null
                                                                         ? firstValue(chargingSession.chargingStation.description) + "<br />"
                                                                         : "") +
                                                                     (chargingSession.chargingStationId != null
@@ -1203,11 +1262,9 @@ class ChargyApp {
                                 chargingSession.chargingPool      = chargingSession.chargingStation.chargingPool;
                                 chargingSession.chargingPoolId    = chargingSession.chargingStation.chargingPoolId;
 
-                                address                           = chargingSession.chargingStation.address;
-
                             }
                             else
-                                locationInfoDiv.remove();
+                                chargingStationDiv.remove();
 
                         }
 
@@ -1219,30 +1276,60 @@ class ChargyApp {
                             if (chargingSession.chargingPool != null)
                             {
 
-                                locationDiv.classList.add("chargingPool");
-                                locationDiv.innerHTML             = (chargingSession.chargingPool   != null && chargingSession.chargingPool.description != null
+                                chargingStationDiv.classList.add("chargingPool");
+                                chargingStationDiv.innerHTML      = (chargingSession.chargingPool   != null && chargingSession.chargingPool.description != null
                                                                         ? firstValue(chargingSession.chargingPool.description) + "<br />"
                                                                         : "") +
                                                                     (chargingSession.chargingPoolId != null
                                                                         ? chargingSession.chargingPoolId
                                                                         : chargingSession.chargingPool["@id"]);
 
-                                address = this.chargy.GetChargingPool(chargingSession.chargingPool["@id"])!.address;
-
                             }
                             else
-                                locationInfoDiv.remove();
+                                chargingStationDiv.remove();
 
                         }
 
-                        if (address != null)
-                            locationDiv.innerHTML += "<br />" + 
-                                                        (address.street      != null ? " " + address.street        : "") +
-                                                        (address.houseNumber != null ? " " + address.houseNumber   : "") +
+                    }
 
-                                                        (address.postalCode  != null || address.city != null ? "," : "") +
-                                                        (address.postalCode  != null ? " " + address.postalCode    : "") +
-                                                        (address.city        != null ? " " + address.city : "");
+                } catch (exception)
+                {
+                    console.log("Could not show charging station infos of charging session '" + chargingSession["@id"] + "':" + exception);
+                }
+
+                //#endregion
+
+                //#region Show location infos...
+
+                try
+                {
+
+                    var address:IAddress|null = null;
+
+                    if (chargingSession.chargingStation != null && chargingSession.chargingStation.address != null)
+                        address = chargingSession.chargingStation.address;
+
+                    else if (chargingSession.chargingPool != null && chargingSession.chargingPool.address != null)
+                        address = chargingSession.chargingPool.address;
+
+                    if (address != null)
+                    {
+
+                        var locationInfoDiv        = tableDiv.appendChild(document.createElement('div'));
+                        locationInfoDiv.className  = "locationInfos";
+
+                        var locationIconDiv        = locationInfoDiv.appendChild(document.createElement('div'));
+                        locationIconDiv.className  = "icon";
+                        locationIconDiv.innerHTML  = '<i class="fas fa-map-marker-alt"></i>';
+
+                        var locationDiv            = locationInfoDiv.appendChild(document.createElement('div'));
+                        locationDiv.classList.add("text");
+                        locationDiv.innerHTML      =   (address.street      != null ? " " + address.street        : "") +
+                                                       (address.houseNumber != null ? " " + address.houseNumber   : "") +
+
+                                                       (address.postalCode  != null || address.city != null ? "," : "") +
+                                                       (address.postalCode  != null ? " " + address.postalCode    : "") +
+                                                       (address.city        != null ? " " + address.city : "");
 
                     }
 
@@ -1625,6 +1712,10 @@ class ChargyApp {
 
                                     case VerificationResult.InvalidSignature:
                                         icon = '<i class="fas fa-times-circle"></i> Ungültige Signatur';
+                                        break;
+
+                                    case VerificationResult.NoOperation:
+                                        icon = '<i class="fas fa-exclamation-circle"></i> Keine Validierung';
                                         break;
 
                                     case VerificationResult.ValidSignature:

@@ -376,14 +376,14 @@ class ChargeIT {
 
                 "@id":              CTRArray[n]["transactionId"],
                 "@context":         "https://open.charging.cloud/contexts/CTR+json",
-            
+
                 "begin":            this.moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
                 "end":              this.moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
-            
+
                 "description": {
                     "de":           "Alle Ladevorgänge"
                 },
-            
+
                 "contract": {
                     "@id":          CTRArray[0]["contract"]["id"],
                     "type":         CTRArray[0]["contract"]["type"],
@@ -399,7 +399,7 @@ class ChargeIT {
                         "description": {
                             "de":                   "chargeIT mobility GmbH - Charging Station Operator Services"
                         },
-            
+
                         "contact": {
                             "email":                    "info@chargeit-mobility.com",
                             "web":                      "https://www.chargeit-mobility.com",

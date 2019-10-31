@@ -593,6 +593,24 @@ body {
 
                                 }
 
+                                .parkingInfos {
+
+                                    display:            table-row;
+
+                                    .icon {
+                                        display:            table-cell;
+                                        padding:            0px 7px 0px 3px;
+                                        text-align:         center;
+                                        vertical-align:     top;
+                                    }
+
+                                    .text {
+                                        display:            table-cell;
+                                        color:            #212427;
+                                    }
+
+                                }
+
                                 .authorizationStart {
 
                                     display:            table-row;
@@ -625,13 +643,13 @@ body {
                                     }
                                 }
 
-                                .locationInfos {
+                                .chargingStationInfos {
 
                                     display:            table-row;
 
                                     .icon {
                                         display:            table-cell;
-                                        padding:            6px 7px 0px 3px;
+                                        padding:            0px 7px 0px 3px;
                                         text-align:         center;
                                         vertical-align:     top;
                                     }
@@ -639,7 +657,25 @@ body {
                                     .text {
                                         display:            table-cell;
                                         color:            #212427;
-                                    }                                        
+                                    }
+
+                                }
+
+                                .locationInfos {
+
+                                    display:            table-row;
+
+                                    .icon {
+                                        display:            table-cell;
+                                        padding:            0px 7px 0px 3px;
+                                        text-align:         center;
+                                        vertical-align:     top;
+                                    }
+
+                                    .text {
+                                        display:            table-cell;
+                                        color:            #212427;
+                                    }
 
                                 }
 

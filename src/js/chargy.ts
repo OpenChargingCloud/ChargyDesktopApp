@@ -198,6 +198,22 @@ class Chargy {
                 message:  "Unknown data format!"
             }
 
+        if (Content.startsWith("BZ"))
+        {
+
+            const decompress      = require('decompress');
+            const decompressTarbz = require('decompress-tarbz2');
+
+            decompress('unicorn.tar.gz', 'dist', {
+                plugins: [
+                    decompressTarbz()
+                ]
+            }).then(() => {
+                console.log('Files decompressed');
+            });
+
+        }
+
         Content = Content.trim();
 
         // Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
@@ -298,8 +314,13 @@ class Chargy {
                         break;
 
                     default:
-                        // The current chargeIT mobility does not provide any context or format identifiers
+                        // The current chargeIT mobility format does not provide any context or format identifiers
                         result = await new ChargeIT().tryToParseChargeITJSON(JSONContent);
+
+                        // The current chargepoint format does not provide any context or format identifiers
+                        if (isISessionCryptoResult(result))
+                            result = await new Chargepoint().tryToParseChargepointJSON(JSONContent);
+
                         break;
 
                 }
@@ -663,7 +684,11 @@ class Chargy {
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/OCMFv1.0+json":
-                chargingSession.method = new OCMFv1_0  (this);
+                chargingSession.method = new OCMFv1_0(this);
+                return await chargingSession.method.VerifyChargingSession(chargingSession);
+
+            case "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargepointCrypt01+json":
+                chargingSession.method = new ChargepointCrypt01(this);
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             default:

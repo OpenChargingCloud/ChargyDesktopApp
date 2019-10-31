@@ -25,16 +25,28 @@ $ npm install @types/node@latest --save-dev
 + @types/node@12.0.10
 
 $ npm install elliptic@latest
-+ elliptic@6.5.0
++ elliptic@6.5.1
 
 $ npm install @types/elliptic@latest --save-dev
-+ @types/elliptic@6.4.9
++ @types/elliptic@6.4.10
 
 $ npm install moment@latest
 + moment@2.24.0
 
 $ npm install base32-decode
 + base32-decode@1.0.0
+
+$ npm install decompress@latest
++ decompress@4.2.0
+
+$ npm install @types/decompress --save
++ @types/decompress@4.2.3
+
+$ npm install chart.js@latest
++ chart.js@2.9.1
+
+$ npm install @types/chart.js@latest --save-dev
++ @types/chart.js@2.8.9
 ```
 
 
