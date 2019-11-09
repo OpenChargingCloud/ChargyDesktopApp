@@ -16,13 +16,13 @@ $ npm install electron-builder@latest --save-dev
 + electron-builder@20.44.4
 
 $ npm install typescript@latest --save-dev
-+ typescript@3.5.2
++ typescript@3.7.2
 
 $ npm install sass@latest --save-dev
-+ sass@1.22.1
++ sass@1.23.3
 
 $ npm install @types/node@latest --save-dev
-+ @types/node@12.0.10
++ @types/node@12.12.7
 
 $ npm install elliptic@latest
 + elliptic@6.5.1
