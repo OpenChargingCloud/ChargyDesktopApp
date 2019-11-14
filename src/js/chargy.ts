@@ -186,6 +186,168 @@ class Chargy {
     //#endregion
 
 
+    //#region decompressFiles(FileInfos)
+
+    public async decompressFiles(FileInfos: Array<IFileInfo>): Promise<Array<IFileInfo>> {
+
+        //#region Initial checks
+
+        if (FileInfos == null || FileInfos.length == 0)
+            return FileInfos;
+
+        const fileType         = require('file-type');
+        const decompress       = require('decompress');
+        const decompressTar    = require('decompress-tar');
+        const decompressTargz  = require('decompress-targz');
+        const decompressTarbz2 = require('decompress-tarbz2');
+       // const decompressTarxz  = require('decompress-tarxz'); // Does not compile!
+        const decompressUnzip  = require('decompress-unzip');
+        const decompressGz     = require('decompress-gz');
+        const decompressBzip2  = require('decompress-bzip2');
+
+        //#endregion
+
+        // DataInfos.sort(function (a, b) {
+        //     if (a.name < b.name) return -1;
+        //     if (a.name > b.name) return +1;
+        //     return 0;
+        // });
+
+        let archiveFound      = false;
+        let expandedFileInfos = new Array<IFileInfo>();
+
+        do {
+
+            archiveFound      = false;
+            expandedFileInfos = new Array<IFileInfo>();
+
+            for (let FileInfo of FileInfos)
+            {
+
+                let mimeType = fileType(FileInfo.data)?.mime;
+
+                if (mimeType != null && mimeType != undefined)
+                {
+
+                    try
+                    {
+
+                        let compressedFiles:Array<TarInfo> = await decompress(Buffer.from(FileInfo.data),
+                                                                            { plugins: [ decompressTar(),
+                                                                                        decompressTargz(),
+                                                                                        decompressTarbz2(),
+                                                                                        //  decompressTarxz(),
+                                                                                        decompressUnzip(),
+                                                                                        decompressGz(),
+                                                                                        decompressBzip2()
+                                                                                        ] });
+
+                        archiveFound = true;
+
+                        //#region A single compressed file without a path/filename, e.g. within bz2
+
+                        if (compressedFiles.length == 1 && compressedFiles[0].path == null)
+                        {
+                            expandedFileInfos.push({ name: FileInfo.name.substring(0, FileInfo.name.lastIndexOf('.')),
+                                                data: compressedFiles[0].data });
+                            continue;
+                        }
+
+                        //#endregion
+
+                        //#region A chargepoint compressed archive file
+
+                        let CTRfile:any    = null;
+                        let dataFile       = "";
+                        let singatureFile  = "";
+
+                        if (compressedFiles.length >= 2)
+                        {
+
+                            for (let file of compressedFiles)
+                            {
+
+                                if (file.type === "file" && file.path === "secrrct")
+                                {
+                                    try
+                                    {
+                                        dataFile = new TextDecoder('utf-8').decode(file.data);
+                                    }
+                                    catch (Exception)
+                                    {
+                                        console.debug("Invalid chargepoint CTR file!")
+                                    }
+                                }
+
+                                if (file.type === "file" && file.path === "secrrct.sign")
+                                {
+                                    try
+                                    {
+                                        singatureFile = buf2hex(file.data);
+                                    }
+                                    catch (Exception)
+                                    {
+                                        console.debug("Invalid chargepoint CTR file!")
+                                    }
+                                }
+
+                            }
+
+                            if (dataFile != null && dataFile.length > 0 && singatureFile != null && singatureFile != "")
+                            {
+                                CTRfile           = JSON.parse(dataFile);
+                                CTRfile.original  = btoa(dataFile); // Save the original JSON with whitespaces for later signature verification!
+                                CTRfile.signature = singatureFile;
+                                expandedFileInfos.push({ name: FileInfo.name,
+                                                    data: new TextEncoder().encode(JSON.stringify(CTRfile)) });
+                                continue;
+                            }
+
+                        }
+
+                        //#endregion
+
+                        //#region Multiple files
+
+                        for (let compressedFile of compressedFiles)
+                        {
+                            if (compressedFile.type === "file")
+                            {
+                                expandedFileInfos.push({ name: compressedFile.path?.substring(compressedFile.path.lastIndexOf('/') + 1
+                                                            ?? FileInfo.name),
+                                                    data: compressedFile.data });
+                            }
+                        }
+
+                        //#endregion
+
+                        continue;
+
+                    }
+                    catch (exception)
+                    {
+                        // Just forward the file as it is!
+                    }
+
+                }
+
+                expandedFileInfos.push({ name: FileInfo.name,
+                                    data: FileInfo.data });
+
+            }
+
+            if (archiveFound)
+                FileInfos = expandedFileInfos;
+
+        }
+        while (archiveFound);
+
+        return expandedFileInfos;
+
+    }
+
+    //#endregion
+
     //#region detectAndConvertContentFormat(FileInfos)
 
     public async detectAndConvertContentFormat(FileInfos: Array<IFileInfo>): Promise<IChargeTransparencyRecord|ISessionCryptoResult> {
@@ -216,124 +378,7 @@ class Chargy {
         //     return 0;
         // });
 
-        //#region Process compressed files or archive files
-
-        let expandedFiles = new Array<IFileInfo>();
-
-        for (let FileInfo of FileInfos)
-        {
-
-            let file_mimetype = fileType(FileInfo.data)?.mime;
-
-            if (file_mimetype != null && file_mimetype != undefined)
-            {
-
-                try
-                {
-
-                    let compressedFiles:Array<TarInfo> = await decompress(Buffer.from(FileInfo.data),
-                                                                          { plugins: [ decompressTar(),
-                                                                                       decompressTargz(),
-                                                                                       decompressTarbz2(),
-                                                                                     //  decompressTarxz(),
-                                                                                       decompressUnzip(),
-                                                                                       decompressGz(),
-                                                                                       decompressBzip2()
-                                                                                      ] });
-
-                    //#region A single compressed file without a path/filename, e.g. within bz2
-
-                    if (compressedFiles.length == 1 && compressedFiles[0].path == null)
-                    {
-                        expandedFiles.push({ name: FileInfo.name.substring(0, FileInfo.name.lastIndexOf('.')),
-                                             data: compressedFiles[0].data });
-                        continue;
-                    }
-
-                    //#endregion
-
-                    //#region A chargepoint compressed archive file
-
-                    let CTRfile:any    = null;
-                    let dataFile       = "";
-                    let singatureFile  = "";
-
-                    if (compressedFiles.length >= 2)
-                    {
-
-                        for (let file of compressedFiles)
-                        {
-
-                            if (file.type === "file" && file.path === "secrrct")
-                            {
-                                try
-                                {
-                                    dataFile = new TextDecoder('utf-8').decode(file.data);
-                                }
-                                catch (Exception)
-                                {
-                                    console.debug("Invalid chargepoint CTR file!")
-                                }
-                            }
-
-                            if (file.type === "file" && file.path === "secrrct.sign")
-                            {
-                                try
-                                {
-                                    singatureFile = buf2hex(file.data);
-                                }
-                                catch (Exception)
-                                {
-                                    console.debug("Invalid chargepoint CTR file!")
-                                }
-                            }
-
-                        }
-
-                        if (dataFile != null && dataFile.length > 0 && singatureFile != null && singatureFile != "")
-                        {
-                            CTRfile           = JSON.parse(dataFile);
-                            CTRfile.original  = btoa(dataFile); // Save the original JSON with whitespaces for later signature verification!
-                            CTRfile.signature = singatureFile;
-                            expandedFiles.push({ name: FileInfo.name,
-                                                 data: new TextEncoder().encode(JSON.stringify(CTRfile)) });
-                            continue;
-                        }
-
-                    }
-
-                    //#endregion
-
-                    //#region Multiple files
-
-                    for (let compressedFile of compressedFiles)
-                    {
-                        if (compressedFile.type === "file")
-                        {
-                            expandedFiles.push({ name: compressedFile.path?.substring(compressedFile.path.lastIndexOf('/') + 1
-                                                         ?? FileInfo.name),
-                                                 data: compressedFile.data });
-                        }
-                    }
-
-                    //#endregion
-
-                    continue;
-
-                }
-                catch (exception)
-                {
-                    // Just forward the file as it is!
-                }
-
-            }
-
-            expandedFiles.push({ name: FileInfo.name,
-                                 data: FileInfo.data });
-
-        }
-
-        //#endregion
+        let expandedFiles  = await this.decompressFiles(FileInfos);
 
         //#region Process JSON/XML/text files
 
