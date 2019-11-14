@@ -17,10 +17,13 @@
 
 ///<reference path="ACrypt.ts" />
 
-function IsAChargeTransparencyRecord(thing: IChargeTransparencyRecord|ISessionCryptoResult): thing is IChargeTransparencyRecord
+function IsAChargeTransparencyRecord(data: IChargeTransparencyRecord|ISessionCryptoResult|undefined): data is IChargeTransparencyRecord
 {
 
-    let ctr = thing as IChargeTransparencyRecord;
+    if (data == null || data == undefined)
+        return false;
+
+    let ctr = data as IChargeTransparencyRecord;
 
     return ctr.begin            !== undefined &&
            ctr.end              !== undefined &&
@@ -28,9 +31,9 @@ function IsAChargeTransparencyRecord(thing: IChargeTransparencyRecord|ISessionCr
 
 }
 
-function IsASessionCryptoResult(thing: IChargeTransparencyRecord|ISessionCryptoResult): thing is ISessionCryptoResult
+function IsASessionCryptoResult(data: IChargeTransparencyRecord|ISessionCryptoResult): data is ISessionCryptoResult
 {
-    return (thing as ISessionCryptoResult).status !== undefined;
+    return (data as ISessionCryptoResult).status !== undefined;
 }
 
 interface GetChargingPoolFunc {
@@ -61,16 +64,17 @@ interface IChargeTransparencyRecord
 {
     "@id":                      string;
     "@context":                 string;
-    begin:                      string;
-    end:                        string;
-    description:                {};
-    contract:                   IContract;
-    chargingStationOperators:   Array<IChargingStationOperator>;
-    chargingPools:              Array<IChargingPool>;
-    chargingStations:           Array<IChargingStation>;
-    chargingSessions:           Array<IChargingSession>;
-    eMobilityProviders:         Array<IEMobilityProvider>;
-    mediationServices:          Array<IMediationService>;
+    begin?:                     string;
+    end?:                       string;
+    description?:               {};
+    contract?:                  IContract;
+    chargingStationOperators?:  Array<IChargingStationOperator>;
+    chargingPools?:             Array<IChargingPool>;
+    chargingStations?:          Array<IChargingStation>;
+    publicKeys?:                Array<IPublicKeyLookup>;
+    chargingSessions?:          Array<IChargingSession>;
+    eMobilityProviders?:        Array<IEMobilityProvider>;
+    mediationServices?:         Array<IMediationService>;
     verificatinResult?:         ISessionCryptoResult;
 }
 
@@ -78,7 +82,13 @@ interface IContract
 {
     "@id":                      string;
     username:                   string;
-    email:                      string
+    email:                      string;
+}
+
+interface IPublicKeyLookup
+{
+    keyId:                      string;
+    value:                      string;
 }
 
 interface IChargingStationOperator
@@ -92,6 +102,7 @@ interface IChargingStationOperator
     chargingStations:           Array<IChargingStation>;
     EVSEs:                      Array<IEVSE>;
     tariffs:                    Array<ITariff>;
+    publicKeys?:                Array<IPublicKey>;
 }
 
 interface IChargingPool
@@ -104,6 +115,7 @@ interface IChargingPool
     chargingStationOperator:    IChargingStationOperator;
     chargingStations:           Array<IChargingStation>;
     tariffs:                    Array<ITariff>;
+    publicKeys?:                Array<IPublicKey>;
 }
 
 interface IChargingStation
@@ -121,6 +133,7 @@ interface IChargingStation
     EVSEIds:                    Array<string>;
     meters:                     Array<IMeter>;
     tariffs:                    Array<ITariff>;
+    publicKeys?:                Array<IPublicKey>;
 }
 
 interface IEVSE
@@ -132,6 +145,7 @@ interface IEVSE
     chargingStationId:          string;
     meters:                     Array<IMeter>;
     tariffs:                    Array<ITariff>;
+    publicKeys?:                Array<IPublicKey>;
 }
 
 interface IMeter
@@ -146,7 +160,7 @@ interface IMeter
     chargingStationId:          string;
     EVSE:                       IEVSE;
     EVSEId:                     string;
-    publicKeys:                 Array<IPublicKey>;
+    publicKeys?:                Array<IPublicKey>;
 }
 
 interface IEMobilityProvider
@@ -155,6 +169,7 @@ interface IEMobilityProvider
     "@context":                 string;
     description:                {};
     tariffs:                    Array<ITariff>;
+    publicKeys?:                Array<IPublicKey>;
 }
 
 interface ITariff
@@ -169,6 +184,7 @@ interface IMediationService
     "@id":                      string;
     "@context":                 string;
     description:                {};
+    publicKeys?:                Array<IPublicKey>;
 }
 
 interface IChargingSession
@@ -392,4 +408,25 @@ interface IVersionSignature {
 interface IResult {
     status:         SessionVerificationResult,
     message:        string
+}
+
+interface TarInfo {
+    data:           Buffer,
+    mode:           number,
+    mtime:          string,
+    path:           string
+    type:           string
+}
+
+interface IFileInfo {
+    name:           string,
+    data:           ArrayBuffer
+}
+
+function isIFileInfo(obj: any): obj is IFileInfo {
+    return obj.status !== undefined && obj.name && typeof obj.name === 'string' && obj.data && obj.data instanceof ArrayBuffer;
+}
+
+interface ICTRInfo extends IFileInfo {
+    result:         IChargeTransparencyRecord|ISessionCryptoResult
 }

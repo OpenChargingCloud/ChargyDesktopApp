@@ -376,7 +376,10 @@ class ChargyApp {
             event.stopPropagation();
             event.preventDefault();
             (event.currentTarget as HTMLDivElement)!.classList.remove('over');
-            this.readAndParseFile(event.dataTransfer!.files[0]);
+
+            if (event.dataTransfer?.files != null)
+                this.readAndParseFiles(event.dataTransfer.files);
+
         }, false);
 
         //#endregion
@@ -513,11 +516,15 @@ class ChargyApp {
             this.fileInput.value = '';
             this.fileInput.click();
         }
-        //@ts-ignokjre
-        this.fileInput.onchange            = (ev: Event) => {
-            var files = ev!.target!["files"];
+
+        this.fileInput.onchange = (ev: Event) => {
+
+            //@ts-ignore
+            var files = ev?.target?.files;
+
             if (files != null)
-                this.readAndParseFile(files[0]);
+                this.readAndParseFiles(files);
+
         }
 
         //#endregion
@@ -563,7 +570,7 @@ class ChargyApp {
             sendIssueButton.disabled  = !privacyStatementAccepted.checked;
         }
         var sendIssueButton           = <HTMLButtonElement>   document.getElementById('sendIssueButton');
-        sendIssueButton.onclick = (ev: MouseEvent) => { // function (this: GlobalEventHandlers, ev: MouseEvent) {
+        sendIssueButton.onclick = (ev: MouseEvent) => {
 
             ev.preventDefault();
 
@@ -809,30 +816,21 @@ class ChargyApp {
 
     //#endregion
 
-    //#region Read and parse CTR file
+    //#region Read and parse CTR files
 
-    private readAndParseFile(file: File) {
+    private readAndParseFiles(files: FileList) {
 
-        if (!file)
+        if (!files || files.length == 0)
             return;
 
-        var reader = new FileReader();
+        let fs        = require('original-fs');
+        let fileInfos = new Array<IFileInfo>();
 
-        reader.onload = (event) => {
-            try
-            {
-                this.detectAndConvertContentFormat((event.target as any).result);
-            }
-            catch (exception) {
-                this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-            }
-        }
+        for (let i = 0; i < files.length; i++)
+            //@ts-ignore - File.path seems to be missing within the declaration files!
+            fileInfos.push({ name: files[i].name, data: fs.readFileSync(files[i].path) });
 
-        reader.onerror = (event) => {
-            this.doGlobalError("Fehlerhafter Transparenzdatensatz!", event);
-        }
-
-        reader.readAsText(file, 'UTF-8');
+        this.detectAndConvertContentFormat(fileInfos);
 
     }
 
@@ -845,8 +843,8 @@ class ChargyApp {
         {
             try
             {
-                let content = require('original-fs').readFileSync(filename.replace("file://", ""), 'utf-8');
-                this.detectAndConvertContentFormat(JSON.parse(content));
+                this.detectAndConvertContentFormat(require('original-fs').
+                     readFileSync(filename.replace("file://", "")));
             }
             catch (exception) {
                 this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
@@ -857,14 +855,24 @@ class ChargyApp {
     //#endregion
 
 
-    //#region detectAndConvertContentFormat(Content)
+    //#region detectAndConvertContentFormat(FileInfos)
 
-    private async detectAndConvertContentFormat(Content: string) {
+    private async detectAndConvertContentFormat(FileInfos: Array<IFileInfo>|IFileInfo|string) {
 
         this.inputInfosDiv.style.display  = 'none';
         this.errorTextDiv.style.display   = 'none';
 
-        var result = await this.chargy.detectAndConvertContentFormat(Content);
+        //@ts-ignore
+        let result:IChargeTransparencyRecord|ISessionCryptoResult = null;
+
+        if (typeof FileInfos === 'string')
+            result = await this.chargy.detectAndConvertContentFormat([ { name: "clipboard", data: new TextEncoder().encode(FileInfos) } ]);
+
+        else if (isIFileInfo(FileInfos))
+            result = await this.chargy.detectAndConvertContentFormat([ FileInfos ]);
+
+        else
+            result = await this.chargy.detectAndConvertContentFormat(FileInfos);
 
         if (IsAChargeTransparencyRecord(result))
             await this.showChargeTransparencyRecord(result);

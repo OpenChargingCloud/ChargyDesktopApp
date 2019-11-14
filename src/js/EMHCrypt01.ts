@@ -258,16 +258,15 @@ class EMHCrypt01 extends ACrypt {
 
                     cryptoResult.meter = meter;
 
-                    var iPublicKey = meter.publicKeys[0] as IPublicKey;
-                    if (iPublicKey != null)
+                    if (meter.publicKeys != null && meter.publicKeys.length > 0)
                     {
 
                         try
                         {
 
-                            cryptoResult.publicKey            = iPublicKey.value.toLowerCase();
-                            cryptoResult.publicKeyFormat      = iPublicKey.format;
-                            cryptoResult.publicKeySignatures  = iPublicKey.signatures;
+                            cryptoResult.publicKey            = meter.publicKeys[0].value.toLowerCase();
+                            cryptoResult.publicKeyFormat      = meter.publicKeys[0].format;
+                            cryptoResult.publicKeySignatures  = meter.publicKeys[0].signatures;
 
                             try
                             {

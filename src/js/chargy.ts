@@ -186,165 +186,344 @@ class Chargy {
     //#endregion
 
 
-    //#region detectAndConvertContentFormat(Content)
+    //#region detectAndConvertContentFormat(FileInfos)
 
-    public async detectAndConvertContentFormat(Content: string): Promise<IChargeTransparencyRecord|ISessionCryptoResult> {
+    public async detectAndConvertContentFormat(FileInfos: Array<IFileInfo>): Promise<IChargeTransparencyRecord|ISessionCryptoResult> {
 
-        //#region Clean data
+        //#region Initial checks
 
-        if (Content == null)
+        if (FileInfos == null || FileInfos.length == 0)
             return {
                 status:   SessionVerificationResult.InvalidSessionFormat,
                 message:  "Unknown data format!"
             }
 
-        if (Content.startsWith("BZ"))
-        {
-
-            const decompress      = require('decompress');
-            const decompressTarbz = require('decompress-tarbz2');
-
-            decompress('unicorn.tar.gz', 'dist', {
-                plugins: [
-                    decompressTarbz()
-                ]
-            }).then(() => {
-                console.log('Files decompressed');
-            });
-
-        }
-
-        Content = Content.trim();
-
-        // Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
-        // conversion translates it to FEFF (UTF-16 BOM)
-        if (Content.charCodeAt(0) === 0xFEFF)
-            Content = Content.substr(1);
+        const fileType         = require('file-type');
+        const decompress       = require('decompress');
+        const decompressTar    = require('decompress-tar');
+        const decompressTargz  = require('decompress-targz');
+        const decompressTarbz2 = require('decompress-tarbz2');
+       // const decompressTarxz  = require('decompress-tarxz'); // Does not compile!
+        const decompressUnzip  = require('decompress-unzip');
+        const decompressGz     = require('decompress-gz');
+        const decompressBzip2  = require('decompress-bzip2');
 
         //#endregion
 
-        //@ts-ignore
-        let result: IChargeTransparencyRecord|ISessionCryptoResult = null;
+        // DataInfos.sort(function (a, b) {
+        //     if (a.name < b.name) return -1;
+        //     if (a.name > b.name) return +1;
+        //     return 0;
+        // });
 
-        //#region XML processing...
+        //#region Process compressed files or archive files
 
-        if (Content.startsWith("<?xml"))
+        let expandedFiles = new Array<IFileInfo>();
+
+        for (let FileInfo of FileInfos)
         {
-            try
+
+            let file_mimetype = fileType(FileInfo.data)?.mime;
+
+            if (file_mimetype != null && file_mimetype != undefined)
             {
 
-                let XMLDocument  = new DOMParser().parseFromString(Content, "text/xml");
-
-                //#region XML namespace found...
-
-                let xmlns        = XMLDocument.lookupNamespaceURI(null);
-                if (xmlns != null)
+                try
                 {
-                
-                    switch (xmlns)
+
+                    let compressedFiles:Array<TarInfo> = await decompress(Buffer.from(FileInfo.data),
+                                                                          { plugins: [ decompressTar(),
+                                                                                       decompressTargz(),
+                                                                                       decompressTarbz2(),
+                                                                                     //  decompressTarxz(),
+                                                                                       decompressUnzip(),
+                                                                                       decompressGz(),
+                                                                                       decompressBzip2()
+                                                                                      ] });
+
+                    //#region A single compressed file without a path/filename, e.g. within bz2
+
+                    if (compressedFiles.length == 1 && compressedFiles[0].path == null)
+                    {
+                        expandedFiles.push({ name: FileInfo.name.substring(0, FileInfo.name.lastIndexOf('.')),
+                                             data: compressedFiles[0].data });
+                        continue;
+                    }
+
+                    //#endregion
+
+                    //#region A chargepoint compressed archive file
+
+                    let CTRfile:any    = null;
+                    let dataFile       = "";
+                    let singatureFile  = "";
+
+                    if (compressedFiles.length >= 2)
                     {
 
-                        case "http://www.mennekes.de/Mennekes.EdlVerification.xsd":
-                            result = await new Mennekes().tryToParseMennekesXML(XMLDocument);
-                            break;
+                        for (let file of compressedFiles)
+                        {
 
-                        case "http://transparenz.software/schema/2018/07":
-                            result = await new SAFEXML().tryToParseSAFEXML(XMLDocument);
-                            break;
+                            if (file.type === "file" && file.path === "secrrct")
+                            {
+                                try
+                                {
+                                    dataFile = new TextDecoder('utf-8').decode(file.data);
+                                }
+                                catch (Exception)
+                                {
+                                    console.debug("Invalid chargepoint CTR file!")
+                                }
+                            }
+
+                            if (file.type === "file" && file.path === "secrrct.sign")
+                            {
+                                try
+                                {
+                                    singatureFile = buf2hex(file.data);
+                                }
+                                catch (Exception)
+                                {
+                                    console.debug("Invalid chargepoint CTR file!")
+                                }
+                            }
+
+                        }
+
+                        if (dataFile != null && dataFile.length > 0 && singatureFile != null && singatureFile != "")
+                        {
+                            CTRfile           = JSON.parse(dataFile);
+                            CTRfile.original  = btoa(dataFile); // Save the original JSON with whitespaces for later signature verification!
+                            CTRfile.signature = singatureFile;
+                            expandedFiles.push({ name: FileInfo.name,
+                                                 data: new TextEncoder().encode(JSON.stringify(CTRfile)) });
+                            continue;
+                        }
+
+                    }
+
+                    //#endregion
+
+                    //#region Multiple files
+
+                    for (let compressedFile of compressedFiles)
+                    {
+                        if (compressedFile.type === "file")
+                        {
+                            expandedFiles.push({ name: compressedFile.path?.substring(compressedFile.path.lastIndexOf('/') + 1
+                                                         ?? FileInfo.name),
+                                                 data: compressedFile.data });
+                        }
+                    }
+
+                    //#endregion
+
+                    continue;
+
+                }
+                catch (exception)
+                {
+                    // Just forward the file as it is!
+                }
+
+            }
+
+            expandedFiles.push({ name: FileInfo.name,
+                                 data: FileInfo.data });
+
+        }
+
+        //#endregion
+
+        //#region Process JSON/XML/text files
+
+        let processedFiles = new Array<ICTRInfo>();
+
+        for (let expandedFile of expandedFiles)
+        {
+
+            let processedFile  = expandedFile as ICTRInfo;
+            let textContent    = new TextDecoder('utf-8').decode(expandedFile.data)?.trim();
+
+            // Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
+            // conversion translates it to FEFF (UTF-16 BOM)
+            if (textContent?.charCodeAt(0) === 0xFEFF)
+                textContent = textContent.substr(1);
+
+            // XML processing...
+            if (textContent?.startsWith("<?xml"))
+            {
+                try
+                {
+
+                    let XMLDocument  = new DOMParser().parseFromString(textContent, "text/xml");
+
+                    //#region XML namespace found...
+
+                    let xmlns        = XMLDocument.lookupNamespaceURI(null);
+                    if (xmlns != null)
+                    {
+                    
+                        switch (xmlns)
+                        {
+
+                            case "http://www.mennekes.de/Mennekes.EdlVerification.xsd":
+                                processedFile.result = await new Mennekes().tryToParseMennekesXML(XMLDocument);
+                                break;
+
+                            case "http://transparenz.software/schema/2018/07":
+                                processedFile.result = await new SAFEXML().tryToParseSAFEXML(XMLDocument);
+                                break;
+
+                            // The SAFE transparency software v1.0 does not understand its own
+                            // XML namespace. Therefore we have to guess the format.
+                            case "":
+                                processedFile.result = await new SAFEXML().tryToParseSAFEXML(XMLDocument);
+                                break;
+
+                        }
+
+                    }
+
+                    //#endregion
+
+                    //#region ..., or plain XML.
+
+                    else
+                    {
 
                         // The SAFE transparency software v1.0 does not understand its own
                         // XML namespace. Therefore we have to guess the format.
-                        case "":
-                            result = await new SAFEXML().tryToParseSAFEXML(XMLDocument);
+                        processedFile.result = await new SAFEXML().tryToParseSAFEXML(XMLDocument);
+
+                    }
+
+                    //#endregion
+
+                } catch (exception)
+                {
+                    processedFile.result = {
+                        status:     SessionVerificationResult.InvalidSessionFormat,
+                        message:    "Unknown or invalid XML data format!",
+                        exception:  exception
+                    }
+                }
+            }
+
+            // OCMF processing
+            else if (textContent?.startsWith("OCMF|{"))
+                processedFile.result = await new OCMF().tryToParseOCMF2(textContent);
+
+            // ALFEN processing
+            else if (textContent?.startsWith("AP;"))
+                processedFile.result = await new Alfen().tryToParseALFENFormat(textContent);
+
+            // Public key processing (PEM format)
+            else if (textContent?.startsWith("-----BEGIN PUBLIC KEY-----") &&
+                     textContent?.endsWith  ("-----END PUBLIC KEY-----"))
+            {
+
+                textContent  = textContent.replace("-----BEGIN PUBLIC KEY-----", "").
+                                           replace("-----END PUBLIC KEY-----",   "").
+                                           replace(/\s+/g, '').
+                                           trim();
+
+                let keyId    = processedFile.name.indexOf('.') > -1
+                                   ? processedFile.name.substring(0, processedFile.name.indexOf('.'))
+                                   : processedFile.name;
+
+                processedFile.result = {
+                    "@id":       keyId,
+                    "@context":  "https://open.charging.cloud/contexts/CTR+json",
+                    publicKeys: [
+                        {
+                            keyId:  keyId,
+                            value:  textContent
+                        }
+                    ]
+                };
+
+            }
+
+            // JSON processing
+            else if (textContent?.startsWith("{") || textContent?.startsWith("["))
+            {
+                try
+                {
+
+                    let JSONContent = JSON.parse(textContent);
+
+                    switch (JSONContent["@context"])
+                    {
+
+                        case "https://open.charging.cloud/contexts/CTR+json":
+                            processedFile.result = JSONContent as IChargeTransparencyRecord;
+                            break;
+
+                        default:
+                            // The current chargeIT mobility format does not provide any context or format identifiers
+                            processedFile.result = await new ChargeIT().tryToParseChargeITJSON(JSONContent);
+
+                            // The current chargepoint format does not provide any context or format identifiers
+                            if (isISessionCryptoResult(processedFile.result))
+                                processedFile.result = await new Chargepoint().tryToParseChargepointJSON(JSONContent);
+
                             break;
 
                     }
 
-                }
 
-                //#endregion
-
-                //#region ..., or plain XML.
-
-                else
+                } catch (exception)
                 {
-
-                    // The SAFE transparency software v1.0 does not understand its own
-                    // XML namespace. Therefore we have to guess the format.
-                    result = await new SAFEXML().tryToParseSAFEXML(XMLDocument);
-
-                }
-
-                //#endregion
-
-            } catch (exception)
-            {
-                result = {
-                    status:     SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Unknown or invalid XML data format!",
-                    exception:  exception
+                    return {
+                        status:     SessionVerificationResult.InvalidSessionFormat,
+                        message:    "Unknown or invalid JSON data format!",
+                        exception:  exception
+                    }
                 }
             }
+
+            processedFiles.push(processedFile);
+
         }
 
         //#endregion
 
-        // OCMF processing
-        else if (Content.startsWith("OCMF|{"))
-            result = await new OCMF().tryToParseOCMF2(Content);
+        //#region If multiple CTR had been found => merge them into a single one
 
-        // ALFEN processing
-        else if (Content.startsWith("AP;"))
-            result = await new Alfen().tryToParseALFENFormat(Content);
+        if (processedFiles.length == 1 && IsAChargeTransparencyRecord(processedFiles[0].result))
+            return this.processChargeTransparencyRecord(processedFiles[0].result);
 
-        //#region JSON processing
-
-        else
+        else if (processedFiles.length > 1)
         {
-            try
-            {
-
-                let JSONContent = JSON.parse(Content);
-
-                switch (JSONContent["@context"])
-                {
-
-                    case "https://open.charging.cloud/contexts/CTR+json":
-                        result = JSONContent as IChargeTransparencyRecord;
-                        break;
-
-                    default:
-                        // The current chargeIT mobility format does not provide any context or format identifiers
-                        result = await new ChargeIT().tryToParseChargeITJSON(JSONContent);
-
-                        // The current chargepoint format does not provide any context or format identifiers
-                        if (isISessionCryptoResult(result))
-                            result = await new Chargepoint().tryToParseChargepointJSON(JSONContent);
-
-                        break;
-
-                }
-
-
-            } catch (exception)
-            {
-                return {
-                    status:     SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Unknown or invalid JSON data format!",
-                    exception:  exception
-                }
-            }
+            let CTR = await this.mergeChargeTransparencyRecords(processedFiles.map(file => file.result));
+            if (IsAChargeTransparencyRecord(CTR))
+                return this.processChargeTransparencyRecord(CTR);
         }
 
         //#endregion
 
-        if (IsAChargeTransparencyRecord(result))
-            return this.processChargeTransparencyRecord(result);
-
-        return result = {
+        return {
             status:   SessionVerificationResult.InvalidSessionFormat,
             message:  "Unbekanntes Transparenzdatensatzformat!"
         }
+
+    }
+
+    //#endregion
+
+    //region mergeChargeTransparencyRecord(CTRs)
+
+    public async mergeChargeTransparencyRecords(CTRs: Array<IChargeTransparencyRecord|ISessionCryptoResult>): Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+    {
+
+        if (CTRs == null || CTRs.length == 0)
+            return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Ungültiges Transparenzdatensatzformat!"
+            }
+
+        return CTRs[0];
 
     }
 
@@ -354,6 +533,16 @@ class Chargy {
 
     public async processChargeTransparencyRecord(CTR: IChargeTransparencyRecord): Promise<IChargeTransparencyRecord|ISessionCryptoResult>
     {
+
+        //#region Initial checks
+
+        if (!IsAChargeTransparencyRecord(CTR))
+            return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Unbekanntes Transparenzdatensatzformat!"
+            }
+
+        //#endregion
 
         //#region Data
 

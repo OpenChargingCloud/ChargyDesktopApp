@@ -36,11 +36,23 @@ $ npm install moment@latest
 $ npm install base32-decode
 + base32-decode@1.0.0
 
+$ npm install file-type@latest
++ file-type@12.4.0
+
 $ npm install decompress@latest
 + decompress@4.2.0
 
-$ npm install @types/decompress --save
+$ npm install @types/decompress --save-dev
 + @types/decompress@4.2.3
+
+$ npm install decompress-tarxz@latest
++ decompress-tarxz@3.0.0
+
+$ npm install decompress-bzip2@latest
++ decompress-bzip2@4.0.0
+
+$ npm install decompress-gz@latest
++ decompress-gz@0.0.1
 
 $ npm install chart.js@latest
 + chart.js@2.9.1
