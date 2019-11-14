@@ -514,8 +514,10 @@ class Chargy {
 
     //region mergeChargeTransparencyRecord(CTRs)
 
-    public async mergeChargeTransparencyRecords(CTRs: Array<IChargeTransparencyRecord|ISessionCryptoResult>): Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+    public async mergeChargeTransparencyRecords(CTRs: Array<IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult>): Promise<IChargeTransparencyRecord|ISessionCryptoResult>
     {
+
+        //#region Initial checks
 
         if (CTRs == null || CTRs.length == 0)
             return {
@@ -523,7 +525,99 @@ class Chargy {
                 message:  "Ungültiges Transparenzdatensatzformat!"
             }
 
-        return CTRs[0];
+        //#endregion
+
+        let mergedCTR:IChargeTransparencyRecord = {
+            "@id":      "",
+            "@context": ""
+        };
+
+        for (let currentCTR of CTRs)
+        {
+
+            if (IsAChargeTransparencyRecord(currentCTR))
+            {
+
+                if (mergedCTR["@id"] === "")
+                    mergedCTR["@id"] = currentCTR["@id"];
+
+                if (mergedCTR["@context"] === "")
+                    mergedCTR["@context"] = currentCTR["@context"];
+
+                if (!mergedCTR.begin || (mergedCTR.begin && currentCTR.begin && mergedCTR.begin > currentCTR.begin))
+                    mergedCTR.begin = currentCTR.begin;
+
+                if (!mergedCTR.end || (mergedCTR.end && currentCTR.end && mergedCTR.end < currentCTR.end))
+                    mergedCTR.end = currentCTR.end;
+
+                if (!mergedCTR.description)
+                    mergedCTR.description = currentCTR.description;
+
+                //ToDo: Is this a really good idea? Or should we fail, whenever this information is different?
+                if (!mergedCTR.contract)
+                    mergedCTR.contract = currentCTR.contract;
+
+
+                if (!mergedCTR.chargingStationOperators)
+                    mergedCTR.chargingStationOperators = currentCTR.chargingStationOperators;
+                else if (currentCTR.chargingStationOperators)
+                    for (let chargingStationOperator of currentCTR.chargingStationOperators)
+                        mergedCTR.chargingStationOperators.push(chargingStationOperator);
+
+                if (!mergedCTR.chargingPools)
+                    mergedCTR.chargingPools = currentCTR.chargingPools;
+                else if (currentCTR.chargingPools)
+                    for (let chargingPool of currentCTR.chargingPools)
+                        mergedCTR.chargingPools.push(chargingPool);
+
+                if (!mergedCTR.chargingStations)
+                    mergedCTR.chargingStations = currentCTR.chargingStations;
+                else if (currentCTR.chargingStations)
+                    for (let chargingStation of currentCTR.chargingStations)
+                        mergedCTR.chargingStations.push(chargingStation);
+
+                // publicKeys
+
+                if (!mergedCTR.chargingSessions)
+                    mergedCTR.chargingSessions = currentCTR.chargingSessions;
+                else if (currentCTR.chargingSessions)
+                    for (let chargingSession of currentCTR.chargingSessions)
+                        mergedCTR.chargingSessions.push(chargingSession);
+
+                if (!mergedCTR.eMobilityProviders)
+                    mergedCTR.eMobilityProviders = currentCTR.eMobilityProviders;
+                else if (currentCTR.eMobilityProviders)
+                    for (let eMobilityProvider of currentCTR.eMobilityProviders)
+                        mergedCTR.eMobilityProviders.push(eMobilityProvider);
+
+                if (!mergedCTR.mediationServices)
+                    mergedCTR.mediationServices = currentCTR.mediationServices;
+                else if (currentCTR.mediationServices)
+                    for (let mediationService of currentCTR.mediationServices)
+                        mergedCTR.mediationServices.push(mediationService);
+
+            }
+
+            else if (IsAPublicKeyLookup(currentCTR))
+            {
+
+                if (!mergedCTR.publicKeys)
+                    mergedCTR.publicKeys = new Array<IPublicKeyInfo>();
+
+                for (let publicKey of currentCTR.publicKeys)
+                    mergedCTR.publicKeys.push(publicKey);
+
+            }
+
+        }
+
+        if (mergedCTR["@id"] === "" || mergedCTR["@context"] === "")
+            return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Ungültiges Transparenzdatensatzformat!"
+            }
+
+        return mergedCTR;
 
     }
 

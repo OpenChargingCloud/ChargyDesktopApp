@@ -17,7 +17,7 @@
 
 ///<reference path="ACrypt.ts" />
 
-function IsAChargeTransparencyRecord(data: IChargeTransparencyRecord|ISessionCryptoResult|undefined): data is IChargeTransparencyRecord
+function IsAChargeTransparencyRecord(data: IChargeTransparencyRecord|ISessionCryptoResult|IPublicKeyLookup|undefined): data is IChargeTransparencyRecord
 {
 
     if (data == null || data == undefined)
@@ -31,9 +31,21 @@ function IsAChargeTransparencyRecord(data: IChargeTransparencyRecord|ISessionCry
 
 }
 
-function IsASessionCryptoResult(data: IChargeTransparencyRecord|ISessionCryptoResult): data is ISessionCryptoResult
+function IsASessionCryptoResult(data: IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult): data is ISessionCryptoResult
 {
     return (data as ISessionCryptoResult).status !== undefined;
+}
+
+function IsAPublicKeyLookup(data: IChargeTransparencyRecord|ISessionCryptoResult|IPublicKeyLookup|undefined): data is IPublicKeyLookup
+{
+
+    if (data == null || data == undefined)
+        return false;
+
+    let lookup = data as IPublicKeyLookup;
+
+    return lookup.publicKeys !== undefined;
+
 }
 
 interface GetChargingPoolFunc {
@@ -71,7 +83,7 @@ interface IChargeTransparencyRecord
     chargingStationOperators?:  Array<IChargingStationOperator>;
     chargingPools?:             Array<IChargingPool>;
     chargingStations?:          Array<IChargingStation>;
-    publicKeys?:                Array<IPublicKeyLookup>;
+    publicKeys?:                Array<IPublicKeyInfo>;
     chargingSessions?:          Array<IChargingSession>;
     eMobilityProviders?:        Array<IEMobilityProvider>;
     mediationServices?:         Array<IMediationService>;
@@ -86,6 +98,11 @@ interface IContract
 }
 
 interface IPublicKeyLookup
+{
+    publicKeys:                 Array<IPublicKeyInfo>;
+}
+
+interface IPublicKeyInfo
 {
     keyId:                      string;
     value:                      string;
