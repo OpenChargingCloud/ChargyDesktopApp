@@ -73,6 +73,9 @@ class ChargyApp {
     private chargySHA512Div:            HTMLDivElement;
     private chargingSessionScreenDiv:   HTMLDivElement;
     private backButtonDiv:              HTMLDivElement;
+    private backButton:                 HTMLButtonElement;
+    private downloadButtonDiv:          HTMLDivElement;
+    private downloadButton:             HTMLButtonElement;
     private fileInputButton:            HTMLButtonElement;
     private fileInput:                  HTMLInputElement;
     private evseTarifInfosDiv:          HTMLDivElement;
@@ -393,6 +396,7 @@ class ChargyApp {
             this.aboutScreenDiv.style.display            = "none";
             this.chargingSessionScreenDiv.style.display  = "none";
             this.backButtonDiv.style.display             = "block";
+            this.downloadButtonDiv.style.display         = "none";
         }
 
         //#endregion
@@ -407,6 +411,7 @@ class ChargyApp {
             this.aboutScreenDiv.style.display            = "block";
             this.chargingSessionScreenDiv.style.display  = "none";
             this.backButtonDiv.style.display             = "block";
+            this.downloadButtonDiv.style.display         = "none";
 
             //#region Calculate the over-all application hash
 
@@ -596,7 +601,10 @@ class ChargyApp {
                 data["description"]                = (newIssueForm.querySelector("#issueDescription")          as HTMLTextAreaElement).value;
 
                 if ((newIssueForm.querySelector("#includeCTR") as HTMLSelectElement).value == "yes")
-                    data["chargeTransparencyRecord"] = this.chargy.currentCTR;
+                {
+                    let stringify = require('safe-stable-stringify');
+                    data["chargeTransparencyRecord"] = stringify(this.chargy.currentCTR);
+                }
 
                 data["name"]                       = (newIssueForm.querySelector("#issueName")                 as HTMLInputElement).value;
                 data["phone"]                      = (newIssueForm.querySelector("#issuePhone")                as HTMLInputElement).value;
@@ -650,16 +658,18 @@ class ChargyApp {
 
         //#endregion
 
-        //#region Handle the 'Back'-button
+        //#region Handle the 'back'-button
 
         this.backButtonDiv             = <HTMLDivElement>      document.getElementById('backButtonDiv');
-        this.backButtonDiv.onclick = (ev: MouseEvent) => {
+        this.backButton                = this.backButtonDiv.querySelector("#backButton") as HTMLButtonElement;
+        this.backButton.onclick        = (ev: MouseEvent) => {
 
             this.updateAvailableScreen.style.display     = "none";
             this.inputInfosDiv.style.display             = 'flex';
             this.aboutScreenDiv.style.display            = "none";
             this.chargingSessionScreenDiv.style.display  = "none";
             this.backButtonDiv.style.display             = "none";
+            this.downloadButtonDiv.style.display         = "none";
             this.fileInput.value                         = "";
             this.evseTarifInfosDiv.innerHTML             = "";
 
@@ -671,6 +681,36 @@ class ChargyApp {
             this.maxlat = -1000;
             this.minlng = +1000;
             this.maxlng = -1000;
+
+        }
+
+        //#endregion
+
+        //#region Handle the 'download'-button
+
+        this.downloadButtonDiv         = <HTMLDivElement>      document.getElementById('downloadButtonDiv');
+        this.downloadButton            = this.downloadButtonDiv.querySelector("#downloadButton") as HTMLButtonElement;
+        this.downloadButton.onclick    = (ev: MouseEvent) => {
+
+          //  ev.stopPropagation();
+
+            try
+            {
+
+                let electron        = require('electron').remote;
+                let fs              = require('original-fs');
+                let userChosenPath  = electron.dialog.showSaveDialog({ defaultPath: electron.app.getPath("desktop") });
+
+                if (userChosenPath)
+                    fs.writeFileSync(userChosenPath,
+                                     JSON.stringify(this.chargy.currentCTR, null, '\t'),
+                                     'utf-8');
+
+            }
+            catch(exception)
+            {
+                alert('Failed to save the charge transparency record!');
+            }
 
         }
 
@@ -897,7 +937,8 @@ class ChargyApp {
 
         this.chargingSessionScreenDiv.style.display  = "flex";
         this.chargingSessionScreenDiv.innerText      = "";
-        this.backButtonDiv.style.display             = "block";
+        this.backButtonDiv.style.display             = "flex";
+        this.downloadButtonDiv.style.display         = "flex";
 
         //#endregion
 
@@ -1466,8 +1507,8 @@ class ChargyApp {
 
             }
 
-            // If there is only one charging session show its details at once...
-            if (CTR.chargingSessions.length == 1)
+            // If there is at least one charging session show its details at once...
+            if (CTR.chargingSessions.length >= 1)
                 CTR.chargingSessions[0].GUI.click();
 
             map.fitBounds([[this.minlat, this.minlng], [this.maxlat, this.maxlng]],

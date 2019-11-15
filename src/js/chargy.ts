@@ -37,6 +37,7 @@ class Chargy {
     private mediationServices         = new Array<IMediationService>();
 
     public  currentCTR                = {} as IChargeTransparencyRecord;
+    public  internalCTR               = {} as IChargeTransparencyRecord;
 
     //#endregion
 
@@ -557,7 +558,7 @@ class Chargy {
 
     //#endregion
 
-    //region mergeChargeTransparencyRecord(CTRs)
+    //#region mergeChargeTransparencyRecord(CTRs)
 
     public async mergeChargeTransparencyRecords(CTRs: Array<IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult>): Promise<IChargeTransparencyRecord|ISessionCryptoResult>
     {
@@ -695,7 +696,8 @@ class Chargy {
         this.eMobilityProviders        = [];
         this.mediationServices         = [];
 
-        this.currentCTR = {} as IChargeTransparencyRecord;
+        this.currentCTR                = CTR;
+        this.internalCTR               = JSON.parse(JSON.stringify(CTR)); // Operate on a copy of the data!
 
         //#endregion
 
@@ -706,10 +708,10 @@ class Chargy {
 
             //#region Process operators (pools, stations, evses, tariffs, ...)
 
-            if (CTR.chargingStationOperators)
+            if (this.internalCTR.chargingStationOperators)
             {
 
-                for (var chargingStationOperator of CTR.chargingStationOperators)
+                for (var chargingStationOperator of this.internalCTR.chargingStationOperators)
                 {
 
                     this.chargingStationOperators.push(chargingStationOperator);
@@ -850,9 +852,9 @@ class Chargy {
 
             //#region Process pools     (       stations, evses, tariffs, ...)
 
-            if (CTR.chargingPools) {
+            if (this.internalCTR.chargingPools) {
 
-                for (var chargingPool of CTR.chargingPools)
+                for (var chargingPool of this.internalCTR.chargingPools)
                 {
 
                     this.chargingPools.push(chargingPool);
@@ -891,9 +893,9 @@ class Chargy {
 
             //#region Process stations  (                 evses, tariffs, ...)
 
-            if (CTR.chargingStations) {
+            if (this.internalCTR.chargingStations) {
 
-                for (var chargingStation of CTR.chargingStations)
+                for (var chargingStation of this.internalCTR.chargingStations)
                 {
 
                     this.chargingStations.push(chargingStation);
@@ -949,19 +951,17 @@ class Chargy {
 
             //#endregion
 
-            if (CTR.chargingSessions)
+            if (this.internalCTR.chargingSessions)
             {
-                for (let chargingSession of CTR.chargingSessions)
+                for (let chargingSession of this.internalCTR.chargingSessions)
                 {
-                    chargingSession.ctr                = CTR;
+                    chargingSession.ctr                = this.internalCTR;
                     chargingSession.verificationResult = await this.processChargingSession(chargingSession);
                     this.chargingSessions.push(chargingSession);
                 }
             }
 
-            this.currentCTR = CTR;
-
-            return CTR;
+            return this.internalCTR;
 
         }
         catch (exception)

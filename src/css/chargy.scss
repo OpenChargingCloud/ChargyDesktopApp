@@ -721,21 +721,51 @@ body {
                     position:       absolute;
                     left:           0px;
                     bottom:         0px;
+                    width:          100%;
 
                     #backButton {
                         border:             0;
-                        // background-color:   #cce5f7;
-                        // padding:            7px 14px 8px 13px;
-                        // border-radius:      50%;
+                        outline:            0;
                         background-color:   transparent;
-                        color:            #b6d8f1;
+                        color:              #b6d8f1;
                         margin:             4px;
                         font-size:          280%;
                     }
 
                     #backButton:hover {
-                        // background-color:   #519ad0;
-                        color:            #519ad0;
+                        color:              #519ad0;
+                    }
+
+                    #downloadButtonDiv {
+
+                        flex-grow:          2;
+                        display:            none;
+                        flex-direction:     row-reverse;
+                        margin-right:       25px;
+
+                        #downloadButton {
+
+                            color:              #b6d8f1;
+                            background-color:   transparent;
+                            font-size:          90%;
+                            border:             0;
+                            outline:            0;
+                            position:           relative;
+                            top:                -2px;
+                            margin-right:       2px;
+
+                            i {
+                                font-size:      120%;
+                                position:       relative;
+                                top:            1px;
+                            }
+
+                        }
+
+                        #downloadButton:hover {
+                            color:              #519ad0;
+                        }
+
                     }
 
                 }
@@ -758,8 +788,8 @@ body {
 
                 button {
                     border:             0;
+                    outline:            0;
                     padding:            8px 15px;
-                    /*font-size:          120%;*/
                     border-radius:      4px;
                     box-shadow:         2px 2px 6px #999;
                 }
@@ -1050,23 +1080,24 @@ body {
 
                     a {
                         text-decoration:    none;
-                        color:            #34668a;
+                        color:              #34668a;
                         margin-bottom:      3px;
                     }
 
                     button {
                         background-color:   transparent;
-                        padding:            0px;
+                        padding:            0;
+                        outline:            0;
                         font-weight:        bold;
                         font-size:          100%;
-                        color:            #34668a;
+                        color:              #34668a;
                         border:             0;
                         text-align:         left;
                         margin-bottom:      3px;
                     }
 
                     button:hover, a:hover {
-                        color:            rgba(52, 102, 138, 0.6);
+                        color:              rgba(52, 102, 138, 0.6);
                     }
 
                     #eMail {
@@ -1097,7 +1128,7 @@ body {
         position:               absolute;
         font-family:            sans-serif;
         font-size:              90%;
-        background-color:     rgba(0, 0, 0, 0.3);
+        background-color:       rgba(0, 0, 0, 0.3);
         width:                  100vw;
         height:                 100vh;
         margin:                 auto;
@@ -1111,7 +1142,7 @@ body {
             height:                 calc(90% - 50px);                
             margin:                 auto;
             padding:                1px;
-            background-color:     #f5f5f5;
+            background-color:       #f5f5f5;
             border:                 20px solid #f5f5f5;
             border-radius:          6px;
             box-shadow:             2px 0 16px 0 rgba(0,0,0,.3);
@@ -1180,7 +1211,7 @@ body {
                     position:               relative;
                     top:                    8px;
                     left:                   10px;
-                    background-color:     #98c3e2;
+                    background-color:       #98c3e2;
                     display:                inline-block;
                     padding:                1px 6px;
                     border-radius:          4px;
@@ -1189,7 +1220,7 @@ body {
 
                 .value {
                     overflow-wrap:          break-word;
-                    background-color:     #E1E1E1;
+                    background-color:       #E1E1E1;
                     border-radius:          4px;
                     padding:                11px 10px 6px 10px;
                     width:                  calc(100% - 20px);
@@ -1209,11 +1240,11 @@ body {
                     }
 
                     .entry:hover {
-                        background-color: orange;
+                        background-color:   orange;
                     }
 
                     .overEntry {
-                        background-color: orange;
+                        background-color:   orange;
                     }
 
                 }
@@ -1242,8 +1273,6 @@ body {
                     color:              #6d6d6d;
 
                     i {
-                        // position:           relative;
-                        // top:                0px;
                         padding:            0px 3px 0px 10px;
                     }
 
