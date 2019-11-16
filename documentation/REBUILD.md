@@ -19,10 +19,10 @@ $ npm install typescript@latest --save-dev
 + typescript@3.7.2
 
 $ npm install sass@latest --save-dev
-+ sass@1.23.3
++ sass@1.23.6
 
 $ npm install @types/node@latest --save-dev
-+ @types/node@12.12.7
++ @types/node@12.12.8
 
 $ npm install elliptic@latest
 + elliptic@6.5.1
@@ -55,10 +55,10 @@ $ npm install decompress-gz@latest
 + decompress-gz@0.0.1
 
 $ npm install chart.js@latest
-+ chart.js@2.9.1
++ chart.js@2.9.3
 
 $ npm install @types/chart.js@latest --save-dev
-+ @types/chart.js@2.8.9
++ @types/chart.js@2.9.0
 ```
 
 

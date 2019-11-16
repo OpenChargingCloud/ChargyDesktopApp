@@ -54,7 +54,7 @@ interface IChargepointCrypt01Result extends ICryptoResult
 
 class ChargepointCrypt01 extends ACrypt {
 
-    readonly curve = new this.chargy.elliptic.ec('secp224k1');
+    readonly curve = new this.chargy.elliptic.ec('p256');
                      // Koblitz 224-bit curve
                      // https://www.secg.org/sec2-v2.pdf
                     //  this.chargy.elliptic.defineCurve('secp224k1', {
@@ -75,7 +75,7 @@ class ChargepointCrypt01 extends ACrypt {
 
     constructor(chargy:  Chargy) {
 
-        super("ECC secp224k1",
+        super("ECC secp256r1",
               chargy);
 
         // defineCurve('p224', {
