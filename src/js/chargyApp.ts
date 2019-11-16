@@ -102,6 +102,9 @@ class ChargyApp {
         this.chargy                    = new Chargy(this.elliptic,
                                                     this.moment);
 
+        const curves = require("crypto").getCurves();
+console.log(curves);
+
         //#region Calculate application hash
 
         switch (process.platform)

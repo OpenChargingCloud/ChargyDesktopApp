@@ -371,10 +371,10 @@ class Chargepoint {
                                 "scale":                0,
 
                                 "signatureInfos": {
-                                    "hash":                 "SHA512",
-                                    "hashTruncation":       "24",
-                                    "algorithm":            "ECC",
-                                    "curve":                "secp192r1",
+                                    "hash":                 "SHA256",
+                                   // "hashTruncation":       "24",
+                                    "algorithm":            "ECDSA",
+                                    "curve":                "secp224k1",
                                     "format":               "rs"
                                 },
 

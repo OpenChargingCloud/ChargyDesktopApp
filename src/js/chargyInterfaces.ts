@@ -231,6 +231,7 @@ interface IChargingSession
     measurements:               Array<IMeasurement>;
     parking:                    Array<IParking>;
     method:                     ACrypt;
+    rawData?:                   string;
     verificationResult?:        ISessionCryptoResult;
 }
 
