@@ -130,67 +130,93 @@ class ChargepointCrypt01 extends ACrypt {
         // ASN1 OID: secp224k1
         // read EC key
 
-        let sessionResult = SessionVerificationResult.UnknownSessionFormat;
-
-        let publicKeyId   = chargingSession.EVSEId.replace(/:/g, "").replace(/-/g, "_");
-        let publicKey     = "";
-        if (chargingSession.ctr?.publicKeys != null)
+        try
         {
-            for (let publicKeyInfo of chargingSession.ctr?.publicKeys)
+
+            let sessionResult = SessionVerificationResult.UnknownSessionFormat;
+
+            let publicKeyId   = chargingSession.EVSEId.replace(/:/g, "").replace(/-/g, "_");
+            let publicKey     = "";
+            if (chargingSession.ctr?.publicKeys != null)
             {
-                if (publicKeyInfo.keyId === publicKeyId)
-                    publicKey = publicKeyInfo.value;
+                for (let publicKeyInfo of chargingSession.ctr?.publicKeys)
+                {
+                    if (publicKeyInfo.id === publicKeyId)
+                        publicKey = publicKeyInfo.value;
+                }
             }
-        }
 
-        var plainText     = chargingSession.rawData;
+            var plainText     = chargingSession.original  != null ? atob(chargingSession.original)  : "";
+            var signature     = chargingSession.signature;
 
-        if (publicKey != null && plainText != null)
-        {
-            sessionResult = SessionVerificationResult.ValidSignature;
-        }
-
-        if (chargingSession.measurements)
-        {
-            for (var measurement of chargingSession.measurements)
+            if (publicKey !== "" && plainText !== "" && signature !== "")
             {
 
-                measurement.chargingSession = chargingSession;
+                let sha256value = await sha256(plainText);
 
-                // Must include at least two measurements (start & stop)
-                if (measurement.values && measurement.values.length > 1)
+                if (this.curve.keyFromPublic(publicKey, 'hex').
+                               verify       (sha256value,
+                                             signature))
                 {
 
-                    // Validate...
-                    for (var measurementValue of measurement.values)
-                    {
-                        measurementValue.measurement = measurement;
-                        await this.VerifyMeasurement(measurementValue as IChargepointMeasurementValue);
-                    }
-
-
-                    // Find an overall result...
                     sessionResult = SessionVerificationResult.ValidSignature;
 
-                    for (var measurementValue of measurement.values)
+                    if (chargingSession.measurements)
                     {
-                        if (sessionResult                  == SessionVerificationResult.ValidSignature &&
-                            measurementValue.result.status != VerificationResult.ValidSignature)
+                        for (let measurement of chargingSession.measurements)
                         {
-                            sessionResult = SessionVerificationResult.InvalidSignature;
+
+                            measurement.chargingSession = chargingSession;
+
+                            // Must include at least two measurements (start & stop)
+                            if (measurement.values && measurement.values.length > 1)
+                            {
+
+                                // Validate...
+                                for (let measurementValue of measurement.values)
+                                {
+                                    measurementValue.measurement = measurement;
+                                    await this.VerifyMeasurement(measurementValue as IChargepointMeasurementValue);
+                                }
+
+                                // Find an overall result...
+                                for (let measurementValue of measurement.values)
+                                {
+                                    if (measurementValue.result.status != VerificationResult.ValidSignature &&
+                                        measurementValue.result.status != VerificationResult.NoOperation)
+                                    {
+                                        sessionResult = SessionVerificationResult.InvalidSignature;
+                                    }
+                                }
+
+                            }
+
+                            else
+                                sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsExpected;
+
                         }
                     }
+                    else
+                        sessionResult = SessionVerificationResult.InvalidSessionFormat;
 
                 }
 
                 else
-                    sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsExpected;
+                    sessionResult = SessionVerificationResult.InvalidSignature;
 
             }
-        }
 
-        return {
-            status: sessionResult
+            return {
+                status: sessionResult
+            }
+
+        }
+        catch (exception)
+        {
+            return {
+                status:  SessionVerificationResult.InvalidSignature,
+                message: exception.message
+            }
         }
 
     }
@@ -284,7 +310,7 @@ class ChargepointCrypt01 extends ACrypt {
 
     }
 
-    async ViewMeasurement  (measurementValue:  IChargepointMeasurementValue,
+    async ViewMeasurement(measurementValue:        IChargepointMeasurementValue,
                           introDiv:                HTMLDivElement,
                           infoDiv:                 HTMLDivElement,
                           bufferValue:             HTMLDivElement,

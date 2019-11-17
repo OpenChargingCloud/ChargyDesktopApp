@@ -333,7 +333,8 @@ class Chargepoint {
 
                     {
 
-                        "rawData":                      SomeJSON,
+                        "original":                     SomeJSON.original,
+                        "signature":                    SomeJSON.signature,
 
                         "@id":                          SomeJSON.additional_info.station_mac + "-" +
                                                         SomeJSON.additional_info.outlet      + "-" +

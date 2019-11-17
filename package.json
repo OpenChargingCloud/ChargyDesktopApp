@@ -26,6 +26,7 @@
   "license": "AGPL-3.0-or-later",
   "homepage": "https://github.com/OpenChargingCloud/ChargyDesktopApp",
   "dependencies": {
+    "asn1.js": "^5.2.0",
     "base32-decode": "^1.0.0",
     "chart.js": "^2.9.3",
     "decompress": "^4.2.0",
@@ -34,6 +35,7 @@
     "decompress-tarxz": "^3.0.0",
     "elliptic": "^6.5.1",
     "file-type": "^12.4.0",
+    "key-encoder": "^2.0.3",
     "leaflet": "^1.5.1",
     "leaflet.awesome-markers": "^2.0.5",
     "moment": "^2.24.0"

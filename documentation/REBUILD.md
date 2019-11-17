@@ -30,6 +30,12 @@ $ npm install elliptic@latest
 $ npm install @types/elliptic@latest --save-dev
 + @types/elliptic@6.4.10
 
+$ npm install key-encoder@latest
++ key-encoder@2.0.3
+
+$ npm install asn1.js@latest
++ asn1.js@5.2.0
+
 $ npm install moment@latest
 + moment@2.24.0
 

@@ -234,14 +234,14 @@ class Chargy {
                     {
 
                         let compressedFiles:Array<TarInfo> = await decompress(Buffer.from(FileInfo.data),
-                                                                            { plugins: [ decompressTar(),
-                                                                                        decompressTargz(),
-                                                                                        decompressTarbz2(),
-                                                                                        //  decompressTarxz(),
-                                                                                        decompressUnzip(),
-                                                                                        decompressGz(),
-                                                                                        decompressBzip2()
-                                                                                        ] });
+                                                                              { plugins: [ decompressTar(),
+                                                                                           decompressTargz(),
+                                                                                           decompressTarbz2(),
+                                                                                           //decompressTarxz(),
+                                                                                           decompressUnzip(),
+                                                                                           decompressGz(),
+                                                                                           decompressBzip2()
+                                                                                         ] });
 
                         archiveFound = true;
 
@@ -299,8 +299,10 @@ class Chargy {
                                 CTRfile           = JSON.parse(dataFile);
                                 CTRfile.original  = btoa(dataFile); // Save the original JSON with whitespaces for later signature verification!
                                 CTRfile.signature = singatureFile;
-                                expandedFileInfos.push({ name: FileInfo.name,
-                                                    data: new TextEncoder().encode(JSON.stringify(CTRfile)) });
+                                expandedFileInfos.push({
+                                    name: FileInfo.name,
+                                    data: new TextEncoder().encode(JSON.stringify(CTRfile))
+                                });
                                 continue;
                             }
 
@@ -469,25 +471,82 @@ class Chargy {
                      textContent?.endsWith  ("-----END PUBLIC KEY-----"))
             {
 
-                textContent  = textContent.replace("-----BEGIN PUBLIC KEY-----", "").
-                                           replace("-----END PUBLIC KEY-----",   "").
-                                           replace(/\s+/g, '').
-                                           trim();
+                try
+                {
 
-                let keyId    = processedFile.name.indexOf('.') > -1
-                                   ? processedFile.name.substring(0, processedFile.name.indexOf('.'))
-                                   : processedFile.name;
+                    const keyId          = (processedFile.name.indexOf('.') > -1
+                                                ? processedFile.name.substring(0, processedFile.name.indexOf('.'))
+                                                : processedFile.name).replace("-publicKey", "");
 
-                processedFile.result = {
-                    "@id":       keyId,
-                    "@context":  "https://open.charging.cloud/contexts/CTR+json",
-                    publicKeys: [
-                        {
-                            keyId:  keyId,
-                            value:  textContent
-                        }
-                    ]
-                };
+                    const publicKeyPEM   = textContent.replace("-----BEGIN PUBLIC KEY-----", "").
+                                                       replace("-----END PUBLIC KEY-----",   "").
+                                                       split  ('\n').
+                                                       map    ((line) => line.trim()).
+                                                       filter ((line) => line !== '' && !line.startsWith('#')).
+                                                       join   ("");
+
+                    // https://lapo.it/asn1js/ for a visual check...
+                    const ASN1           = require('asn1.js');
+
+                    const ASN1_OIDs      = ASN1.define('OIDs', function() {
+                        //@ts-ignore
+                        this.key('oid').objid()
+                    });
+
+                    const ASN1_PublicKey = ASN1.define('PublicKey', function() {
+                        //@ts-ignore
+                        this.seq().obj(
+                            //@ts-ignore
+                            this.key('oids').seqof(ASN1_OIDs),
+                            //@ts-ignore
+                            this.key('publicKey').bitstr()
+                        );
+                    });
+
+                    const publicKeyDER   = ASN1_PublicKey.decode(Buffer.from(publicKeyPEM, 'base64'), 'der');
+
+                    const KeyType_OID    = publicKeyDER.oids[0].join(".") as string;
+                    let   KeyType        = "unknown";
+                    switch (KeyType_OID)
+                    {
+                        case "1.2.840.10045.2.1":
+                            KeyType      = "ecPublicKey";   // ANSI X9.62 public key type
+                            break;
+                    }
+
+                    const Curve_OID      = publicKeyDER.oids[1].join(".") as string;
+                    let   Curve          = "unknown";
+                    switch (Curve_OID)
+                    {
+                        case "1.2.840.10045.3.1.7":
+                            Curve        = "prime256v1";    // ANSI X9.62 named elliptic curve
+                            break;
+                    }
+
+                    processedFile.result = {
+                        "@id":       keyId,
+                        "@context":  "https://open.charging.cloud/contexts/CTR+json",
+                        publicKeys: [
+                            {
+                                id:     keyId,
+                                type: {
+                                    oid:          KeyType_OID,
+                                    description:  KeyType
+                                },
+                                curve: {
+                                    oid:          Curve_OID,
+                                    description:  Curve
+                                },
+                                value:  buf2hex(publicKeyDER.publicKey.data)
+                            }
+                        ]
+                    };
+
+                }
+                catch (exception)
+                {
+                    // Just ignore this file...
+                }
 
             }
 

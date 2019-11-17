@@ -104,7 +104,23 @@ interface IPublicKeyLookup
 
 interface IPublicKeyInfo
 {
+    id:                         string;
+    type:                       IOIDInfo;
+    curve:                      IOIDInfo;
+    value:                      string;
+}
+
+interface IOIDInfo
+{
+    oid:                        string;
+    description:                string;
+}
+
+interface IKeyInfo
+{
     keyId:                      string;
+    keyType:                    string;
+    curve:                      string;
     value:                      string;
 }
 
@@ -231,7 +247,8 @@ interface IChargingSession
     measurements:               Array<IMeasurement>;
     parking:                    Array<IParking>;
     method:                     ACrypt;
-    rawData?:                   string;
+    original?:                  string;
+    signature?:                 string;
     verificationResult?:        ISessionCryptoResult;
 }
 
