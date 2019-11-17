@@ -227,7 +227,9 @@ class Chargy {
 
                 let mimeType = fileType(FileInfo.data)?.mime;
 
-                if (mimeType != null && mimeType != undefined)
+                if (mimeType != null      &&
+                    mimeType != undefined &&
+                    mimeType != "application/xml")
                 {
 
                     try
@@ -242,6 +244,9 @@ class Chargy {
                                                                                            decompressGz(),
                                                                                            decompressBzip2()
                                                                                          ] });
+
+                        if (compressedFiles.length == 0)
+                            continue;
 
                         archiveFound = true;
 
@@ -317,8 +322,8 @@ class Chargy {
                             if (compressedFile.type === "file")
                             {
                                 expandedFileInfos.push({ name: compressedFile.path?.substring(compressedFile.path.lastIndexOf('/') + 1
-                                                            ?? FileInfo.name),
-                                                    data: compressedFile.data });
+                                                                   ?? FileInfo.name),
+                                                         data: compressedFile.data });
                             }
                         }
 
@@ -335,7 +340,7 @@ class Chargy {
                 }
 
                 expandedFileInfos.push({ name: FileInfo.name,
-                                    data: FileInfo.data });
+                                         data: FileInfo.data });
 
             }
 
@@ -486,6 +491,7 @@ class Chargy {
                                                        join   ("");
 
                     // https://lapo.it/asn1js/ for a visual check...
+                    // https://github.com/indutny/asn1.js
                     const ASN1           = require('asn1.js');
 
                     const ASN1_OIDs      = ASN1.define('OIDs', function() {
@@ -755,9 +761,6 @@ class Chargy {
         this.eMobilityProviders        = [];
         this.mediationServices         = [];
 
-        this.currentCTR                = CTR;
-        this.internalCTR               = JSON.parse(JSON.stringify(CTR)); // Operate on a copy of the data!
-
         //#endregion
 
         //ToDo: Verify @context
@@ -765,6 +768,9 @@ class Chargy {
         try
         {
 
+            this.currentCTR                = CTR;
+            this.internalCTR               = JSON.parse(JSON.stringify(CTR)); // Operate on a copy of the data!
+    
             //#region Process operators (pools, stations, evses, tariffs, ...)
 
             if (this.internalCTR.chargingStationOperators)

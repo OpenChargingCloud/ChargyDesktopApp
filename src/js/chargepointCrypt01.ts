@@ -55,23 +55,34 @@ interface IChargepointCrypt01Result extends ICryptoResult
 class ChargepointCrypt01 extends ACrypt {
 
     readonly curve = new this.chargy.elliptic.ec('p256');
-                     // Koblitz 224-bit curve
-                     // https://www.secg.org/sec2-v2.pdf
-                    //  this.chargy.elliptic.defineCurve('secp224k1', {
-                    //     type: 'short',
-                    //     prime: 'k224',
-                    //     p: 'FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE FFFFE56D',
-                    //     a: '00000000 00000000 00000000 00000000 00000000 00000000 00000000',
-                    //     b: '00000000 00000000 00000000 00000000 00000000 00000000 00000005',
-                    //     n: '00000000 00000000 00000000 0001DCE8 D2EC6184 CAF0A971 769FB1F7',
-                    //     h: 1,
-                    //     hash: this.chargy.elliptic.hash.sha512,
-                    //     gRed: false,
-                    //     g: [
-                    //         'A1455B33 4DF099DF 30FC28A1 69A467E9 E47075A9 0F7E650E B6B7A45C',
-                    //         '7E089FED 7FBA3442 82CAFBD6 F7E319F7 C0B0BD59 E2CA4BDB 556D61A5'
-                    //     ]
-                    //  });
+
+        // $ openssl ec -inform PEM -pubin -in 0024b10000027b29_1.pem -text -noout
+        // Public-Key: (225 bit)
+        // pub:
+        //     04:f6:b9:4d:1d:0d:4c:95:24:41:b9:44:34:ac:41:
+        //     3b:0c:3d:97:ee:e7:f1:19:36:9c:ac:3a:07:a2:e8:
+        //     12:98:f4:2f:f6:eb:f1:2d:de:16:e1:b5:7d:a1:12:
+        //     13:45:70:21:1d:c7:a9:f3:48:9a:e1:a4
+        // ASN1 OID: secp224k1
+        // read EC key
+        //
+        // Koblitz 224-bit curve
+        // https://www.secg.org/sec2-v2.pdf
+        //  this.chargy.elliptic.defineCurve('secp224k1', {
+        //     type: 'short',
+        //     prime: 'k224',
+        //     p: 'FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE FFFFE56D',
+        //     a: '00000000 00000000 00000000 00000000 00000000 00000000 00000000',
+        //     b: '00000000 00000000 00000000 00000000 00000000 00000000 00000005',
+        //     n: '00000000 00000000 00000000 0001DCE8 D2EC6184 CAF0A971 769FB1F7',
+        //     h: 1,
+        //     hash: this.chargy.elliptic.hash.sha512,
+        //     gRed: false,
+        //     g: [
+        //         'A1455B33 4DF099DF 30FC28A1 69A467E9 E47075A9 0F7E650E B6B7A45C',
+        //         '7E089FED 7FBA3442 82CAFBD6 F7E319F7 C0B0BD59 E2CA4BDB 556D61A5'
+        //     ]
+        //  });
 
     constructor(chargy:  Chargy) {
 
@@ -92,7 +103,6 @@ class ChargepointCrypt01 extends ACrypt {
         //                 'bd376388 b5f723fb 4c22dfe6 cd4375a0 5a074764 44d58199 85007e34'
         //             ]
         //});
-
 
     }
 
@@ -120,16 +130,6 @@ class ChargepointCrypt01 extends ACrypt {
     async VerifyChargingSession(chargingSession:         IChargingSession): Promise<ISessionCryptoResult>
     {
 
-        // $ openssl ec -inform PEM -pubin -in 0024b10000027b29_1.pem -text -noout
-        // Public-Key: (225 bit)
-        // pub:
-        //     04:f6:b9:4d:1d:0d:4c:95:24:41:b9:44:34:ac:41:
-        //     3b:0c:3d:97:ee:e7:f1:19:36:9c:ac:3a:07:a2:e8:
-        //     12:98:f4:2f:f6:eb:f1:2d:de:16:e1:b5:7d:a1:12:
-        //     13:45:70:21:1d:c7:a9:f3:48:9a:e1:a4
-        // ASN1 OID: secp224k1
-        // read EC key
-
         try
         {
 
@@ -146,8 +146,8 @@ class ChargepointCrypt01 extends ACrypt {
                 }
             }
 
-            var plainText     = chargingSession.original  != null ? atob(chargingSession.original)  : "";
-            var signature     = chargingSession.signature;
+            let plainText     = chargingSession.original != null ? atob(chargingSession.original) : "";
+            let signature     = chargingSession.signature;
 
             if (publicKey !== "" && plainText !== "" && signature !== "")
             {
@@ -292,6 +292,8 @@ class ChargepointCrypt01 extends ACrypt {
 
     async VerifyMeasurement(measurementValue:  IChargepointMeasurementValue): Promise<IChargepointCrypt01Result>
     {
+
+        // Note: chargepoint does not sign individual measurements!
 
         function setResult(verificationResult: VerificationResult)
         {

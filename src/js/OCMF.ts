@@ -359,9 +359,7 @@ class OCMF {
 
             }
 
-            return {
-                status:   SessionVerificationResult.InvalidSessionFormat
-            }
+            return CTR;
 
         }
         catch (exception)
@@ -505,13 +503,13 @@ class OCMF {
             switch (commonVersion)
             {
 
-                case "0.1":
-                    //@ts-ignore
-                    return await this.tryToParseOCMFv0_1(OCMFDataList as IOCMFData_v0_1[], PublicKey);
+                // case "0.1":
+                    
+                //     return await this.tryToParseOCMFv0_1(OCMFDataList as IOCMFData_v0_1[], PublicKey);
 
                 case "1.0":
-                    //@ts-ignore
-                    return await this.tryToParseOCMFv1_0(OCMFDataList as IOCMFData_v1_0[], PublicKey);
+                    
+                    return await this.tryToParseOCMF(OCMFDataList as IOCMFData_v1_0[], PublicKey);
 
                 default:
                     return {
