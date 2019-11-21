@@ -140,7 +140,7 @@ class Alfen  {
                 let _ObisId              = this.bufferToHex(ObisId);
                 let _Unit                = this.bufferToHex(Unit);
                 let _Scalar              = this.bufferToHex(Scalar);
-                let _Value               = new DataView(Value,     0).getBigInt64(0, true);
+                let _Value               = new Number(new DataView(Value,     0).getBigInt64(0, true));
                 let _UID                 = String.fromCharCode.apply(null, new Uint8Array(UID) as any).replace(/\0.*$/g, '');
                 let _SessionId           = new DataView(SessionId, 0).getInt32   (0, true);
                 let _Paging              = new DataView(Paging,    0).getInt32   (0, true);
