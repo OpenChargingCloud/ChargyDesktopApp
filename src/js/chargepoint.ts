@@ -215,40 +215,40 @@ class Chargepoint {
                         },
 
                         "contact": {
-                            "email":                    "info@chargeit-mobility.com",
-                            "web":                      "https://www.chargeit-mobility.com",
-                            "logoUrl":                  "http://www.chargeit-mobility.com/fileadmin/BELECTRIC_Drive/templates/pics/chargeit_logo_408x70.png",
-                            "publicKeys": [
-                                {
-                                    "algorithm":        "secp192r1",
-                                    "format":           "DER",
-                                    "value":            "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
-                                    "signatures": [
-                                        {
-                                            "keyId":      "...",
-                                            "algorithm":  "secp192r1",
-                                            "format":     "DER",
-                                            "value":      "????"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "algorithm":        "secp256k1",
-                                    "format":           "DER",
-                                    "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
-                                    "signatures":       [ ]
-                                }
-                            ]
+                            "email":                    "sales@chargepoint.com",
+                            "web":                      "https://www.chargepoint.com",
+                            "logoUrl":                  "https://www.chargepoint.com/themes/chargepoint/logo.svg",
+                            // "publicKeys": [
+                            //     {
+                            //         "algorithm":        "secp256r1",
+                            //         "format":           "DER",
+                            //         "value":            "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
+                            //         "signatures": [
+                            //             {
+                            //                 "keyId":      "...",
+                            //                 "algorithm":  "secp256r1",
+                            //                 "format":     "DER",
+                            //                 "value":      "????"
+                            //             }
+                            //         ]
+                            //     },
+                            //     {
+                            //         "algorithm":        "secp256r1",
+                            //         "format":           "DER",
+                            //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                            //         "signatures":       [ ]
+                            //     }
+                            // ]
                         },
 
                         "support": {
-                            "hotline":                  "+49 9321 / 2680 - 700",
-                            "email":                    "service@chargeit-mobility.com",
-                            "web":                      "https://cso.chargeit.charging.cloud/issues"
+                            "hotline":                  "+49(69) 95307383",
+                            "email":                    "support.eu@chargepoint.com",
+                            "web":                      "https://chargepoint.charging.cloud/issues"
                             // "mediationServices":        [ "GraphDefined Mediation" ],
                             // "publicKeys": [
                             //     {
-                            //         "algorithm":        "secp256k1",
+                            //         "algorithm":        "secp256r1",
                             //         "format":           "DER",
                             //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
                             //         "signatures":       [ ]
@@ -257,12 +257,12 @@ class Chargepoint {
                         },
 
                         "privacy": {
-                            "contact":                  "Dr. iur. Christian Borchers, datenschutz süd GmbH",
-                            "email":                    "datenschutz@chargeit-mobility.com",
-                            "web":                      "http://www.chargeit-mobility.com/de/datenschutz/"
+                            "contact":                  "ChargePoint, Attn: Data Protection Officer, ChargePoint Network (Netherlands) B.V., Hoogoorddreef 56E, 1101BE Amsterdam",
+                            "email":                    "privacy.eu@chargepoint.com ",
+                            "web":                      "https://de.chargepoint.com/privacy_policy"
                             // "publicKeys": [
                             //     {
-                            //         "algorithm":        "secp256k1",
+                            //         "algorithm":        "secp256r1",
                             //         "format":           "DER",
                             //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
                             //         "signatures":       [ ]
@@ -283,20 +283,20 @@ class Chargepoint {
                                         "meters": [
                                             {
                                                 "@id":                      SomeJSON.additional_info.meter_serial,
-                                                "vendor":                   null,
-                                                "vendorURL":                null,
-                                                "model":                    null,
-                                                "hardwareVersion":          null,
-                                                "firmwareVersion":          null,
-                                                "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
-                                                "publicKeys": [
-                                                    {
-                                                        "algorithm":        "secp192r1",
-                                                        "format":           "DER",
-                                                        "value":            null,
-                                                        "signatures":       null
-                                                    }
-                                                ]
+                                                "vendor":                   "Carlo Gavazzi",
+                                                //"vendorURL":                null,
+                                                "model":                    "EM340-DIN.AV2.3.X.S1.X",
+                                                //"hardwareVersion":          null,
+                                                //"firmwareVersion":          null,
+                                                // "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+                                                // "publicKeys": [
+                                                //     {
+                                                //         "algorithm":        "secp224k1",
+                                                //         "format":           "DER",
+                                                //         "value":            null,
+                                                //         "signatures":       null
+                                                //     }
+                                                // ]
                                             }
                                         ]
                                     }
@@ -365,7 +365,7 @@ class Chargepoint {
                                 "energyMeterId":        SomeJSON.additional_info.meter_serial,
                                 "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargepointCrypt01+json",
                                 "name":                 SomeJSON.energy != null && SomeJSON.energy.length > 0 ? SomeJSON.energy[0].type : "ENERGY",
-                                "obis":                 "123...",
+                                "obis":                 "1-0:1.17.0*255",
                                 "unit":                 SomeJSON.additional_info.energy_units,
                         //        "unitEncoded":          CTRArray[0]["measuredValue"]["unitEncoded"],
                         //        "valueType":            CTRArray[0]["measuredValue"]["valueType"],
