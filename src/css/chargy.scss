@@ -998,41 +998,51 @@ body {
                             display:            table-cell;
                             padding:            2px 16px 2px 12px;
                             border-radius:      4px 0px 0px 4px;
-                            white-space:        nowrap
+                            white-space:        nowrap;
                         }
 
                         .value1 {
                             display:            table-cell;
                             text-align:         right;
                             padding-right:      5px;
-                            white-space:        nowrap
+                            white-space:        nowrap;
                         }
 
                         .unit1 {
                             display:            table-cell;
                             padding-right:      10px;
-                            white-space:        nowrap
+                            white-space:        nowrap;
                         }
 
                         .value2 {
                             display:            table-cell;
                             text-align:         right;
                             padding-right:      5px;
-                            white-space:        nowrap
+                            white-space:        nowrap;
                         }
 
                         .unit2 {
                             display:            table-cell;
                             padding-right:      10px;
-                            white-space:        nowrap
+                            white-space:        nowrap;
                         }
 
                         .verificationStatus {
+
                             display:            table-cell;
                             padding:            2px 6px;
                             border-radius:      0px 4px 4px 0px;
                             width:              100%;
-                            white-space:        nowrap
+                            white-space:        nowrap;
+
+                            .noValidation {
+                                position:           relative;
+                                top:                -1px;
+                                font-size:          85%;
+                                font-style:         italic;
+                                color:              rgba(44, 74, 96, 0.5);
+                            }
+
                         }
 
                     }
@@ -1305,6 +1315,7 @@ body {
 
                 #overlayOkButton {
                     border:             0;
+                    outline:            0;
                     background-color:   transparent;
                     color:            #b6d8f1;
                     margin:             4px;

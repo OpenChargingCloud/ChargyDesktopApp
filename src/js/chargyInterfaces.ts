@@ -394,13 +394,27 @@ enum SessionVerificationResult {
 }
 
 enum VerificationResult {
+
     UnknownCTRFormat,
     EnergyMeterNotFound,
     PublicKeyNotFound,
     InvalidPublicKey,
+
     InvalidSignature,
+    InvalidStartValue,
+    InvalidIntermediateValue,
+    InvalidStopValue,
+
     NoOperation,
+    StartValue,
+    IntermediateValue,
+    StopValue,
+
     ValidSignature,
+    ValidStartValue,
+    ValidIntermediateValue,
+    ValidStopValue
+
 }
 
 interface IVersions {

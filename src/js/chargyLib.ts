@@ -395,6 +395,29 @@ function CreateDiv(ParentDiv:   HTMLDivElement,
 
 }
 
+function CreateDiv2(ParentDiv:        HTMLDivElement,
+                    ChildClassName:   string,
+               //     ChildAClassName:  string,
+                    ChildAInnerHTML:  string,
+              //      ChildBClassName:  string,
+                    ChildBInnerHTML:  string) : HTMLDivElement
+{
+
+    let childDiv            = ParentDiv.appendChild(document.createElement('div'));
+        childDiv.className  = ChildClassName;
+
+    let childADiv           = childDiv.appendChild(document.createElement('div'));
+    childADiv.className     = ChildClassName + "Id";
+    childADiv.innerHTML     = ChildAInnerHTML;
+
+    let childBDiv           = childDiv.appendChild(document.createElement('div'));
+    childBDiv.className     = ChildClassName + "IdValue";
+    childBDiv.innerHTML     = ChildBInnerHTML;
+
+    return childDiv;
+
+}
+
 
 function OpenExternal(URL: string)
 {

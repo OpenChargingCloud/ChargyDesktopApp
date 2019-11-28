@@ -179,7 +179,8 @@ class ChargepointCrypt01 extends ACrypt {
                                     await this.VerifyMeasurement(measurementValue as IChargepointMeasurementValue);
                                 }
 
-                                // Find an overall result...
+                                //#region Find an overall result...
+
                                 for (let measurementValue of measurement.values)
                                 {
                                     if (measurementValue.result.status != VerificationResult.ValidSignature &&
@@ -189,8 +190,74 @@ class ChargepointCrypt01 extends ACrypt {
                                     }
                                 }
 
-                            }
+                                //#endregion
 
+                                //#region Adapt measurement results
+
+                                if (sessionResult == SessionVerificationResult.ValidSignature)
+                                {
+                                    for (let i = 0; i < measurement.values.length; i++)
+                                    {
+
+                                        // Start value
+                                        if (i == 0)
+                                        {
+                                            switch (measurement.values[i].result.status)
+                                            {
+
+                                                case VerificationResult.ValidSignature:
+                                                    measurement.values[i].result.status = VerificationResult.ValidStartValue;
+                                                    break;
+
+                                                case VerificationResult.NoOperation:
+                                                    measurement.values[i].result.status = VerificationResult.StartValue;
+                                                    break;
+
+                                            }
+                                        }
+
+                                        // Stop value
+                                        else if (i = measurement.values.length-1)
+                                        {
+                                            switch (measurement.values[i].result.status)
+                                            {
+
+                                                case VerificationResult.ValidSignature:
+                                                    measurement.values[i].result.status = VerificationResult.ValidStopValue;
+                                                    break;
+
+                                                case VerificationResult.NoOperation:
+                                                    measurement.values[i].result.status = VerificationResult.StopValue;
+                                                    break;
+
+                                            }
+
+                                        }
+
+                                        // Intermediate values
+                                        else
+                                        {
+                                            switch (measurement.values[i].result.status)
+                                            {
+
+                                                case VerificationResult.ValidSignature:
+                                                    measurement.values[i].result.status = VerificationResult.ValidIntermediateValue;
+                                                    break;
+
+                                                case VerificationResult.NoOperation:
+                                                    measurement.values[i].result.status = VerificationResult.IntermediateValue;
+                                                    break;
+
+                                            }
+
+                                        }
+
+                                    }
+                                }
+
+                                //#endregion
+
+                            }
                             else
                                 sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsExpected;
 
@@ -200,7 +267,6 @@ class ChargepointCrypt01 extends ACrypt {
                         sessionResult = SessionVerificationResult.InvalidSessionFormat;
 
                 }
-
                 else
                     sessionResult = SessionVerificationResult.InvalidSignature;
 

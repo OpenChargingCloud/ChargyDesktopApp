@@ -1557,31 +1557,13 @@ console.log(curves);
                         let ChargingStationHeadline  = CreateDiv(ChargingStationDiv,  "chargingStationHeadline",
                                                                  "Ladestation");
 
-                        if (measurement.chargingSession.chargingStation["@id"] != null)
-                        {
+                        if (measurement.chargingSession.chargingStation["@id"]?.length > 0)
+                            CreateDiv2(ChargingStationDiv,  "chargingStationId",
+                                       "Identifikation",    measurement.chargingSession.chargingStation["@id"]);
 
-                            let ChargingStationIdDiv       = CreateDiv(ChargingStationDiv,    "chargingStationId");
-
-                            let ChargingStationIdIdDiv     = CreateDiv(ChargingStationIdDiv,  "chargingStationIdId",
-                                                                       "Identifikation");
-
-                            let ChargingStationIdValueDiv  = CreateDiv(ChargingStationIdDiv,  "chargingStationIdValue",
-                                                                       measurement.chargingSession.chargingStation["@id"]);
-
-                        }
-
-                        if (measurement.chargingSession.chargingStation.firmwareVersion != null)
-                        {
-
-                            let firmwareVersionDiv       = CreateDiv(ChargingStationDiv,  "firmwareVersion");
-
-                            let firmwareVersionIdDiv     = CreateDiv(firmwareVersionDiv,  "firmwareVersionId",
-                                                                     "Firmware-Version");
-
-                            let firmwareVersionValueDiv  = CreateDiv(firmwareVersionDiv,  "firmwareVersionValue",
-                                                                     measurement.chargingSession.chargingStation.firmwareVersion);
-
-                        }
+                        if (measurement.chargingSession.chargingStation.firmwareVersion?.length > 0)
+                            CreateDiv2(ChargingStationDiv,  "firmwareVersion",
+                                       "Firmware-Version",  measurement.chargingSession.chargingStation.firmwareVersion);
 
                     }
 
@@ -1590,78 +1572,44 @@ console.log(curves);
                     //#region Show meter infos...
 
                     let meterDiv       = CreateDiv(MeasurementInfoDiv,  "meter");
-                    let meterHeadline  = CreateDiv(meterDiv,  "meterHeadline",
-                                                             "Energiezähler");
+                    let meterHeadline  = CreateDiv(meterDiv,            "meterHeadline",
+                                                                        "Energiezähler");
 
-                    var meter                        = this.chargy.GetMeter(measurement.energyMeterId);
+                    var meter          = this.chargy.GetMeter(measurement.energyMeterId);
 
                     if (meter != null)
                     {
 
-                        let meterIdDiv               = CreateDiv(meterDiv,            "meterId");
+                        CreateDiv2(meterDiv,         "meterId",
+                                   "Seriennummer",   measurement.energyMeterId);
 
-                        let meterIdIdDiv             = CreateDiv(meterIdDiv,          "meterIdId",
-                                                                 "Seriennummer");
+                        if (meter.vendor?.length > 0)
+                            CreateDiv2(meterDiv,            "meterVendor",
+                                       "Zählerhersteller",  meter.vendor);
 
-                        let meterIdValueDiv          = CreateDiv(meterIdDiv,          "meterIdValue",
-                                                                 measurement.energyMeterId);
-
-
-                        let MeterVendorDiv           = CreateDiv(meterDiv,  "meterVendor");
-
-                        let MeterVendorIdDiv         = CreateDiv(MeterVendorDiv,      "meterVendorId",
-                                                                 "Zählerhersteller");
-
-                        let MeterVendorValueDiv      = CreateDiv(MeterVendorDiv,      "meterVendorIdValue",
-                                                                 meter.vendor);
-
-
-                        let MeterModelDiv            = CreateDiv(meterDiv,  "meterModel");
-
-                        let MeterModelIdDiv          = CreateDiv(MeterModelDiv,       "meterModelId",
-                                                                 "Model");
-
-                        let MeterModelValueDiv       = CreateDiv(MeterModelDiv,       "meterModelIdValue",
-                                                                 meter.model);
+                        if (meter.model?.length > 0)
+                            CreateDiv2(meterDiv,            "meterModel",
+                                       "Model",             meter.model);
 
                     }
 
                     //#endregion
 
-                    //#region ...or show meterId infos
+                    //#region ...or just show the meter identification
 
-                    else {
-
-                        let meterIdDiv               = CreateDiv(meterDiv,            "meterId");
-
-                        let meterIdIdDiv             = CreateDiv(meterIdDiv,          "meterIdId",
-                                                                 "Zählerseriennummer");
-
-                        let meterIdValueDiv          = CreateDiv(meterIdDiv,          "meterIdValue",
-                                                                 measurement.energyMeterId);
-
-                    }
+                    else
+                        CreateDiv2(meterDiv,              "meterId",
+                                   "Zählerseriennummer",  measurement.energyMeterId);
 
                     //#endregion
 
                     //#region Show measurement infos
 
-                    let measurementDiv               = CreateDiv(meterDiv,           "measurement");
+                    CreateDiv2(meterDiv,              "measurement",
+                               "Messung",             measurement.name);
 
-                    let MeasurementIdDiv             = CreateDiv(measurementDiv,     "measurementId",
-                                                                 "Messung");
-
-                    let MeasurementIdValueDiv        = CreateDiv(measurementDiv,     "measurementIdValue",
-                                                                 measurement.name);
-
-
-                    let OBISDiv                      = CreateDiv(meterDiv,           "OBIS");
-
-                    let OBISIdDiv                    = CreateDiv(OBISDiv,            "OBISId",
-                                                                 "OBIS-Kennzahl");
-
-                    let OBISValueDiv                 = CreateDiv(OBISDiv,            "OBISValue",
-                                                                 parseOBIS(measurement.obis));
+                    CreateDiv2(meterDiv,              "OBIS",
+                               "OBIS-Kennzahl",       parseOBIS(measurement.obis));
 
                     //#endregion
 
@@ -1672,7 +1620,7 @@ console.log(curves);
 
                         let meterHeadline                = CreateDiv(this.evseTarifInfosDiv,  "measurementsHeadline",
                                                                      "Messwerte");
-                        meterHeadline.id = "measurementValues-headline";
+                        meterHeadline.id                 = "measurementValues-headline";
 
                         let MeasurementValuesDiv         = CreateDiv(this.evseTarifInfosDiv,     "measurementValues");
                         let previousValue                = 0;
@@ -1730,13 +1678,14 @@ console.log(curves);
                             }
 
                             let valueDiv                     = CreateDiv(MeasurementValueDiv, "value2",
-                                                                         "+" + (previousValue > 0
-                                                                                    ? parseFloat((currentValue - previousValue).toFixed(10))
-                                                                                    : "0"));
+                                                                         previousValue > 0
+                                                                             ? "+" + parseFloat((currentValue - previousValue).toFixed(10))
+                                                                             : "0");
 
                             let unitDiv                      = CreateDiv(MeasurementValueDiv, "unit2",
-                                                                         "kWh");
-
+                                                                         previousValue > 0
+                                                                             ? "kWh"
+                                                                             : "");
 
                             //#region Show signature status
 
@@ -1762,16 +1711,55 @@ console.log(curves);
                                         icon = '<i class="fas fa-times-circle"></i> Ungültiger Public Key';
                                         break;
 
+
                                     case VerificationResult.InvalidSignature:
                                         icon = '<i class="fas fa-times-circle"></i> Ungültige Signatur';
                                         break;
 
-                                    case VerificationResult.NoOperation:
-                                        icon = '<i class="fas fa-exclamation-circle"></i> Keine Validierung';
+                                    case VerificationResult.InvalidStartValue:
+                                        icon = '<i class="fas fa-times-circle"></i> Ungültiger Startwert';
                                         break;
+
+                                    case VerificationResult.InvalidIntermediateValue:
+                                        icon = '<i class="fas fa-times-circle"></i> Ungültiger Zwischenwert';
+                                        break;
+
+                                    case VerificationResult.InvalidStopValue:
+                                        icon = '<i class="fas fa-times-circle"></i> Ungültiger Endwert';
+                                        break;
+
+
+                                    case VerificationResult.NoOperation:
+                                        icon = '<div class="noValidation">Messwert</div>';
+                                        break;
+
+                                    case VerificationResult.StartValue:
+                                        icon = '<div class="noValidation">Startwert</div>';
+                                        break;
+
+                                    case VerificationResult.IntermediateValue:
+                                        icon = '<div class="noValidation">Zwischenwert</div>';
+                                        break;
+
+                                    case VerificationResult.StopValue:
+                                        icon = '<div class="noValidation">Endwert</div>';
+                                        break;
+
 
                                     case VerificationResult.ValidSignature:
                                         icon = '<i class="fas fa-check-circle"></i> Gültige Signatur';
+                                        break;
+
+                                    case VerificationResult.ValidStartValue:
+                                        icon = '<i class="fas fa-check-circle"></i> Gültiger Startwert';
+                                        break;
+
+                                    case VerificationResult.ValidIntermediateValue:
+                                        icon = '<i class="fas fa-check-circle"></i> Gültiger Zwischenwert';
+                                        break;
+
+                                    case VerificationResult.ValidStopValue:
+                                        icon = '<i class="fas fa-check-circle"></i> Gültiger Endwert';
                                         break;
 
                                 }
