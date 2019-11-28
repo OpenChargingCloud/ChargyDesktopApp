@@ -113,7 +113,7 @@ interface IPublicKeyInfo
 interface IOIDInfo
 {
     oid:                        string;
-    description:                string;
+    description?:               string;
 }
 
 interface IKeyInfo
@@ -224,7 +224,7 @@ interface IChargingSession
 {
     "@id":                      string;
     "@context":                 string;
-    ctr?:                       IChargeTransparencyRecord;
+    ctr:                        IChargeTransparencyRecord;
     GUI:                        HTMLDivElement;
     begin:                      string;
     end?:                       string;
@@ -239,6 +239,7 @@ interface IChargingSession
     EVSE?:                      IEVSE|null;
     meterId:                    string;
     meter?:                     IMeter|null;
+    publicKey?:                 IPublicKeyInfo;
     tariffId?:                  string;
     tariff?:                    ITariff|null;
     authorizationStart:         IAuthorization;
@@ -249,6 +250,7 @@ interface IChargingSession
     method:                     ACrypt;
     original?:                  string;
     signature?:                 string;
+    hashValue?:                 string;
     verificationResult?:        ISessionCryptoResult;
 }
 

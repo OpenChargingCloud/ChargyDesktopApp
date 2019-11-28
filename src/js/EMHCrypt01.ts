@@ -368,10 +368,11 @@ class EMHCrypt01 extends ACrypt {
                                                                            :   pubKey.match(/.{1,8}/g)!.join(" ");
 
 
-        if (!IsNullOrEmpty(result.publicKeySignatures)) {
+        // Public key signatures
+        if (publicKeyValue.parentElement != null)
+            publicKeyValue.parentElement.children[3].innerHTML = "";
 
-//            publicKeyValue.parentElement!.children[2].innerHTML = "Bestätigt durch...";
-            publicKeyValue.parentElement!.children[3].innerHTML = ""; 
+        if (!IsNullOrEmpty(result.publicKeySignatures)) {
 
             for (let signature of result.publicKeySignatures)
             {

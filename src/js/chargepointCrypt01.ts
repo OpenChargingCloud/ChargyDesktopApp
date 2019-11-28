@@ -134,28 +134,27 @@ class ChargepointCrypt01 extends ACrypt {
         {
 
             let sessionResult = SessionVerificationResult.UnknownSessionFormat;
-
             let publicKeyId   = chargingSession.EVSEId.replace(/:/g, "").replace(/-/g, "_");
-            let publicKey     = "";
-            if (chargingSession.ctr?.publicKeys != null)
+
+            if (chargingSession.ctr.publicKeys != null)
             {
                 for (let publicKeyInfo of chargingSession.ctr?.publicKeys)
                 {
                     if (publicKeyInfo.id === publicKeyId)
-                        publicKey = publicKeyInfo.value;
+                        chargingSession.publicKey = publicKeyInfo;
                 }
             }
 
             let plainText     = chargingSession.original != null ? atob(chargingSession.original) : "";
             let signature     = chargingSession.signature;
 
-            if (publicKey !== "" && plainText !== "" && signature !== "")
+            if (chargingSession.publicKey != null && plainText !== "" && signature !== "")
             {
 
-                let sha256value = await sha256(plainText);
+                chargingSession.hashValue = await sha256(plainText);
 
-                if (this.curve.keyFromPublic(publicKey, 'hex').
-                               verify       (sha256value,
+                if (this.curve.keyFromPublic(chargingSession.publicKey.value, 'hex').
+                               verify       (chargingSession.hashValue,
                                              signature))
                 {
 
@@ -386,117 +385,139 @@ class ChargepointCrypt01 extends ACrypt {
                           publicKeyValue:          HTMLDivElement,
                           signatureExpectedValue:  HTMLDivElement,
                           signatureCheckValue:     HTMLDivElement)
+
     {
 
-        const result     = measurementValue.result as IChargepointCrypt01Result;
+        const chargingSession  = measurementValue?.measurement?.chargingSession;
+        const result           = measurementValue.result as IChargepointCrypt01Result;
 
-        const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
-        cryptoSpan.innerHTML = "EMHCrypt01 (" + this.description + ")";
+        const cryptoSpan       = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
+        cryptoSpan.innerHTML   = "chargepointCrypt01 (" + this.description + ")";
 
-        this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId                               || "",  infoDiv, bufferValue);
-        this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp                             || "",  infoDiv, bufferValue);
-        this.CreateLine("Status",                   hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
-                                                    this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",           result.infoStatus                            || "",  infoDiv, bufferValue);
-        this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                       result.secondsIndex                          || "",  infoDiv, bufferValue);
-        this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                         result.paginationId                          || "",  infoDiv, bufferValue);
-        this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis                                  || "",  infoDiv, bufferValue);
-        this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded                           || "",  infoDiv, bufferValue);
-        this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale                                 || "",  infoDiv, bufferValue);
-        this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value                                 || "",  infoDiv, bufferValue);
-        this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                              result.logBookIndex                          || "",  infoDiv, bufferValue);
-        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     pad(result.authorizationStart,          128) || "",  infoDiv, bufferValue);
-        this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, bufferValue);
+        // this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId                               || "",  infoDiv, bufferValue);
+        // this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp                             || "",  infoDiv, bufferValue);
+        // this.CreateLine("Status",                   hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
+        //                                             this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",           result.infoStatus                            || "",  infoDiv, bufferValue);
+        // this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                       result.secondsIndex                          || "",  infoDiv, bufferValue);
+        // this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                         result.paginationId                          || "",  infoDiv, bufferValue);
+        // this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis                                  || "",  infoDiv, bufferValue);
+        // this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded                           || "",  infoDiv, bufferValue);
+        // this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale                                 || "",  infoDiv, bufferValue);
+        // this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value                                 || "",  infoDiv, bufferValue);
+        // this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                              result.logBookIndex                          || "",  infoDiv, bufferValue);
+        // this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     pad(result.authorizationStart,          128) || "",  infoDiv, bufferValue);
+        // this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, bufferValue);
 
 
         // Buffer
-        bufferValue.parentElement!.children[0].innerHTML             = "Puffer (320 Bytes, hex)";
+        if (bufferValue.parentElement != null)
+            bufferValue.parentElement.children[0].innerHTML         = "Plain text (secrrct)";
+            bufferValue.innerText                                   = atob(chargingSession.original ?? "");
+
+            bufferValue.style.fontFamily = "monospace";
+            bufferValue.style.whiteSpace = "pre";
+            bufferValue.style.maxHeight  = "25vh";
+            bufferValue.style.overflowY  = "scroll";
 
         // Hashed Buffer
-        hashedBufferValue.parentElement!.children[0].innerHTML       = "Hashed Puffer (SHA256, 24 bytes, hex)";
-        hashedBufferValue.innerHTML                                  = result.sha256value.match(/.{1,8}/g).join(" ");;
+        if (hashedBufferValue.parentElement != null)
+            hashedBufferValue.parentElement.children[0].innerHTML   = "Hashed plain text (SHA256, 32 bytes, hex)";
+            hashedBufferValue.innerHTML                             = chargingSession.hashValue?.match(/.{1,8}/g)?.join(" ") ?? "-";
 
 
         // Public Key
-        publicKeyValue.parentElement!.children[0].innerHTML          = "Public Key (" +
-                                                                       (result.publicKeyFormat
-                                                                           ? result.publicKeyFormat + ", "
-                                                                           : "") +
-                                                                       "hex)";
+        if (chargingSession.publicKey != null)
+        {
 
-        var pubKey = WhenNullOrEmpty(result.publicKey, "");
+            if (publicKeyValue.parentElement != null)
+                publicKeyValue.parentElement.children[0].innerHTML  = "Public Key (" +
+                                                                         (chargingSession.publicKey.type.description
+                                                                              ? chargingSession.publicKey.type.description + ", "
+                                                                              : "") +
+                                                                         (chargingSession.publicKey.curve.description
+                                                                              ? chargingSession.publicKey.curve.description + ", "
+                                                                              : "") +
+                                                                          "hex)";
 
-        if (!IsNullOrEmpty(result.publicKey))
-            publicKeyValue.innerHTML                                 = pubKey.startsWith("04") // Add some space after '04' to avoid confused customers
-                                                                           ? "<span class=\"leadingFour\">04</span> "
-                                                                             + pubKey.substring(2).match(/.{1,8}/g)!.join(" ")
-                                                                           :   pubKey.match(/.{1,8}/g)!.join(" ");
+            publicKeyValue.innerHTML                                = chargingSession.publicKey.value.startsWith("04") // Add some space after '04' to avoid confused customers
+                                                                          ? "<span class=\"leadingFour\">04</span> "
+                                                                            + chargingSession.publicKey.value.substring(2).match(/.{1,8}/g)!.join(" ")
+                                                                          :   chargingSession.publicKey.value.match(/.{1,8}/g)!.join(" ");
 
 
-        if (!IsNullOrEmpty(result.publicKeySignatures)) {
+            // Public key signatures
+            if (publicKeyValue.parentElement != null)
+                publicKeyValue.parentElement.children[3].innerHTML = "";
 
-//            publicKeyValue.parentElement!.children[2].innerHTML = "Bestätigt durch...";
-            publicKeyValue.parentElement!.children[3].innerHTML = ""; 
+            if (!IsNullOrEmpty(result.publicKeySignatures)) {
 
-            for (let signature of result.publicKeySignatures)
-            {
+    //            publicKeyValue.parentElement!.children[2].innerHTML = "Bestätigt durch...";
+                
 
-                try
+                for (let signature of result.publicKeySignatures)
                 {
 
-                    let signatureDiv = publicKeyValue.parentElement!.children[3].appendChild(document.createElement('div'));
-                    signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
-                                                                                            measurementValue.measurement.chargingSession.EVSE,
-                                                                                            //@ts-ignore
-                                                                                            measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                                            //@ts-ignore
-                                                                                            measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
-                                                                                            signature);
+                    try
+                    {
+
+                        let signatureDiv = publicKeyValue.parentElement!.children[3].appendChild(document.createElement('div'));
+                        signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
+                                                                                                measurementValue.measurement.chargingSession.EVSE,
+                                                                                                //@ts-ignore
+                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                                                                //@ts-ignore
+                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                                                                signature);
+
+                    }
+                    catch (exception)
+                    { }
 
                 }
-                catch (exception)
-                { }
-
+                
             }
-            
+
         }
 
-
         // Signature
-        signatureExpectedValue.parentElement!.children[0].innerHTML  = "Erwartete Signatur (" + (result.signature!.format || "") + ", hex)";
+        if (signatureExpectedValue.parentElement != null)
+            signatureExpectedValue.parentElement.children[0].innerHTML  = "Erwartete Signatur (secrrct.sign, rs, hex)";// " + (result.signature?.format ?? "") + ", hex)";
 
-        if (result.signature!.r && result.signature!.s)
-            signatureExpectedValue.innerHTML                        = "r: " + result.signature!.r!.toLowerCase().match(/.{1,8}/g)!.join(" ") + "<br />" +
-                                                                      "s: " + result.signature!.s!.toLowerCase().match(/.{1,8}/g)!.join(" ");
+        // if (chargingSession.signature?.r && chargingSession.signature.s)
+        if (chargingSession.signature != null)
+             signatureExpectedValue.innerHTML                        = "r: " + chargingSession.signature.substr( 8, 64).toLowerCase().match(/.{1,8}/g)?.join(" ") + "<br />" +
+                                                                       "s: " + chargingSession.signature.substr(76, 64).toLowerCase().match(/.{1,8}/g)?.join(" ");
 
-        else if (result.signature!.value)
-            signatureExpectedValue.innerHTML                        = result.signature!.value!.toLowerCase().match(/.{1,8}/g)!.join(" ");
+        //if (chargingSession.signature != null)
+        //    signatureExpectedValue.innerHTML                        = chargingSession.signature.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
 
 
         // Result
-        switch (result.status)
+        if (chargingSession.verificationResult != null)
+        switch (chargingSession.verificationResult.status)
         {
 
-            case VerificationResult.UnknownCTRFormat:
-                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
-                break;
+            // case SessionVerificationResult.UnknownCTRFormat:
+            //     signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
+            //     break;
 
-            case VerificationResult.EnergyMeterNotFound:
-                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
-                break;
+            // case SessionVerificationResult.EnergyMeterNotFound:
+            //     signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
+            //     break;
 
-            case VerificationResult.PublicKeyNotFound:
+            case SessionVerificationResult.PublicKeyNotFound:
                 signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
                 break;
 
-            case VerificationResult.InvalidPublicKey:
+            case SessionVerificationResult.InvalidPublicKey:
                 signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
                 break;
 
-            case VerificationResult.InvalidSignature:
+            case SessionVerificationResult.InvalidSignature:
                 signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
                 break;
 
-            case VerificationResult.ValidSignature:
+            case SessionVerificationResult.ValidSignature:
                 signatureCheckValue.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
                 break;
 
@@ -507,9 +528,7 @@ class ChargepointCrypt01 extends ACrypt {
 
         }
 
-
     }
-
 
     //#region Helper methods
 
