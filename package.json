@@ -32,7 +32,6 @@
     "decompress": "^4.2.0",
     "decompress-bzip2": "^4.0.0",
     "decompress-gz": "0.0.1",
-    "decompress-tarxz": "^3.0.0",
     "elliptic": "^6.5.1",
     "file-type": "^12.4.0",
     "key-encoder": "^2.0.3",
