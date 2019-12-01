@@ -451,6 +451,23 @@ function pad(text: string|undefined, paddingValue: number) {
 
 };
 
+async function sha224(message: string|DataView) {
+
+    let hashBuffer = null;
+    const SHA224 = require("sha224");
+
+    if (typeof message === 'string')
+        hashBuffer = SHA224(Buffer.from(message, 'utf8'));
+    else
+        hashBuffer = SHA224(message);
+
+  //  const hashArray  = Array.from(hashBuffer);                                       // convert hash to byte array
+    const hashHex    = hashBuffer.toString("hex");
+
+    return hashHex;
+
+}
+
 async function sha256(message: string|DataView) {
 
     let hashBuffer = null;
@@ -459,6 +476,38 @@ async function sha256(message: string|DataView) {
         hashBuffer = await crypto.subtle.digest('SHA-256', Buffer.from(message, 'utf8'));
     else
         hashBuffer = await crypto.subtle.digest('SHA-256', message);
+
+    const hashArray  = Array.from(new Uint8Array(hashBuffer));                                       // convert hash to byte array
+    const hashHex    = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('').toLowerCase(); // convert bytes to hex string
+
+    return hashHex;
+
+}
+
+async function sha384(message: string|DataView) {
+
+    let hashBuffer = null;
+
+    if (typeof message === 'string')
+        hashBuffer = await crypto.subtle.digest('SHA-384', Buffer.from(message, 'utf8'));
+    else
+        hashBuffer = await crypto.subtle.digest('SHA-384', message);
+
+    const hashArray  = Array.from(new Uint8Array(hashBuffer));                                       // convert hash to byte array
+    const hashHex    = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('').toLowerCase(); // convert bytes to hex string
+
+    return hashHex;
+
+}
+
+async function sha512(message: string|DataView) {
+
+    let hashBuffer = null;
+
+    if (typeof message === 'string')
+        hashBuffer = await crypto.subtle.digest('SHA-512', Buffer.from(message, 'utf8'));
+    else
+        hashBuffer = await crypto.subtle.digest('SHA-512', message);
 
     const hashArray  = Array.from(new Uint8Array(hashBuffer));                                       // convert hash to byte array
     const hashHex    = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('').toLowerCase(); // convert bytes to hex string

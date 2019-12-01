@@ -18,7 +18,7 @@
 ///<reference path="chargyInterfaces.ts" />
 ///<reference path="chargyLib.ts" />
 ///<reference path="ACrypt.ts" />
-
+///<reference path="secp224k1.ts" />
 
 interface IChargepointMeasurementValue extends IMeasurementValue
 {
@@ -54,62 +54,27 @@ interface IChargepointCrypt01Result extends ICryptoResult
 
 class ChargepointCrypt01 extends ACrypt {
 
-    readonly curve = new this.chargy.elliptic.ec('p256');
+    // Koblitz 224-bit curve
+    // https://www.secg.org/sec2-v2.pdf
+    // For older chargepoint charging station firmwares
+    readonly curve224k1 = new secp224k1();
 
-        // $ openssl ec -inform PEM -pubin -in 0024b10000027b29_1.pem -text -noout
-        // Public-Key: (225 bit)
-        // pub:
-        //     04:f6:b9:4d:1d:0d:4c:95:24:41:b9:44:34:ac:41:
-        //     3b:0c:3d:97:ee:e7:f1:19:36:9c:ac:3a:07:a2:e8:
-        //     12:98:f4:2f:f6:eb:f1:2d:de:16:e1:b5:7d:a1:12:
-        //     13:45:70:21:1d:c7:a9:f3:48:9a:e1:a4
-        // ASN1 OID: secp224k1
-        // read EC key
-        //
-        // Koblitz 224-bit curve
-        // https://www.secg.org/sec2-v2.pdf
-        //  this.chargy.elliptic.defineCurve('secp224k1', {
-        //     type: 'short',
-        //     prime: 'k224',
-        //     p: 'FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE FFFFE56D',
-        //     a: '00000000 00000000 00000000 00000000 00000000 00000000 00000000',
-        //     b: '00000000 00000000 00000000 00000000 00000000 00000000 00000005',
-        //     n: '00000000 00000000 00000000 0001DCE8 D2EC6184 CAF0A971 769FB1F7',
-        //     h: 1,
-        //     hash: this.chargy.elliptic.hash.sha512,
-        //     gRed: false,
-        //     g: [
-        //         'A1455B33 4DF099DF 30FC28A1 69A467E9 E47075A9 0F7E650E B6B7A45C',
-        //         '7E089FED 7FBA3442 82CAFBD6 F7E319F7 C0B0BD59 E2CA4BDB 556D61A5'
-        //     ]
-        //  });
+    // NIST/ANSI X9.62 named 256-bit elliptic curve
+    // https://www.secg.org/sec2-v2.pdf
+    // For newer chargepoint charging station firmwares
+    readonly curve256r1 = new this.chargy.elliptic.ec('p256');
 
     constructor(chargy:  Chargy) {
 
-        super("ECC secp256r1",
+        super("ECC secp224k1/secp256r1",
               chargy);
-
-        // defineCurve('p224', {
-        //             type: 'short',
-        //             prime: 'p224',
-        //             p: 'ffffffff ffffffff ffffffff ffffffff 00000000 00000000 00000001',
-        //             a: 'ffffffff ffffffff ffffffff fffffffe ffffffff ffffffff fffffffe',
-        //             b: 'b4050a85 0c04b3ab f5413256 5044b0b7 d7bfd8ba 270b3943 2355ffb4',
-        //             n: 'ffffffff ffffffff ffffffff ffff16a2 e0b8f03e 13dd2945 5c5c2a3d',
-        //             hash: hash.sha256,
-        //             gRed: false,
-        //             g: [
-        //                 'b70e0cbd 6bb4bf7f 321390b9 4a03c1d3 56c21122 343280d6 115c1d21',
-        //                 'bd376388 b5f723fb 4c22dfe6 cd4375a0 5a074764 44d58199 85007e34'
-        //             ]
-        //});
 
     }
 
 
     GenerateKeyPair()//options?: elliptic.ec.GenKeyPairOptions)
     {
-        return this.curve.genKeyPair();
+        return this.curve256r1.genKeyPair();
         // privateKey     = keypair.getPrivate();
         // publicKey      = keypair.getPublic();
         // privateKeyHEX  = privateKey.toString('hex').toLowerCase();
@@ -145,17 +110,36 @@ class ChargepointCrypt01 extends ACrypt {
                 }
             }
 
-            let plainText     = chargingSession.original != null ? atob(chargingSession.original) : "";
-            let signature     = chargingSession.signature;
+            let plainText  = chargingSession.original != null ? atob(chargingSession.original) : "";
 
-            if (chargingSession.publicKey != null && plainText !== "" && signature !== "")
+            if (chargingSession.publicKey != null && plainText !== "" && chargingSession.signature != null && chargingSession.signature !== "")
             {
 
-                chargingSession.hashValue = await sha256(plainText);
+                let validated = false;
 
-                if (this.curve.keyFromPublic(chargingSession.publicKey.value, 'hex').
-                               verify       (chargingSession.hashValue,
-                                             signature))
+                switch (chargingSession.publicKey.curve.description)
+                {
+
+                    case "secp224k1":
+                        let SHA256HashValue        = await sha256(plainText);
+                        chargingSession.hashValue  = (BigInt("0x" + SHA256HashValue) >> BigInt(31)).toString(16);
+                        validated                  = this.curve224k1.validate(BigInt("0x" + chargingSession.hashValue),
+                                                                              BigInt("0x" + chargingSession.signature.substr(8,  56)),
+                                                                              BigInt("0x" + chargingSession.signature.substr(68, 56)),
+                                                                              [ BigInt("0x" + chargingSession.publicKey.value.substr(2,  56)),
+                                                                                BigInt("0x" + chargingSession.publicKey.value.substr(58, 56)) ]);
+                        break;
+
+                    case "secp256r1":
+                        chargingSession.hashValue  = await sha256(plainText);
+                        validated                  = this.curve256r1.keyFromPublic(chargingSession.publicKey.value, 'hex').
+                                                                     verify       (chargingSession.hashValue,
+                                                                                   chargingSession.signature)
+                        break;
+
+                }
+
+                if (validated)
                 {
 
                     sessionResult = SessionVerificationResult.ValidSignature;
@@ -316,7 +300,7 @@ class ChargepointCrypt01 extends ACrypt {
         // cryptoResult.publicKey    = publicKey.encode('hex').
         //                                       toLowerCase();
 
-        const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
+        const signature           = this.curve256r1.keyFromPrivate(privateKey.toString('hex')).
                                                sign(cryptoResult.sha256value);
 
         switch (measurementValue.measurement.signatureInfos.format)

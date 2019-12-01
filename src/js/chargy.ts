@@ -524,9 +524,27 @@ class Chargy {
                     let   Curve          = "unknown";
                     switch (Curve_OID)
                     {
-                        case "1.2.840.10045.3.1.7":
-                            Curve        = "prime256v1";    // ANSI X9.62 named elliptic curve
+
+                        // Koblitz 224-bit curve
+                        case "1.3.132.0.32":
+                            Curve        = "secp224k1";
                             break;
+
+                        // NIST/ANSI X9.62 named 256-bit elliptic curve used with SHA256
+                        case "1.2.840.10045.3.1.7":
+                            Curve        = "secp256r1";    // also: ANSI prime256v1, NIST P-256
+                            break;
+
+                        // NIST/ANSI X9.62 named 384-bit elliptic curve used with SHA384
+                        case "1.3.132.0.34":
+                            Curve        = "secp384r1";    // also: ANSI prime384v1, NIST P-384
+                            break;
+
+                        // NIST/ANSI X9.62 named 521-bit elliptic curve used with SHA512
+                        case "1.3.132.0.35":
+                            Curve        = "secp521r1";    // also: ANSI prime521v1, NIST P-521
+                            break;
+
                     }
 
                     processedFile.result = {
