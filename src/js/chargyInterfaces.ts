@@ -249,9 +249,14 @@ interface IChargingSession
     parking:                    Array<IParking>;
     method:                     ACrypt;
     original?:                  string;
-    signature?:                 string;
+    signature?:                 string|ISignatureRS;
     hashValue?:                 string;
     verificationResult?:        ISessionCryptoResult;
+}
+
+interface ISignatureRS {
+    r:                          string;
+    s:                          string;
 }
 
 interface IChargingProduct

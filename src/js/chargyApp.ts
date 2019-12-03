@@ -1798,14 +1798,14 @@ console.log(curves);
 
         function doError(text: String)
         {
-            //inputInfosDiv.style.display  = 'flex';
-            //errorTextDiv.style.display   = 'inline-block';
-            introDiv.innerHTML           = '<i class="fas fa-times-circle"></i> ' + text;
+            errorDiv.innerHTML           = '<i class="fas fa-times-circle"></i> ' + text;
+            introDiv.style.display       = "none";
         }
 
-
-        let introDiv       = this.overlayDiv.querySelector('#intro')      as HTMLDivElement;
-        let cryptoDataDiv  = this.overlayDiv.querySelector('#cryptoData') as HTMLDivElement;
+        let errorDiv            = this.overlayDiv.querySelector('#error')      as HTMLDivElement;
+        let introDiv            = this.overlayDiv.querySelector('#intro')      as HTMLDivElement;
+        errorDiv.innerHTML      = "";
+        introDiv.style.display  = "block";
 
         if (measurementValue             == null ||
             measurementValue.measurement == null)
@@ -1818,29 +1818,29 @@ console.log(curves);
 
         this.overlayDiv.style.display = 'block';
 
-        let bufferValue               = this.overlayDiv.querySelector('#buffer .value')             as HTMLDivElement;
-        let hashedBufferValue         = this.overlayDiv.querySelector('#hashedBuffer .value')       as HTMLDivElement;
-        let publicKeyValue            = this.overlayDiv.querySelector('#publicKey .value')          as HTMLDivElement;
-        let signatureExpectedValue    = this.overlayDiv.querySelector('#signatureExpected .value')  as HTMLDivElement;
-        let signatureCheckValue       = this.overlayDiv.querySelector('#signatureCheck')            as HTMLDivElement;
+        let cryptoDataDiv           = this.overlayDiv.querySelector('#cryptoData')                as HTMLDivElement;
+        let bufferDiv               = this.overlayDiv.querySelector('#buffer .value')             as HTMLDivElement;
+        let hashedBufferDiv         = this.overlayDiv.querySelector('#hashedBuffer .value')       as HTMLDivElement;
+        let publicKeyDiv            = this.overlayDiv.querySelector('#publicKey .value')          as HTMLDivElement;
+        let signatureExpectedDiv    = this.overlayDiv.querySelector('#signatureExpected .value')  as HTMLDivElement;
+        let signatureCheckDiv       = this.overlayDiv.querySelector('#signatureCheck')            as HTMLDivElement;
 
-        //introDiv.innerHTML                = '';
-        cryptoDataDiv.innerHTML           = '';
-        bufferValue.innerHTML             = '';
-        hashedBufferValue.innerHTML       = '0x00000000000000000000000000000000000';
-        publicKeyValue.innerHTML          = '0x00000000000000000000000000000000000';
-        signatureExpectedValue.innerHTML  = '0x00000000000000000000000000000000000';
-        signatureCheckValue.innerHTML     = '';
+        cryptoDataDiv.innerHTML         = '';
+        bufferDiv.innerHTML             = '';
+        hashedBufferDiv.innerHTML       = '0x00000000000000000000000000000000000';
+        publicKeyDiv.innerHTML          = '0x00000000000000000000000000000000000';
+        signatureExpectedDiv.innerHTML  = '0x00000000000000000000000000000000000';
+        signatureCheckDiv.innerHTML     = '';
 
         if (measurementValue.method)
             measurementValue.method.ViewMeasurement(measurementValue,
                                                     introDiv,
                                                     cryptoDataDiv,
-                                                    bufferValue,
-                                                    hashedBufferValue,
-                                                    publicKeyValue,
-                                                    signatureExpectedValue,
-                                                    signatureCheckValue);
+                                                    bufferDiv,
+                                                    hashedBufferDiv,
+                                                    publicKeyDiv,
+                                                    signatureExpectedDiv,
+                                                    signatureCheckDiv);
 
         else
         {

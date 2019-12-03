@@ -1,85 +1,92 @@
 {
-	"company_name": "ChargePoint&#32;EU&#32;QA&#32;EUR",
-	"display_unit": 3600,
-	"energy": [{
-			"active_charging": 0,
-			"duration": 421,
-			"end_time": 1543841929,
-			"end_time_utc": 1543838329,
-			"line_item_cost": 0,
-			"seq_num": 1,
-			"start_time": 1543841508,
-			"start_time_utc": 1543837908,
-			"type": "ENERGY",
-			"unit_price": "0.05000",
-			"units": 0.058999999999999997
-		},
-		{
-			"duration": 421,
-			"energy_subtotal": 0,
-			"seq_num": "SUBTOTAL",
-			"type": "ENERGY",
-			"units": 0.058999999999999997
-		}
-	],
-	"flat": [{
-		"flat_fee": 0,
-		"flat_fee_subtotal": 0,
-		"numSubSessions": 1,
-		"type": "FLAT"
-	}],
-	"minMaxAdj": [{
-		"session_length": 0,
-		"session_min": 0.070000000000000007,
-		"session_min_adjustment": 0.059999999999999998,
-		"session_total": 0.01,
-		"type": "SESS_MIN_ADJ"
-	}],
-	"parking": [{
-			"duration": 421,
-			"end_time": 1543841929,
-			"end_time_utc": 1543838329,
-			"line_item_cost": 0.01,
-			"overstay": 0,
-			"seq_num": 1,
-			"start_time": 1543841508,
-			"start_time_utc": 1543837908,
-			"type": "PARKING",
-			"unit_price": "0.10",
-			"units": 421
-		},
-		{
-			"duration": 421,
-			"parking_subtotal": 0.01,
-			"seq_num": "SUBTOTAL",
-			"type": "PARKING",
-			"units": 421
-		}
-	],
-	"subtotal": 0.070000000000000007,
-	"subtotal_before_adjustment": 0.01,
-	"tax": [{
-			"tax": 0.01,
-			"taxPercent": "19.0000",
-			"taxRuleName": "MwSt.",
-			"type": "TAX"
-		},
-		{
-			"seq_num": "SUBTOTAL",
-			"total_tax": 0.01,
-			"type": "TAX"
-		}
-	],
-	"totalAmount": 0.080000000000000002,
-	"additional_info": {
-		"outlet": 2,
-		"session_id": 2,
-		"station_mac": "0024:b100:0002:e300",
-		"driver_info": "urn:nema:5evse:dn:v1:chargepoint.com:cdid:cncp000009afd2",
-		"meter_serial": "240008S",
-		"currency_code": "EUR",
-		"meter_startreading": 3078,
-		"meter_endreading": 3137,
-		"energy_units": "Wh"
-	}
+ "company_name": "ChargePoint&#32;EU&#32;QA&#32;EUR",
+ "display_unit": 3600,
+ "energy": [
+  {
+   "active_charging": 0,
+   "duration": 421,
+   "end_time": 1543841929,
+   "end_time_utc": 1543838329,
+   "line_item_cost": 0,
+   "seq_num": 1,
+   "start_time": 1543841508,
+   "start_time_utc": 1543837908,
+   "type": "ENERGY",
+   "unit_price": "0.05000",
+   "units": 0.058999999999999997
+  },
+  {
+   "duration": 421,
+   "energy_subtotal": 0,
+   "seq_num": "SUBTOTAL",
+   "type": "ENERGY",
+   "units": 0.058999999999999997
+  }
+ ],
+ "flat": [
+  {
+   "flat_fee": 0,
+   "flat_fee_subtotal": 0,
+   "numSubSessions": 1,
+   "type": "FLAT"
+  }
+ ],
+ "minMaxAdj": [
+  {
+   "session_length": 0,
+   "session_min": 0.070000000000000007,
+   "session_min_adjustment": 0.059999999999999998,
+   "session_total": 0.01,
+   "type": "SESS_MIN_ADJ"
+  }
+ ],
+ "parking": [
+  {
+   "duration": 421,
+   "end_time": 1543841929,
+   "end_time_utc": 1543838329,
+   "line_item_cost": 0.01,
+   "overstay": 0,
+   "seq_num": 1,
+   "start_time": 1543841508,
+   "start_time_utc": 1543837908,
+   "type": "PARKING",
+   "unit_price": "0.10",
+   "units": 421
+  },
+  {
+   "duration": 421,
+   "parking_subtotal": 0.01,
+   "seq_num": "SUBTOTAL",
+   "type": "PARKING",
+   "units": 421
+  }
+ ],
+ "subtotal": 0.070000000000000007,
+ "subtotal_before_adjustment": 0.01,
+ "tax": [
+  {
+   "tax": 0.01,
+   "taxPercent": "19.0000",
+   "taxRuleName": "MwSt.",
+   "type": "TAX"
+  },
+  {
+   "seq_num": "SUBTOTAL",
+   "total_tax": 0.01,
+   "type": "TAX"
+  }
+ ],
+ "totalAmount": 0.080000000000000002,
+ "additional_info": {
+  "outlet": 2,
+  "session_id": 2,
+  "station_mac": "0024:b100:0002:e300",
+  "driver_info": "urn:nema:5evse:dn:v1:chargepoint.com:cdid:cncp000009afd2",
+  "meter_serial": "240008S",
+  "currency_code": "EUR",
+  "meter_startreading": 3078,
+  "meter_endreading": 3137,
+  "energy_units": "Wh"
+ }
 }
