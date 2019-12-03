@@ -494,8 +494,8 @@ class OCMF {
 
         if (OCMFDataList.length == 1)
             return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
-                message:  "The given data is not valid OCMF!"
+                status:   SessionVerificationResult.AtLeastTwoMeasurementsRequired,
+                message:  "At least two OCMF measurements are required!"
             }
 
         if (OCMFDataList.length >= 2)

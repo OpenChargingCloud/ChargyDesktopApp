@@ -114,7 +114,7 @@ class GDFCrypt01 extends ACrypt {
                 }
 
                 else
-                    sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsExpected;
+                    sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsRequired;
 
             }
         }

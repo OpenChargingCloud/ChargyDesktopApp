@@ -124,7 +124,7 @@ class OCMFv1_0 extends ACrypt {
                 }
 
                 else
-                    sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsExpected;
+                    sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsRequired;
 
             }
         }

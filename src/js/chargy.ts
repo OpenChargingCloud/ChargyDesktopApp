@@ -618,10 +618,22 @@ class Chargy {
 
         //#endregion
 
-        //#region If multiple CTR had been found => merge them into a single one
+        //#region If a single CTR had been found...
 
-        if (processedFiles.length == 1 && IsAChargeTransparencyRecord(processedFiles[0].result))
-            return this.processChargeTransparencyRecord(processedFiles[0].result);
+        if (processedFiles.length == 1)
+        {
+
+            if (IsAChargeTransparencyRecord(processedFiles[0].result))
+                return this.processChargeTransparencyRecord(processedFiles[0].result);
+
+            else
+                return processedFiles[0].result;
+
+        }
+
+        //#endregion
+
+        //#region If multiple CTR had been found => merge them into a single one
 
         else if (processedFiles.length > 1)
         {

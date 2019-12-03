@@ -397,7 +397,7 @@ enum SessionVerificationResult {
     InvalidPublicKey,
     InvalidSignature,
     ValidSignature,
-    AtLeastTwoMeasurementsExpected
+    AtLeastTwoMeasurementsRequired
 }
 
 enum VerificationResult {
