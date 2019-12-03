@@ -92,14 +92,17 @@ class ChargepointCrypt01 extends ACrypt {
 
     }
 
-    async VerifyChargingSession(chargingSession:         IChargingSession): Promise<ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession: IChargingSession): Promise<ISessionCryptoResult>
     {
 
         try
         {
 
-            let sessionResult = SessionVerificationResult.UnknownSessionFormat;
-            let publicKeyId   = chargingSession.EVSEId.replace(/:/g, "").replace(/-/g, "_");
+            let sessionResult  = SessionVerificationResult.UnknownSessionFormat;
+            let plainText      = chargingSession.original != null ? atob(chargingSession.original) : "";
+            let publicKeyId    = chargingSession.EVSEId.replace(/:/g, "").replace(/-/g, "_");
+
+            //#region Find public key
 
             if (chargingSession.ctr.publicKeys != null)
             {
@@ -110,33 +113,43 @@ class ChargepointCrypt01 extends ACrypt {
                 }
             }
 
-            let plainText  = chargingSession.original != null ? atob(chargingSession.original) : "";
+            //#endregion
 
-            if (chargingSession.publicKey != null && plainText !== "" && chargingSession.signature != null && chargingSession.signature !== "")
+            //#region Convert signature into rs-format...
+
+            if (chargingSession.signature         !=  null &&
+                chargingSession.signature         !== ""   &&
+                typeof(chargingSession.signature) === 'string')
             {
 
-                let   validated       = false;
-
-                if (typeof(chargingSession.signature) === 'string')
-                {
-
-                    const ASN1                  = require('asn1.js');
-                    const ASN1_SignatureSchema  = ASN1.define('Signature', function() {
+                const ASN1                  = require('asn1.js');
+                const ASN1_SignatureSchema  = ASN1.define('Signature', function() {
+                    //@ts-ignore
+                    this.seq().obj(
                         //@ts-ignore
-                        this.seq().obj(
-                            //@ts-ignore
-                            this.key('r').int(),
-                            //@ts-ignore
-                            this.key('s').int()
-                        );
-                    });
+                        this.key('r').int(),
+                        //@ts-ignore
+                        this.key('s').int()
+                    );
+                });
 
-                    const ASN1Signature         = ASN1_SignatureSchema.decode(Buffer.from(chargingSession.signature, 'hex'), 'der');
+                const ASN1Signature         = ASN1_SignatureSchema.decode(Buffer.from(chargingSession.signature, 'hex'), 'der');
 
-                    chargingSession.signature   = { r: ASN1Signature.r.toString(16),
-                                                    s: ASN1Signature.s.toString(16) };
+                chargingSession.signature   = { r: ASN1Signature.r.toString(16),
+                                                s: ASN1Signature.s.toString(16) };
 
-                }
+            }
+
+            //#endregion
+
+
+            //#region Validate signature
+
+            if (chargingSession.publicKey !=  null &&
+                plainText                 !== ""   &&
+                chargingSession.signature !=  null &&
+                chargingSession.signature !== "")
+            {
 
                 switch (chargingSession.publicKey.curve.description)
                 {
@@ -144,144 +157,156 @@ class ChargepointCrypt01 extends ACrypt {
                     case "secp224k1":
                         let SHA256HashValue        = await sha256(plainText);
                         chargingSession.hashValue  = (BigInt("0x" + SHA256HashValue) >> BigInt(31)).toString(16);
-                        validated                  = this.curve224k1.validate(BigInt("0x" + chargingSession.hashValue),
+                        sessionResult              = this.curve224k1.validate(BigInt("0x" + chargingSession.hashValue),
                                                                               BigInt("0x" + chargingSession.signature.r),
                                                                               BigInt("0x" + chargingSession.signature.s),
                                                                               [ BigInt("0x" + chargingSession.publicKey.value.substr(2,  56)),
-                                                                                BigInt("0x" + chargingSession.publicKey.value.substr(58, 56)) ]);
+                                                                                BigInt("0x" + chargingSession.publicKey.value.substr(58, 56)) ])
+                                                         ? SessionVerificationResult.ValidSignature
+                                                         : SessionVerificationResult.InvalidSignature;
                         break;
 
                     case "secp256r1":
                         chargingSession.hashValue  = await sha256(plainText);
-                        validated                  = this.curve256r1.keyFromPublic(chargingSession.publicKey.value, 'hex').
+                        sessionResult              = this.curve256r1.keyFromPublic(chargingSession.publicKey.value, 'hex').
                                                                      verify       (chargingSession.hashValue,
                                                                                    chargingSession.signature)
+                                                        ? SessionVerificationResult.ValidSignature
+                                                        : SessionVerificationResult.InvalidSignature;
                         break;
 
                 }
 
+            }
 
-                if (validated)
-                    sessionResult = SessionVerificationResult.ValidSignature;
-                else
-                    sessionResult = SessionVerificationResult.InvalidSignature;
+            //#endregion
 
+            //#region Validate measurements
 
-                if (chargingSession.measurements)
+            if (chargingSession.measurements)
+            {
+                for (let measurement of chargingSession.measurements)
                 {
-                    for (let measurement of chargingSession.measurements)
+
+                    measurement.chargingSession = chargingSession;
+
+                    // Must include at least two measurements (start & stop)
+                    if (measurement.values && measurement.values.length > 1)
                     {
 
-                        measurement.chargingSession = chargingSession;
+                        //#region Validate measurements...
 
-                        // Must include at least two measurements (start & stop)
-                        if (measurement.values && measurement.values.length > 1)
+                        for (let measurementValue of measurement.values)
+                        {
+                            measurementValue.measurement = measurement;
+                            await this.VerifyMeasurement(measurementValue as IChargepointMeasurementValue);
+                        }
+
+                        //#endregion
+
+                        //#region Find an overall result...
+
+                        for (let measurementValue of measurement.values)
+                        {
+                            if (measurementValue.result.status != VerificationResult.ValidSignature &&
+                                measurementValue.result.status != VerificationResult.NoOperation)
+                            {
+                                sessionResult = SessionVerificationResult.InvalidSignature;
+                            }
+                        }
+
+                        //#endregion
+
+                        for (let i = 0; i < measurement.values.length; i++)
                         {
 
-                            //#region Validate...
-                            for (let measurementValue of measurement.values)
+                            //#region Adapt start value
+
+                            if (i == 0)
                             {
-                                measurementValue.measurement = measurement;
-                                await this.VerifyMeasurement(measurementValue as IChargepointMeasurementValue);
+                                switch (measurement.values[i].result.status)
+                                {
+
+                                    case VerificationResult.ValidSignature:
+                                        measurement.values[i].result.status = VerificationResult.ValidStartValue;
+                                        break;
+
+                                    case VerificationResult.NoOperation:
+                                        measurement.values[i].result.status = VerificationResult.StartValue;
+                                        break;
+
+                                    case VerificationResult.InvalidSignature:
+                                        measurement.values[i].result.status = VerificationResult.InvalidStartValue;
+                                        break;
+
+                                }
                             }
+
                             //#endregion
 
-                            //#region Find an overall result...
-                            for (let measurementValue of measurement.values)
+                            //#region Adapt stop value
+
+                            else if (i = measurement.values.length-1)
                             {
-                                if (measurementValue.result.status != VerificationResult.ValidSignature &&
-                                    measurementValue.result.status != VerificationResult.NoOperation)
+                                switch (measurement.values[i].result.status)
                                 {
-                                    sessionResult = SessionVerificationResult.InvalidSignature;
+
+                                    case VerificationResult.ValidSignature:
+                                        measurement.values[i].result.status = VerificationResult.ValidStopValue;
+                                        break;
+
+                                    case VerificationResult.NoOperation:
+                                        measurement.values[i].result.status = VerificationResult.StopValue;
+                                        break;
+
+                                    case VerificationResult.InvalidSignature:
+                                        measurement.values[i].result.status = VerificationResult.InvalidStopValue;
+                                        break;
+
                                 }
+
                             }
+
                             //#endregion
 
-                            //#region Adapt measurement results
-                            for (let i = 0; i < measurement.values.length; i++)
+                            //#region Adapt intermediate values
+
+                            else
                             {
-
-                                //#region Start value
-                                if (i == 0)
+                                switch (measurement.values[i].result.status)
                                 {
-                                    switch (measurement.values[i].result.status)
-                                    {
 
-                                        case VerificationResult.ValidSignature:
-                                            measurement.values[i].result.status = VerificationResult.ValidStartValue;
-                                            break;
+                                    case VerificationResult.ValidSignature:
+                                        measurement.values[i].result.status = VerificationResult.ValidIntermediateValue;
+                                        break;
 
-                                        case VerificationResult.NoOperation:
-                                            measurement.values[i].result.status = VerificationResult.StartValue;
-                                            break;
+                                    case VerificationResult.NoOperation:
+                                        measurement.values[i].result.status = VerificationResult.IntermediateValue;
+                                        break;
 
-                                        case VerificationResult.InvalidSignature:
-                                            measurement.values[i].result.status = VerificationResult.InvalidStartValue;
-                                            break;
-
-                                    }
-                                }
-                                //#endregion
-
-                                //#region Stop value
-                                else if (i = measurement.values.length-1)
-                                {
-                                    switch (measurement.values[i].result.status)
-                                    {
-
-                                        case VerificationResult.ValidSignature:
-                                            measurement.values[i].result.status = VerificationResult.ValidStopValue;
-                                            break;
-
-                                        case VerificationResult.NoOperation:
-                                            measurement.values[i].result.status = VerificationResult.StopValue;
-                                            break;
-
-                                        case VerificationResult.InvalidSignature:
-                                            measurement.values[i].result.status = VerificationResult.InvalidStopValue;
-                                            break;
-
-                                    }
+                                    case VerificationResult.InvalidSignature:
+                                        measurement.values[i].result.status = VerificationResult.InvalidStopValue;
+                                        break;
 
                                 }
-                                //#endregion
-
-                                //#region Intermediate values
-                                else
-                                {
-                                    switch (measurement.values[i].result.status)
-                                    {
-
-                                        case VerificationResult.ValidSignature:
-                                            measurement.values[i].result.status = VerificationResult.ValidIntermediateValue;
-                                            break;
-
-                                        case VerificationResult.NoOperation:
-                                            measurement.values[i].result.status = VerificationResult.IntermediateValue;
-                                            break;
-
-                                        case VerificationResult.InvalidSignature:
-                                            measurement.values[i].result.status = VerificationResult.InvalidStopValue;
-                                            break;
-
-                                    }
-
-                                }
-                                //#endregion
 
                             }
+
                             //#endregion
 
                         }
-                        else
-                            sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsExpected;
 
                     }
-                }
-                else
-                    sessionResult = SessionVerificationResult.InvalidSessionFormat;
+                    else
+                        sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsExpected;
 
+                }
             }
+            else
+                sessionResult = SessionVerificationResult.InvalidSessionFormat;
+
+            //#endregion
+
 
             return {
                 status: sessionResult
@@ -367,7 +392,7 @@ class ChargepointCrypt01 extends ACrypt {
 
     }
 
-    async VerifyMeasurement(measurementValue:  IChargepointMeasurementValue): Promise<IChargepointCrypt01Result>
+    async VerifyMeasurement(measurementValue: IChargepointMeasurementValue): Promise<IChargepointCrypt01Result>
     {
 
         // Note: chargepoint does not sign individual measurements!
@@ -402,12 +427,15 @@ class ChargepointCrypt01 extends ACrypt {
 
         let chargingSession    = measurementValue?.measurement?.chargingSession;
         let result             = measurementValue.result as IChargepointCrypt01Result;
-        let cryptoAlgorithm    = chargingSession?.publicKey?.curve.description ?? "unkown";
+        let cryptoAlgorithm    = chargingSession?.publicKey?.curve.description != null
+                                     ? " (" + chargingSession?.publicKey?.curve.description + ")"
+                                     : "";
 
         let cryptoSpan         = introDiv?.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
-        cryptoSpan.innerHTML   = "chargepointCrypt01 (" + cryptoAlgorithm + ")";
+        cryptoSpan.innerHTML   = "chargepointCrypt01" + cryptoAlgorithm;
 
         //#region Plain text
+
         if (PlainTextDiv != null)
         {
 
@@ -421,9 +449,11 @@ class ChargepointCrypt01 extends ACrypt {
             PlainTextDiv.style.overflowY   = "scroll";
 
         }
+
         //#endregion
 
         //#region Hashed plain text
+
         if (HashedPlainTextDiv != null)
         {
 
@@ -444,12 +474,15 @@ class ChargepointCrypt01 extends ACrypt {
 
             if (HashedPlainTextDiv.parentElement != null)
                 HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text (SHA256, " + bitLength + " hex)";
-                HashedPlainTextDiv.innerHTML                             = chargingSession.hashValue?.match(/.{1,8}/g)?.join(" ") ?? "-";
+                HashedPlainTextDiv.innerHTML                             = chargingSession.hashValue?.match(/.{1,8}/g)?.join(" ")
+                                                                               ?? "0x00000000000000000000000000000000000";
 
         }
+
         //#endregion
 
         //#region Public Key
+
         if (PublicKeyDiv != null && chargingSession.publicKey != null)
         {
 
@@ -470,13 +503,11 @@ class ChargepointCrypt01 extends ACrypt {
 
 
             // Public key signatures
+
             if (PublicKeyDiv.parentElement != null)
                 PublicKeyDiv.parentElement.children[3].innerHTML = "";
 
             if (!IsNullOrEmpty(result.publicKeySignatures)) {
-
-    //            publicKeyValue.parentElement!.children[2].innerHTML = "Bestätigt durch...";
-                
 
                 for (let signature of result.publicKeySignatures)
                 {
@@ -502,9 +533,11 @@ class ChargepointCrypt01 extends ACrypt {
             }
 
         }
+
         //#endregion
 
         //#region Signature expected
+
         if (SignatureExpectedDiv != null && chargingSession.signature != null)
         {
 
@@ -515,13 +548,15 @@ class ChargepointCrypt01 extends ACrypt {
                 SignatureExpectedDiv.innerHTML                            = "r: " + chargingSession.signature.r.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") + "<br />" +
                                                                             "s: " + chargingSession.signature.s.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ");
 
-            //if (chargingSession.signature != null)
-            //    signatureExpectedValue.innerHTML                        = chargingSession.signature.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
+            else if (chargingSession.signature)
+                SignatureExpectedDiv.innerHTML                            = chargingSession.signature.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
 
         }
+
         //#endregion
 
         //#region Signature check
+
         if (SignatureCheckDiv != null && chargingSession.verificationResult != null)
         {
             switch (chargingSession.verificationResult.status)
@@ -558,54 +593,9 @@ class ChargepointCrypt01 extends ACrypt {
 
             }
         }
+
         //#endregion
 
     }
-
-    //#region Helper methods
-
-    private DecodeStatus(statusValue: string) : Array<string>
-    {
-
-        let statusArray:string[] = [];
-
-        try
-        {
-
-            let status = parseInt(statusValue);
-
-            if ((status &  1) ==  1)
-                statusArray.push("Fehler erkannt");
-
-            if ((status &  2) ==  2)
-                statusArray.push("Synchrone Messwertübermittlung");
-
-            // Bit 3 is reserved!
-
-            if ((status &  8) ==  8)
-                statusArray.push("System-Uhr ist synchron");
-            else
-                statusArray.push("System-Uhr ist nicht synchron");
-
-            if ((status & 16) == 16)
-                statusArray.push("Rücklaufsperre aktiv");
-
-            if ((status & 32) == 32)
-                statusArray.push("Energierichtung -A");
-
-            if ((status & 64) == 64)
-                statusArray.push("Magnetfeld erkannt");
-
-        }
-        catch (exception)
-        {
-            statusArray.push("Invalid status!");
-        }
-
-        return statusArray;
-
-    }
-
-    //#endregion
 
 }
