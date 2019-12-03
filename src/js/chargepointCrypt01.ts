@@ -64,6 +64,13 @@ class ChargepointCrypt01 extends ACrypt {
     // https://www.secg.org/sec2-v2.pdf
     readonly curve256r1 = new this.chargy.elliptic.ec('p256');
 
+    // Not used yet!
+    readonly curve384r1 = new this.chargy.elliptic.ec('p384');
+
+    // Not used yet!
+    readonly curve512r1 = new this.chargy.elliptic.ec('p521');
+
+
     constructor(chargy:  Chargy) {
 
         super("ECC secp224k1/secp256r1",
@@ -169,6 +176,24 @@ class ChargepointCrypt01 extends ACrypt {
                     case "secp256r1":
                         chargingSession.hashValue  = await sha256(plainText);
                         sessionResult              = this.curve256r1.keyFromPublic(chargingSession.publicKey.value, 'hex').
+                                                                     verify       (chargingSession.hashValue,
+                                                                                   chargingSession.signature)
+                                                        ? SessionVerificationResult.ValidSignature
+                                                        : SessionVerificationResult.InvalidSignature;
+                        break;
+
+                    case "secp384r1":
+                        chargingSession.hashValue  = await sha384(plainText);
+                        sessionResult              = this.curve384r1.keyFromPublic(chargingSession.publicKey.value, 'hex').
+                                                                     verify       (chargingSession.hashValue,
+                                                                                   chargingSession.signature)
+                                                        ? SessionVerificationResult.ValidSignature
+                                                        : SessionVerificationResult.InvalidSignature;
+                        break;
+
+                    case "secp521r1":
+                        chargingSession.hashValue  = await sha512(plainText);
+                        sessionResult              = this.curve512r1.keyFromPublic(chargingSession.publicKey.value, 'hex').
                                                                      verify       (chargingSession.hashValue,
                                                                                    chargingSession.signature)
                                                         ? SessionVerificationResult.ValidSignature
@@ -457,23 +482,31 @@ class ChargepointCrypt01 extends ACrypt {
         if (HashedPlainTextDiv != null)
         {
 
-            let bitLength = "";
+            let hashInfo = "";
 
             switch (chargingSession.publicKey?.curve.description)
             {
 
                 case "secp224k1":
-                    bitLength  = "225 Bits, ";
+                    hashInfo  = "SHA256, 225 Bits, ";
                     break;
 
                 case "secp256r1":
-                    bitLength  = "256 Bits, ";
+                    hashInfo  = "SHA256, 256 Bits, ";
+                    break;
+
+                case "secp384r1":
+                    hashInfo  = "SHA384, 384 Bits, ";
+                    break;
+
+                case "secp512r1":
+                    hashInfo  = "SHA512, 512 Bits, ";
                     break;
 
             }
 
             if (HashedPlainTextDiv.parentElement != null)
-                HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text (SHA256, " + bitLength + " hex)";
+                HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text (" + hashInfo + " hex)";
                 HashedPlainTextDiv.innerHTML                             = chargingSession.hashValue?.match(/.{1,8}/g)?.join(" ")
                                                                                ?? "0x00000000000000000000000000000000000";
 
