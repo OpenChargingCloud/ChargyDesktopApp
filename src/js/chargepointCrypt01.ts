@@ -54,14 +54,14 @@ interface IChargepointCrypt01Result extends ICryptoResult
 
 class ChargepointCrypt01 extends ACrypt {
 
-    // Koblitz 224-bit curve
-    // https://www.secg.org/sec2-v2.pdf
     // For older chargepoint charging station firmwares
+    // Koblitz 224-bit curve: secp224k1
+    // https://www.secg.org/sec2-v2.pdf
     readonly curve224k1 = new secp224k1();
 
-    // NIST/ANSI X9.62 named 256-bit elliptic curve
-    // https://www.secg.org/sec2-v2.pdf
     // For newer chargepoint charging station firmwares
+    // NIST/ANSI X9.62 named 256-bit elliptic curve: secp256r1
+    // https://www.secg.org/sec2-v2.pdf
     readonly curve256r1 = new this.chargy.elliptic.ec('p256');
 
     constructor(chargy:  Chargy) {
