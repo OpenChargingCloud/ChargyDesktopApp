@@ -21,12 +21,11 @@
 ///<reference path="chargy.ts" />
 ///<reference path="GDFCrypt01.ts" />
 ///<reference path="EMHCrypt01.ts" />
-///<reference path="chargepointCrypt01.ts" />
+///<reference path="chargepoint01.ts" />
 ///<reference path="chargeIT.ts" />
-///<reference path="chargepoint.ts" />
 ///<reference path="SAFE_XML.ts" />
 ///<reference path="OCMF.ts" />
-///<reference path="Alfen.ts" />
+///<reference path="Alfen01.ts" />
 ///<reference path="Mennekes.ts" />
 
 // import { debug } from "util";

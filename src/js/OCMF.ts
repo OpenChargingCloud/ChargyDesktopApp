@@ -18,7 +18,7 @@
 ///<reference path="certificates.ts" />
 ///<reference path="chargyInterfaces.ts" />
 ///<reference path="chargyLib.ts" />
-///<reference path="Alfen.ts" />
+///<reference path="Alfen01.ts" />
 ///<reference path="OCMFTypes.ts" />
 ///<reference path="OCMFv1_0.ts" />
 

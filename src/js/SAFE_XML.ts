@@ -204,7 +204,7 @@ class SAFEXML  {
             {
 
                 case "alfen":
-                    return await new Alfen().tryToParseALFENFormat(signedValues);
+                    return await new Alfen01().tryToParseALFENFormat(signedValues);
 
                 case "ocmf":
                     return await new OCMF().tryToParseOCMF2(signedValues, commonPublicKey);

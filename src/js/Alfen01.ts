@@ -18,9 +18,9 @@
 ///<reference path="certificates.ts" />
 ///<reference path="chargyInterfaces.ts" />
 ///<reference path="chargyLib.ts" />
+///<reference path="ACrypt.ts" />
 
-class Alfen  {
-
+class Alfen01  {
 
     private bufferToHex (buffer: ArrayBuffer) : string {
         return Array
@@ -273,7 +273,7 @@ class Alfen  {
             //                     // "description": {
             //                     //     "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
             //                     // },
-            //                     "firmwareVersion":          CTRArray[0]["chargePoint"]["softwareVersion"],
+            //                     "firmwareVersion":          CTRArray[0]["Alfen"]["softwareVersion"],
             //                     "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
             //                     "address": {
             //                         "street":               address_street,
@@ -317,7 +317,7 @@ class Alfen  {
                      {
 
                          "@id":                          common.SessionId,
-                         "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/AlfenCrypt03+json",
+                         "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/AlfenCrypt01+json",
                          "begin":                        common.dataSets[0]["Timestamp"],
                          "end":                          common.dataSets[n]["Timestamp"],
             //             "EVSEId":                       evseId,
@@ -411,5 +411,391 @@ class Alfen  {
 
     //#endregion
 
+
+}
+
+interface IAlfenMeasurementValue extends IMeasurementValue
+{
+    infoStatus:                    string,
+    secondsIndex:                  number,
+    paginationId:                  string,
+    logBookIndex:                  string
+}
+
+interface IAlfenCrypt01Result extends ICryptoResult
+{
+    sha256value?:                  any,
+    meterId?:                      string,
+    meter?:                        IMeter,
+    timestamp?:                    string,
+    infoStatus?:                   string,
+    secondsIndex?:                 string,
+    paginationId?:                 string,
+    obis?:                         string,
+    unitEncoded?:                  string,
+    scale?:                        string,
+    value?:                        string,
+    logBookIndex?:                 string,
+    authorizationStart?:           string,
+    authorizationStop?:            string,
+    authorizationStartTimestamp?:  string,
+    publicKey?:                    string,
+    publicKeyFormat?:              string,
+    publicKeySignatures?:          any,
+    signature?:                    IECCSignature
+}
+
+
+class AlfenCrypt01 extends ACrypt {
+
+    readonly curve = new this.chargy.elliptic.ec('p192');
+
+    constructor(chargy:  Chargy) {
+
+        super("ECC secp192r1",
+              chargy);
+
+    }
+
+
+    GenerateKeyPair()//options?: elliptic.ec.GenKeyPairOptions)
+    {
+        return this.curve.genKeyPair();
+        // privateKey     = keypair.getPrivate();
+        // publicKey      = keypair.getPublic();
+        // privateKeyHEX  = privateKey.toString('hex').toLowerCase();
+        // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
+    }
+
+
+    async SignChargingSession  (chargingSession:         IChargingSession,
+                                privateKey:              any):              Promise<ISessionCryptoResult>
+    {
+
+        return {
+            status: SessionVerificationResult.UnknownSessionFormat
+        }
+
+    }
+
+    async VerifyChargingSession(chargingSession: IChargingSession): Promise<ISessionCryptoResult>
+    {
+
+        var sessionResult = SessionVerificationResult.UnknownSessionFormat;
+
+        if (chargingSession.measurements)
+        {
+            for (var measurement of chargingSession.measurements)
+            {
+
+                measurement.chargingSession = chargingSession;
+
+                // Must include at least two measurements (start & stop)
+                if (measurement.values && measurement.values.length > 1)
+                {
+
+                    // Validate...
+                    for (var measurementValue of measurement.values)
+                    {
+                        measurementValue.measurement = measurement;
+                        await this.VerifyMeasurement(measurementValue as IAlfenMeasurementValue);
+                    }
+
+
+                    // Find an overall result...
+                    sessionResult = SessionVerificationResult.ValidSignature;
+
+                    for (var measurementValue of measurement.values)
+                    {
+                        if (sessionResult                  == SessionVerificationResult.ValidSignature &&
+                            measurementValue.result.status != VerificationResult.ValidSignature)
+                        {
+                            sessionResult = SessionVerificationResult.InvalidSignature;
+                        }
+                    }
+
+                }
+
+                else
+                    sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsRequired;
+
+            }
+        }
+
+        return {
+            status: sessionResult
+        }
+
+    }
+
+
+    async SignMeasurement  (measurementValue:  IAlfenMeasurementValue,
+                            privateKey:        any): Promise<IAlfenCrypt01Result>
+    {
+
+        var buffer                       = new ArrayBuffer(320);
+        var cryptoBuffer                 = new DataView(buffer);
+
+        var cryptoResult:IAlfenCrypt01Result = {
+            status:                       VerificationResult.InvalidSignature,
+            meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
+            timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
+            infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
+            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
+            paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
+            obis:                         SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
+            unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
+            scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
+            value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
+            logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
+            authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
+            authorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
+        };
+
+        // Only the first 24 bytes/192 bits are used!
+        cryptoResult.sha256value  = (await sha256(cryptoBuffer)).substring(0, 48);
+
+        // cryptoResult.publicKey    = publicKey.encode('hex').
+        //                                       toLowerCase();
+
+        const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
+                                               sign(cryptoResult.sha256value);
+
+        switch (measurementValue.measurement.signatureInfos.format)
+        {
+
+            case SignatureFormats.DER:
+
+                cryptoResult.signature = {
+                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
+                    format:     measurementValue.measurement.signatureInfos.format,
+                    value:      signature.toDER('hex')
+                };
+
+                return cryptoResult;
+
+
+            case SignatureFormats.rs:
+
+                cryptoResult.signature = {
+                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
+                    format:     measurementValue.measurement.signatureInfos.format,
+                    r:          signature.r,
+                    s:          signature.s
+                };
+
+                return cryptoResult;
+
+
+            //default:
+
+
+        }
+
+        cryptoResult.status = VerificationResult.ValidSignature;
+        return cryptoResult;
+
+    }
+
+    async VerifyMeasurement(measurementValue: IAlfenMeasurementValue): Promise<IAlfenCrypt01Result>
+    {
+
+        function setResult(verificationResult: VerificationResult)
+        {
+            cryptoResult.status     = verificationResult;
+            measurementValue.result = cryptoResult;
+            return cryptoResult;
+        }
+
+        measurementValue.method = this;
+
+        var cryptoResult:IAlfenCrypt01Result = {
+            status: VerificationResult.NoOperation,
+        };
+
+        return setResult(VerificationResult.NoOperation);
+
+    }
+
+    async ViewMeasurement(measurementValue:      IAlfenMeasurementValue,
+                          introDiv:              HTMLDivElement,
+                          infoDiv:               HTMLDivElement,
+                          PlainTextDiv:          HTMLDivElement,
+                          HashedPlainTextDiv:    HTMLDivElement,
+                          PublicKeyDiv:          HTMLDivElement,
+                          SignatureExpectedDiv:  HTMLDivElement,
+                          SignatureCheckDiv:     HTMLDivElement)
+
+    {
+
+        const result     = measurementValue.result as IAlfenCrypt01Result;
+
+        const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
+        cryptoSpan.innerHTML = "AlfenCrypt01 (" + this.description + ")";
+
+        //#region Plain text
+
+        if (PlainTextDiv != null)
+        {
+
+            if (PlainTextDiv.parentElement != null)
+                PlainTextDiv.parentElement.children[0].innerHTML = "Plain text (320 Bytes, hex)";
+
+            PlainTextDiv.style.fontFamily  = "";
+            PlainTextDiv.style.whiteSpace  = "";
+            PlainTextDiv.style.maxHeight   = "";
+            PlainTextDiv.style.overflowY   = "";
+
+            this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId                               || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp                             || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Status",                   hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
+                                                        //this.DecodeStatus(measurementValue.infoStatus).join("<br />") +
+                                                        "</span>",           result.infoStatus                            || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                       result.secondsIndex                          || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                         result.paginationId                          || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis                                  || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded                           || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale                                 || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value                                 || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                              result.logBookIndex                          || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     pad(result.authorizationStart,          128) || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, PlainTextDiv);
+
+        }
+
+        //#endregion
+
+        //#region Hashed plain text
+
+        if (HashedPlainTextDiv != null)
+        {
+
+            if (HashedPlainTextDiv.parentElement != null)
+                HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text (SHA256, 24 bytes, hex)";
+
+            HashedPlainTextDiv.innerHTML                                 = result.sha256value.match(/.{1,8}/g).join(" ");
+
+        }
+
+        //#endregion
+
+        //#region Public Key
+
+        if (PublicKeyDiv     != null &&
+            result.publicKey != null &&
+            result.publicKey != "")
+        {
+
+            if (PublicKeyDiv.parentElement != null)
+                PublicKeyDiv.parentElement.children[0].innerHTML       = "Public Key (" +
+                                                                         (result.publicKeyFormat
+                                                                             ? result.publicKeyFormat + ", "
+                                                                             : "") +
+                                                                         "hex)";
+
+            if (!IsNullOrEmpty(result.publicKey))
+                PublicKeyDiv.innerHTML                                 = result.publicKey.startsWith("04") // Add some space after '04' to avoid confused customers
+                                                                            ? "<span class=\"leadingFour\">04</span> "
+                                                                                + result.publicKey.substring(2).match(/.{1,8}/g)!.join(" ")
+                                                                            :   result.publicKey.match(/.{1,8}/g)!.join(" ");
+
+
+            //#region Public key signatures
+
+            if (PublicKeyDiv.parentElement != null)
+                PublicKeyDiv.parentElement.children[3].innerHTML = "";
+
+            if (!IsNullOrEmpty(result.publicKeySignatures)) {
+
+                for (let signature of result.publicKeySignatures)
+                {
+
+                    try
+                    {
+
+                        let signatureDiv = PublicKeyDiv.parentElement!.children[3].appendChild(document.createElement('div'));
+                        signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
+                                                                                                measurementValue.measurement.chargingSession.EVSE,
+                                                                                                //@ts-ignore
+                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                                                                //@ts-ignore
+                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                                                                signature);
+
+                    }
+                    catch (exception)
+                    { }
+
+                }
+
+            }
+
+            //#endregion
+
+        }
+
+        //#endregion
+
+        //#region Signature expected
+
+        if (SignatureExpectedDiv != null && result.signature != null)
+        {
+
+            if (SignatureExpectedDiv.parentElement != null)
+                SignatureExpectedDiv.parentElement.children[0].innerHTML  = "Erwartete Signatur (" + (result.signature.format || "") + ", hex)";
+
+            if (result.signature.r && result.signature.s)
+                SignatureExpectedDiv.innerHTML                            = "r: " + result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") + "<br />" +
+                                                                            "s: " + result.signature.s.toLowerCase().match(/.{1,8}/g)?.join(" ");
+
+            else if (result.signature.value)
+                SignatureExpectedDiv.innerHTML                            = result.signature.value.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
+
+        }
+
+        //#endregion
+
+        //#region Signature check
+
+        if (SignatureCheckDiv != null)
+        {
+            switch (result.status)
+            {
+
+                case VerificationResult.UnknownCTRFormat:
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
+                    break;
+
+                case VerificationResult.EnergyMeterNotFound:
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
+                    break;
+
+                case VerificationResult.PublicKeyNotFound:
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
+                    break;
+
+                case VerificationResult.InvalidPublicKey:
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
+                    break;
+
+                case VerificationResult.InvalidSignature:
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
+                    break;
+
+                case VerificationResult.ValidSignature:
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
+                    break;
+
+
+                default:
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
+                    break;
+
+            }
+        }
+
+        //#endregion
+
+    }
 
 }

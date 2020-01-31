@@ -469,7 +469,7 @@ class Chargy {
 
             // ALFEN processing
             else if (textContent?.startsWith("AP;"))
-                processedFile.result = await new Alfen().tryToParseALFENFormat(textContent);
+                processedFile.result = await new Alfen01().tryToParseALFENFormat(textContent);
 
             // Public key processing (PEM format)
             else if (textContent?.startsWith("-----BEGIN PUBLIC KEY-----") &&
@@ -595,7 +595,7 @@ class Chargy {
 
                             // The current chargepoint format does not provide any context or format identifiers
                             if (isISessionCryptoResult(processedFile.result))
-                                processedFile.result = await new Chargepoint().tryToParseChargepointJSON(JSONContent);
+                                processedFile.result = await new Chargepoint01().tryToParseChargepointJSON(JSONContent);
 
                             break;
 
@@ -1112,6 +1112,10 @@ class Chargy {
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargepointCrypt01+json":
                 chargingSession.method = new ChargepointCrypt01(this);
+                return await chargingSession.method.VerifyChargingSession(chargingSession);
+
+            case "https://open.charging.cloud/contexts/SessionSignatureFormats/AlfenCrypt01+json":
+                chargingSession.method = new AlfenCrypt01(this);
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             default:
