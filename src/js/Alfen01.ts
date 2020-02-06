@@ -625,7 +625,6 @@ class AlfenCrypt01 extends ACrypt {
                           PublicKeyDiv:          HTMLDivElement,
                           SignatureExpectedDiv:  HTMLDivElement,
                           SignatureCheckDiv:     HTMLDivElement)
-
     {
 
         const result     = measurementValue.result as IAlfenCrypt01Result;
