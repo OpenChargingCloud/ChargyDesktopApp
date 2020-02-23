@@ -21,7 +21,7 @@
 ///<reference path="chargy.ts" />
 ///<reference path="GDFCrypt01.ts" />
 ///<reference path="EMHCrypt01.ts" />
-///<reference path="chargepoint01.ts" />
+///<reference path="chargePoint01.ts" />
 ///<reference path="chargeIT.ts" />
 ///<reference path="SAFE_XML.ts" />
 ///<reference path="OCMF.ts" />

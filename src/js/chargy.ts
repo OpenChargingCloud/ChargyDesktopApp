@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2018-2020 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *

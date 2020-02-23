@@ -1238,6 +1238,20 @@ body {
                 
             }
 
+            .errorblock {
+
+                display:                    none;
+
+                .description {
+                    background-color:       #980000;
+                }
+
+                .value {
+                    background-color:       #dfbcbc;
+                }
+                
+            }
+
             #buffer {
                 .value {
 

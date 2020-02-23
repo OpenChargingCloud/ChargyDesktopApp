@@ -37,392 +37,665 @@ class Chargepoint01 {
         try
         {
 
-            // {
-            //     "company_name":            "ChargePoint&#32;EU&#32;QA&#32;EUR",
-            //     "display_unit":            3600,
-            //     "energy": [
-            //         {
-            //             "active_charging":     0,
-            //             "duration":            421,
-            //             "end_time":            1543841929,
-            //             "end_time_utc":        1543838329,
-            //             "line_item_cost":      0,
-            //             "seq_num":             1,
-            //             "start_time":          1543841508,
-            //             "start_time_utc":      1543837908,
-            //             "type":                "ENERGY",
-            //             "unit_price":          "0.05000",
-            //             "units":               0.058999999999999997
-            //         },
-            //         {
-            //             "duration":            421,
-            //             "energy_subtotal":     0,
-            //             "seq_num":             "SUBTOTAL",
-            //             "type":                "ENERGY",
-            //             "units":               0.058999999999999997
-            //         }
-            //     ],
-            //     "flat": [
-            //         {
-            //             "flat_fee":                0,
-            //             "flat_fee_subtotal":       0,
-            //             "numSubSessions":          1,
-            //             "type":                    "FLAT"
-            //         }
-            //     ],
-            //     "minMaxAdj": [
-            //         {
-            //             "session_length":          0,
-            //             "session_min":             0.070000000000000007,
-            //             "session_min_adjustment":  0.059999999999999998,
-            //             "session_total":           0.01,
-            //             "type":                    "SESS_MIN_ADJ"
-            //         }
-            //     ],
-            //     "parking": [
-            //         {
-            //             "duration":            421,
-            //             "end_time":            1543841929,
-            //             "end_time_utc":        1543838329,
-            //             "line_item_cost":      0.01,
-            //             "overstay":            0,
-            //             "seq_num":             1,
-            //             "start_time":          1543841508,
-            //             "start_time_utc":      1543837908,
-            //             "type":                "PARKING",
-            //             "unit_price":          "0.10",
-            //             "units":               421
-            //         },
-            //         {
-            //             "duration":            421,
-            //             "parking_subtotal":    0.01,
-            //             "seq_num":             "SUBTOTAL",
-            //             "type":                "PARKING",
-            //             "units":               421
-            //         }
-            //     ],
-            //     "subtotal":                    0.070000000000000007,
-            //     "subtotal_before_adjustment":  0.01,
-            //     "tax": [
-            //         {
-            //             "tax":                 0.01,
-            //             "taxPercent":          "19.0000",
-            //             "taxRuleName":         "MwSt.",
-            //             "type":                "TAX"
-            //         },
-            //         {
-            //             "seq_num":             "SUBTOTAL",
-            //             "total_tax":           0.01,
-            //             "type":                "TAX"
-            //         }
-            //     ],
-            //     "totalAmount":                 0.080000000000000002,
-            //     "additional_info": {
-            //         "outlet":                  2,
-            //         "session_id":              2,
-            //         "station_mac":             "0024:b100:0002:e300",
-            //         "driver_info":             "urn:nema:5evse:dn:v1:chargepoint.com:cdid:cncp000009afd2",
-            //         "meter_serial":            "240008S",
-            //         "currency_code":           "EUR",
-            //         "meter_startreading":      3078,
-            //         "meter_endreading":        3137,
-            //         "energy_units":            "Wh"
-            //     }
-            // }
+            //#region First CTR format
 
-            let chargingStart  = "";
-            let chargingEnd    = "";
-
-            if (SomeJSON.energy && SomeJSON.energy.length > 0)
+            if (SomeJSON.company_name    &&
+                SomeJSON.display_unit    &&
+                SomeJSON.energy          &&
+                SomeJSON.flat            &&
+                SomeJSON.minMaxAdj       &&
+                SomeJSON.parking         &&
+                SomeJSON.subtotal        &&
+                SomeJSON.totalAmount     &&
+                SomeJSON.additional_info &&
+                SomeJSON.additional_info)
             {
-                for (let i=0; i<SomeJSON.energy.length; i++)
+
+                //#region Documentation
+
+                // {
+                //     "company_name":            "ChargePoint&#32;EU&#32;QA&#32;EUR",
+                //     "display_unit":            3600,
+                //     "energy": [
+                //         {
+                //             "active_charging":     0,
+                //             "duration":            421,
+                //             "end_time":            1543841929,
+                //             "end_time_utc":        1543838329,
+                //             "line_item_cost":      0,
+                //             "seq_num":             1,
+                //             "start_time":          1543841508,
+                //             "start_time_utc":      1543837908,
+                //             "type":                "ENERGY",
+                //             "unit_price":          "0.05000",
+                //             "units":               0.058999999999999997
+                //         },
+                //         {
+                //             "duration":            421,
+                //             "energy_subtotal":     0,
+                //             "seq_num":             "SUBTOTAL",
+                //             "type":                "ENERGY",
+                //             "units":               0.058999999999999997
+                //         }
+                //     ],
+                //     "flat": [
+                //         {
+                //             "flat_fee":                0,
+                //             "flat_fee_subtotal":       0,
+                //             "numSubSessions":          1,
+                //             "type":                    "FLAT"
+                //         }
+                //     ],
+                //     "minMaxAdj": [
+                //         {
+                //             "session_length":          0,
+                //             "session_min":             0.070000000000000007,
+                //             "session_min_adjustment":  0.059999999999999998,
+                //             "session_total":           0.01,
+                //             "type":                    "SESS_MIN_ADJ"
+                //         }
+                //     ],
+                //     "parking": [
+                //         {
+                //             "duration":            421,
+                //             "end_time":            1543841929,
+                //             "end_time_utc":        1543838329,
+                //             "line_item_cost":      0.01,
+                //             "overstay":            0,
+                //             "seq_num":             1,
+                //             "start_time":          1543841508,
+                //             "start_time_utc":      1543837908,
+                //             "type":                "PARKING",
+                //             "unit_price":          "0.10",
+                //             "units":               421
+                //         },
+                //         {
+                //             "duration":            421,
+                //             "parking_subtotal":    0.01,
+                //             "seq_num":             "SUBTOTAL",
+                //             "type":                "PARKING",
+                //             "units":               421
+                //         }
+                //     ],
+                //     "subtotal":                    0.070000000000000007,
+                //     "subtotal_before_adjustment":  0.01,
+                //     "tax": [
+                //         {
+                //             "tax":                 0.01,
+                //             "taxPercent":          "19.0000",
+                //             "taxRuleName":         "MwSt.",
+                //             "type":                "TAX"
+                //         },
+                //         {
+                //             "seq_num":             "SUBTOTAL",
+                //             "total_tax":           0.01,
+                //             "type":                "TAX"
+                //         }
+                //     ],
+                //     "totalAmount":                 0.080000000000000002,
+                //     "additional_info": {
+                //         "outlet":                  2,
+                //         "session_id":              2,
+                //         "station_mac":             "0024:b100:0002:e300",
+                //         "driver_info":             "urn:nema:5evse:dn:v1:chargepoint.com:cdid:cncp000009afd2",
+                //         "meter_serial":            "240008S",
+                //         "currency_code":           "EUR",
+                //         "meter_startreading":      3078,
+                //         "meter_endreading":        3137,
+                //         "energy_units":            "Wh"
+                //     }
+                // }
+
+                //#endregion
+
+                let chargingStart  = "";
+                let chargingEnd    = "";
+
+                if (SomeJSON.energy && SomeJSON.energy.length > 0)
                 {
-                    if (chargingStart == "" || SomeJSON.energy[i].start_time_utc < chargingStart)
-                        chargingStart = SomeJSON.energy[i].start_time_utc;
-
-                    if (chargingEnd   == "" || SomeJSON.energy[i].start_time_utc > chargingEnd)
-                        chargingEnd   = SomeJSON.energy[i].end_time_utc;
-                }
-            }
-
-            let parkingStart  = "";
-            let parkingEnd    = "";
-
-            if (SomeJSON.parking && SomeJSON.parking.length > 0)
-            {
-                for (let i=0; i<SomeJSON.parking.length; i++)
-                {
-                    if (parkingStart == "" || SomeJSON.parking[i].start_time_utc < parkingStart)
-                        parkingStart = SomeJSON.parking[i].start_time_utc;
-
-                    if (parkingEnd   == "" || SomeJSON.parking[i].start_time_utc > parkingEnd)
-                        parkingEnd   = SomeJSON.parking[i].end_time_utc;
-                }
-            }
-
-            // Sometimes there is "parking" but no "energy"...
-            if (chargingStart == "")
-                chargingStart = parkingStart;
-
-            if (chargingEnd   == "")
-                chargingEnd   = parkingEnd;
-
-
-            let sessionStart = parkingStart < chargingStart ? parkingStart : chargingStart;
-
-            if (sessionStart == "" && chargingStart != "")
-                sessionStart = chargingStart;
-
-            if (sessionStart == "" && parkingStart != "")
-                sessionStart = parkingStart;
-
-
-            let sessionEnd   = parkingEnd   < chargingEnd   ? parkingEnd   : chargingEnd;
-
-            if (sessionEnd   == "" && chargingEnd != "")
-                sessionEnd   = chargingEnd;
-
-            if (sessionEnd   == "" && parkingEnd != "")
-                sessionEnd   = parkingEnd;
-
-
-            var _CTR: any = { //IChargeTransparencyRecord = {
-
-                "@id":              "chargepoint-" + SomeJSON.additional_info.station_mac + "-" +
-                                                     SomeJSON.additional_info.outlet      + "-" +
-                                                     SomeJSON.additional_info.session_id,
-                "@context":         "https://open.charging.cloud/contexts/CTR+json",
-
-                "begin":            this.moment.unix(sessionStart).utc().format(),
-                "end":              this.moment.unix(sessionEnd).utc().format(),
-
-                "description": {
-                    "de":           "Alle Ladevorgänge"
-                },
-
-                "contract": {
-                    "@id":          SomeJSON.additional_info.driver_info,
-                    "type":         "userId"
-                    // "username":     "",
-                    // "email":        ""
-                },
-
-                "chargingStationOperators": [
+                    for (let i=0; i<SomeJSON.energy.length; i++)
                     {
+                        if (chargingStart == "" || SomeJSON.energy[i].start_time_utc < chargingStart)
+                            chargingStart = SomeJSON.energy[i].start_time_utc;
 
-                        "@id":                      SomeJSON.company_name,
-                        // "eMobilityIds":             [ ],
-                        "description": {
-                            "de":                   "chargepoint - Charging Station Operator Services"
-                        },
+                        if (chargingEnd   == "" || SomeJSON.energy[i].start_time_utc > chargingEnd)
+                            chargingEnd   = SomeJSON.energy[i].end_time_utc;
+                    }
+                }
 
-                        "contact": {
-                            "email":                    "sales@chargepoint.com",
-                            "web":                      "https://www.chargepoint.com",
-                            "logoUrl":                  "https://www.chargepoint.com/themes/chargepoint/logo.svg",
-                            // "publicKeys": [
-                            //     {
-                            //         "algorithm":        "secp256r1",
-                            //         "format":           "DER",
-                            //         "value":            "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
-                            //         "signatures": [
-                            //             {
-                            //                 "keyId":      "...",
-                            //                 "algorithm":  "secp256r1",
-                            //                 "format":     "DER",
-                            //                 "value":      "????"
-                            //             }
-                            //         ]
-                            //     },
-                            //     {
-                            //         "algorithm":        "secp256r1",
-                            //         "format":           "DER",
-                            //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
-                            //         "signatures":       [ ]
-                            //     }
-                            // ]
-                        },
+                let parkingStart  = "";
+                let parkingEnd    = "";
 
-                        "support": {
-                            "hotline":                  "+49(69) 95307383",
-                            "email":                    "support.eu@chargepoint.com",
-                            "web":                      "https://chargepoint.charging.cloud/issues"
-                            // "mediationServices":        [ "GraphDefined Mediation" ],
-                            // "publicKeys": [
-                            //     {
-                            //         "algorithm":        "secp256r1",
-                            //         "format":           "DER",
-                            //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
-                            //         "signatures":       [ ]
-                            //     }
-                            // ]
-                        },
+                if (SomeJSON.parking && SomeJSON.parking.length > 0)
+                {
+                    for (let i=0; i<SomeJSON.parking.length; i++)
+                    {
+                        if (parkingStart == "" || SomeJSON.parking[i].start_time_utc < parkingStart)
+                            parkingStart = SomeJSON.parking[i].start_time_utc;
 
-                        "privacy": {
-                            "contact":                  "ChargePoint, Attn: Data Protection Officer, ChargePoint Network (Netherlands) B.V., Hoogoorddreef 56E, 1101BE Amsterdam",
-                            "email":                    "privacy.eu@chargepoint.com ",
-                            "web":                      "https://de.chargepoint.com/privacy_policy"
-                            // "publicKeys": [
-                            //     {
-                            //         "algorithm":        "secp256r1",
-                            //         "format":           "DER",
-                            //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
-                            //         "signatures":       [ ]
-                            //     }
-                            // ]
-                        },
+                        if (parkingEnd   == "" || SomeJSON.parking[i].start_time_utc > parkingEnd)
+                            parkingEnd   = SomeJSON.parking[i].end_time_utc;
+                    }
+                }
 
-                        "chargingStations": [
-                            {
-                                "@id":                      SomeJSON.additional_info.station_mac,
-                                "firmwareVersion":          "",
-                                "geoLocation":              null,
-                                "address":                  null,
-                                "EVSEs": [
+                // Sometimes there is "parking" but no "energy"...
+                if (chargingStart == "")
+                    chargingStart = parkingStart;
+
+                if (chargingEnd   == "")
+                    chargingEnd   = parkingEnd;
+
+
+                let sessionStart = parkingStart < chargingStart ? parkingStart : chargingStart;
+
+                if (sessionStart == "" && chargingStart != "")
+                    sessionStart = chargingStart;
+
+                if (sessionStart == "" && parkingStart != "")
+                    sessionStart = parkingStart;
+
+
+                let sessionEnd   = parkingEnd   < chargingEnd   ? parkingEnd   : chargingEnd;
+
+                if (sessionEnd   == "" && chargingEnd != "")
+                    sessionEnd   = chargingEnd;
+
+                if (sessionEnd   == "" && parkingEnd != "")
+                    sessionEnd   = parkingEnd;
+
+
+                var _CTR: any = { //IChargeTransparencyRecord = {
+
+                    "@id":              "chargepoint-" + SomeJSON.additional_info.station_mac + "-" +
+                                                         SomeJSON.additional_info.outlet      + "-" +
+                                                         SomeJSON.additional_info.session_id,
+                    "@context":         "https://open.charging.cloud/contexts/CTR+json",
+
+                    "begin":            this.moment.unix(sessionStart).utc().format(),
+                    "end":              this.moment.unix(sessionEnd).utc().format(),
+
+                    "description": {
+                        "de":           "Alle Ladevorgänge"
+                    },
+
+                    "contract": {
+                        "@id":          SomeJSON.additional_info.driver_info,
+                        "type":         "userId"
+                        // "username":     "",
+                        // "email":        ""
+                    },
+
+                    "chargingStationOperators": [
+                        {
+
+                            "@id":                      SomeJSON.company_name,
+                            // "eMobilityIds":             [ ],
+                            "description": {
+                                "de":                   "Charge Point - Charging Station Operator Services"
+                            },
+
+                            "contact": {
+                                "email":                    "sales@chargepoint.com",
+                                "web":                      "https://www.chargepoint.com",
+                                "logoUrl":                  "https://www.chargepoint.com/themes/chargepoint/logo.svg",
+                                // "publicKeys": [
+                                //     {
+                                //         "algorithm":        "secp256r1",
+                                //         "format":           "DER",
+                                //         "value":            "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
+                                //         "signatures": [
+                                //             {
+                                //                 "keyId":      "...",
+                                //                 "algorithm":  "secp256r1",
+                                //                 "format":     "DER",
+                                //                 "value":      "????"
+                                //             }
+                                //         ]
+                                //     },
+                                //     {
+                                //         "algorithm":        "secp256r1",
+                                //         "format":           "DER",
+                                //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                                //         "signatures":       [ ]
+                                //     }
+                                // ]
+                            },
+
+                            "support": {
+                                "hotline":                  "+49(69) 95307383",
+                                "email":                    "support.eu@chargepoint.com",
+                                "web":                      "https://chargepoint.charging.cloud/issues"
+                                // "mediationServices":        [ "GraphDefined Mediation" ],
+                                // "publicKeys": [
+                                //     {
+                                //         "algorithm":        "secp256r1",
+                                //         "format":           "DER",
+                                //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                                //         "signatures":       [ ]
+                                //     }
+                                // ]
+                            },
+
+                            "privacy": {
+                                "contact":                  "ChargePoint, Attn: Data Protection Officer, ChargePoint Network (Netherlands) B.V., Hoogoorddreef 56E, 1101BE Amsterdam",
+                                "email":                    "privacy.eu@chargepoint.com ",
+                                "web":                      "https://de.chargepoint.com/privacy_policy"
+                                // "publicKeys": [
+                                //     {
+                                //         "algorithm":        "secp256r1",
+                                //         "format":           "DER",
+                                //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                                //         "signatures":       [ ]
+                                //     }
+                                // ]
+                            },
+
+                            "chargingStations": [
+                                {
+                                    "@id":                      SomeJSON.additional_info.station_mac,
+                                    "firmwareVersion":          "",
+                                    "geoLocation":              null,
+                                    "address":                  null,
+                                    "EVSEs": [
+                                        {
+                                            "@id":                      SomeJSON.additional_info.station_mac + "-" + SomeJSON.additional_info.outlet,
+                                            "sockets":                  [ { } ],
+                                            "meters": [
+                                                {
+                                                    "@id":                      SomeJSON.additional_info.meter_serial,
+                                                    "vendor":                   "Carlo Gavazzi",
+                                                    //"vendorURL":                null,
+                                                    "model":                    "EM340-DIN.AV2.3.X.S1.X",
+                                                    //"hardwareVersion":          null,
+                                                    //"firmwareVersion":          null,
+                                                    // "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+                                                    // "publicKeys": [
+                                                    //     {
+                                                    //         "algorithm":        "secp224k1",
+                                                    //         "format":           "DER",
+                                                    //         "value":            null,
+                                                    //         "signatures":       null
+                                                    //     }
+                                                    // ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ],
+
+                            "chargingTariffs": [{
+                                "@id":                  "default",
+                                "currency":             SomeJSON.additional_info.currency_code,
+                                "taxes": [
                                     {
-                                        "@id":                      SomeJSON.additional_info.station_mac + "-" + SomeJSON.additional_info.outlet,
-                                        "sockets":                  [ { } ],
-                                        "meters": [
-                                            {
-                                                "@id":                      SomeJSON.additional_info.meter_serial,
-                                                "vendor":                   "Carlo Gavazzi",
-                                                //"vendorURL":                null,
-                                                "model":                    "EM340-DIN.AV2.3.X.S1.X",
-                                                //"hardwareVersion":          null,
-                                                //"firmwareVersion":          null,
-                                                // "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
-                                                // "publicKeys": [
-                                                //     {
-                                                //         "algorithm":        "secp224k1",
-                                                //         "format":           "DER",
-                                                //         "value":            null,
-                                                //         "signatures":       null
-                                                //     }
-                                                // ]
-                                            }
-                                        ]
+                                        "@id":          "MwSt",
+                                        "percentage":   19.0,
                                     }
                                 ]
-                            }
-                        ],
+                            }],
 
-                        "chargingTariffs": [{
-                            "@id":                  "default",
-                            "currency":             SomeJSON.additional_info.currency_code,
-                            "taxes": [
-                                {
-                                    "@id":          "MwSt",
-                                    "percentage":   19.0,
-                                }
-                            ]
-                        }],
-
-                        "parkingTariffs": [{
-                            "@id":                  "default",
-                            "currency":             SomeJSON.additional_info.currency_code,
-                            "taxes": [
-                                {
-                                    "@id":          "MwSt",
-                                    "percentage":   19.0,
-                                }
-                            ]
-                        }]
-
-                    }
-                ],
-
-                "chargingSessions": [
-
-                    {
-
-                        "original":                     SomeJSON.original,
-                        "signature":                    SomeJSON.signature,
-
-                        "@id":                          SomeJSON.additional_info.station_mac + "-" +
-                                                        SomeJSON.additional_info.outlet      + "-" +
-                                                        SomeJSON.additional_info.session_id,
-                        "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargepointCrypt01+json",
-                        "begin":                        this.moment.unix(sessionStart).utc().format(),
-                        "end":                          this.moment.unix(sessionEnd).utc().format(),
-                        "EVSEId":                       SomeJSON.additional_info.station_mac + "-" +
-                                                        SomeJSON.additional_info.outlet,
-
-                        "authorizationStart": {
-                            "@id":                      SomeJSON.additional_info.driver_info,
-                            "type":                     "userId"
-                        },
-
-                        "signatureInfos": {
-                            "hash":                     "SHA512",
-                            "hashTruncation":           "24",
-                            "algorithm":                "ECC",
-                            "curve":                    "secp192r1",
-                            "format":                   "rs"
-                        },
-
-                        "measurements": [
-
-                            {
-
-                                "energyMeterId":        SomeJSON.additional_info.meter_serial,
-                                "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargepointCrypt01+json",
-                                "name":                 SomeJSON.energy != null && SomeJSON.energy.length > 0 ? SomeJSON.energy[0].type : "ENERGY",
-                                "obis":                 "1-0:1.17.0*255",
-                                "unit":                 SomeJSON.additional_info.energy_units,
-                        //        "unitEncoded":          CTRArray[0]["measuredValue"]["unitEncoded"],
-                        //        "valueType":            CTRArray[0]["measuredValue"]["valueType"],
-                                "scale":                0,
-
-                                "signatureInfos": {
-                                    "hash":                 "SHA256",
-                                   // "hashTruncation":       "24",
-                                    "algorithm":            "ECDSA",
-                                    "curve":                "secp224k1",
-                                    "format":               "rs"
-                                },
-
-                                "values": [
+                            "parkingTariffs": [{
+                                "@id":                  "default",
+                                "currency":             SomeJSON.additional_info.currency_code,
+                                "taxes": [
                                     {
-                                        "timestamp":        this.moment.unix(chargingStart).utc().format(),
-                                        "value":            SomeJSON.additional_info.meter_startreading
-                                    },
-                                    {
-                                        "timestamp":        this.moment.unix(chargingEnd).utc().format(),
-                                        "value":            SomeJSON.additional_info.meter_endreading
+                                        "@id":          "MwSt",
+                                        "percentage":   19.0,
                                     }
                                 ]
+                            }]
 
-                            }
+                        }
+                    ],
 
-                        ]
+                    "chargingSessions": [
 
-                    }
+                        {
 
-                ]
+                            "original":                     SomeJSON.original,
+                            "signature":                    SomeJSON.signature,
 
-            };
+                            "@id":                          SomeJSON.additional_info.station_mac + "-" +
+                                                            SomeJSON.additional_info.outlet      + "-" +
+                                                            SomeJSON.additional_info.session_id,
+                            "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargepointCrypt01+json",
+                            "begin":                        this.moment.unix(sessionStart).utc().format(),
+                            "end":                          this.moment.unix(sessionEnd).utc().format(),
+                            "EVSEId":                       SomeJSON.additional_info.station_mac + "-" +
+                                                            SomeJSON.additional_info.outlet,
+
+                            "authorizationStart": {
+                                "@id":                      SomeJSON.additional_info.driver_info,
+                                "type":                     "userId"
+                            },
+
+                            "signatureInfos": {
+                                "hash":                     "SHA512",
+                                "hashTruncation":           "24",
+                                "algorithm":                "ECC",
+                                "curve":                    "secp192r1",
+                                "format":                   "rs"
+                            },
+
+                            "measurements": [
+
+                                {
+
+                                    "energyMeterId":        SomeJSON.additional_info.meter_serial,
+                                    "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargepointCrypt01+json",
+                                    "name":                 SomeJSON.energy != null && SomeJSON.energy.length > 0 ? SomeJSON.energy[0].type : "ENERGY",
+                                    "obis":                 "1-0:1.17.0*255",
+                                    "unit":                 SomeJSON.additional_info.energy_units,
+                            //        "unitEncoded":          CTRArray[0]["measuredValue"]["unitEncoded"],
+                            //        "valueType":            CTRArray[0]["measuredValue"]["valueType"],
+                                    "scale":                0,
+
+                                    // "signatureInfos": {
+                                    //     "hash":                 "SHA256",
+                                    // // "hashTruncation":       "24",
+                                    //     "algorithm":            "ECDSA",
+                                    //     "curve":                "secp224k1",
+                                    //     "format":               "rs"
+                                    // },
+
+                                    "values": [
+                                        {
+                                            "timestamp":        this.moment.unix(chargingStart).utc().format(),
+                                            "value":            SomeJSON.additional_info.meter_startreading
+                                        },
+                                        {
+                                            "timestamp":        this.moment.unix(chargingEnd).utc().format(),
+                                            "value":            SomeJSON.additional_info.meter_endreading
+                                        }
+                                    ]
+
+                                }
+
+                            ]
+
+                        }
+
+                    ]
+
+                };
 
 
-            if (SomeJSON.parking && SomeJSON.parking.length > 0)
-            {
-
-                _CTR.chargingSessions[0].parking = [];
-
-                for (let parking of SomeJSON.parking)
+                if (SomeJSON.parking && SomeJSON.parking.length > 0)
                 {
-                    if (parking.seq_num != "SUBTOTAL")
+
+                    _CTR.chargingSessions[0].parking = [];
+
+                    for (let parking of SomeJSON.parking)
                     {
-                        _CTR.chargingSessions[0].parking.push({
-                            begin:     this.moment.unix(parking.start_time_utc).utc().format(),
-                            end:       this.moment.unix(parking.end_time_utc).utc().format(),
-                            overstay:  parking.overstay == 1,
-                        });
+                        if (parking.seq_num != "SUBTOTAL")
+                        {
+                            _CTR.chargingSessions[0].parking.push({
+                                begin:     this.moment.unix(parking.start_time_utc).utc().format(),
+                                end:       this.moment.unix(parking.end_time_utc).utc().format(),
+                                overstay:  parking.overstay == 1,
+                            });
+                        }
                     }
+
                 }
+
+                return _CTR as IChargeTransparencyRecord;
 
             }
 
-            return _CTR as IChargeTransparencyRecord;
+            //#endregion
+
+            //#region Second CTR format
+
+            if (SomeJSON.outlet              &&
+                SomeJSON.session_id          &&
+                SomeJSON.station_mac         &&
+                SomeJSON.driver_info         &&
+                SomeJSON.meter_serial        &&
+                SomeJSON.meter_startreading  &&
+                SomeJSON.meter_endreading    &&
+                SomeJSON.total_energy        &&
+                SomeJSON.energy_units        &&
+                SomeJSON.start_time          &&
+                SomeJSON.end_time) {
+
+                //#region Documentation
+
+                // {
+                //     "outlet":              2,
+                //     "session_id":          55,
+                //     "station_mac":        "0024b1000002e300",
+                //     "driver_info":        "b2dd852e99433cab70ccd45dad5aff55",
+                //     "meter_serial":       "240008S",
+                //     "meter_startreading":  74.6,
+                //     "meter_endreading":    86.6,
+                //     "total_energy":        12.0,
+                //     "energy_units":       "kWh",
+                //     "start_time":          1581763758,  // Is this UTC?
+                //     "end_time":            1581772802   // Is this UTC?
+                // }
+
+
+                // PEM Public Key: https://report-uri.com/home/pem_decoder
+
+                // Array
+                // (
+                //     [bits] => 225
+                //     [key]  => -----BEGIN PUBLIC KEY-----
+                //               ME4wEAYHKoZIzj0CAQYFK4EEACADOgAEQwudsru6AlnW9u2AG88FPIKkO5yUwC8N
+                //               hKM53UhVJ6faX1c+EdhUdi6qj0quGVs9emjJ1N95S6Y=
+                //               -----END PUBLIC KEY-----
+                //     [ec]   => Array (
+                //                   [curve_name] => secp224k1
+                //                   [curve_oid]  => 1.3.132.0.32
+                //                   [x]          => 430b9db2bbba0259d6f6ed801bcf053c82a43b9c94c02f0d84a339dd
+                //                   [y]          => 485527a7da5f573e11d854762eaa8f4aae195b3d7a68c9d4df794ba6
+                //               )
+                //     [type] => 3
+                // )
+
+                //#endregion
+
+                var _CTR: any = { //IChargeTransparencyRecord = {
+
+                    "@id":              "chargepoint-" + SomeJSON.station_mac + "-" +
+                                                         SomeJSON.outlet      + "-" +
+                                                         SomeJSON.session_id,
+                    "@context":         "https://open.charging.cloud/contexts/CTR+json",
+
+                    "begin":            this.moment.unix(SomeJSON.start_time).utc().format(),
+                    "end":              this.moment.unix(SomeJSON.end_time).utc().format(),
+
+                    "description": {
+                        "de":           "Alle Ladevorgänge"
+                    },
+
+                    "contract": {
+                        "@id":          SomeJSON.driver_info,
+                        "type":         "userId"
+                        // "username":     "",
+                        // "email":        ""
+                    },
+
+                    "chargingStationOperators": [
+                        {
+
+                            "@id":                      "ChargePoint",
+                            // "eMobilityIds":             [ ],
+                            "description": {
+                                "de":                   "Charge Point - Charging Station Operator Services"
+                            },
+
+                            "contact": {
+                                "email":                    "sales@chargepoint.com",
+                                "web":                      "https://www.chargepoint.com",
+                                "logoUrl":                  "https://www.chargepoint.com/themes/chargepoint/logo.svg",
+                                // "publicKeys": [
+                                //     {
+                                //         "algorithm":        "secp256r1",
+                                //         "format":           "DER",
+                                //         "value":            "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
+                                //         "signatures": [
+                                //             {
+                                //                 "keyId":      "...",
+                                //                 "algorithm":  "secp256r1",
+                                //                 "format":     "DER",
+                                //                 "value":      "????"
+                                //             }
+                                //         ]
+                                //     },
+                                //     {
+                                //         "algorithm":        "secp256r1",
+                                //         "format":           "DER",
+                                //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                                //         "signatures":       [ ]
+                                //     }
+                                // ]
+                            },
+
+                            "support": {
+                                "hotline":                  "+49(69) 95307383",
+                                "email":                    "support.eu@chargepoint.com",
+                                "web":                      "https://chargepoint.charging.cloud/issues"
+                                // "mediationServices":        [ "GraphDefined Mediation" ],
+                                // "publicKeys": [
+                                //     {
+                                //         "algorithm":        "secp256r1",
+                                //         "format":           "DER",
+                                //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                                //         "signatures":       [ ]
+                                //     }
+                                // ]
+                            },
+
+                            "privacy": {
+                                "contact":                  "ChargePoint, Attn: Data Protection Officer, ChargePoint Network (Netherlands) B.V., Hoogoorddreef 56E, 1101BE Amsterdam",
+                                "email":                    "privacy.eu@chargepoint.com ",
+                                "web":                      "https://de.chargepoint.com/privacy_policy"
+                                // "publicKeys": [
+                                //     {
+                                //         "algorithm":        "secp256r1",
+                                //         "format":           "DER",
+                                //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                                //         "signatures":       [ ]
+                                //     }
+                                // ]
+                            },
+
+                            "chargingStations": [
+                                {
+                                    "@id":                      SomeJSON.station_mac,
+                                    "firmwareVersion":          "",
+                                    "geoLocation":              null,
+                                    "address":                  null,
+                                    "EVSEs": [
+                                        {
+                                            "@id":                      SomeJSON.station_mac + "-" + SomeJSON.outlet,
+                                            "sockets":                  [ { } ],
+                                            "meters": [
+                                                {
+                                                    "@id":                      SomeJSON.meter_serial,
+                                                    "vendor":                   "Carlo Gavazzi",
+                                                    //"vendorURL":                null,
+                                                    "model":                    "EM340-DIN.AV2.3.X.S1.X",
+                                                    //"hardwareVersion":          null,
+                                                    //"firmwareVersion":          null,
+                                                    // "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+                                                    // "publicKeys": [
+                                                    //     {
+                                                    //         "algorithm":        "secp224k1",
+                                                    //         "format":           "DER",
+                                                    //         "value":            null,
+                                                    //         "signatures":       null
+                                                    //     }
+                                                    // ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+
+                        }
+                    ],
+
+                    "chargingSessions": [
+
+                        {
+
+                            "original":                     SomeJSON.original,
+                            "signature":                    SomeJSON.signature,
+
+                            "@id":                          SomeJSON.station_mac + "-" +
+                                                            SomeJSON.outlet      + "-" +
+                                                            SomeJSON.session_id,
+                            "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargepointCrypt01+json",
+                            "begin":                        this.moment.unix(SomeJSON.start_time).utc().format(),
+                            "end":                          this.moment.unix(SomeJSON.end_time).utc().format(),
+                            "EVSEId":                       SomeJSON.station_mac + "-" +
+                                                            SomeJSON.outlet,
+
+                            "authorizationStart": {
+                                "@id":                      SomeJSON.driver_info,
+                                "type":                     "userId"
+                            },
+
+                            "signatureInfos": {
+                                "hash":                     "SHA256",
+                                "hashTruncation":           "24",
+                                "algorithm":                "ECDSA",
+                                "curve":                    "secp224k1",
+                                "format":                   "rs"
+                            },
+
+                            "measurements": [
+
+                                {
+
+                                    "energyMeterId":        SomeJSON.meter_serial,
+                                    "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargepointCrypt01+json",
+                                    "name":                 "ENERGY",
+                                    "obis":                 "1-0:1.17.0*255",
+                                    "unit":                 SomeJSON.energy_units,
+                            //        "unitEncoded":          CTRArray[0]["measuredValue"]["unitEncoded"],
+                            //        "valueType":            CTRArray[0]["measuredValue"]["valueType"],
+                                    "scale":                0,
+
+                                    // "signatureInfos": {
+                                    //     "hash":                 "SHA256",
+                                    // // "hashTruncation":       "24",
+                                    //     "algorithm":            "ECDSA",
+                                    //     "curve":                "secp224k1",
+                                    //     "format":               "rs"
+                                    // },
+
+                                    "values": [
+                                        {
+                                            "timestamp":        this.moment.unix(SomeJSON.start_time).utc().format(),
+                                            "value":            SomeJSON.meter_startreading
+                                        },
+                                        {
+                                            "timestamp":        this.moment.unix(SomeJSON.end_time).utc().format(),
+                                            "value":            SomeJSON.meter_endreading
+                                        }
+                                    ]
+
+                                }
+
+                            ]
+
+                        }
+
+                    ]
+
+                };
+
+                return _CTR as IChargeTransparencyRecord;
+
+            }
+
+            //#endregion
 
         }
         catch (exception)
@@ -431,6 +704,10 @@ class Chargepoint01 {
                 status:   SessionVerificationResult.InvalidSessionFormat,
                 message:  "Exception occured: " + exception.message
             }
+        }
+
+        return {
+            status:  SessionVerificationResult.InvalidSessionFormat
         }
 
     }
