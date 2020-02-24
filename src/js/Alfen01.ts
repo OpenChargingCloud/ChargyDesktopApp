@@ -22,11 +22,25 @@
 
 class Alfen01  {
 
-    private bufferToHex (buffer: ArrayBuffer) : string {
+    private bufferToHex(buffer: ArrayBuffer) : string {
         return Array
-            .from (new Uint8Array (buffer))
-            .map (b => b.toString (16).padStart (2, "0"))
-            .join ("");
+            .from(new Uint8Array(buffer))
+            .map (b => b.toString(16).padStart(2, "0"))
+            .join("");
+    }
+
+    private bufferToHexR(buffer: ArrayBuffer) : string {
+        return Array
+            .from(new Uint8Array(buffer)).reverse()
+            .map (b => b.toString(16).padStart(2, "0"))
+            .join("");
+    }
+
+    private bufferToNumber(buffer: ArrayBuffer) : number {
+        return parseInt(Array
+            .from(new Uint8Array(buffer))
+            .map (b => b.toString(16).padStart(2, "0"))
+            .join(""), 16);
     }
 
     //#region tryToParseALFENFormat(Content)
@@ -53,18 +67,18 @@ class Alfen01  {
         try
         {
 
-            var   common = {
-                      PublicKey:          "",
-                      AdapterId:          "",
-                      AdapterFWVersion:   "",
-                      AdapterFWChecksum:  "",
-                      MeterId:            "",
-                      ObisId:             "",
-                      Unit:               "",
-                      Scalar:             "",
-                      UID:                "",
-                      SessionId:          0,
-                      dataSets:           [] as any[]
+            var common = {
+                    PublicKey:          "",
+                    AdapterId:          "",
+                    AdapterFWVersion:   "",
+                    AdapterFWChecksum:  "",
+                    MeterId:            "",
+                    ObisId:             "",
+                    UnitEncoded:        0,
+                    Scalar:             "",
+                    UID:                "",
+                    SessionId:          0,
+                    dataSets:           [] as any[]
             };
 
             let signedValues:string[] = [];
@@ -117,129 +131,119 @@ class Alfen01  {
                 }
 
                 // Everything is Little Endian
-                let AdapterId            = DataSet.slice( 0, 10);  // 0a 54 65 73 74 44 65 76 00 09
-                let AdapterFWVersion     = DataSet.slice(10, 14);  // ASCII: 76 30 31 34 (v014)
-                let AdapterFWChecksum    = DataSet.slice(14, 16);  // B9 79
-                let MeterId              = DataSet.slice(16, 26);  // 0A 01 44 5A 47 00 33 00 25 02
-                let Status               = DataSet.slice(26, 30);  // 00 00 00 10
-                let SecondIndex          = DataSet.slice(30, 34);  // 28 71 9A 02 => 43675944 dec
-                let Timestamp            = DataSet.slice(34, 38);  // UNIX timestamp: 91 91 3D 5C => 1547538833 => 2019-01-15T07:53:53Z
-                let ObisId               = DataSet.slice(38, 44);  // 01 00 01 08 00 ff
-                let UnitEncoded          = DataSet.slice(44, 45);  // 1e == Wh
-                let Scalar               = DataSet.slice(45, 46);  // 00
-                let Value                = DataSet.slice(46, 54);  // 73 29 00 00 00 00 00 00 => 10611 Wh so 10,611 KWh
-                let UID                  = DataSet.slice(54, 74);  // ASCII: 30 35 38 39 38 41 42 42 00 00 00 00 00 00 00 00 00 00 00 00 => UID: 05 89 8A BB
-                let SessionId            = DataSet.slice(74, 78);  // 81 01 00 00 => 385(dec)
-                let Paging               = DataSet.slice(78, 82);  // 47 02 00 00 => 583(dec)
-
-                let _AdapterId           = this.bufferToHex(AdapterId);
-                let _AdapterFWVersion    = String.fromCharCode.apply(null, new Uint8Array(AdapterFWVersion) as any);
-                let _AdapterFWChecksum   = this.bufferToHex(AdapterFWChecksum);
-                let _MeterId             = this.bufferToHex(MeterId);
-                let _Status              = this.bufferToHex(Status);
-                let _SecondIndex         = new DataView(SecondIndex, 0).getInt32   (0, true);
-                let _Timestamp           = new Date(new DataView(Timestamp, 0).getInt32(0, true) * 1000).toISOString(); // this.moment.unix(timestamp).utc().format(),
-                let _ObisId              = this.bufferToHex(ObisId);
-                let _Unit                = this.bufferToHex(UnitEncoded);
-                let _Scalar              = this.bufferToHex(Scalar);
-                let _Value               = new Number(new DataView(Value,     0).getBigInt64(0, true));
-                let _UID                 = String.fromCharCode.apply(null, new Uint8Array(UID) as any).replace(/\0.*$/g, '');
-                let _SessionId           = new DataView(SessionId, 0).getInt32   (0, true);
-                let _Paging              = new DataView(Paging,    0).getInt32   (0, true);
+                let AdapterId            = this.bufferToHex(DataSet.slice( 0, 10));                                        // 0a 54 65 73 74 44 65 76 00 09
+                let AdapterFWVersion     = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(10, 14)) as any);  // ASCII: 76 30 31 34 (v014)
+                let AdapterFWChecksum    = this.bufferToHex(DataSet.slice(14, 16));                                        // B9 79
+                let MeterId              = this.bufferToHex(DataSet.slice(16, 26));                                        // 0A 01 44 5A 47 00 33 00 25 02
+                let StatusMeter          = this.bufferToHexR(DataSet.slice(26, 28));                                        // 00 00
+                let StatusAdapter        = this.bufferToHexR(DataSet.slice(28, 30));                                        // 00 10
+                let SecondIndex          = new DataView(DataSet.slice(30, 34), 0).getInt32(0, true);                       // 28 71 9A 02 => 43675944 dec
+                let Timestamp            = new Date(new DataView(DataSet.slice(34, 38), 0).getInt32(0, true) * 1000).      // UNIX timestamp: 91 91 3D 5C => 1547538833 => 2019-01-15T07:53:53Z
+                                                  toISOString();
+                let ObisId               = this.bufferToHex(DataSet.slice(38, 44));                                        // 01 00 01 08 00 ff
+                let UnitEncoded          = this.bufferToNumber(DataSet.slice(44, 45));                                     // 1e => 30 => Wh
+                let Scalar               = this.bufferToHex(DataSet.slice(45, 46));                                        // 00
+                let Value                = new Number(new DataView(DataSet.slice(46, 54), 0).getBigInt64(0, true));        // 73 29 00 00 00 00 00 00 => 10611 Wh so 10,611 KWh
+                let UID                  = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(54, 74)) as any).  // ASCII: 30 35 38 39 38 41 42 42 00 00 00 00 00 00 00 00 00 00 00 00 => UID: 05 89 8A BB
+                                                  replace(/\0.*$/g, '');
+                let SessionId            = new DataView(DataSet.slice(74, 78), 0).getInt32(0, true)                        // 81 01 00 00 => 385(dec)
+                let Paging               = new DataView(DataSet.slice(78, 82), 0).getInt32(0, true);                       // 47 02 00 00 => 583(dec)
 
 
                 if (common.AdapterId === "")
-                    common.AdapterId = _AdapterId;
-                else if (_AdapterId !== common.AdapterId)
+                    common.AdapterId = AdapterId;
+                else if (AdapterId !== common.AdapterId)
                     return {
                         status:   SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent adapter identification!"
                     };
 
                 if (common.AdapterFWVersion === "")
-                    common.AdapterFWVersion = _AdapterFWVersion;
-                else if (_AdapterFWVersion !== common.AdapterFWVersion)
+                    common.AdapterFWVersion = AdapterFWVersion;
+                else if (AdapterFWVersion !== common.AdapterFWVersion)
                     return {
                         status:   SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent adapter firmware version!"
                     };
 
                 if (common.AdapterFWChecksum === "")
-                    common.AdapterFWChecksum = _AdapterFWChecksum;
-                else if (_AdapterFWChecksum !== common.AdapterFWChecksum)
+                    common.AdapterFWChecksum = AdapterFWChecksum;
+                else if (AdapterFWChecksum !== common.AdapterFWChecksum)
                     return {
                         status:   SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent adapter firmware checksum!"
                     };
 
                 if (common.MeterId === "")
-                    common.MeterId = _MeterId;
-                else if (_MeterId !== common.MeterId)
+                    common.MeterId = MeterId;
+                else if (MeterId !== common.MeterId)
                     return {
                         status:   SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent meter identification!"
                     };
 
                 if (common.ObisId === "")
-                    common.ObisId = _ObisId;
-                else if (_ObisId !== common.ObisId)
+                    common.ObisId = ObisId;
+                else if (ObisId !== common.ObisId)
                     return {
                         status:   SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent OBIS identification!"
                     };
 
-                if (common.Unit === "")
-                    common.Unit = _Unit;
-                else if (_Unit !== common.Unit)
+                if (common.UnitEncoded === 0)
+                    common.UnitEncoded = UnitEncoded;
+                else if (UnitEncoded !== common.UnitEncoded)
                     return {
                         status:   SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent unit value!"
+                        message:  "Inconsistent unit (encoded) value!"
                     };
 
                 if (common.Scalar === "")
-                    common.Scalar = _Scalar;
-                else if (_Scalar !== common.Scalar)
+                    common.Scalar = Scalar;
+                else if (Scalar !== common.Scalar)
                     return {
                         status:   SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent measurement scaler!"
                     };
 
                 if (common.UID === "")
-                    common.UID = _UID;
-                else if (_UID !== common.UID)
+                    common.UID = UID;
+                else if (UID !== common.UID)
                     return {
                         status:   SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent user identification!"
                     };
 
                 if (common.SessionId === 0)
-                    common.SessionId = _SessionId;
-                else if (_SessionId !== common.SessionId)
+                    common.SessionId = SessionId;
+                else if (SessionId !== common.SessionId)
                     return {
                         status:   SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent charging session identification!"
                     };
 
-                if (previousTimestamp !== "" && previousTimestamp > _Timestamp)
+                if (previousTimestamp !== "" && previousTimestamp > Timestamp)
                     return {
                         status:   SessionVerificationResult.InconsistentTimestamps,
                         message:  "Inconsistent timestamps!"
                     };
                 else
-                    previousTimestamp = _Timestamp;
+                    previousTimestamp = Timestamp;
 
 
                 common.dataSets.push({
                     //@ts-ignore
-                    "Status":             _Status,
+                    "StatusMeter":        StatusMeter,
                     //@ts-ignore
-                    "SecondIndex":        _SecondIndex,
+                    "StatusAdapter":      StatusAdapter,
                     //@ts-ignore
-                    "Timestamp":          _Timestamp,
+                    "SecondIndex":        SecondIndex,
                     //@ts-ignore
-                    "Value":              _Value,
+                    "Timestamp":          Timestamp,
                     //@ts-ignore
-                    "Paging":             _Paging,
+                    "Value":              Value,
+                    //@ts-ignore
+                    "Paging":             Paging,
                     //@ts-ignore
                     "Signature":          this.bufferToHex(Signature)
                 });
@@ -347,9 +351,13 @@ class Alfen01  {
             //                     "name":                 CTRArray[0]["measurand"]["name"],
                                  "obis":                 common.ObisId,
             //                     "unit":                 CTRArray[0]["measuredValue"]["unit"],
-                                 "unitEncoded":          common.Unit,
+                                 "unitEncoded":          common.UnitEncoded,
             //                     "valueType":            CTRArray[0]["measuredValue"]["valueType"],
                                  "scale":                common.Scalar,
+
+                                 "adapterId":            common.AdapterId,
+                                 "adapterFWVersion":     common.AdapterFWVersion,
+                                 "adapterFWChecksum":    common.AdapterFWChecksum,
 
             //                     "signatureInfos": {
             //                         "hash":                 "SHA512",
@@ -379,7 +387,9 @@ class Alfen01  {
                                          {
                                              "timestamp":      dataSet["Timestamp"],
                                              "value":          dataSet["Value"],
-                                             "infoStatus":     dataSet["Status"],
+                                             //"infoStatus":     dataSet["Status"],
+                                             "statusMeter":    dataSet["StatusMeter"],
+                                             "statusAdapter":  dataSet["StatusAdapter"],
                                              "secondsIndex":   dataSet["SecondIndex"],
                                              "paginationId":   dataSet["Paging"],
             //                                 "logBookIndex":   _measurement["additionalInfo"]["indexes"]["logBook"],
@@ -414,17 +424,21 @@ class Alfen01  {
 
 }
 
+interface IAlfenMeasurement extends IMeasurement
+{
+    adapterId:                     string,
+    adapterFWVersion:              string,
+    adapterFWChecksum:             string
+}
+
 interface IAlfenMeasurementValue extends IMeasurementValue
 {
-    adapterId:                     string, // Should not be here!
-    adapterFWVersion:              string, // Should not be here!
-    adapterFWChecksum:             string, // Should not be here!
-
-    infoStatus:                    string,
+    statusMeter:                   string,
+    statusAdapter:                 string,
     secondsIndex:                  number,
     sessionId:                     string,
-    paginationId:                  string
-
+    paginationId:                  number,
+    measurement:                   IAlfenMeasurement
 }
 
 interface IAlfenCrypt01Result extends ICryptoResult
@@ -434,16 +448,17 @@ interface IAlfenCrypt01Result extends ICryptoResult
     adapterFWChecksum?:            string
     meterId?:                      string,
     meter?:                        IMeter,
-    infoStatus?:                   string,
+    statusMeter?:                  string,
+    statusAdapter?:                string,
     secondsIndex?:                 string,
     timestamp?:                    string,
-    obis?:                         string,
+    obisId?:                       string,
     unitEncoded?:                  string,
-    scale?:                        string,
+    scalar?:                       string,
     value?:                        string,
     uid?:                          string,
     sessionId?:                    string,
-    paginationId?:                 string,
+    paging?:                       string,
 
     sha256value?:                  any,
     publicKey?:                    string,
@@ -547,12 +562,13 @@ class AlfenCrypt01 extends ACrypt {
             status:                       VerificationResult.InvalidSignature,
             meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
             timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
-            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
-            paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
-            obis:                         SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
+            statusMeter:                  SetHex        (cryptoBuffer, measurementValue.statusMeter,                                               14, false),
+            statusAdapter:                SetHex        (cryptoBuffer, measurementValue.statusAdapter,                                             15, false),
+            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              16, true),
+            paging:                       SetUInt32     (cryptoBuffer, measurementValue.paginationId,                                              19, true),
+            obisId:                       SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
             unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-            scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
+            scalar:                       SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
             value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
             //logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
             //authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
@@ -616,9 +632,28 @@ class AlfenCrypt01 extends ACrypt {
 
         measurementValue.method = this;
 
+        var buffer        = new ArrayBuffer(320);
+        var cryptoBuffer  = new DataView(buffer);
+
         var cryptoResult:IAlfenCrypt01Result = {
-            status: VerificationResult.NoOperation,
+            status:                       VerificationResult.InvalidSignature,
+            adapterId:                    SetHex        (cryptoBuffer, measurementValue.measurement.adapterId,                                   0),
+            adapterFWVersion:             SetText       (cryptoBuffer, measurementValue.measurement.adapterFWVersion,                           10),
+            adapterFWChecksum:            SetHex        (cryptoBuffer, measurementValue.measurement.adapterFWChecksum,                          14),
+            meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                              16),
+            statusMeter:                  SetHex        (cryptoBuffer, measurementValue.statusMeter,                                            26, false),
+            statusAdapter:                SetHex        (cryptoBuffer, measurementValue.statusAdapter,                                          28, false),
+            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                           30, true),
+            timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                              34),
+            obisId:                       SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                       38, false),
+            unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                44),
+            scalar:                       SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                      45),
+            value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                  46, true),
+            uid:                          SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],  54),
+            sessionId:                    SetUInt32     (cryptoBuffer, parseInt(measurementValue.measurement.chargingSession["@id"]),           74, true),
+            paging:                       SetUInt32     (cryptoBuffer, measurementValue.paginationId,                                           78, true)
         };
+
 
         return setResult(VerificationResult.NoOperation);
 
@@ -652,22 +687,25 @@ class AlfenCrypt01 extends ACrypt {
             PlainTextDiv.style.maxHeight   = "";
             PlainTextDiv.style.overflowY   = "";
 
-            this.CreateLine("Adapter Id",                  measurementValue.adapterId,                                           result.adapterId                             || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Adapter Firmware Version",    measurementValue.adapterFWVersion,                                    result.adapterFWVersion                      || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Adapter Firmware Prüfsumme",  measurementValue.adapterFWChecksum,                                   result.adapterFWChecksum                     || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Zählernummer",                measurementValue.measurement.energyMeterId,                                          result.meterId                               || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Status",                      hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
-                                                           this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",
-                                                                                                                                                result.infoStatus                            || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Sekundenindex",               measurementValue.secondsIndex,                                                       result.secondsIndex                          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Zeitstempel",                 parseUTC(measurementValue.timestamp),                                                result.timestamp                             || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("OBIS-Kennzahl",               parseOBIS(measurementValue.measurement.obis),                                        result.obis                                  || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Einheit (codiert)",           measurementValue.measurement.unitEncoded,                                            result.unitEncoded                           || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Skalierung",                  measurementValue.measurement.scale,                                                  result.scale                                 || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Messwert",                    measurementValue.value + " Wh",                                                      result.value                                 || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Autorisierung",               measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     pad(result.uid,                          20) || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("SessionId",                   parseInt(measurementValue.sessionId,    16),                                         result.sessionId                             || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Paginierungszähler",          parseInt(measurementValue.paginationId, 16),                                         result.paginationId                          || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Adapter Id",                  measurementValue.measurement.adapterId,                                           result.adapterId                             || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Adapter Firmware Version",    measurementValue.measurement.adapterFWVersion,                                    result.adapterFWVersion                      || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Adapter Firmware Prüfsumme",  measurementValue.measurement.adapterFWChecksum,                                   result.adapterFWChecksum                     || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Zählernummer",                measurementValue.measurement.energyMeterId,                                       result.meterId                               || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Meter status",                hex2bin(measurementValue.statusMeter) + " (" + measurementValue.statusMeter + " hex)<br /><span class=\"statusInfos\">" +
+                                                           this.DecodeMeterStatus(measurementValue.statusMeter).join("<br />") + "</span>",
+                                                                                                                                             result.statusMeter                           || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Adapter status",              hex2bin(measurementValue.statusAdapter) + " (" + measurementValue.statusAdapter + " hex)<br /><span class=\"statusInfos\">" +
+                                                           this.DecodeAdapterStatus(measurementValue.statusAdapter).join("<br />") + "</span>",
+                                                                                                                                             result.statusAdapter                         || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Sekundenindex",               measurementValue.secondsIndex,                                                    result.secondsIndex                          || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Zeitstempel",                 parseUTC(measurementValue.timestamp),                                             result.timestamp                             || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("OBIS-Kennzahl",               parseOBIS(measurementValue.measurement.obis),                                     result.obisId                                || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Einheit (codiert)",           measurementValue.measurement.unitEncoded,                                         result.unitEncoded                           || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Skalierung",                  measurementValue.measurement.scale,                                               result.scalar                                || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Messwert",                    measurementValue.value + " Wh",                                                   result.value                                 || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Autorisierung",               measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",  pad(result.uid,                          20) || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("SessionId",                   measurementValue.measurement.chargingSession["@id"],                              result.sessionId                             || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Paginierungszähler",          measurementValue.paginationId,                                                    result.paging                                || "",  infoDiv, PlainTextDiv);
 
         }
 
@@ -809,7 +847,8 @@ class AlfenCrypt01 extends ACrypt {
 
     //#region Helper methods
 
-    private DecodeStatus(statusValue: string) : Array<string>
+    // Status flags MID meter
+    private DecodeMeterStatus(statusValueHex: string) : Array<string>
     {
 
         let statusArray:string[] = [];
@@ -817,7 +856,7 @@ class AlfenCrypt01 extends ACrypt {
         try
         {
 
-            let status = parseInt(statusValue);
+            let status = parseInt(statusValueHex, 16);
 
             //#region Status flags MID meter   (Bit  0-15)
 
@@ -832,11 +871,11 @@ class AlfenCrypt01 extends ACrypt {
             if ((status &    4) ==    4)
                 statusArray.push("Dataflash error");    // Fatal error!
 
-            // reserved
-            // reserved
-            // reserved
-            // reserved
-            // reserved
+            // reserved     8
+            // reserved    16
+            // reserved    32
+            // reserved    64
+            // reserved   128
 
             if ((status &  256) ==  256)
                 statusArray.push("Phase L1 failure");
@@ -850,47 +889,67 @@ class AlfenCrypt01 extends ACrypt {
             if ((status & 2048) == 2048)
                 statusArray.push("Phase sequence wrong");
 
-            // reserved
-            // reserved
-            // reserved
-            // reserved
+            // reserved  4096
+            // reserved  8192
+            // reserved 16384
+            // reserved 32768
 
             //#endregion
 
-            //#region Status flags LMN adapter (Bit 16-31)
+        }
+        catch (exception)
+        {
+            statusArray.push("Invalid meter status!");
+        }
 
-            status = status >> 16;
+        return statusArray;
+
+    }
+
+
+    // Status flags LMN adapter
+    private DecodeAdapterStatus(statusValueHex: string) : Array<string>
+    {
+
+        let statusArray:string[] = [];
+
+        try
+        {
+
+            let status = parseInt(statusValueHex, 16);
+
+            //#region Status flags LMN adapter (Bit 16-31)
 
             if ((status & 1) == 1)
                 statusArray.push("Adapter fatal error");
 
-            // reserved
-            // reserved
-            // reserved
-            // reserved
-            // reserved
-            // reserved
-            // reserved
-            // reserved
-            // reserved
+            // reserved     2
+            // reserved     4
+            // reserved     8
+            // reserved    16
+            // reserved    32
+            // reserved    64
+            // reserved   128
+            // reserved   256
+            // reserved   512
 
             // Ensures, that no energy has been consumed between charging sessions!
-            if ((status &  2048) ==  2048)
+            if ((status &  1024) ==  1024)
                 statusArray.push("Stop and Start Meter reading mismatch");
 
-            if ((status &  4096) ==  4096)
+            if ((status &  2048) ==  2048)
                 statusArray.push("Intermediate command");
 
-            if ((status &  8192) ==  8192)
+            if ((status &  4096) ==  4096)
                 statusArray.push("Stop charge command");
 
-            if ((status & 16384) == 16384)
+            if ((status &  8192) ==  8192)
                 statusArray.push("Start charge command");
 
-            if ((status & 32768) == 32768)
+            if ((status & 16384) == 16384)
                 statusArray.push("Adapter memory error");
 
-            if ((status & 65536) == 65536)
+            if ((status & 32768) == 32768)
                 statusArray.push("Meter communication error");
 
             //#endregion

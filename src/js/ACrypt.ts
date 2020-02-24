@@ -46,7 +46,7 @@ abstract class ACrypt {
 
         var lineDiv = CreateDiv(infoDiv, "row");
                       CreateDiv(lineDiv, "id",    id);
-                      CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value.toString()));
+                      CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value?.toString()));
 
         this.AddToVisualBuffer(valueHEX, bufferDiv, lineDiv);
 
