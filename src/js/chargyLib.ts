@@ -101,8 +101,22 @@ function WhenNullOrEmpty(value: string|undefined, replacement: string): string {
 
 }
 
-function hex2bin(hex: string) : string {
+function hex2bin(hex: string, Reverse?: Boolean) : string {
+
+    if (Reverse)
+    {
+
+        let reversed = [];
+
+        for (var i = 0; i < hex.length; i += 2)
+            reversed.push(hex.substring(i, i + 2));
+
+        return ("00000000" + (parseInt(reversed.reverse().join(""), 16)).toString(2)).substr(-8);
+
+    }
+
     return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
+
 }
 
 function hex32(val: number) {
