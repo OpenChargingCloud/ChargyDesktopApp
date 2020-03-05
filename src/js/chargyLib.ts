@@ -249,13 +249,13 @@ function SetTimestamp(dv: DataView, timestamp: any, offset: number): string
 
 }
 
-function SetTimestamp32(dv: DataView, timestamp: any, offset: number): string
+function SetTimestamp32(dv: DataView, timestamp: any, offset: number, addLocalOfset: boolean = true): string
 {
 
     if (typeof timestamp === 'string')
         timestamp = parseUTC(timestamp);
 
-    var unixtime  = timestamp.unix() + 60 * timestamp.utcOffset(); // Usage of utcOffset() is afaik EMH specific!
+    var unixtime  = timestamp.unix() + (addLocalOfset ? 60 * timestamp.utcOffset() : 0); // Usage of utcOffset() is afaik EMH specific!
     var bytes     = getInt64Bytes(unixtime);
     var buffer    = new ArrayBuffer(4);
     var tv        = new DataView(buffer);

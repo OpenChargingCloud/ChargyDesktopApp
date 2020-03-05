@@ -606,7 +606,7 @@ class AlfenCrypt01 extends ACrypt {
 
         measurementValue.method = this;
 
-        var buffer        = new ArrayBuffer(320);
+        var buffer        = new ArrayBuffer(82);
         var cryptoBuffer  = new DataView(buffer);
 
         var cryptoResult:IAlfenCrypt01Result = {
@@ -618,7 +618,7 @@ class AlfenCrypt01 extends ACrypt {
             statusMeter:                  SetHex        (cryptoBuffer, measurementValue.statusMeter,                                            26, true),
             statusAdapter:                SetHex        (cryptoBuffer, measurementValue.statusAdapter,                                          28, true),
             secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                           30, true),
-            timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                              34),
+            timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                              34, false),
             obisId:                       SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                       38, false),
             unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                44),
             scalar:                       SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                      45),
@@ -665,9 +665,10 @@ class AlfenCrypt01 extends ACrypt {
                             try
                             {
 
-                                // publicKey.base32Decode()!!!!
-                                if (this.curve.keyFromPublic(cryptoResult.publicKey, 'hex').
-                                               verify       (cryptoResult.sha256value,
+                                const base32Decode = require('base32-decode');
+
+                                if (this.curve.keyFromPublic(buf2hex(base32Decode(cryptoResult.publicKey.toUpperCase(), 'RFC4648')) , 'hex').
+                                               verify       (cryptoResult.sha256value.toUpperCase(),
                                                              cryptoResult.signature))
                                 {
                                     return setResult(VerificationResult.ValidSignature);
