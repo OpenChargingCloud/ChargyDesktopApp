@@ -800,7 +800,7 @@ class Chargy {
 
             this.currentCTR                = CTR;
             this.internalCTR               = JSON.parse(JSON.stringify(CTR)); // Operate on a copy of the data!
-    
+
             //#region Process operators (pools, stations, evses, tariffs, ...)
 
             if (this.internalCTR.chargingStationOperators)
@@ -971,6 +971,23 @@ class Chargy {
                                     EVSE.chargingStationId  = chargingStation["@id"];
 
                                     this.EVSEs.push(EVSE);
+
+                                    if (EVSE.meters) {
+
+                                        for (var meter of EVSE.meters)
+                                        {
+        
+                                            meter.EVSE               = EVSE;
+                                            meter.EVSEId             = EVSE["@id"];
+        
+                                            meter.chargingStation    = chargingStation;
+                                            meter.chargingStationId  = chargingStation["@id"];
+        
+                                            this.meters.push(meter);
+        
+                                        }
+        
+                                    }
 
                                 }
 

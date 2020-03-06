@@ -1014,20 +1014,15 @@ console.log(curves);
                     if (chargingSession.begin)
                     {
 
-                        var beginUTC = parseUTC(chargingSession.begin);
-
-                        let dateDiv = chargingSessionDiv.appendChild(document.createElement('div'));
+                        let dateDiv  = chargingSessionDiv.appendChild(document.createElement('div'));
                         dateDiv.className = "date";
-                        dateDiv.innerHTML = beginUTC.format('dddd, D; MMM YYYY HH:mm:ss').
-                                                    replace(".", "").   // Nov. -> Nov
-                                                    replace(";", ".") +  // 14;  -> 14.
-                                                    " Uhr";
+                        dateDiv.innerHTML = UTC2human(chargingSession.begin);
 
                         if (chargingSession.end)
                         {
 
                             let endUTC   = parseUTC(chargingSession.end);
-                            let duration = this.moment.duration(endUTC - beginUTC);
+                            let duration = this.moment.duration(endUTC - parseUTC(chargingSession.begin));
 
                             dateDiv.innerHTML += " - " +
                                                 (Math.floor(duration.asDays()) > 0 ? endUTC.format("dddd") + " " : "") +
@@ -1065,11 +1060,10 @@ console.log(curves);
                     productDiv.className                 = "text";
                     productDiv.innerHTML = chargingSession.product != null ? chargingSession.product["@id"] + "<br />" : "";
 
-                    if (chargingSession.end)
+                    if (chargingSession.begin && chargingSession.end)
                     {
 
-                        let endUTC   = parseUTC(chargingSession.end);
-                        let duration = this.moment.duration(endUTC - beginUTC);
+                        let duration = this.moment.duration(parseUTC(chargingSession.end) - parseUTC(chargingSession.begin));
 
                         productDiv.innerHTML += "Ladedauer ";
                         if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days()    + " Tage " + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
@@ -1109,7 +1103,7 @@ console.log(curves);
 
                                 }
 
-                                productDiv.innerHTML += "<br />" + translateMeasurementName(measurement.name) + " " + amount.toString() + " kWh (" + measurement.values.length + " Messwerte)";
+                                productDiv.innerHTML += "<br />" + measurementName2human(measurement.name) + " " + amount.toString() + " kWh";// (" + measurement.values.length + " Messwerte)";
 
                             }
 
@@ -1608,7 +1602,7 @@ console.log(curves);
                                "Messung",             measurement.name);
 
                     CreateDiv2(meterDiv,              "OBIS",
-                               "OBIS-Kennzahl",       parseOBIS(measurement.obis));
+                               "OBIS-Kennzahl",       measurement.obis);
 
                     //#endregion
 
@@ -1782,8 +1776,8 @@ console.log(curves);
 
         }
         catch (exception)
-        { 
-            console.log("Could not show charging session details: " + exception);
+        {
+            this.doGlobalError(exception);
         }
 
     }

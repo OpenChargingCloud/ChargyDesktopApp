@@ -264,12 +264,15 @@ class Alfen01  {
                      "email":        ""
                  },
 
-                 "chargingStations": [
+                 "chargingPools": [
                      {
-                         "@id":                      "chargingStationId",
-            //                     // "description": {
-            //                     //     "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
-            //                     // },
+                         "@id":                      "DE*BDO*POOL*1",
+                         "description":              { "de": "GraphDefined Virtual Charging Pool - CI-Tests Pool 1" },
+
+                         "chargingStations": [
+                             {
+                                 "@id":                      "DE*BDO*STATION*1*A",
+                                 "description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A" },
             //                     "firmwareVersion":          CTRArray[0]["Alfen"]["softwareVersion"],
             //                     "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
             //                     "address": {
@@ -279,10 +282,8 @@ class Alfen01  {
             //                     },
                                  "EVSEs": [
                                      {
-                                         "@id":                      "evseId",
-            //                             // "description": {
-            //                             //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
-            //                             // },
+                                         "@id":                      "DE*BDO*EVSE*1*A*1",
+                                         "description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A / EVSE 1" },
                                          "sockets":                  [ { } ],
                                          "meters": [
                                              {
@@ -306,6 +307,8 @@ class Alfen01  {
                                      }
                                  ]
                              }
+                         ],
+                     }
                  ],
 
                  "chargingSessions": [
@@ -332,8 +335,8 @@ class Alfen01  {
 
                                  "energyMeterId":        common.MeterId,
                                  "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/AlfenCrypt03+json",
-            //                     "name":                 CTRArray[0]["measurand"]["name"],
-                                 "obis":                 common.ObisId,
+                                 "name":                 OBIS2MeasurementName(parseOBIS(common.ObisId)),
+                                 "obis":                 parseOBIS(common.ObisId),
             //                     "unit":                 CTRArray[0]["measuredValue"]["unit"],
                                  "unitEncoded":          common.UnitEncoded,
             //                     "valueType":            CTRArray[0]["measuredValue"]["valueType"],
@@ -543,7 +546,7 @@ class AlfenCrypt01 extends ACrypt {
             statusAdapter:                SetHex        (cryptoBuffer, measurementValue.statusAdapter,                                             15, false),
             secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              16, true),
             paging:                       SetUInt32     (cryptoBuffer, measurementValue.paginationId,                                              19, true),
-            obisId:                       SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
+            obisId:                       SetHex        (cryptoBuffer, OBIS2Hex(measurementValue.measurement.obis),                                23, false),
             unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
             scalar:                       SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
             value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true)
@@ -619,7 +622,7 @@ class AlfenCrypt01 extends ACrypt {
             statusAdapter:                SetHex        (cryptoBuffer, measurementValue.statusAdapter,                                          28, true),
             secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                           30, true),
             timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                              34, false),
-            obisId:                       SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                       38, false),
+            obisId:                       SetHex        (cryptoBuffer, OBIS2Hex(measurementValue.measurement.obis),                             38, false),
             unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                44),
             scalar:                       SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                      45),
             value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                  46, true),
@@ -749,8 +752,8 @@ class AlfenCrypt01 extends ACrypt {
                                                            this.DecodeAdapterStatus(measurementValue.statusAdapter).join("<br />") + "</span>",
                                                                                                                                              result.statusAdapter                         || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Sekundenindex",               measurementValue.secondsIndex,                                                    result.secondsIndex                          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Zeitstempel",                 parseUTC(measurementValue.timestamp),                                             result.timestamp                             || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("OBIS-Kennzahl",               parseOBIS(measurementValue.measurement.obis),                                     result.obisId                                || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Zeitstempel",                 UTC2human(measurementValue.timestamp),                                            result.timestamp                             || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("OBIS-Kennzahl",               measurementValue.measurement.obis,                                                result.obisId                                || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Einheit (codiert)",           measurementValue.measurement.unitEncoded,                                         result.unitEncoded                           || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Skalierung",                  measurementValue.measurement.scale,                                               result.scalar                                || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Messwert",                    measurementValue.value + " Wh",                                                   result.value                                 || "",  infoDiv, PlainTextDiv);

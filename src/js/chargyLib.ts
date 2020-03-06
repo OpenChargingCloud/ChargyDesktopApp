@@ -48,12 +48,29 @@ function parseUTC(UTCTime: string|number): any {
 
 }
 
+function UTC2human(UTCTime: string|number): any {
+
+    var moment = require('moment');
+
+    moment.locale(window.navigator.language);
+
+    return (typeof UTCTime === 'string'
+                ? moment.utc(UTCTime)
+                : moment.unix(UTCTime)).
+               format('dddd, D; MMM YYYY HH:mm:ss').
+                   replace(".", "").    // Nov. -> Nov
+                   replace(";", ".") +  // 14;  -> 14.
+                   " Uhr";
+
+}
+
 function parseOBIS(OBIS: string): string
 {
 
     if (OBIS.length != 12)
-        return OBIS;
+        throw "Invalid OBIS number '" + OBIS + "'!";
 
+    // DIN EN 62056-61:2002
     // https://wiki.volkszaehler.org/software/obis
     // https://github.com/volkszaehler/vzlogger/blob/master/src/Obis.cpp
     // https://www.promotic.eu/en/pmdoc/Subsystems/Comm/PmDrivers/IEC62056_OBIS.htm
@@ -63,8 +80,8 @@ function parseOBIS(OBIS: string): string
     // format: "A-B:C.D.E[*&]F"
     // A, B, E, F are optional
     // C & D are mandatory
-    var media       = parseInt(OBIS.substring( 0,  2), 16); // A
-    var channel     = parseInt(OBIS.substring( 2,  4), 16); // B
+    var media       = parseInt(OBIS.substring( 0,  2), 16); // A =>  1: Energie
+    var channel     = parseInt(OBIS.substring( 2,  4), 16); // B =>  0: No channels available
     var indicator   = parseInt(OBIS.substring( 4,  6), 16); // C =>  1: Wirkenergie Bezug P+, kWh
     var mode        = parseInt(OBIS.substring( 6,  8), 16); // D => 17: Signierter Momentanwert (vgl. 7)
     var quantities  = parseInt(OBIS.substring( 8, 10), 16); // E =>  0: Total
@@ -74,7 +91,44 @@ function parseOBIS(OBIS: string): string
 
 }
 
-function translateMeasurementName(In: string) : string
+const OBIS_RegExpr = new RegExp("((\\d+)\\-)?((\\d+):)?((\\d+)\\.)(\\d+)(\\.(\\d+))?(\\*(\\d+))?");
+
+function OBIS2Hex(OBIS: string): string
+{
+
+    //  1-0:1.8.0*255 => 0100010800ff
+
+    let OBISElements = OBIS.match(OBIS_RegExpr);
+
+    return OBISElements == null
+               ? "000000000000"
+               : parseInt(OBISElements[ 2] ?? "00").toString(16).padStart(2, "0") +   // optional  A
+                 parseInt(OBISElements[ 4] ?? "00").toString(16).padStart(2, "0") +   // optional  B
+                 parseInt(OBISElements[ 6] ?? "00").toString(16).padStart(2, "0") +   // mandatory C
+                 parseInt(OBISElements[ 7] ?? "00").toString(16).padStart(2, "0") +   // mandatory D
+                 parseInt(OBISElements[ 9] ?? "00").toString(16).padStart(2, "0") +   // optional  E
+                 parseInt(OBISElements[11] ?? "00").toString(16).padStart(2, "0");    // optional  F
+
+}
+
+function OBIS2MeasurementName(In: string) : string
+{
+    switch (In)
+    {
+
+        case "1-0:1.8.0*255":
+            return "ENERGY_TOTAL";      // Sum Li Active Power+ (Q1+QIV), Time integral 1 [kWh]
+
+        case "1-0:1.17.0*255":
+            return "ENERGY_TOTAL";    // Sum Li Active Power+ (Q1+QIV), Time integral 7 [kWh]
+
+        default:
+            return In;
+
+    }
+}
+
+function measurementName2human(In: string) : string
 {
     switch (In)
     {
@@ -229,13 +283,13 @@ function SetHex(dv: DataView, hex: string, offset: number, reverse?: boolean): s
 
 }
 
-function SetTimestamp(dv: DataView, timestamp: any, offset: number): string
+function SetTimestamp(dv: DataView, timestamp: any, offset: number, addLocalOffset: boolean = true): string
 {
 
     if (typeof timestamp === 'string')
         timestamp = parseUTC(timestamp);
 
-    var unixtime  = timestamp.unix();
+    var unixtime  = timestamp.unix() + (addLocalOffset ? 60 * timestamp.utcOffset() : 0); // Usage of utcOffset() is afaik EMH specific!
     var bytes     = getInt64Bytes(unixtime);
     var buffer    = new ArrayBuffer(8);
     var tv        = new DataView(buffer);
@@ -249,13 +303,13 @@ function SetTimestamp(dv: DataView, timestamp: any, offset: number): string
 
 }
 
-function SetTimestamp32(dv: DataView, timestamp: any, offset: number, addLocalOfset: boolean = true): string
+function SetTimestamp32(dv: DataView, timestamp: any, offset: number, addLocalOffset: boolean = true): string
 {
 
     if (typeof timestamp === 'string')
         timestamp = parseUTC(timestamp);
 
-    var unixtime  = timestamp.unix() + (addLocalOfset ? 60 * timestamp.utcOffset() : 0); // Usage of utcOffset() is afaik EMH specific!
+    var unixtime  = timestamp.unix() + (addLocalOffset ? 60 * timestamp.utcOffset() : 0); // Usage of utcOffset() is afaik EMH specific!
     var bytes     = getInt64Bytes(unixtime);
     var buffer    = new ArrayBuffer(4);
     var tv        = new DataView(buffer);

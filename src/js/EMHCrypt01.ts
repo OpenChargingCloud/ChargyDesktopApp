@@ -225,7 +225,7 @@ class EMHCrypt01 extends ACrypt {
             infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
             secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
             paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
-            obis:                         SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
+            obis:                         SetHex        (cryptoBuffer, OBIS2Hex(measurementValue.measurement.obis),                                23, false),
             unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
             scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
             value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
@@ -342,19 +342,19 @@ class EMHCrypt01 extends ACrypt {
             PlainTextDiv.style.maxHeight   = "";
             PlainTextDiv.style.overflowY   = "";
 
-            this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId                               || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp                             || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                           result.meterId                               || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Zeitstempel",              UTC2human(measurementValue.timestamp),                                                result.timestamp                             || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Status",                   hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
-                                                        this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",           result.infoStatus                            || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                       result.secondsIndex                          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                         result.paginationId                          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis                                  || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded                           || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale                                 || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value                                 || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                              result.logBookIndex                          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     pad(result.authorizationStart,          128) || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, PlainTextDiv);
+                                                        this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",            result.infoStatus                            || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                        result.secondsIndex                          || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                          result.paginationId                          || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("OBIS-Kennzahl",            measurementValue.measurement.obis,                                                    result.obis                                  || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                             result.unitEncoded                           || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                   result.scale                                 || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                       result.value                                 || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                               result.logBookIndex                          || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",      pad(result.authorizationStart,          128) || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Autorisierungszeitpunkt",  UTC2human(measurementValue.measurement.chargingSession.authorizationStart.timestamp), pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, PlainTextDiv);
 
         }
 

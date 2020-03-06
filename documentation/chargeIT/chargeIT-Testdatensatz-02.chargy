@@ -138,7 +138,7 @@
 			"energyMeterId": "0901454D48000083E076",
 			"@context": "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
 			"name": "ENERGY_TOTAL",
-			"obis": "0100011100FF",
+			"obis": "1-0:1.17.0*255",
 			"unit": "WATT_HOUR",
 			"unitEncoded": 30,
 			"valueType": "Integer64",

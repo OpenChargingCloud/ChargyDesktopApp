@@ -538,7 +538,7 @@ class ChargeIT {
                                 "energyMeterId":        CTRArray[0]["meterInfo"]["meterId"],
                                 "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
                                 "name":                 CTRArray[0]["measurand"]["name"],
-                                "obis":                 CTRArray[0]["measurand"]["id"],
+                                "obis":                 parseOBIS(CTRArray[0]["measurand"]["id"]),
                                 "unit":                 CTRArray[0]["measuredValue"]["unit"],
                                 "unitEncoded":          CTRArray[0]["measuredValue"]["unitEncoded"],
                                 "valueType":            CTRArray[0]["measuredValue"]["valueType"],
