@@ -19,7 +19,7 @@ Chargy is a transparency software for secure and transparent e-mobility charging
 
 The current version of the Chargy Transparency Software is 1.0.x. This version is *feature complete* and currently under review by the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) and other regulators. If you are a charge point vendor and want to use this software to verify your compliance to the German Eichrecht you can talk to your partner [chargeIT mobility](https://www.chargeit-mobility.com) and obtain the required legal documents. If you need help with the Chargy software, talk to us.
 
-The development of version 1.1.x already started and will focus on a better seperation of core software and the chargeIT edition (white labeling), better security concepts and more digital certificates.
+The development of version [v1.1](https://github.com/OpenChargingCloud/ChargyDesktopApp/tree/v1.1) already started and will focus on a better seperation of core software and the chargeIT edition (white labeling), better security concepts and more digital certificates.
 
 
 ## Compiling from source
