@@ -39,16 +39,16 @@ class Chargepoint01 {
 
             //#region First CTR format
 
-            if (SomeJSON.company_name    &&
-                SomeJSON.display_unit    &&
-                SomeJSON.energy          &&
-                SomeJSON.flat            &&
-                SomeJSON.minMaxAdj       &&
-                SomeJSON.parking         &&
-                SomeJSON.subtotal        &&
-                SomeJSON.totalAmount     &&
-                SomeJSON.additional_info &&
-                SomeJSON.additional_info)
+            if (SomeJSON.company_name    !== undefined &&
+                SomeJSON.display_unit    !== undefined &&
+                SomeJSON.energy          !== undefined &&
+                SomeJSON.flat            !== undefined &&
+                SomeJSON.minMaxAdj       !== undefined &&
+                SomeJSON.parking         !== undefined &&
+                SomeJSON.subtotal        !== undefined &&
+                SomeJSON.totalAmount     !== undefined &&
+                SomeJSON.additional_info !== undefined &&
+                SomeJSON.additional_info !== undefined)
             {
 
                 //#region Documentation
@@ -448,17 +448,17 @@ class Chargepoint01 {
 
             //#region Second CTR format
 
-            if (SomeJSON.outlet              &&
-                SomeJSON.session_id          &&
-                SomeJSON.station_mac         &&
-                SomeJSON.driver_info         &&
-                SomeJSON.meter_serial        &&
-                SomeJSON.meter_startreading  &&
-                SomeJSON.meter_endreading    &&
-                SomeJSON.total_energy        &&
-                SomeJSON.energy_units        &&
-                SomeJSON.start_time          &&
-                SomeJSON.end_time) {
+            if (SomeJSON.outlet              !== undefined &&
+                SomeJSON.session_id          !== undefined &&
+                SomeJSON.station_mac         !== undefined &&
+                SomeJSON.driver_info         !== undefined &&
+                SomeJSON.meter_serial        !== undefined &&
+                SomeJSON.meter_startreading  !== undefined &&
+                SomeJSON.meter_endreading    !== undefined &&
+                SomeJSON.total_energy        !== undefined &&
+                SomeJSON.energy_units        !== undefined &&
+                SomeJSON.start_time          !== undefined &&
+                SomeJSON.end_time            !== undefined) {
 
                 //#region Documentation
 
