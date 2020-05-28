@@ -46,20 +46,23 @@ class ChargyApp {
 
     //#region Data
 
-    private elliptic: any;
-    private moment:   any;
-    private chargy:   Chargy;
+    private elliptic:                   any;
+    private moment:                     any;
+    private chargy:                     Chargy;
 
-    // variable 'crypto' is already defined differently in Google Chrome!
-    private crypt       = require('electron').remote.require('crypto');
-    public  appVersion  = require('electron').remote.app.getVersion().split('.') as string[];
-    private ipcRenderer = require('electron').ipcRenderer;
-    private path        = require('path');
+    public  appEdition                  = "";
+    public  copyright                   = "";
+    public  appVersion                  = "";
+    public  versionsURL                 = "";
+    private ipcRenderer                 = require('electron').ipcRenderer;
+    private path                        = require('path');
+    private commandLineArguments        = [];
+    public  packageJson:                any = {};
 
-    private exe_hash                  = "";
-    private app_asar_hash             = "";
-    private electron_asar_hash        = "";
-    private complete_hash             = "";
+    private exe_hash                    = "";
+    private app_asar_hash               = "";
+    private electron_asar_hash          = "";
+    private complete_hash               = "";
 
     private input:                      HTMLDivElement;
     private updateAvailableButton:      HTMLButtonElement;
@@ -82,27 +85,39 @@ class ChargyApp {
     private overlayDiv:                 HTMLDivElement;
     private overlayOkButton:            HTMLButtonElement;
 
-    private markers:             any          = [];
-    private minlat:              number       = +1000;
-    private maxlat:              number       = -1000;
-    private minlng:              number       = +1000;
-    private maxlng:              number       = -1000;
+    private markers:                    any     = [];
+    private minlat:                     number  = +1000;
+    private maxlat:                     number  = -1000;
+    private minlng:                     number  = +1000;
+    private maxlng:                     number  = -1000;
 
-    private currentAppInfos:     any          = null;
-    private currentVersionInfos: any          = null;
-    private currentPackage:      any          = null;
+    private currentAppInfos:            any     = null;
+    private currentVersionInfos:        any     = null;
+    private currentPackage:             any     = null;
 
     //#endregion
 
-    constructor() {
+    constructor(appEdition?:  string,
+                copyright?:   string,
+                versionsURL?: string) {
+
+        this.appVersion                = this.ipcRenderer.sendSync('getAppVersion');
+        this.appEdition                = appEdition  ?? "";
+        this.copyright                 = copyright   ?? "&copy; 2018-2020 GraphDefined GmbH";
+        this.versionsURL               = versionsURL ?? "https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json";
+        this.commandLineArguments      = this.ipcRenderer.sendSync('getCommandLineArguments');
+        this.packageJson               = this.ipcRenderer.sendSync('getPackageJson');
 
         this.elliptic                  = require('elliptic');
         this.moment                    = require('moment');
+
         this.chargy                    = new Chargy(this.elliptic,
                                                     this.moment);
 
-        const curves = require("crypto").getCurves();
-console.log(curves);
+        //const curves = require("crypto").getCurves();
+        //console.log(curves);
+        //const sha256 = require("crypto").createHash('sha256').update("text", 'utf8').digest('hex');
+        //const sha512 = require("crypto").createHash('sha512').update("text", 'utf8').digest('hex');
 
         //#region Calculate application hash
 
@@ -130,7 +145,9 @@ console.log(curves);
                 break;
 
             default:
-                document.getElementById('chargySHA512')!.children[1].innerHTML = "Kann nicht berechnet werden!"
+                let chargySHA512Div = document.getElementById('chargySHA512');
+                if (chargySHA512Div != null && chargySHA512Div.children.length >= 2)
+                    chargySHA512Div.children[1].innerHTML = "Kann nicht berechnet werden!"
                 break;
 
         }
@@ -141,7 +158,7 @@ console.log(curves);
 
         let GetListOfVersionsFromGitHub = new XMLHttpRequest();
         GetListOfVersionsFromGitHub.open("GET",
-                                         "https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
+                                         this.versionsURL,
                                          true);
 
         GetListOfVersionsFromGitHub.onreadystatechange = () => {
@@ -161,11 +178,14 @@ console.log(curves);
                             for (let version of this.currentAppInfos.versions)
                             {
 
-                                var versionElements = version.version.split('.');
+                                var thisVersion   = this.appVersion.split('.');
+                                var remoteVersion = version.version.split('.');
 
                                 //#region Find current version package
 
-                                if (versionElements[0] == this.appVersion[0] && versionElements[1] == this.appVersion[1] && versionElements[2] == this.appVersion[2])
+                                if (remoteVersion[0] == thisVersion[0] &&
+                                    remoteVersion[1] == thisVersion[1] &&
+                                    remoteVersion[2] == thisVersion[2])
                                 {
 
                                     this.currentVersionInfos = version;
@@ -189,9 +209,9 @@ console.log(curves);
 
                                 //#region Find newer/updated version
 
-                                else if (versionElements[0] >  this.appVersion[0] ||
-                                        (versionElements[0] >= this.appVersion[0] && versionElements[1] >  this.appVersion[1]) ||
-                                        (versionElements[0] >= this.appVersion[0] && versionElements[1] >= this.appVersion[1] && versionElements[2] > this.appVersion[2]))
+                                else if (remoteVersion[0] >  thisVersion[0] ||
+                                        (remoteVersion[0] >= thisVersion[0] && remoteVersion[1] >  thisVersion[1]) ||
+                                        (remoteVersion[0] >= thisVersion[0] && remoteVersion[1] >= thisVersion[1] && remoteVersion[2] > thisVersion[2]))
                                 {
 
                                     this.updateAvailableButton.style.display = "block";
@@ -357,37 +377,11 @@ console.log(curves);
         this.errorTextDiv              = <HTMLDivElement> document.getElementById('errorText');
 
 
-        //#region Handle Drag'n'Drop of charge transparency files
+        (document.getElementById("appEdition")    as HTMLSpanElement).innerHTML = this.appEdition;
+        (document.getElementById("appVersion")    as HTMLSpanElement).innerHTML = this.appVersion;
+        (document.getElementById("chargyVersion") as HTMLSpanElement).innerHTML = this.appVersion;
+        (document.getElementById("copyright")     as HTMLSpanElement).innerHTML = this.copyright;
 
-        this.input                     = <HTMLDivElement>      document.getElementById('input');
-
-        this.input.addEventListener('dragenter', (event: DragEvent) => {
-            event.preventDefault();
-            (event.currentTarget as HTMLDivElement)!.classList.add('over');
-        }, false);
-
-        this.input.addEventListener('dragover',  (event: DragEvent) => {
-            event.stopPropagation();
-            event.preventDefault();
-            event.dataTransfer!.dropEffect = 'copy';
-            (event.currentTarget as HTMLDivElement)!.classList.add('over');
-        }, false);
-
-        this.input.addEventListener('dragleave', (event: DragEvent) => {
-            (event.currentTarget as HTMLDivElement)!.classList.remove('over');
-        }, false);
-
-        this.input.addEventListener('drop',      (event: DragEvent) => {
-            event.stopPropagation();
-            event.preventDefault();
-            (event.currentTarget as HTMLDivElement)!.classList.remove('over');
-
-            if (event.dataTransfer?.files != null)
-                this.readAndParseFiles(event.dataTransfer.files);
-
-        }, false);
-
-        //#endregion
 
         //#region Handle the 'Update available'-button
 
@@ -423,7 +417,7 @@ console.log(curves);
                 this.electron_asar_hash != "")
             {
 
-                var sha512hash = this.crypt.createHash('sha512');
+                var sha512hash = require('crypto').createHash('sha512');
                 sha512hash.update(this.exe_hash);
                 sha512hash.update(this.app_asar_hash);
                 sha512hash.update(this.electron_asar_hash);
@@ -530,26 +524,56 @@ console.log(curves);
             var files = ev?.target?.files;
 
             if (files != null)
-                this.readAndParseFiles(files);
+                this.readFilesFromDisk(files);
 
         }
+
+        //#endregion
+
+        //#region Handle Drag'n'Drop of charge transparency files
+
+        this.input                     = <HTMLDivElement>      document.getElementById('input');
+
+        this.input.addEventListener('dragenter', (event: DragEvent) => {
+            event.preventDefault();
+            (event.currentTarget as HTMLDivElement)?.classList.add('over');
+        }, false);
+
+        this.input.addEventListener('dragover',  (event: DragEvent) => {
+            event.stopPropagation();
+            event.preventDefault();
+            event.dataTransfer!.dropEffect = 'copy';
+            (event.currentTarget as HTMLDivElement)?.classList.add('over');
+        }, false);
+
+        this.input.addEventListener('dragleave', (event: DragEvent) => {
+            (event.currentTarget as HTMLDivElement)?.classList.remove('over');
+        }, false);
+
+        this.input.addEventListener('drop',      (event: DragEvent) => {
+            event.stopPropagation();
+            event.preventDefault();
+            (event.currentTarget as HTMLDivElement)?.classList.remove('over');
+            if (event.dataTransfer?.files != null)
+                this.readFilesFromDisk(event.dataTransfer.files);
+        }, false);
 
         //#endregion
 
         //#region Handle the 'paste'-button
 
         var pasteButton               = <HTMLButtonElement>   document.getElementById('pasteButton');
-        pasteButton.onclick           = (ev: MouseEvent) => {
-            (navigator as any).clipboard.readText().then((clipText: string) => {
-                try
-                {
-                    this.detectAndConvertContentFormat(clipText);
-                }
-                catch (exception) {
-                    this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
-                }
-            });
+        pasteButton.onclick           = async (ev: MouseEvent)  => {
+            await this.readClipboard();
         }
+
+        //#endregion
+
+        //#region Handle IPC message "receiveReadClipboard" (Ctrl+V)
+
+        this.ipcRenderer.on('receiveReadClipboard', async (event:any) => {
+            await this.readClipboard();
+        });
 
         //#endregion
 
@@ -589,7 +613,7 @@ console.log(curves);
                 var data = {};
 
                 data["timestamp"]                  = new Date().toISOString();
-                data["chargyVersion"]              = this.appVersion.join(".");
+                data["chargyVersion"]              = this.appVersion;
                 data["platform"]                   = process.platform;
 
                 data["invalidCTR"]                 = (newIssueForm.querySelector("#invalidCTR")                as HTMLInputElement).checked;
@@ -743,16 +767,20 @@ console.log(curves);
         // Note: The following is synchronous, therefore must be at the end of the file...
 
         // Windows and Linux
-        var cliArguments = require('electron').remote.process.argv;
-        if (cliArguments.length >= 2)
-            this.readFileFromDisk(cliArguments[1]);
+        //var cliArguments = require('electron').remote.process.argv;
+        if (this.commandLineArguments.length > 0)
+            this.readFilesFromDisk(this.commandLineArguments);
 
         // Mac OS X - first file to open
-        this.readFileFromDisk(this.ipcRenderer.sendSync('get-chargy-filename'));
+        this.readFileFromDisk(this.ipcRenderer.sendSync('getChargyFilename'));
 
         // Mac OS X - when app is running
-        this.ipcRenderer.on('send-chargy-filename', (event:any, filename:string) => {
+        this.ipcRenderer.on('receiveFileToOpen', (event:any, filename:string) => {
             this.readFileFromDisk(filename);
+        });
+
+        this.ipcRenderer.on('receiveFilesToOpen', (event:any, filenames:string[]) => {
+            this.readFilesFromDisk(filenames);
         });
 
         //#endregion
@@ -767,12 +795,11 @@ console.log(curves);
     {
 
         const fs      = require('original-fs');
-        let   sha512  = require('electron').remote.
-                        require('crypto').createHash('sha512');
+        let   sha512  = require('crypto').createHash('sha512');
         let   stream  = fs.createReadStream(filename);
 
         stream.on('data', function(data: any) {
-            sha512.update(data)
+            sha512.update(data) //update(text, 'utf8')
         })
 
         stream.on('error', function() {
@@ -805,7 +832,7 @@ console.log(curves);
                 "description":          app.description,
 
                 "version": {
-                    "version":              this.appVersion.join("."),
+                    "version":              this.appVersion,
                     "releaseDate":          version.releaseDate,
                     "description":          version.description,
                     "tags":                 version.tags,
@@ -835,9 +862,9 @@ console.log(curves);
             //ToDo: Checking the timestamp might be usefull!
 
             var Input       = JSON.stringify(toCheck);
-            var sha256value = this.crypt.createHash('sha256').
-                                         update(Input, 'utf8').
-                                         digest('hex');
+            var sha256value = require('crypto').createHash('sha256').
+                                                update(Input, 'utf8').
+                                                digest('hex');
 
             var result = new this.elliptic.ec('secp256k1').
                                   keyFromPublic(signature.publicKey, 'hex').
@@ -858,44 +885,93 @@ console.log(curves);
 
     //#endregion
 
-    //#region Read and parse CTR files
 
-    private readAndParseFiles(files: FileList) {
+    //#region readFile(s)FromDisk()
 
-        if (!files || files.length == 0)
-            return;
+    private readFileFromDisk(file: string|File): void {
 
-        let fs        = require('original-fs');
-        let fileInfos = new Array<IFileInfo>();
-
-        for (let i = 0; i < files.length; i++)
-            //@ts-ignore - File.path seems to be missing within the declaration files!
-            fileInfos.push({ name: files[i].name, data: fs.readFileSync(files[i].path) });
-
-        this.detectAndConvertContentFormat(fileInfos);
+        if (typeof file == 'string')
+            this.readFilesFromDisk([ file ]);
+        else
+            this.readFilesFromDisk([ file.name ]);
 
     }
 
-    //#endregion
-
-    //#region Process .chargy file extentions/associations opened via this app
-
-    private readFileFromDisk(filename: string): void {
-        if (filename != null && filename.trim() != "" && filename != "." && filename[0] != '-')
+    private readFilesFromDisk(files: string[]|FileList): void {
+        if (files != null && files.length > 0)
         {
-            try
+
+            //#region Map file names
+
+            let filesToLoad = new Array<IFileInfo>();
+
+            for (let i = 0; i < files.length; i++)
             {
-                this.detectAndConvertContentFormat(require('original-fs').
-                     readFileSync(filename.replace("file://", "")));
+
+                let file = files[i];
+
+                if (typeof file == 'string')
+                    filesToLoad.push({ name: file });
+                else
+                    filesToLoad.push(file)
+
             }
-            catch (exception) {
-                this.doGlobalError("Fehlerhafter Transparenzdatensatz!", exception);
+
+            //#endregion
+
+            let fs          = require('original-fs');
+            let loadedFiles = new Array<IFileInfo>();
+
+            for (const filename of filesToLoad)
+            {
+                if (filename.name.trim() != "" && filename.name != "." && filename.name[0] != '-')
+                {
+                    try
+                    {
+
+                        loadedFiles.push({
+                                       "name":  filename.name,
+                                       "path":  filename.path,
+                                       "data":  fs.readFileSync((filename.path ?? filename.name).replace("file://", ""))
+                                    });
+
+                    }
+                    catch (exception) {
+                        loadedFiles.push({
+                            "name":       filename.name,
+                            "path":       filename.path,
+                            "error":     "Fehlerhafter Transparenzdatensatz!",
+                            "exception":  exception
+                         });
+                    }
+                }
             }
+
+
+            if (loadedFiles.length > 0)
+                this.detectAndConvertContentFormat(loadedFiles);
+
         }
     }
 
     //#endregion
 
+    //#region readClipboard()
+
+    private async readClipboard()
+    {
+        try
+        {
+            let text = await navigator.clipboard.readText();
+            this.detectAndConvertContentFormat(text);
+        }
+        catch (exception)
+        {
+            this.doGlobalError("Unbekannter Transparenzdatensatz!")
+        }
+    }
+
+    //#endregion
 
     //#region detectAndConvertContentFormat(FileInfos)
 
@@ -908,7 +984,10 @@ console.log(curves);
         let result:IChargeTransparencyRecord|ISessionCryptoResult = null;
 
         if (typeof FileInfos === 'string')
-            result = await this.chargy.detectAndConvertContentFormat([ { name: "clipboard", data: new TextEncoder().encode(FileInfos) } ]);
+            result = await this.chargy.detectAndConvertContentFormat([{
+                                                                         name: "clipboard",
+                                                                         data: new TextEncoder().encode(FileInfos)
+                                                                      }]);
 
         else if (isIFileInfo(FileInfos))
             result = await this.chargy.detectAndConvertContentFormat([ FileInfos ]);
@@ -916,12 +995,12 @@ console.log(curves);
         else
             result = await this.chargy.detectAndConvertContentFormat(FileInfos);
 
+
         if (IsAChargeTransparencyRecord(result))
             await this.showChargeTransparencyRecord(result);
 
         else
-            this.doGlobalError2(result,
-                                "Unbekanntes Transparenzdatensatzformat!");
+            this.doGlobalError(result ?? "Unbekanntes Transparenzdatensatzformat!");
 
     }
 
@@ -997,8 +1076,8 @@ console.log(curves);
                     for(var i=0; i<AllChargingSessionsDivs.length; i++)
                         AllChargingSessionsDivs[i].classList.remove("activated");
 
-                    //(this as HTMLDivElement)!.classList.add("activated");
-                    (ev.currentTarget as HTMLDivElement)!.classList.add("activated");
+                    //(this as HTMLDivElement)?.classList.add("activated");
+                    (ev.currentTarget as HTMLDivElement)?.classList.add("activated");
 
                     //#endregion
 
@@ -1848,17 +1927,14 @@ console.log(curves);
 
     //#region Global error handling...
 
-    private doGlobalError2(result:    ISessionCryptoResult,
-                           text:      String,
-                           context?:  any)
+    private doGlobalError(result:   ISessionCryptoResult|string,
+                          context?: any)
     {
-        this.doGlobalError(result.message !== undefined ? result.message : text,
-                           context);
-    }
 
-    private doGlobalError(text:      String,
-                          context?:  any)
-    {
+        let text = (typeof result === 'string'
+                        ? result?.trim()
+                        : result.message?.trim())
+                    ?? "Unbekanntes Transparenzdatensatzformat!";
 
         this.inputInfosDiv.style.display             = 'flex';
         this.chargingSessionScreenDiv.style.display  = 'none';

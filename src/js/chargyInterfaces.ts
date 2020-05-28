@@ -477,7 +477,10 @@ interface TarInfo {
 
 interface IFileInfo {
     name:           string,
-    data:           ArrayBuffer
+    path?:          string,
+    data?:          ArrayBuffer,
+    error?:         string,
+    exception?:     any
 }
 
 function isIFileInfo(obj: any): obj is IFileInfo {

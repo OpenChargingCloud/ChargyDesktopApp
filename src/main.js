@@ -1,5 +1,6 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, ipcMain } = require('electron')
+const path = require('path')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -9,17 +10,20 @@ function createWindow () {
 
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 1500,
-    height: 900,    
-    autoHideMenuBar: true,
-    icon: 'build/chargy_icon.png',
+    width:              1500,
+    height:             900,
+    autoHideMenuBar:    true,
+    icon:               'build/chargy_icon.png',
     webPreferences: {
-      nodeIntegration: true
-    }
+      nodeIntegration:  true,
+      preload:          path.join(__dirname, 'preload.js')
+    },
+    // Don't show the window until it's ready, this prevents any white flickering
+    show:              false
   })
 
   // Remove the menu
-  mainWindow.setMenu(null);
+  mainWindow.removeMenu();
 
   // and load the index.html of the app.
   mainWindow.loadFile('src/index.html')
@@ -35,12 +39,46 @@ function createWindow () {
     mainWindow = null
   })
 
+  // Show main window when page is ready
+  mainWindow.on('ready-to-show', () => {
+
+    if (app.commandLine.hasSwitch('nogui'))
+      console.log("No app GUI!");
+
+    console.log(process.argv);
+    if (!process.argv.slice(2).some(file => file?.toLowerCase() == "-nogui"))
+    {
+     // console.log("No GUI!");
+      mainWindow.show()
+    }
+
+  })
+
+  require('electron-localshortcut').register(mainWindow, 'Ctrl+V', () => {
+    if (mainWindow != null)
+      mainWindow.webContents.send('receiveReadClipboard');
+  });
+
 }
+
+console.log(process.argv);
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+app.whenReady().then(() => {
+
+  createWindow()
+
+  app.on('activate', function () {
+    // On macOS it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0)
+      createWindow()
+  })
+
+})
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
@@ -61,14 +99,29 @@ app.on('activate', function () {
 // code. You can also put them in separate files and require them here.
 
 // IPC communication for Mac OS X
+// https://medium.com/@nornagon/electrons-remote-module-considered-harmful-70d69500f31#d978
 var filename = "";
 app.on('open-file', (event, path) => {
     event.preventDefault();
     filename = path;
     if (mainWindow != null)
-        mainWindow.webContents.send('send-chargy-filename', path);
+        mainWindow.webContents.send('receiveFileToOpen', path);
 });
 
-ipcMain.on('get-chargy-filename', (event) => {
-    event.returnValue = filename;
+ipcMain.on('getChargyFilename', (event) => {
+  event.returnValue = filename;
 });
+
+ipcMain.on('getAppVersion', (event) => {
+  event.returnValue = app.getVersion();
+});
+
+ipcMain.on('getCommandLineArguments', (event) => {
+  event.returnValue = process.argv.slice(2);
+});
+
+ipcMain.on('getPackageJson', (event) => {
+  event.returnValue = require('../package.json');
+});
+
+

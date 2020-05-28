@@ -65,6 +65,9 @@ $ npm install chart.js@latest
 
 $ npm install @types/chart.js@latest --save-dev
 + @types/chart.js@2.9.0
+
+$ npm install electron-localshortcut --save
++ electron-localshortcut@3.2.1
 ```
 
 

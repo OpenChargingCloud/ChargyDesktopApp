@@ -16,9 +16,9 @@
   limitations under the License.
 -->
 <html>
-  
+
   <head>
-	  <meta charset="utf-8" />
+    <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     <title>Chargy - Transparenzsoftware für die Elektromobilität</title>
@@ -95,10 +95,10 @@
 
                     <div id="softwareInfos">
                         <div id="product">
-                            Chargy Transparenzsoftware - chargeIT mobility Edition v<script>document.write(require('electron').remote.app.getVersion())</script>
+                            Chargy Transparenzsoftware - <span id="appEdition"></span> v<span id="appVersion"></span>
                         </div>
                         <div id="copyright">
-                            &copy; 2018-2019 chargeIT mobility GmbH
+                            &copy; 2018-2020 GraphDefined GmbH
                         </div>
                     </div>
 
@@ -108,12 +108,12 @@
 
                     <div id="OpenSourceLibs">
                         <div class="lib">
-                            <div class="name">Chargy <script>document.write(require('electron').remote.app.getVersion())</script></div>
+                            <div class="name">Chargy <span id="chargyVersion"></span></div>
                             <div class="license"><button class="linkButton" href="https://github.com/OpenChargingCloud/ChargyDesktopApp/blob/master/LICENSE">Copyright &copy; 2018-2020 GraphDefined GmbH<br />AGPL v3 License</button></div>
                         </div>
                         <div class="lib">
                             <div class="name">Electron <script>document.write(process.versions.electron)</script></div>
-                            <div class="license"><button class="linkButton" href="https://github.com/electron/electron/blob/master/LICENSE">Copyright &copy; 2013-2019 GitHub Inc.<br />MIT License</button></div>
+                            <div class="license"><button class="linkButton" href="https://github.com/electron/electron/blob/master/LICENSE">Copyright &copy; 2013-2020 GitHub Inc.<br />MIT License</button></div>
                         </div>
                         <div class="lib">
                             <div class="name">Electron Builder 20.44.4</div>
@@ -411,7 +411,8 @@
           id: 'ahzf.nc811hb2'
       }).addTo(map);
 
-      var chargyApp = new ChargyApp();
+      var chargyApp = new ChargyApp("chargeIT mobility Edition",
+                                    "&copy; 2018-2020 chargeIT mobility GmbH");
 
     </script>
 
