@@ -43,7 +43,6 @@
     "decompress": "^4.2.1",
     "decompress-bzip2": "^4.0.0",
     "decompress-gz": "0.0.1",
-    "decompress-tarxz": "^3.0.0",
     "electron-localshortcut": "^3.2.1",
     "elliptic": "^6.5.2",
     "file-type": "^14.5.0",
