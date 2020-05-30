@@ -785,6 +785,18 @@ class ChargyApp {
 
         //#endregion
 
+
+        //#region OnWindowResize
+
+        window.addEventListener('resize', function() {
+            const appDiv          = document.getElementById('app')         as HTMLDivElement;
+            const headlineDiv     = document.getElementById('headline')    as HTMLDivElement;
+            const verifyframeDiv  = document.getElementById('verifyframe') as HTMLDivElement;
+            verifyframeDiv.style.maxHeight = (appDiv.clientHeight - headlineDiv.clientHeight).toString() + "px";
+        });
+
+        //#endregion
+
     }
 
     //#region calcSHA512FileHash(...)
