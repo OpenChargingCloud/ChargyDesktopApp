@@ -802,19 +802,31 @@ class ChargepointCrypt01 extends ACrypt {
         try
         {
 
-            let sessionResult  = SessionVerificationResult.UnknownSessionFormat;
-            let plainText      = chargingSession.original != null ? atob(chargingSession.original) : "";
-            let publicKeyId    = chargingSession.EVSEId.replace(/:/g, "").replace(/-/g, "_");
+            let   sessionResult  = SessionVerificationResult.UnknownSessionFormat;
+            const plainText      = chargingSession.original != null ? atob(chargingSession.original) : "";
 
-            //#region Find public key
+            //#region Find public key, or use all available public keys
+
+            const publicKeyId  = chargingSession.EVSEId.replace(/:/g, "").replace(/-/g, "_");
+            const publicKeys   = [];
 
             if (chargingSession.ctr.publicKeys != null)
             {
+
                 for (let publicKeyInfo of chargingSession.ctr?.publicKeys)
                 {
                     if (publicKeyInfo.id === publicKeyId)
-                        chargingSession.publicKey = publicKeyInfo;
+                        publicKeys.push(publicKeyInfo);
                 }
+
+                if (publicKeys.length == 0)
+                {
+                    for (const publicKeyInfo of chargingSession.ctr?.publicKeys)
+                    {
+                        publicKeys.push(publicKeyInfo);
+                    }
+                }
+
             }
 
             //#endregion
@@ -846,56 +858,66 @@ class ChargepointCrypt01 extends ACrypt {
 
             //#endregion
 
-
             //#region Validate signature
 
-            if (chargingSession.publicKey !=  null &&
-                plainText                 !== ""   &&
+            if (plainText                 !== ""   &&
                 chargingSession.signature !=  null &&
                 chargingSession.signature !== "")
             {
 
-                switch (chargingSession.publicKey.curve.description)
+                //ToDo: Hash values could perhaps be cached!
+                for (const publicKey of publicKeys)
                 {
 
-                    case "secp224k1":
-                        let SHA256HashValue        = await sha256(plainText);
-                        chargingSession.hashValue  = (BigInt("0x" + SHA256HashValue) >> BigInt(31)).toString(16);
-                        sessionResult              = this.curve224k1.validate(BigInt("0x" + chargingSession.hashValue),
-                                                                              BigInt("0x" + chargingSession.signature.r),
-                                                                              BigInt("0x" + chargingSession.signature.s),
-                                                                              [ BigInt("0x" + chargingSession.publicKey.value.substr(2,  56)),
-                                                                                BigInt("0x" + chargingSession.publicKey.value.substr(58, 56)) ])
-                                                         ? SessionVerificationResult.ValidSignature
-                                                         : SessionVerificationResult.InvalidSignature;
-                        break;
+                    switch (publicKey.curve.description)
+                    {
 
-                    case "secp256r1":
-                        chargingSession.hashValue  = await sha256(plainText);
-                        sessionResult              = this.curve256r1.keyFromPublic(chargingSession.publicKey.value, 'hex').
-                                                                     verify       (chargingSession.hashValue,
-                                                                                   chargingSession.signature)
-                                                        ? SessionVerificationResult.ValidSignature
-                                                        : SessionVerificationResult.InvalidSignature;
-                        break;
+                        case "secp224k1":
+                            let SHA256HashValue        = await sha256(plainText);
+                            chargingSession.hashValue  = (BigInt("0x" + SHA256HashValue) >> BigInt(31)).toString(16);
+                            sessionResult              = this.curve224k1.validate(BigInt("0x" + chargingSession.hashValue),
+                                                                                  BigInt("0x" + chargingSession.signature.r),
+                                                                                  BigInt("0x" + chargingSession.signature.s),
+                                                                                  [ BigInt("0x" + publicKey.value.substr(2,  56)),
+                                                                                    BigInt("0x" + publicKey.value.substr(58, 56)) ])
+                                                            ? SessionVerificationResult.ValidSignature
+                                                            : SessionVerificationResult.InvalidSignature;
+                            break;
 
-                    case "secp384r1":
-                        chargingSession.hashValue  = await sha384(plainText);
-                        sessionResult              = this.curve384r1.keyFromPublic(chargingSession.publicKey.value, 'hex').
-                                                                     verify       (chargingSession.hashValue,
-                                                                                   chargingSession.signature)
-                                                        ? SessionVerificationResult.ValidSignature
-                                                        : SessionVerificationResult.InvalidSignature;
-                        break;
+                        case "secp256r1":
+                            chargingSession.hashValue  = await sha256(plainText);
+                            sessionResult              = this.curve256r1.keyFromPublic(publicKey.value, 'hex').
+                                                                         verify       (chargingSession.hashValue,
+                                                                                       chargingSession.signature)
+                                                            ? SessionVerificationResult.ValidSignature
+                                                            : SessionVerificationResult.InvalidSignature;
+                            break;
 
-                    case "secp521r1":
-                        chargingSession.hashValue  = await sha512(plainText);
-                        sessionResult              = this.curve512r1.keyFromPublic(chargingSession.publicKey.value, 'hex').
-                                                                     verify       (chargingSession.hashValue,
-                                                                                   chargingSession.signature)
-                                                        ? SessionVerificationResult.ValidSignature
-                                                        : SessionVerificationResult.InvalidSignature;
+                        case "secp384r1":
+                            chargingSession.hashValue  = await sha384(plainText);
+                            sessionResult              = this.curve384r1.keyFromPublic(publicKey.value, 'hex').
+                                                                         verify       (chargingSession.hashValue,
+                                                                                       chargingSession.signature)
+                                                            ? SessionVerificationResult.ValidSignature
+                                                            : SessionVerificationResult.InvalidSignature;
+                            break;
+
+                        case "secp521r1":
+                            chargingSession.hashValue  = await sha512(plainText);
+                            sessionResult              = this.curve512r1.keyFromPublic(publicKey.value, 'hex').
+                                                                         verify       (chargingSession.hashValue,
+                                                                                       chargingSession.signature)
+                                                            ? SessionVerificationResult.ValidSignature
+                                                            : SessionVerificationResult.InvalidSignature;
+                            break;
+
+                    }
+
+                    if (sessionResult == SessionVerificationResult.ValidSignature)
+                    {
+                        chargingSession.publicKey = publicKey;
                         break;
+                    }
 
                 }
 
