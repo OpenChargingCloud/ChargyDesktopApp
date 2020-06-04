@@ -147,6 +147,9 @@ ipcMain.on('setVerificationResult', (event, result) => {
             switch (singleResult.status)
             {
 
+                case 0:
+                    status = "Unknown session format";
+
                 case 1:
                     status = "Invalid session format";
                     break;
@@ -188,6 +191,9 @@ ipcMain.on('setVerificationResult', (event, result) => {
     }
 
     if (app.commandLine.hasSwitch('nogui'))
-        app.quit();
+    {
+        mainWindow = null;
+        app.exit(0);
+    }
 
 });
