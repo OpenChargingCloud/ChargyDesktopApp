@@ -70,6 +70,7 @@ class ChargyApp {
     private fullScreenButton:           HTMLButtonElement;
 
     private updateAvailableScreen:      HTMLDivElement;
+    private inputDiv:                   HTMLDivElement;
     private inputInfosDiv:              HTMLDivElement;
     private aboutScreenDiv:             HTMLDivElement;
     private chargySHA512Div:            HTMLDivElement;
@@ -389,6 +390,7 @@ class ChargyApp {
         this.chargingSessionScreenDiv  = document.getElementById('chargingSessionScreen')  as HTMLDivElement;
         this.invalidDataSetsScreenDiv  = document.getElementById('invalidDataSetsScreen')  as HTMLDivElement;
         this.evseTarifInfosDiv         = document.getElementById('evseTarifInfos')         as HTMLDivElement;
+        this.inputDiv                  = document.getElementById('input')                  as HTMLDivElement;
         this.inputInfosDiv             = document.getElementById('inputInfos')             as HTMLDivElement;
         this.errorTextDiv              = document.getElementById('errorText')              as HTMLDivElement;
 
@@ -404,9 +406,11 @@ class ChargyApp {
         this.updateAvailableButton     = <HTMLButtonElement>   document.getElementById('updateAvailableButton');
         this.updateAvailableButton.onclick = (ev: MouseEvent) => {
             this.updateAvailableScreen.style.display     = "block";
+            this.inputDiv.style.flexDirection            = "";
             this.inputInfosDiv.style.display             = "none";
             this.aboutScreenDiv.style.display            = "none";
             this.chargingSessionScreenDiv.style.display  = "none";
+            this.invalidDataSetsScreenDiv.style.display  = "none";
             this.backButtonDiv.style.display             = "block";
             this.exportButtonDiv.style.display           = "none";
         }
@@ -419,9 +423,11 @@ class ChargyApp {
         this.aboutButton.onclick = (ev: MouseEvent) => {
 
             this.updateAvailableScreen.style.display     = "none";
+            this.inputDiv.style.flexDirection            = "";
             this.inputInfosDiv.style.display             = "none";
             this.aboutScreenDiv.style.display            = "block";
             this.chargingSessionScreenDiv.style.display  = "none";
+            this.invalidDataSetsScreenDiv.style.display  = "none";
             this.backButtonDiv.style.display             = "block";
             this.exportButtonDiv.style.display           = "none";
 
@@ -707,9 +713,11 @@ class ChargyApp {
         this.backButton.onclick        = (ev: MouseEvent) => {
 
             this.updateAvailableScreen.style.display     = "none";
+            this.inputDiv.style.flexDirection            = "";
             this.inputInfosDiv.style.display             = 'flex';
             this.aboutScreenDiv.style.display            = "none";
             this.chargingSessionScreenDiv.style.display  = "none";
+            this.invalidDataSetsScreenDiv.style.display  = "none";
             this.backButtonDiv.style.display             = "none";
             this.exportButtonDiv.style.display           = "none";
             this.fileInput.value                         = "";
@@ -987,7 +995,10 @@ class ChargyApp {
         }
         catch (exception)
         {
-            this.doGlobalError("Unbekannter Transparenzdatensatz!")
+            this.doGlobalError({
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Unbekannter Transparenzdatensatz!"
+            });
         }
     }
 
@@ -1018,15 +1029,19 @@ class ChargyApp {
 
         if (IsAChargeTransparencyRecord(result))
         {
-            await this.showChargeTransparencyRecord(result);
+
+            if (!this.ipcRenderer.sendSync('noGUI'))
+                await this.showChargeTransparencyRecord(result);
+
             this.ipcRenderer.sendSync('setVerificationResult', result.chargingSessions?.map(session => session.verificationResult));
+
         }
 
         else
             this.doGlobalError(result ??
                                {
                                    status:   SessionVerificationResult.InvalidSessionFormat,
-                                   message:  "Unbekanntes Transparenzdatensatzformat!"
+                                   message:  "Unbekannter Transparenzdatensatz!"
                                });
 
     }
@@ -1043,9 +1058,10 @@ class ChargyApp {
 
         //#region Prepare View
 
+        this.inputDiv.style.flexDirection            = "column";
         this.chargingSessionScreenDiv.style.display  = "flex";
         this.chargingSessionScreenDiv.innerText      = "";
-        this.invalidDataSetsScreenDiv.style.display  = "flex";
+        this.invalidDataSetsScreenDiv.style.display  = "none";
         this.invalidDataSetsScreenDiv.innerText      = "";
         this.backButtonDiv.style.display             = "flex";
         this.exportButtonDiv.style.display           = "flex";
@@ -1695,6 +1711,8 @@ class ChargyApp {
         if (CTR.invalidDataSets && CTR.invalidDataSets.length > 0)
         {
 
+            this.invalidDataSetsScreenDiv.style.display  = "flex";
+
             const headlineDiv       = this.invalidDataSetsScreenDiv.appendChild(document.createElement('div'));
             headlineDiv.id          = "description";
             headlineDiv.innerHTML   = "Ungültige Datensätze";
@@ -1927,7 +1945,7 @@ class ChargyApp {
                                         break;
 
                                     case VerificationResult.PublicKeyNotFound:
-                                        icon = '<i class="fas fa-times-circle"></i> Ungültiger Public Key';
+                                        icon = '<i class="fas fa-times-circle"></i> Public Key nicht gefunden';
                                         break;
 
                                     case VerificationResult.InvalidPublicKey:
@@ -2007,7 +2025,11 @@ class ChargyApp {
         }
         catch (exception)
         {
-            this.doGlobalError(exception);
+            this.doGlobalError({
+                status:     SessionVerificationResult.InvalidSessionFormat,
+                message:    "Ungültiger Transparenzdatensatz!",
+                exception:  exception
+            });
         }
 
     }
@@ -2078,23 +2100,23 @@ class ChargyApp {
 
     //#region Global error handling...
 
-    private doGlobalError(result:   ISessionCryptoResult|string,
+    private doGlobalError(result:   ISessionCryptoResult,
                           context?: any)
     {
 
-        let text = (typeof result === 'string'
-                        ? result?.trim()
-                        : result.message?.trim())
-                    ?? "Unbekanntes Transparenzdatensatzformat!";
+        let text = (result?.message ?? "Unbekannter Transparenzdatensatz!").trim();
 
+        this.inputDiv.style.flexDirection            = "";
         this.inputInfosDiv.style.display             = 'flex';
         this.chargingSessionScreenDiv.style.display  = 'none';
         this.chargingSessionScreenDiv.innerHTML      = '';
+        this.invalidDataSetsScreenDiv.style.display  = "none";
+        this.invalidDataSetsScreenDiv.innerText      = "";
         this.errorTextDiv.style.display              = 'inline-block';
         this.errorTextDiv.innerHTML                  = '<i class="fas fa-times-circle"></i> ' + text;
 
-        console.log(text);
-        console.log(context);
+        // console.log(text);
+        // console.log(context);
 
         this.ipcRenderer.sendSync('setVerificationResult', result);
 

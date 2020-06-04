@@ -95,6 +95,13 @@ app.on('open-file', (event, path) => {
 });
 
 
+ipcMain.on('isDebug', (event) => {
+  event.returnValue = app.commandLine.hasSwitch('debug');
+});
+
+ipcMain.on('noGUI', (event) => {
+  event.returnValue = app.commandLine.hasSwitch('nogui');
+});
 
 ipcMain.on('getChargyFilename', (event) => {
     event.returnValue = filename;
@@ -126,17 +133,61 @@ ipcMain.on('setVerificationResult', (event, result) => {
 
     //console.log(result);
 
-    if (app.commandLine.hasSwitch('nogui'))
+    if (app.commandLine.hasSwitch('nogui') || app.commandLine.hasSwitch('debug'))
     {
 
         if (!Array.isArray(result))
             result = [ result ];
 
         for (let singleResult of result)
-            console.log(singleResult.status + (singleResult.message != null ? " - " + singleResult.message : ""));
+        {
 
-        app.quit();
+            let status = "";
+
+            switch (singleResult.status)
+            {
+
+                case 1:
+                    status = "Invalid session format";
+                    break;
+
+                case 2:
+                    status = "Public key not found";
+                    break;
+
+                case 3:
+                    status = "Invalid public key";
+                    break;
+
+                case 4:
+                    status = "Invalid signature";
+                    break;
+
+                case 5:
+                    status = "Valid signature";
+                    break;
+
+                case 6:
+                    status = "Inconsistent timestamps";
+                    break;
+
+                case 7:
+                    status = "At least two measurements required";
+                    break;
+
+                default:
+                    status = "Unknown session format";
+                    break;
+
+            }
+
+            console.log(status + (singleResult.message != null ? " - " + singleResult.message : ""));
+
+        }
 
     }
+
+    if (app.commandLine.hasSwitch('nogui'))
+        app.quit();
 
 });

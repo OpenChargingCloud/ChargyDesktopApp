@@ -89,6 +89,12 @@ Now you can test the software via...
 ```
 ./run.sh
 ```
+If you prefer a command line version of this software you can pass this to the run script
+```
+./run.sh  --nogui  documentation/ChargePoint/Testdata-secp224k1/0024b1000002e300_2.zip  documentation/ChargePoint/Testdata-secp224k1/0024b1000002e300_2.pem
+
+Valid signature
+```
 
 **Please be aware**, that Electron comes with its own internal version of Node.js. This version is currently still 12.0.0. Therefore Chargy will also show "12.0.0" and not the version number of the Node.js installation on your computer, e.g. "12.4.0". It is possible to rebuild the internal Node.js version, but we do not recommend this.
 
