@@ -504,11 +504,9 @@ class OCMF {
             {
 
                 // case "0.1":
-                    
                 //     return await this.tryToParseOCMFv0_1(OCMFDataList as IOCMFData_v0_1[], PublicKey);
 
                 case "1.0":
-                    
                     return await this.tryToParseOCMF(OCMFDataList as IOCMFData_v1_0[], PublicKey);
 
                 default:

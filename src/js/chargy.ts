@@ -208,12 +208,6 @@ class Chargy {
 
         //#endregion
 
-        // DataInfos.sort(function (a, b) {
-        //     if (a.name < b.name) return -1;
-        //     if (a.name > b.name) return +1;
-        //     return 0;
-        // });
-
         let archiveFound      = false;
         let expandedFileInfos = new Array<IFileInfo>();
 
@@ -381,37 +375,21 @@ class Chargy {
         if (FileInfos == null || FileInfos.length == 0)
             return {
                 status:   SessionVerificationResult.InvalidSessionFormat,
-                message:  "Unknown data format!"
+                message:  "Keine Transparenzdatensätze gefunden!",
             }
 
-        const fileType         = require('file-type');
-        const decompress       = require('decompress');
-        const decompressTar    = require('decompress-tar');
-        const decompressTargz  = require('decompress-targz');
-        const decompressTarbz2 = require('decompress-tarbz2');
-       // const decompressTarxz  = require('decompress-tarxz'); // Does not compile!
-        const decompressUnzip  = require('decompress-unzip');
-        const decompressGz     = require('decompress-gz');
-        const decompressBzip2  = require('decompress-bzip2');
-
         //#endregion
-
-        // DataInfos.sort(function (a, b) {
-        //     if (a.name < b.name) return -1;
-        //     if (a.name > b.name) return +1;
-        //     return 0;
-        // });
 
         let expandedFiles  = await this.decompressFiles(FileInfos);
 
         //#region Process JSON/XML/text files
 
-        let processedFiles = new Array<ICTRInfo>();
+        let processedFiles = new Array<IExtendedFileInfo>();
 
         for (let expandedFile of expandedFiles)
         {
 
-            let processedFile  = expandedFile as ICTRInfo;
+            let processedFile  = expandedFile as IExtendedFileInfo;
             let textContent    = new TextDecoder('utf-8').decode(expandedFile.data)?.trim();
 
             // Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
@@ -473,7 +451,7 @@ class Chargy {
                 {
                     processedFile.result = {
                         status:     SessionVerificationResult.InvalidSessionFormat,
-                        message:    "Unknown or invalid XML data format!",
+                        message:    "Unbekanntes oder ungültiges XML-Transparenzdatensatzformat!",
                         exception:  exception
                     }
                 }
@@ -585,7 +563,11 @@ class Chargy {
                 }
                 catch (exception)
                 {
-                    // Just ignore this file...
+                    processedFile.result = {
+                        status:     SessionVerificationResult.InvalidSessionFormat,
+                        message:    "Unbekanntes oder ungültiges Public-Key-Datenformat!",
+                        exception:  exception
+                    }
                 }
 
             }
@@ -620,11 +602,19 @@ class Chargy {
 
                 } catch (exception)
                 {
-                    return {
+                    processedFile.result = {
                         status:     SessionVerificationResult.InvalidSessionFormat,
-                        message:    "Unknown or invalid JSON data format!",
+                        message:    "Unbekanntes oder ungültiges JSON-Transparenzdatensatzformat!",
                         exception:  exception
                     }
+                }
+            }
+
+            if (processedFile.result == undefined)
+            {
+                processedFile.result = {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Unbekanntes oder ungültiges Transparenzdatensatzformat!",
                 }
             }
 
@@ -634,6 +624,7 @@ class Chargy {
 
         //#endregion
 
+
         //#region If a single CTR had been found...
 
         if (processedFiles.length == 1)
@@ -642,8 +633,13 @@ class Chargy {
             if (IsAChargeTransparencyRecord(processedFiles[0].result))
                 return this.processChargeTransparencyRecord(processedFiles[0].result);
 
-            else
-                return processedFiles[0].result;
+            if (IsAPublicKeyLookup(processedFiles[0].result))
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Unbekanntes oder ungültiges Transparenzdatensatzformat!",
+                };
+
+            return processedFiles[0].result;
 
         }
 
@@ -653,128 +649,114 @@ class Chargy {
 
         else if (processedFiles.length > 1)
         {
-            let CTR = await this.mergeChargeTransparencyRecords(processedFiles.map(file => file.result));
-            if (IsAChargeTransparencyRecord(CTR))
-                return this.processChargeTransparencyRecord(CTR);
+
+            let mergedCTR:IChargeTransparencyRecord = {
+                "@id":      "",
+                "@context": ""
+            };
+
+            for (const processedFile of processedFiles)
+            {
+
+                const processedFileResult = processedFile?.result;
+
+                if (IsAChargeTransparencyRecord(processedFileResult))
+                {
+
+                    if (mergedCTR["@id"] === "")
+                        mergedCTR["@id"] = processedFileResult["@id"];
+
+                    if (mergedCTR["@context"] === "")
+                        mergedCTR["@context"] = processedFileResult["@context"];
+
+                    if (!mergedCTR.begin || (mergedCTR.begin && processedFileResult.begin && mergedCTR.begin > processedFileResult.begin))
+                        mergedCTR.begin = processedFileResult.begin;
+
+                    if (!mergedCTR.end || (mergedCTR.end && processedFileResult.end && mergedCTR.end < processedFileResult.end))
+                        mergedCTR.end = processedFileResult.end;
+
+                    if (!mergedCTR.description)
+                        mergedCTR.description = processedFileResult.description;
+
+                    //ToDo: Is this a really good idea? Or should we fail, whenever this information is different?
+                    if (!mergedCTR.contract)
+                        mergedCTR.contract = processedFileResult.contract;
+
+
+                    if (!mergedCTR.chargingStationOperators)
+                        mergedCTR.chargingStationOperators = processedFileResult.chargingStationOperators;
+                    else if (processedFileResult.chargingStationOperators)
+                        for (let chargingStationOperator of processedFileResult.chargingStationOperators)
+                            mergedCTR.chargingStationOperators.push(chargingStationOperator);
+
+                    if (!mergedCTR.chargingPools)
+                        mergedCTR.chargingPools = processedFileResult.chargingPools;
+                    else if (processedFileResult.chargingPools)
+                        for (let chargingPool of processedFileResult.chargingPools)
+                            mergedCTR.chargingPools.push(chargingPool);
+
+                    if (!mergedCTR.chargingStations)
+                        mergedCTR.chargingStations = processedFileResult.chargingStations;
+                    else if (processedFileResult.chargingStations)
+                        for (let chargingStation of processedFileResult.chargingStations)
+                            mergedCTR.chargingStations.push(chargingStation);
+
+                    // publicKeys
+
+                    if (!mergedCTR.chargingSessions)
+                        mergedCTR.chargingSessions = processedFileResult.chargingSessions;
+                    else if (processedFileResult.chargingSessions)
+                        for (let chargingSession of processedFileResult.chargingSessions)
+                            mergedCTR.chargingSessions.push(chargingSession);
+
+                    if (!mergedCTR.eMobilityProviders)
+                        mergedCTR.eMobilityProviders = processedFileResult.eMobilityProviders;
+                    else if (processedFileResult.eMobilityProviders)
+                        for (let eMobilityProvider of processedFileResult.eMobilityProviders)
+                            mergedCTR.eMobilityProviders.push(eMobilityProvider);
+
+                    if (!mergedCTR.mediationServices)
+                        mergedCTR.mediationServices = processedFileResult.mediationServices;
+                    else if (processedFileResult.mediationServices)
+                        for (let mediationService of processedFileResult.mediationServices)
+                            mergedCTR.mediationServices.push(mediationService);
+
+                }
+
+                else if (IsAPublicKeyLookup(processedFileResult))
+                {
+
+                    if (!mergedCTR.publicKeys)
+                        mergedCTR.publicKeys = new Array<IPublicKeyInfo>();
+
+                    for (const publicKey of processedFileResult.publicKeys)
+                        mergedCTR.publicKeys.push(publicKey);
+
+                }
+
+                else
+                {
+
+                    if (mergedCTR.invalidDataSets === undefined)
+                        mergedCTR.invalidDataSets = new Array<IExtendedFileInfo>();
+
+                    mergedCTR.invalidDataSets.push(processedFile);
+
+                }
+
+            }
+
+            if (IsAChargeTransparencyRecord(mergedCTR))
+                return this.processChargeTransparencyRecord(mergedCTR);
+
         }
 
         //#endregion
 
         return {
             status:   SessionVerificationResult.InvalidSessionFormat,
-            message:  "Unbekanntes Transparenzdatensatzformat!"
+            message:  "Keine Transparenzdatensätze gefunden!"
         }
-
-    }
-
-    //#endregion
-
-    //#region mergeChargeTransparencyRecord(CTRs)
-
-    public async mergeChargeTransparencyRecords(CTRs: Array<IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult>): Promise<IChargeTransparencyRecord|ISessionCryptoResult>
-    {
-
-        //#region Initial checks
-
-        if (CTRs == null || CTRs.length == 0)
-            return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
-                message:  "Ungültiges Transparenzdatensatzformat!"
-            }
-
-        //#endregion
-
-        let mergedCTR:IChargeTransparencyRecord = {
-            "@id":      "",
-            "@context": ""
-        };
-
-        for (let currentCTR of CTRs)
-        {
-
-            if (IsAChargeTransparencyRecord(currentCTR))
-            {
-
-                if (mergedCTR["@id"] === "")
-                    mergedCTR["@id"] = currentCTR["@id"];
-
-                if (mergedCTR["@context"] === "")
-                    mergedCTR["@context"] = currentCTR["@context"];
-
-                if (!mergedCTR.begin || (mergedCTR.begin && currentCTR.begin && mergedCTR.begin > currentCTR.begin))
-                    mergedCTR.begin = currentCTR.begin;
-
-                if (!mergedCTR.end || (mergedCTR.end && currentCTR.end && mergedCTR.end < currentCTR.end))
-                    mergedCTR.end = currentCTR.end;
-
-                if (!mergedCTR.description)
-                    mergedCTR.description = currentCTR.description;
-
-                //ToDo: Is this a really good idea? Or should we fail, whenever this information is different?
-                if (!mergedCTR.contract)
-                    mergedCTR.contract = currentCTR.contract;
-
-
-                if (!mergedCTR.chargingStationOperators)
-                    mergedCTR.chargingStationOperators = currentCTR.chargingStationOperators;
-                else if (currentCTR.chargingStationOperators)
-                    for (let chargingStationOperator of currentCTR.chargingStationOperators)
-                        mergedCTR.chargingStationOperators.push(chargingStationOperator);
-
-                if (!mergedCTR.chargingPools)
-                    mergedCTR.chargingPools = currentCTR.chargingPools;
-                else if (currentCTR.chargingPools)
-                    for (let chargingPool of currentCTR.chargingPools)
-                        mergedCTR.chargingPools.push(chargingPool);
-
-                if (!mergedCTR.chargingStations)
-                    mergedCTR.chargingStations = currentCTR.chargingStations;
-                else if (currentCTR.chargingStations)
-                    for (let chargingStation of currentCTR.chargingStations)
-                        mergedCTR.chargingStations.push(chargingStation);
-
-                // publicKeys
-
-                if (!mergedCTR.chargingSessions)
-                    mergedCTR.chargingSessions = currentCTR.chargingSessions;
-                else if (currentCTR.chargingSessions)
-                    for (let chargingSession of currentCTR.chargingSessions)
-                        mergedCTR.chargingSessions.push(chargingSession);
-
-                if (!mergedCTR.eMobilityProviders)
-                    mergedCTR.eMobilityProviders = currentCTR.eMobilityProviders;
-                else if (currentCTR.eMobilityProviders)
-                    for (let eMobilityProvider of currentCTR.eMobilityProviders)
-                        mergedCTR.eMobilityProviders.push(eMobilityProvider);
-
-                if (!mergedCTR.mediationServices)
-                    mergedCTR.mediationServices = currentCTR.mediationServices;
-                else if (currentCTR.mediationServices)
-                    for (let mediationService of currentCTR.mediationServices)
-                        mergedCTR.mediationServices.push(mediationService);
-
-            }
-
-            else if (IsAPublicKeyLookup(currentCTR))
-            {
-
-                if (!mergedCTR.publicKeys)
-                    mergedCTR.publicKeys = new Array<IPublicKeyInfo>();
-
-                for (let publicKey of currentCTR.publicKeys)
-                    mergedCTR.publicKeys.push(publicKey);
-
-            }
-
-        }
-
-        if (mergedCTR["@id"] === "" || mergedCTR["@context"] === "")
-            return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
-                message:  "Ungültiges Transparenzdatensatzformat!"
-            }
-
-        return mergedCTR;
 
     }
 

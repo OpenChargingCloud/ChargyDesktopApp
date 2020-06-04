@@ -17,34 +17,41 @@
 
 ///<reference path="ACrypt.ts" />
 
-function IsAChargeTransparencyRecord(data: IChargeTransparencyRecord|ISessionCryptoResult|IPublicKeyLookup|undefined): data is IChargeTransparencyRecord
+function IsAChargeTransparencyRecord(data: IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult|undefined): data is IChargeTransparencyRecord
 {
 
     if (data == null || data == undefined)
         return false;
 
-    let ctr = data as IChargeTransparencyRecord;
+    let chargeTransparencyRecord = data as IChargeTransparencyRecord;
 
-    return ctr.begin            !== undefined &&
-           ctr.end              !== undefined &&
-           ctr.chargingSessions !== undefined;
+    return chargeTransparencyRecord.begin            !== undefined &&
+           chargeTransparencyRecord.end              !== undefined &&
+           chargeTransparencyRecord.chargingSessions !== undefined;
+
+}
+
+function IsAPublicKeyLookup(data: IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult|undefined): data is IPublicKeyLookup
+{
+
+    if (data == null || data == undefined)
+        return false;
+
+    let publicKeyLookup = data as IPublicKeyLookup;
+
+    return publicKeyLookup.publicKeys !== undefined;
 
 }
 
 function IsASessionCryptoResult(data: IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult): data is ISessionCryptoResult
 {
-    return (data as ISessionCryptoResult).status !== undefined;
-}
-
-function IsAPublicKeyLookup(data: IChargeTransparencyRecord|ISessionCryptoResult|IPublicKeyLookup|undefined): data is IPublicKeyLookup
-{
 
     if (data == null || data == undefined)
         return false;
 
-    let lookup = data as IPublicKeyLookup;
+    let sessionCryptoResult = data as ISessionCryptoResult;
 
-    return lookup.publicKeys !== undefined;
+    return sessionCryptoResult.status !== undefined;
 
 }
 
@@ -88,6 +95,7 @@ interface IChargeTransparencyRecord
     eMobilityProviders?:        Array<IEMobilityProvider>;
     mediationServices?:         Array<IMediationService>;
     verificatinResult?:         ISessionCryptoResult;
+    invalidDataSets?:           Array<IExtendedFileInfo>;
 }
 
 interface IContract
@@ -502,6 +510,6 @@ function isIFileInfo(obj: any): obj is IFileInfo {
     return obj.status !== undefined && obj.name && typeof obj.name === 'string' && obj.data && obj.data instanceof ArrayBuffer;
 }
 
-interface ICTRInfo extends IFileInfo {
-    result:         IChargeTransparencyRecord|ISessionCryptoResult
+interface IExtendedFileInfo extends IFileInfo {
+    result:         IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult
 }

@@ -74,6 +74,7 @@ class ChargyApp {
     private aboutScreenDiv:             HTMLDivElement;
     private chargySHA512Div:            HTMLDivElement;
     private chargingSessionScreenDiv:   HTMLDivElement;
+    private invalidDataSetsScreenDiv:   HTMLDivElement;
     private backButtonDiv:              HTMLDivElement;
     private backButton:                 HTMLButtonElement;
     private exportButtonDiv:            HTMLDivElement;
@@ -382,13 +383,14 @@ class ChargyApp {
         //#endregion
 
 
-        this.updateAvailableScreen     = <HTMLDivElement> document.getElementById('updateAvailableScreen');
-        this.aboutScreenDiv            = <HTMLDivElement> document.getElementById('aboutScreen');
-        this.chargySHA512Div           = <HTMLDivElement> document.getElementById('chargySHA512');
-        this.chargingSessionScreenDiv  = <HTMLDivElement> document.getElementById('chargingSessionScreen');
-        this.evseTarifInfosDiv         = <HTMLDivElement> document.getElementById('evseTarifInfos');
-        this.inputInfosDiv             = <HTMLDivElement> document.getElementById('inputInfos');
-        this.errorTextDiv              = <HTMLDivElement> document.getElementById('errorText');
+        this.updateAvailableScreen     = document.getElementById('updateAvailableScreen')  as HTMLDivElement;
+        this.aboutScreenDiv            = document.getElementById('aboutScreen')            as HTMLDivElement;
+        this.chargySHA512Div           = document.getElementById('chargySHA512')           as HTMLDivElement;
+        this.chargingSessionScreenDiv  = document.getElementById('chargingSessionScreen')  as HTMLDivElement;
+        this.invalidDataSetsScreenDiv  = document.getElementById('invalidDataSetsScreen')  as HTMLDivElement;
+        this.evseTarifInfosDiv         = document.getElementById('evseTarifInfos')         as HTMLDivElement;
+        this.inputInfosDiv             = document.getElementById('inputInfos')             as HTMLDivElement;
+        this.errorTextDiv              = document.getElementById('errorText')              as HTMLDivElement;
 
 
         (document.getElementById("appEdition")    as HTMLSpanElement).innerHTML = this.appEdition;
@@ -1036,6 +1038,8 @@ class ChargyApp {
 
         this.chargingSessionScreenDiv.style.display  = "flex";
         this.chargingSessionScreenDiv.innerText      = "";
+        this.invalidDataSetsScreenDiv.style.display  = "flex";
+        this.invalidDataSetsScreenDiv.innerText      = "";
         this.backButtonDiv.style.display             = "flex";
         this.exportButtonDiv.style.display           = "flex";
 
@@ -1078,13 +1082,13 @@ class ChargyApp {
         if (CTR.chargingSessions)
         {
 
-            let chargingSessionsDiv  = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
+            const chargingSessionsDiv  = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
             chargingSessionsDiv.id   = "chargingSessions";
 
-            for (let chargingSession of CTR.chargingSessions)
+            for (const chargingSession of CTR.chargingSessions)
             {
 
-                let chargingSessionDiv      = CreateDiv(chargingSessionsDiv, "chargingSessions");
+                const chargingSessionDiv    = CreateDiv(chargingSessionsDiv, "chargingSession");
                 chargingSession.GUI         = chargingSessionDiv;
                 chargingSessionDiv.onclick  = (ev: MouseEvent) => {
 
@@ -1138,8 +1142,8 @@ class ChargyApp {
 
                 //#endregion
 
-                let tableDiv                = chargingSessionDiv.appendChild(document.createElement('div'));
-                    tableDiv.className      = "table";
+                const tableDiv              = chargingSessionDiv.appendChild(document.createElement('div'));
+                      tableDiv.className    = "table";
 
                 //#region Show energy infos
 
@@ -1672,6 +1676,61 @@ class ChargyApp {
 
             map.fitBounds([[this.minlat, this.minlng], [this.maxlat, this.maxlng]],
                           { padding: [40, 40] });
+
+        }
+
+        //#endregion
+
+
+        //#region Show invalid data
+
+        if (CTR.invalidDataSets && CTR.invalidDataSets.length > 0)
+        {
+
+            const headlineDiv       = this.invalidDataSetsScreenDiv.appendChild(document.createElement('div'));
+            headlineDiv.id          = "description";
+            headlineDiv.innerHTML   = "Ungültige Datensätze";
+
+            let invalidDataSetsDiv  = this.invalidDataSetsScreenDiv.appendChild(document.createElement('div'));
+            invalidDataSetsDiv.id   = "invalidDataSets";
+
+            for (const invalidDataSet of CTR.invalidDataSets)
+            {
+
+                const result = invalidDataSet.result;
+
+                if (IsASessionCryptoResult(result))
+                {
+
+                    const invalidDataSetDiv = CreateDiv(invalidDataSetsDiv, "invalidDataSet");
+
+                    const filenameDiv = CreateDiv(invalidDataSetDiv, "row");
+                    CreateDiv(filenameDiv, "key",   "Dateiname");
+                    CreateDiv(filenameDiv, "value", invalidDataSet.name);
+
+                    const resultDiv = CreateDiv(invalidDataSetDiv, "row");
+                    CreateDiv(resultDiv, "key",   "Fehler");
+                    const valueDiv = CreateDiv(resultDiv, "key",   "Fehler");
+
+                    if (result.message)
+                        valueDiv.innerHTML  = result.message;
+
+                    else
+                        switch (result.status)
+                        {
+
+                            case SessionVerificationResult.InvalidSessionFormat:
+                                valueDiv.innerHTML  = "Ungültiges Transparenzformat";
+                                break;
+
+                            default:
+                                valueDiv.innerHTML  = result.status.toString();
+
+                        }
+
+                }
+
+            }
 
         }
 

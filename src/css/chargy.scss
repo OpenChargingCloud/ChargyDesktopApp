@@ -104,6 +104,8 @@ body {
                 #input {
 
                     display:            flex;
+                    flex-grow:          1;
+                    flex-direction:     column;
                     position:           relative;
                     margin:             0px 15px 15px 15px;
                     padding:            10px 15px;
@@ -113,7 +115,6 @@ body {
                     font-family:        Arial;
                     font-size:          95%;
                     width:              calc(100% - 60px);
-                    flex-grow:          1;
 
                     #inputInfos {
 
@@ -560,10 +561,9 @@ body {
 
                             padding:            0px 0px 0px 10px;
                             height:             100%;
-                            // overflow-y:         scroll;
                             margin:             10px 0px 50px 0px;
 
-                            .chargingSessions {
+                            .chargingSession {
 
                                 position:           relative;
                                 margin-bottom:      4px;
@@ -737,6 +737,57 @@ body {
                         }
 
                     }
+
+                    #invalidDataSetsScreen {
+
+                        display:            none;
+                        flex-direction:     column;
+                        width:              100%;
+                        margin:             0px 0px 75px 0px;
+
+                        #description {
+                            padding:        0px 0px 7px 0px;
+                            font-size:      120%;
+                            font-weight:    bold;
+                        }
+
+                        #invalidDataSets {
+
+                            padding:            0px 0px 0px 10px;
+
+                            .invalidDataSet {
+
+                                display:            table;
+                                margin-bottom:      4px;
+                                padding:            7px 11px;
+                                color:              #5d1f1f;
+                                background-color:   #e68388;
+                                border-radius:      6px;
+                                width:              calc(100% - 22px);
+                                cursor:             pointer;
+
+                                .row {
+
+                                    display:            table-row;
+
+                                    .key {
+                                        display:            table-cell;
+                                        padding-right:      20px;
+                                    }
+
+                                    .value {
+                                        display:            table-cell;
+                                    }
+
+                                }
+
+
+                            }
+
+                        }
+
+                    }
+
 
                     #backButtonDiv {
 
