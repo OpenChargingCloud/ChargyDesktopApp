@@ -95,6 +95,10 @@ class ChargyApp {
     private currentVersionInfos:        any     = null;
     private currentPackage:             any     = null;
 
+    private appDiv                     = document.getElementById('app')         as HTMLDivElement;
+    private headlineDiv                = document.getElementById('headline')    as HTMLDivElement;
+    private verifyframeDiv             = document.getElementById('verifyframe') as HTMLDivElement;
+
     //#endregion
 
     constructor(appEdition?:  string,
@@ -118,6 +122,16 @@ class ChargyApp {
         //console.log(curves);
         //const sha256 = require("crypto").createHash('sha256').update("text", 'utf8').digest('hex');
         //const sha512 = require("crypto").createHash('sha512').update("text", 'utf8').digest('hex');
+
+        //#region OnWindowResize
+
+        this.UpdateWindowSize();
+
+        window.onresize = (ev: UIEvent) => {
+            this.UpdateWindowSize();
+        }
+
+        //#endregion
 
         //#region Calculate application hash
 
@@ -785,18 +799,11 @@ class ChargyApp {
 
         //#endregion
 
+    }
 
-        //#region OnWindowResize
 
-        window.addEventListener('resize', function() {
-            const appDiv          = document.getElementById('app')         as HTMLDivElement;
-            const headlineDiv     = document.getElementById('headline')    as HTMLDivElement;
-            const verifyframeDiv  = document.getElementById('verifyframe') as HTMLDivElement;
-            verifyframeDiv.style.maxHeight = (appDiv.clientHeight - headlineDiv.clientHeight).toString() + "px";
-        });
-
-        //#endregion
-
+    private UpdateWindowSize() {
+        this.verifyframeDiv.style.maxHeight = (this.appDiv.clientHeight - this.headlineDiv.clientHeight).toString() + "px";
     }
 
     //#region calcSHA512FileHash(...)
