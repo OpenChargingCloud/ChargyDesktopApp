@@ -1017,10 +1017,17 @@ class ChargyApp {
 
 
         if (IsAChargeTransparencyRecord(result))
+        {
             await this.showChargeTransparencyRecord(result);
+            this.ipcRenderer.sendSync('setVerificationResult', result.chargingSessions?.map(session => session.verificationResult));
+        }
 
         else
-            this.doGlobalError(result ?? "Unbekanntes Transparenzdatensatzformat!");
+            this.doGlobalError(result ??
+                               {
+                                   status:   SessionVerificationResult.InvalidSessionFormat,
+                                   message:  "Unbekanntes Transparenzdatensatzformat!"
+                               });
 
     }
 
@@ -1044,6 +1051,7 @@ class ChargyApp {
         this.exportButtonDiv.style.display           = "flex";
 
         //#endregion
+
 
         //#region Show CTR infos
 
@@ -1682,7 +1690,7 @@ class ChargyApp {
         //#endregion
 
 
-        //#region Show invalid data
+        //#region Show invalid data sets
 
         if (CTR.invalidDataSets && CTR.invalidDataSets.length > 0)
         {
@@ -1709,8 +1717,8 @@ class ChargyApp {
                     CreateDiv(filenameDiv, "value", invalidDataSet.name);
 
                     const resultDiv = CreateDiv(invalidDataSetDiv, "row");
-                    CreateDiv(resultDiv, "key",   "Fehler");
-                    const valueDiv = CreateDiv(resultDiv, "key",   "Fehler");
+                    CreateDiv(resultDiv,   "key",   "Fehler");
+                    const valueDiv  = CreateDiv(resultDiv, "value");
 
                     if (result.message)
                         valueDiv.innerHTML  = result.message;
@@ -2087,6 +2095,8 @@ class ChargyApp {
 
         console.log(text);
         console.log(context);
+
+        this.ipcRenderer.sendSync('setVerificationResult', result);
 
     }
 

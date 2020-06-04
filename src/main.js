@@ -4,103 +4,89 @@ const path = require('path')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+let mainWindow;
+let filename = "";
 
 function createWindow () {
 
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
-    width:              1500,
-    height:             900,
-    autoHideMenuBar:    true,
-    icon:               'build/chargy_icon.png',
-    webPreferences: {
-      nodeIntegration:  true,
-      preload:          path.join(__dirname, 'preload.js')
-    },
-    // Don't show the window until it's ready, this prevents any white flickering
-    show:              false
-  })
+    // Create the browser window
+    mainWindow = new BrowserWindow({
 
-  // Remove the menu
-  mainWindow.removeMenu();
+        width:              1500,
+        height:             900,
+        autoHideMenuBar:    true,
+        icon:               'build/chargy_icon.png',
 
-  // and load the index.html of the app.
-  mainWindow.loadFile('src/index.html')
+        webPreferences: {
+            nodeIntegration:  true,
+            preload:          path.join(__dirname, 'preload.js')
+        },
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools()
+        // Don't show the window until it's ready, this prevents any white flickering
+        show:              false
 
-  // Emitted when the window is closed.
-  mainWindow.on('closed', function () {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = null
-  })
+    })
 
-  // Show main window when page is ready
-  mainWindow.on('ready-to-show', () => {
+    mainWindow.removeMenu();
+    mainWindow.loadFile('src/index.html')
 
-    if (app.commandLine.hasSwitch('nogui'))
-      console.log("No app GUI!");
+    if (app.commandLine.hasSwitch('debug') && !app.commandLine.hasSwitch('nogui'))
+        mainWindow.webContents.openDevTools()
 
-    console.log(process.argv);
-    if (!process.argv.slice(2).some(file => file?.toLowerCase() == "-nogui"))
-    {
-     // console.log("No GUI!");
-      mainWindow.show()
-    }
+    // Emitted when the window is closed
+    mainWindow.on('closed', function () {
+        // Dereference the window object, usually you would store windows
+        // in an array if your app supports multi windows, this is the time
+        // when you should delete the corresponding element.
+        mainWindow = null
+    })
 
-  })
+    // Show main window when page is ready
+    mainWindow.on('ready-to-show', () => {
+        if (!app.commandLine.hasSwitch('nogui'))
+            mainWindow.show();
+    })
 
-  require('electron-localshortcut').register(mainWindow, 'Ctrl+V', () => {
-    if (mainWindow != null)
-      mainWindow.webContents.send('receiveReadClipboard');
-  });
+    // Register key short-cut for PASTE
+    require('electron-localshortcut').register(mainWindow, 'Ctrl+V', () => {
+        if (mainWindow != null)
+            mainWindow.webContents.send('receiveReadClipboard');
+    });
 
 }
-
-console.log(process.argv);
 
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+    createWindow()
+});
 
-  createWindow()
-
-  app.on('activate', function () {
+app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0)
-      createWindow()
-  })
-
+        createWindow()
 })
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
-  // On macOS it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin')
-    app.quit()
+    // On macOS it is common for applications and their menu bar
+    // to stay active until the user quits explicitly with Cmd + Q
+    if (process.platform !== 'darwin')
+        app.quit()
 })
 
 app.on('activate', function () {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null)
-    createWindow()
+    // On macOS it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (mainWindow === null)
+        createWindow()
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
 
 // IPC communication for Mac OS X
 // https://medium.com/@nornagon/electrons-remote-module-considered-harmful-70d69500f31#d978
-var filename = "";
 app.on('open-file', (event, path) => {
     event.preventDefault();
     filename = path;
@@ -108,26 +94,49 @@ app.on('open-file', (event, path) => {
         mainWindow.webContents.send('receiveFileToOpen', path);
 });
 
+
+
 ipcMain.on('getChargyFilename', (event) => {
-  event.returnValue = filename;
+    event.returnValue = filename;
 });
 
 ipcMain.on('getAppVersion', (event) => {
-  event.returnValue = app.getVersion();
+    event.returnValue = app.getVersion();
 });
 
 ipcMain.on('getCommandLineArguments', (event) => {
-  event.returnValue = process.argv.slice(2);
+    event.returnValue = process.argv.slice(2);
 });
 
 ipcMain.on('getPackageJson', (event) => {
-  event.returnValue = require('../package.json');
+    event.returnValue = require('../package.json');
 });
 
 ipcMain.on('showSaveDialog', (event, arg) => {
-  event.returnValue = dialog.showSaveDialogSync(null,
-                                                {
-                                                  title:        'Transparenzdatensätze exportieren',
-                                                  defaultPath:  app.getPath('documents') + '/Ladevorgaenge.chargy',
-                                                });
+    event.returnValue = dialog.showSaveDialogSync(null,
+                                                  {
+                                                      title:        'Transparenzdatensätze exportieren',
+                                                      defaultPath:  app.getPath('documents') + '/Ladevorgaenge.chargy',
+                                                  });
 })
+
+ipcMain.on('setVerificationResult', (event, result) => {
+
+    event.returnValue = true;
+
+    //console.log(result);
+
+    if (app.commandLine.hasSwitch('nogui'))
+    {
+
+        if (!Array.isArray(result))
+            result = [ result ];
+
+        for (let singleResult of result)
+            console.log(singleResult.status + (singleResult.message != null ? " - " + singleResult.message : ""));
+
+        app.quit();
+
+    }
+
+});
