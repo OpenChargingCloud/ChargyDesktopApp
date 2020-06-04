@@ -228,6 +228,7 @@ interface IChargingSession
     GUI:                        HTMLDivElement;
     begin:                      string;
     end?:                       string;
+    chargingProductRelevance?:  IChargingProductRelevance,
     description:                {};
     chargingStationOperatorId:  string;
     chargingStationOperator?:   IChargingStationOperator|null;
@@ -389,6 +390,20 @@ interface IGeoLocation {
     lng:                        number;
 }
 
+interface IChargingProductRelevance
+{
+    time?:                      InformationRelevance;
+    energy?:                    InformationRelevance;
+    parking?:                   InformationRelevance;
+    sessionFee?:                InformationRelevance;
+}
+
+enum InformationRelevance {
+    Unkonwn,
+    Ignored,
+    Informative,
+    Important
+}
 
 enum SessionVerificationResult {
     UnknownSessionFormat,

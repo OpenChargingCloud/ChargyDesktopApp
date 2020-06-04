@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, ipcMain } = require('electron')
+const { app, BrowserWindow, dialog, ipcMain } = require('electron')
 const path = require('path')
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -124,4 +124,10 @@ ipcMain.on('getPackageJson', (event) => {
   event.returnValue = require('../package.json');
 });
 
-
+ipcMain.on('showSaveDialog', (event, arg) => {
+  event.returnValue = dialog.showSaveDialogSync(null,
+                                                {
+                                                  title:        'Transparenzdatensätze exportieren',
+                                                  defaultPath:  app.getPath('documents') + '/Ladevorgaenge.chargy',
+                                                });
+})

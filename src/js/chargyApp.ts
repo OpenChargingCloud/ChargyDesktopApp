@@ -76,8 +76,8 @@ class ChargyApp {
     private chargingSessionScreenDiv:   HTMLDivElement;
     private backButtonDiv:              HTMLDivElement;
     private backButton:                 HTMLButtonElement;
-    private downloadButtonDiv:          HTMLDivElement;
-    private downloadButton:             HTMLButtonElement;
+    private exportButtonDiv:            HTMLDivElement;
+    private exportButton:               HTMLButtonElement;
     private fileInputButton:            HTMLButtonElement;
     private fileInput:                  HTMLInputElement;
     private evseTarifInfosDiv:          HTMLDivElement;
@@ -406,7 +406,7 @@ class ChargyApp {
             this.aboutScreenDiv.style.display            = "none";
             this.chargingSessionScreenDiv.style.display  = "none";
             this.backButtonDiv.style.display             = "block";
-            this.downloadButtonDiv.style.display         = "none";
+            this.exportButtonDiv.style.display           = "none";
         }
 
         //#endregion
@@ -421,7 +421,7 @@ class ChargyApp {
             this.aboutScreenDiv.style.display            = "block";
             this.chargingSessionScreenDiv.style.display  = "none";
             this.backButtonDiv.style.display             = "block";
-            this.downloadButtonDiv.style.display         = "none";
+            this.exportButtonDiv.style.display           = "none";
 
             //#region Calculate the over-all application hash
 
@@ -709,7 +709,7 @@ class ChargyApp {
             this.aboutScreenDiv.style.display            = "none";
             this.chargingSessionScreenDiv.style.display  = "none";
             this.backButtonDiv.style.display             = "none";
-            this.downloadButtonDiv.style.display         = "none";
+            this.exportButtonDiv.style.display           = "none";
             this.fileInput.value                         = "";
             this.evseTarifInfosDiv.innerHTML             = "";
 
@@ -728,28 +728,24 @@ class ChargyApp {
 
         //#region Handle the 'download'-button
 
-        this.downloadButtonDiv         = <HTMLDivElement>      document.getElementById('downloadButtonDiv');
-        this.downloadButton            = this.downloadButtonDiv.querySelector("#downloadButton") as HTMLButtonElement;
-        this.downloadButton.onclick    = (ev: MouseEvent) => {
-
-          //  ev.stopPropagation();
+        this.exportButtonDiv         = <HTMLDivElement> document.getElementById('exportButtonDiv');
+        this.exportButton            = this.exportButtonDiv.querySelector("#exportButton") as HTMLButtonElement;
+        this.exportButton.onclick    = async (ev: MouseEvent) => {
 
             try
             {
 
-                let electron        = require('electron').remote;
-                let fs              = require('original-fs');
-                let userChosenPath  = electron.dialog.showSaveDialog({ defaultPath: electron.app.getPath("desktop") });
+                const path = this.ipcRenderer.sendSync('showSaveDialog')
 
-                if (userChosenPath)
-                    fs.writeFileSync(userChosenPath,
-                                     JSON.stringify(this.chargy.currentCTR, null, '\t'),
-                                     'utf-8');
+                if (path != null)
+                    require('original-fs').writeFileSync(path,
+                                                         JSON.stringify(this.chargy.currentCTR, null, '\t'),
+                                                         'utf-8');
 
             }
             catch(exception)
             {
-                alert('Failed to save the charge transparency record!');
+                alert('Failed to save the charge transparency record!' + exception);
             }
 
         }
@@ -781,7 +777,6 @@ class ChargyApp {
         // Note: The following is synchronous, therefore must be at the end of the file...
 
         // Windows and Linux
-        //var cliArguments = require('electron').remote.process.argv;
         if (this.commandLineArguments.length > 0)
             this.readFilesFromDisk(this.commandLineArguments);
 
@@ -802,9 +797,13 @@ class ChargyApp {
     }
 
 
+    //#region UpdateWindowSize()
+
     private UpdateWindowSize() {
         this.verifyframeDiv.style.maxHeight = (this.appDiv.clientHeight - this.headlineDiv.clientHeight).toString() + "px";
     }
+
+    //#endregion
 
     //#region calcSHA512FileHash(...)
 
@@ -1038,7 +1037,7 @@ class ChargyApp {
         this.chargingSessionScreenDiv.style.display  = "flex";
         this.chargingSessionScreenDiv.innerText      = "";
         this.backButtonDiv.style.display             = "flex";
-        this.downloadButtonDiv.style.display         = "flex";
+        this.exportButtonDiv.style.display           = "flex";
 
         //#endregion
 
@@ -1170,6 +1169,28 @@ class ChargyApp {
                         else if (Math.floor(duration.asMinutes()) > 0) productDiv.innerHTML += duration.minutes() + " Min. " + duration.seconds() + " Sek.";
                         else if (Math.floor(duration.asSeconds()) > 0) productDiv.innerHTML += duration.seconds();
 
+
+                        if (chargingSession.chargingProductRelevance != undefined && chargingSession.chargingProductRelevance.time != undefined)
+                        {
+                            switch (chargingSession.chargingProductRelevance.time)
+                            {
+
+                                case InformationRelevance.Unkonwn:
+                                case InformationRelevance.Ignored:
+                                case InformationRelevance.Important:
+                                    break;
+
+                                case InformationRelevance.Informative:
+                                    productDiv.innerHTML += " <span class=\"relevance\">(informativ)</span>";
+                                    break;
+
+                                default:
+                                    productDiv.innerHTML += " <span class=\"relevance\">(" + chargingSession.chargingProductRelevance.time + ")</span>";
+                                    break;
+
+                            }
+                        }
+
                     }
 
                     if (chargingSession.measurements)
@@ -1202,6 +1223,28 @@ class ChargyApp {
                                 }
 
                                 productDiv.innerHTML += "<br />" + measurementName2human(measurement.name) + " " + amount.toString() + " kWh";// (" + measurement.values.length + " Messwerte)";
+
+
+                                if (chargingSession.chargingProductRelevance != undefined && chargingSession.chargingProductRelevance.energy != undefined)
+                                {
+                                    switch (chargingSession.chargingProductRelevance.energy)
+                                    {
+
+                                        case InformationRelevance.Unkonwn:
+                                        case InformationRelevance.Ignored:
+                                        case InformationRelevance.Important:
+                                            break;
+
+                                        case InformationRelevance.Informative:
+                                            productDiv.innerHTML += " <span class=\"relevance\">(informativ)</span>";
+                                            break;
+
+                                        default:
+                                            productDiv.innerHTML += " <span class=\"relevance\">(" + chargingSession.chargingProductRelevance.energy + ")</span>";
+                                            break;
+
+                                    }
+                                }
 
                             }
 
@@ -1249,6 +1292,28 @@ class ChargyApp {
                             else if (Math.floor(duration.asHours())   > 0) parkingDiv.innerHTML += duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
                             else if (Math.floor(duration.asMinutes()) > 0) parkingDiv.innerHTML += duration.minutes() + " Min. " + duration.seconds() + " Sek.";
                             else if (Math.floor(duration.asSeconds()) > 0) parkingDiv.innerHTML += duration.seconds();
+
+
+                            if (chargingSession.chargingProductRelevance != undefined && chargingSession.chargingProductRelevance.parking != undefined)
+                            {
+                                switch (chargingSession.chargingProductRelevance.parking)
+                                {
+
+                                    case InformationRelevance.Unkonwn:
+                                    case InformationRelevance.Ignored:
+                                    case InformationRelevance.Important:
+                                        break;
+
+                                    case InformationRelevance.Informative:
+                                        parkingDiv.innerHTML += " <span class=\"relevance\">(informativ)</span>";
+                                        break;
+
+                                    default:
+                                        parkingDiv.innerHTML += " <span class=\"relevance\">(" + chargingSession.chargingProductRelevance.parking + ")</span>";
+                                        break;
+
+                                }
+                            }
 
                         }
 

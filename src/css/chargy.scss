@@ -126,6 +126,7 @@ body {
                             text-align:         center;
                             font-size:          110%;
                             line-height:        130%;
+                            user-select:        none;
                         }
 
                         #buttonsDiv {
@@ -149,6 +150,7 @@ body {
                                 background-color:   #aeddff;
                                 box-shadow:         none;
                                 align-self:         center;
+                                user-select:        none;
 
                                 i {
                                     font-size:          150%;
@@ -598,6 +600,12 @@ body {
                                             color:            #212427;
                                         }
 
+                                        .relevance {
+                                            //padding-left:       1em;
+                                            font-size:          90%;
+                                            color:              #6e8195;
+                                        }
+
                                     }
 
                                     .parkingInfos {
@@ -616,6 +624,12 @@ body {
                                             color:            #212427;
                                         }
 
+                                        .relevance {
+                                            //padding-left:       1em;
+                                            font-size:          90%;
+                                            color:              #6e8195;
+                                        }
+
                                     }
 
                                     .authorizationStart {
@@ -632,6 +646,7 @@ body {
                                         .id {
                                             display:            table-cell;
                                         }
+
                                     }
 
                                     .authorizationStop {
@@ -648,6 +663,7 @@ body {
                                         .id {
                                             display:            table-cell;
                                         }
+
                                     }
 
                                     .chargingStationInfos {
@@ -743,14 +759,14 @@ body {
                             color:              #519ad0;
                         }
 
-                        #downloadButtonDiv {
+                        #exportButtonDiv {
 
                             flex-grow:          2;
                             display:            none;
                             flex-direction:     row-reverse;
                             margin-right:       25px;
 
-                            #downloadButton {
+                            #exportButton {
 
                                 color:              #b6d8f1;
                                 background-color:   transparent;
@@ -769,7 +785,7 @@ body {
 
                             }
 
-                            #downloadButton:hover {
+                            #exportButton:hover {
                                 color:              #519ad0;
                             }
 
@@ -1077,7 +1093,7 @@ body {
                 #feedback {
 
                     width:              100%;
-                    padding:            20px 20px;
+                    padding:            20px 20px 40px 20px;
                     width:              calc(100% - 40px);
                     font-family:        Arial;
                     font-size:          90%;

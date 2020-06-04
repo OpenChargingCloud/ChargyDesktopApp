@@ -1143,8 +1143,8 @@ class Chargy {
                 chargingSession.method = new OCMFv1_0(this);
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
-            case "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargepointCrypt01+json":
-                chargingSession.method = new ChargepointCrypt01(this);
+            case "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json":
+                chargingSession.method = new ChargePointCrypt01(this);
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/AlfenCrypt01+json":

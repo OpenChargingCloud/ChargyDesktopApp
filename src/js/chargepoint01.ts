@@ -41,13 +41,12 @@ class Chargepoint01 {
 
             if (SomeJSON.company_name    !== undefined &&
                 SomeJSON.display_unit    !== undefined &&
-                SomeJSON.energy          !== undefined &&
-                SomeJSON.flat            !== undefined &&
+                //SomeJSON.energy          !== undefined &&
+                //SomeJSON.flat            !== undefined &&
                 SomeJSON.minMaxAdj       !== undefined &&
-                SomeJSON.parking         !== undefined &&
+                //SomeJSON.parking         !== undefined &&
                 SomeJSON.subtotal        !== undefined &&
                 SomeJSON.totalAmount     !== undefined &&
-                SomeJSON.additional_info !== undefined &&
                 SomeJSON.additional_info !== undefined)
             {
 
@@ -359,7 +358,7 @@ class Chargepoint01 {
                             "@id":                          SomeJSON.additional_info.station_mac + "-" +
                                                             SomeJSON.additional_info.outlet      + "-" +
                                                             SomeJSON.additional_info.session_id,
-                            "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargepointCrypt01+json",
+                            "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json",
                             "begin":                        this.moment.unix(sessionStart).utc().format(),
                             "end":                          this.moment.unix(sessionEnd).utc().format(),
                             "EVSEId":                       SomeJSON.additional_info.station_mac + "-" +
@@ -370,22 +369,29 @@ class Chargepoint01 {
                                 "type":                     "userId"
                             },
 
-                            "signatureInfos": {
-                                "hash":                     "SHA512",
-                                "hashTruncation":           "24",
-                                "algorithm":                "ECC",
-                                "curve":                    "secp192r1",
-                                "format":                   "rs"
+                            "chargingProductRelevance": {
+                                "time":                     InformationRelevance.Informative,
+                                "energy":                   InformationRelevance.Important,
+                                "parking":                  InformationRelevance.Informative,
+                                "sessionFee":               InformationRelevance.Informative,
                             },
+
+                            // "signatureInfos": {
+                            //     "hash":                     "SHA512",
+                            //     "hashTruncation":           "24",
+                            //     "algorithm":                "ECC",
+                            //     "curve":                    "secp192r1",
+                            //     "format":                   "rs"
+                            // },
 
                             "measurements": [
 
                                 {
 
                                     "energyMeterId":        SomeJSON.additional_info.meter_serial,
-                                    "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargepointCrypt01+json",
-                                    "name":                 SomeJSON.energy != null && SomeJSON.energy.length > 0 ? SomeJSON.energy[0].type : "ENERGY",
-                                    "obis":                 "1-0:1.17.0*255",
+                                    "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargePointCrypt01+json",
+                                    "name":                 "Bezogene Energiemenge",//SomeJSON.energy != null && SomeJSON.energy.length > 0 ? SomeJSON.energy[0].type : "Bezogene Energiemenge",
+                                    "obis":                 "1-0:1.8.0",
                                     "unit":                 SomeJSON.additional_info.energy_units,
                             //        "unitEncoded":          CTRArray[0]["measuredValue"]["unitEncoded"],
                             //        "valueType":            CTRArray[0]["measuredValue"]["valueType"],
@@ -630,7 +636,7 @@ class Chargepoint01 {
                             "@id":                          SomeJSON.station_mac + "-" +
                                                             SomeJSON.outlet      + "-" +
                                                             SomeJSON.session_id,
-                            "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargepointCrypt01+json",
+                            "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json",
                             "begin":                        this.moment.unix(SomeJSON.start_time).utc().format(),
                             "end":                          this.moment.unix(SomeJSON.end_time).utc().format(),
                             "EVSEId":                       SomeJSON.station_mac + "-" +
@@ -641,22 +647,29 @@ class Chargepoint01 {
                                 "type":                     "userId"
                             },
 
-                            "signatureInfos": {
-                                "hash":                     "SHA256",
-                                "hashTruncation":           "24",
-                                "algorithm":                "ECDSA",
-                                "curve":                    "secp224k1",
-                                "format":                   "rs"
+                            "chargingProductRelevance": {
+                                "time":                     InformationRelevance.Informative,
+                                "energy":                   InformationRelevance.Important,
+                                "parking":                  InformationRelevance.Informative,
+                                "sessionFee":               InformationRelevance.Informative,
                             },
+
+                            // "signatureInfos": {
+                            //     "hash":                     "SHA256",
+                            //     "hashTruncation":           "24",
+                            //     "algorithm":                "ECDSA",
+                            //     "curve":                    "secp224k1",
+                            //     "format":                   "rs"
+                            // },
 
                             "measurements": [
 
                                 {
 
                                     "energyMeterId":        SomeJSON.meter_serial,
-                                    "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargepointCrypt01+json",
-                                    "name":                 "ENERGY",
-                                    "obis":                 "1-0:1.17.0*255",
+                                    "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargePointCrypt01+json",
+                                    "name":                 "Bezogene Energiemenge",
+                                    "obis":                 "1-0:1.8.0",
                                     "unit":                 SomeJSON.energy_units,
                             //        "unitEncoded":          CTRArray[0]["measuredValue"]["unitEncoded"],
                             //        "valueType":            CTRArray[0]["measuredValue"]["valueType"],
@@ -725,7 +738,7 @@ interface IChargepointMeasurementValue extends IMeasurementValue
     logBookIndex:                  string
 }
 
-interface IChargepointCrypt01Result extends ICryptoResult
+interface IChargePointCrypt01Result extends ICryptoResult
 {
     sha256value?:                  any,
     meterId?:                      string,
@@ -749,24 +762,15 @@ interface IChargepointCrypt01Result extends ICryptoResult
 }
 
 
-class ChargepointCrypt01 extends ACrypt {
+class ChargePointCrypt01 extends ACrypt {
 
     // For older chargepoint charging station firmwares
     // Koblitz 224-bit curve: secp224k1
     // https://www.secg.org/sec2-v2.pdf
-    readonly curve224k1 = new secp224k1();
 
     // For newer chargepoint charging station firmwares
     // NIST/ANSI X9.62 named 256-bit elliptic curve: secp256r1
     // https://www.secg.org/sec2-v2.pdf
-    readonly curve256r1 = new this.chargy.elliptic.ec('p256');
-
-    // Not used yet!
-    readonly curve384r1 = new this.chargy.elliptic.ec('p384');
-
-    // Not used yet!
-    readonly curve512r1 = new this.chargy.elliptic.ec('p521');
-
 
     constructor(chargy:  Chargy) {
 
@@ -805,32 +809,6 @@ class ChargepointCrypt01 extends ACrypt {
             let   sessionResult  = SessionVerificationResult.UnknownSessionFormat;
             const plainText      = chargingSession.original != null ? atob(chargingSession.original) : "";
 
-            //#region Find public key, or use all available public keys
-
-            const publicKeyId  = chargingSession.EVSEId.replace(/:/g, "").replace(/-/g, "_");
-            const publicKeys   = [];
-
-            if (chargingSession.ctr.publicKeys != null)
-            {
-
-                for (let publicKeyInfo of chargingSession.ctr?.publicKeys)
-                {
-                    if (publicKeyInfo.id === publicKeyId)
-                        publicKeys.push(publicKeyInfo);
-                }
-
-                if (publicKeys.length == 0)
-                {
-                    for (const publicKeyInfo of chargingSession.ctr?.publicKeys)
-                    {
-                        publicKeys.push(publicKeyInfo);
-                    }
-                }
-
-            }
-
-            //#endregion
-
             //#region Convert signature into rs-format...
 
             if (chargingSession.signature         !=  null &&
@@ -858,14 +836,49 @@ class ChargepointCrypt01 extends ACrypt {
 
             //#endregion
 
-            //#region Validate signature
+            //#region Find public key, or use all available public keys
+
+            const publicKeyId  = chargingSession.EVSEId.replace(/:/g, "").replace(/-/g, "_");
+            const publicKeys   = [];
+
+            if (chargingSession.ctr.publicKeys != null)
+            {
+
+                for (let publicKeyInfo of chargingSession.ctr?.publicKeys)
+                {
+                    if (publicKeyInfo.id === publicKeyId)
+                        publicKeys.push(publicKeyInfo);
+                }
+
+                if (publicKeys.length == 0)
+                {
+                    for (const publicKeyInfo of chargingSession.ctr?.publicKeys)
+                    {
+                        publicKeys.push(publicKeyInfo);
+                    }
+                }
+
+            }
+
+            if (publicKeys.length == 0)
+                return {
+                    status: SessionVerificationResult.PublicKeyNotFound
+                }
+
+            //#endregion
+
+            //#region Validate session
 
             if (plainText                 !== ""   &&
                 chargingSession.signature !=  null &&
                 chargingSession.signature !== "")
             {
 
-                //ToDo: Hash values could perhaps be cached!
+                let sha225Value: string|null = null;
+                let sha256Value: string|null = null;
+                let sha385Value: string|null = null;
+                let sha512Value: string|null = null;
+
                 for (const publicKey of publicKeys)
                 {
 
@@ -873,50 +886,72 @@ class ChargepointCrypt01 extends ACrypt {
                     {
 
                         case "secp224k1":
-                            let SHA256HashValue        = await sha256(plainText);
-                            chargingSession.hashValue  = (BigInt("0x" + SHA256HashValue) >> BigInt(31)).toString(16);
-                            sessionResult              = this.curve224k1.validate(BigInt("0x" + chargingSession.hashValue),
-                                                                                  BigInt("0x" + chargingSession.signature.r),
-                                                                                  BigInt("0x" + chargingSession.signature.s),
-                                                                                  [ BigInt("0x" + publicKey.value.substr(2,  56)),
-                                                                                    BigInt("0x" + publicKey.value.substr(58, 56)) ])
-                                                            ? SessionVerificationResult.ValidSignature
-                                                            : SessionVerificationResult.InvalidSignature;
+
+                            sha225Value          = sha225Value ?? (BigInt("0x" + (await sha256(plainText))) >> BigInt(31)).toString(16);
+                            sessionResult        = this.curve224k1.validate(BigInt("0x" + sha225Value),
+                                                                            BigInt("0x" + chargingSession.signature.r),
+                                                                            BigInt("0x" + chargingSession.signature.s),
+                                                                            [ BigInt("0x" + publicKey.value.substr(2,  56)),
+                                                                              BigInt("0x" + publicKey.value.substr(58, 56)) ])
+                                                       ? SessionVerificationResult.ValidSignature
+                                                       : SessionVerificationResult.InvalidSignature;
                             break;
 
                         case "secp256r1":
-                            chargingSession.hashValue  = await sha256(plainText);
-                            sessionResult              = this.curve256r1.keyFromPublic(publicKey.value, 'hex').
-                                                                         verify       (chargingSession.hashValue,
-                                                                                       chargingSession.signature)
-                                                            ? SessionVerificationResult.ValidSignature
-                                                            : SessionVerificationResult.InvalidSignature;
+                            sha256Value          = sha256Value ?? await sha256(plainText);
+                            sessionResult        = this.curve256r1.keyFromPublic(publicKey.value, 'hex').
+                                                                   verify       (sha256Value,
+                                                                                 chargingSession.signature)
+                                                       ? SessionVerificationResult.ValidSignature
+                                                       : SessionVerificationResult.InvalidSignature;
                             break;
 
                         case "secp384r1":
-                            chargingSession.hashValue  = await sha384(plainText);
-                            sessionResult              = this.curve384r1.keyFromPublic(publicKey.value, 'hex').
-                                                                         verify       (chargingSession.hashValue,
-                                                                                       chargingSession.signature)
-                                                            ? SessionVerificationResult.ValidSignature
-                                                            : SessionVerificationResult.InvalidSignature;
+                            sha385Value          = sha385Value ?? await sha384(plainText);
+                            sessionResult        = this.curve384r1.keyFromPublic(publicKey.value, 'hex').
+                                                                   verify       (sha385Value,
+                                                                                 chargingSession.signature)
+                                                       ? SessionVerificationResult.ValidSignature
+                                                       : SessionVerificationResult.InvalidSignature;
                             break;
 
                         case "secp521r1":
-                            chargingSession.hashValue  = await sha512(plainText);
-                            sessionResult              = this.curve512r1.keyFromPublic(publicKey.value, 'hex').
-                                                                         verify       (chargingSession.hashValue,
-                                                                                       chargingSession.signature)
-                                                            ? SessionVerificationResult.ValidSignature
-                                                            : SessionVerificationResult.InvalidSignature;
+                            sha512Value          = sha512Value ?? await sha512(plainText);
+                            sessionResult        = this.curve512r1.keyFromPublic(publicKey.value, 'hex').
+                                                                   verify       (sha512Value,
+                                                                                 chargingSession.signature)
+                                                       ? SessionVerificationResult.ValidSignature
+                                                       : SessionVerificationResult.InvalidSignature;
                             break;
 
                     }
 
                     if (sessionResult == SessionVerificationResult.ValidSignature)
                     {
+
                         chargingSession.publicKey = publicKey;
-                        break;
+
+                        switch (publicKey.curve.description)
+                        {
+
+                            case "secp224k1":
+                                chargingSession.hashValue = sha225Value ?? "";
+                                break;
+
+                            case "secp256r1":
+                                chargingSession.hashValue = sha256Value ?? "";
+                                break;
+
+                            case "secp384r1":
+                                chargingSession.hashValue = sha385Value ?? "";
+                                break;
+
+                            case "secp521r1":
+                                chargingSession.hashValue = sha512Value ?? "";
+                                break;
+
+                        }
+
                     }
 
                 }
@@ -1051,7 +1086,6 @@ class ChargepointCrypt01 extends ACrypt {
 
             //#endregion
 
-
             return {
                 status: sessionResult
             }
@@ -1069,13 +1103,13 @@ class ChargepointCrypt01 extends ACrypt {
 
 
     async SignMeasurement  (measurementValue:  IChargepointMeasurementValue,
-                            privateKey:        any): Promise<IChargepointCrypt01Result>
+                            privateKey:        any): Promise<IChargePointCrypt01Result>
     {
 
         var buffer                       = new ArrayBuffer(320);
         var cryptoBuffer                 = new DataView(buffer);
 
-        var cryptoResult:IChargepointCrypt01Result = {
+        var cryptoResult:IChargePointCrypt01Result = {
             status:                       VerificationResult.InvalidSignature,
             meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
             timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
@@ -1136,7 +1170,7 @@ class ChargepointCrypt01 extends ACrypt {
 
     }
 
-    async VerifyMeasurement(measurementValue: IChargepointMeasurementValue): Promise<IChargepointCrypt01Result>
+    async VerifyMeasurement(measurementValue: IChargepointMeasurementValue): Promise<IChargePointCrypt01Result>
     {
 
         // Note: chargepoint does not sign individual measurements!
@@ -1150,7 +1184,7 @@ class ChargepointCrypt01 extends ACrypt {
 
         measurementValue.method = this;
 
-        var cryptoResult:IChargepointCrypt01Result = {
+        var cryptoResult:IChargePointCrypt01Result = {
             status: VerificationResult.NoOperation,
         };
 
@@ -1170,13 +1204,13 @@ class ChargepointCrypt01 extends ACrypt {
     {
 
         let chargingSession    = measurementValue?.measurement?.chargingSession;
-        let result             = measurementValue.result as IChargepointCrypt01Result;
+        let result             = measurementValue.result as IChargePointCrypt01Result;
         let cryptoAlgorithm    = chargingSession?.publicKey?.curve.description != null
                                      ? " (" + chargingSession?.publicKey?.curve.description + ")"
                                      : "";
 
         let cryptoSpan         = introDiv?.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
-        cryptoSpan.innerHTML   = "chargepointCrypt01" + cryptoAlgorithm;
+        cryptoSpan.innerHTML   = "ChargePointCrypt01" + cryptoAlgorithm;
 
         //#region Plain text
 
@@ -1207,25 +1241,25 @@ class ChargepointCrypt01 extends ACrypt {
             {
 
                 case "secp224k1":
-                    hashInfo  = "SHA256, 225 Bits, ";
+                    hashInfo  = "(SHA256, 225 Bits, hex)";
                     break;
 
                 case "secp256r1":
-                    hashInfo  = "SHA256, 256 Bits, ";
+                    hashInfo  = "(SHA256, 256 Bits, hex)";
                     break;
 
                 case "secp384r1":
-                    hashInfo  = "SHA384, 384 Bits, ";
+                    hashInfo  = "(SHA384, 384 Bits, hex)";
                     break;
 
                 case "secp512r1":
-                    hashInfo  = "SHA512, 512 Bits, ";
+                    hashInfo  = "(SHA512, 512 Bits, hex)";
                     break;
 
             }
 
             if (HashedPlainTextDiv.parentElement != null)
-                HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text (" + hashInfo + " hex)";
+                HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text " + hashInfo;
                 HashedPlainTextDiv.innerHTML                             = chargingSession.hashValue?.match(/.{1,8}/g)?.join(" ")
                                                                                ?? "0x00000000000000000000000000000000000";
 
@@ -1254,7 +1288,7 @@ class ChargepointCrypt01 extends ACrypt {
                                                                           :   chargingSession.publicKey.value.match(/.{1,8}/g)!.join(" ");
 
 
-            // Public key signatures
+            //#region Public key signatures
 
             if (PublicKeyDiv.parentElement != null)
                 PublicKeyDiv.parentElement.children[3].innerHTML = "";
@@ -1283,6 +1317,8 @@ class ChargepointCrypt01 extends ACrypt {
                 }
                 
             }
+
+            //#endregion
 
         }
 
