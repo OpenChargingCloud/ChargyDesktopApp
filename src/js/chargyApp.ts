@@ -84,6 +84,7 @@ class ChargyApp {
     private fileInput:                  HTMLInputElement;
     private evseTarifInfosDiv:          HTMLDivElement;
     private errorTextDiv:               HTMLDivElement;
+    private feedbackDiv:                HTMLDivElement;
     private overlayDiv:                 HTMLDivElement;
     private overlayOkButton:            HTMLButtonElement;
 
@@ -103,9 +104,11 @@ class ChargyApp {
 
     //#endregion
 
-    constructor(appEdition?:  string,
-                copyright?:   string,
-                versionsURL?: string) {
+    constructor(appEdition?:       string,
+                copyright?:        string,
+                versionsURL?:      string,
+                feedbackEMail?:    string[],
+                feedbackHotline?:  string[]) {
 
         this.appVersion                = this.ipcRenderer.sendSync('getAppVersion');
         this.appEdition                = appEdition  ?? "";
@@ -385,7 +388,6 @@ class ChargyApp {
 
 
         this.updateAvailableScreen     = document.getElementById('updateAvailableScreen')  as HTMLDivElement;
-        this.aboutScreenDiv            = document.getElementById('aboutScreen')            as HTMLDivElement;
         this.chargySHA512Div           = document.getElementById('chargySHA512')           as HTMLDivElement;
         this.chargingSessionScreenDiv  = document.getElementById('chargingSessionScreen')  as HTMLDivElement;
         this.invalidDataSetsScreenDiv  = document.getElementById('invalidDataSetsScreen')  as HTMLDivElement;
@@ -395,10 +397,39 @@ class ChargyApp {
         this.errorTextDiv              = document.getElementById('errorText')              as HTMLDivElement;
 
 
-        (document.getElementById("appEdition")    as HTMLSpanElement).innerHTML = this.appEdition;
-        (document.getElementById("appVersion")    as HTMLSpanElement).innerHTML = this.appVersion;
-        (document.getElementById("chargyVersion") as HTMLSpanElement).innerHTML = this.appVersion;
-        (document.getElementById("copyright")     as HTMLSpanElement).innerHTML = this.copyright;
+        //#region Set infos of the about section
+
+        this.aboutScreenDiv            = document.getElementById('aboutScreen')                as HTMLDivElement;
+        (this.aboutScreenDiv.querySelector("#appEdition")            as HTMLSpanElement).innerHTML = this.appEdition;
+        (this.aboutScreenDiv.querySelector("#appVersion")            as HTMLSpanElement).innerHTML = this.appVersion;
+        (this.aboutScreenDiv.querySelector("#copyright")             as HTMLSpanElement).innerHTML = this.copyright;
+
+        const OpenSourceLibsDiv        = this.aboutScreenDiv.querySelector("#OpenSourceLibs")  as HTMLDivElement;
+        (  OpenSourceLibsDiv.querySelector("#chargyVersion")         as HTMLSpanElement).innerHTML = this.appVersion;
+        (  OpenSourceLibsDiv.querySelector("#electronBuilder")       as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["electron-builder"]?.       replace(/[^0-9\.]/g, "");
+        (  OpenSourceLibsDiv.querySelector("#electronLocalShortcut") as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["electron-localshortcut"]?. replace(/[^0-9\.]/g, "");
+        (  OpenSourceLibsDiv.querySelector("#typeScript")            as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["typescript"]?.             replace(/[^0-9\.]/g, "");
+        (  OpenSourceLibsDiv.querySelector("#SASS")                  as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["sass"]?.                   replace(/[^0-9\.]/g, "");
+        (  OpenSourceLibsDiv.querySelector("#elliptic")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["elliptic"]?.               replace(/[^0-9\.]/g, "");
+        (  OpenSourceLibsDiv.querySelector("#momentJS")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["moment"]?.                 replace(/[^0-9\.]/g, "");
+        (  OpenSourceLibsDiv.querySelector("#decompress")            as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress"]?.             replace(/[^0-9\.]/g, "");
+        (  OpenSourceLibsDiv.querySelector("#decompressBZIP2")       as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress-bzip2"]?.       replace(/[^0-9\.]/g, "");
+        (  OpenSourceLibsDiv.querySelector("#decompressGZ")          as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress-gz"]?.          replace(/[^0-9\.]/g, "");
+        (  OpenSourceLibsDiv.querySelector("#fileType")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["file-type"]?.              replace(/[^0-9\.]/g, "");
+        (  OpenSourceLibsDiv.querySelector("#asn1JS")                as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["asn1.js"]?.                replace(/[^0-9\.]/g, "");
+        (  OpenSourceLibsDiv.querySelector("#base32Decode")          as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["base32-decode"]?.          replace(/[^0-9\.]/g, "");
+        (  OpenSourceLibsDiv.querySelector("#leafletJS")             as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet"]?.                replace(/[^0-9\.]/g, "");
+        (  OpenSourceLibsDiv.querySelector("#leafletAwesomeMarkers") as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet.awesome-markers"]?.replace(/[^0-9\.]/g, "");
+        (  OpenSourceLibsDiv.querySelector("#chartJS")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["chart.js"]?.               replace(/[^0-9\.]/g, "");
+
+        //#endregion
+
+        //#region Set infos of the about section
+
+        this.feedbackDiv               = document.getElementById('feedback')                   as HTMLDivElement;
+        (this.aboutScreenDiv.querySelector("#appEdition")    as HTMLSpanElement).innerHTML = this.appEdition;
+
+        //#endregion
 
 
         //#region Handle the 'Update available'-button

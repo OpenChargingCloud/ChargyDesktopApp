@@ -30,9 +30,6 @@ $ npm install elliptic@latest
 $ npm install @types/elliptic@latest --save-dev
 + @types/elliptic@6.4.10
 
-$ npm install key-encoder@latest
-+ key-encoder@2.0.3
-
 $ npm install asn1.js@latest
 + asn1.js@5.2.0
 
@@ -68,6 +65,15 @@ $ npm install @types/chart.js@latest --save-dev
 
 $ npm install electron-localshortcut --save
 + electron-localshortcut@3.2.1
+
+$ npm install leaflet@latest --save
++ leaflet@1.6.0
+
+$ npm install @types/leaflet@latest --save-dev
++ @types/leaflet@1.5.12
+
+$ npm install leaflet.awesome-markers@latest --save
++ leaflet.awesome-markers@2.0.5
 ```
 
 

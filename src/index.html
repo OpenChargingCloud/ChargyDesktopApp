@@ -109,6 +109,7 @@
                     </p>
 
                     <div id="OpenSourceLibs">
+
                         <div class="lib">
                             <div class="name">Chargy <span id="chargyVersion"></span></div>
                             <div class="license"><button class="linkButton" href="https://github.com/OpenChargingCloud/ChargyDesktopApp/blob/master/LICENSE">Copyright &copy; 2018-2020 GraphDefined GmbH<br />AGPL v3 License</button></div>
@@ -118,8 +119,12 @@
                             <div class="license"><button class="linkButton" href="https://github.com/electron/electron/blob/master/LICENSE">Copyright &copy; 2013-2020 GitHub Inc.<br />MIT License</button></div>
                         </div>
                         <div class="lib">
-                            <div class="name">Electron Builder 20.44.4</div>
+                            <div class="name">Electron Builder <span id="electronBuilder"></span></div>
                             <div class="license"><button class="linkButton" href="https://github.com/electron-userland/electron-builder/blob/master/LICENSE">Copyright &copy; 2015 Loopline Systems<br />MIT License</button></div>
+                        </div>
+                        <div class="lib">
+                            <div class="name">Electron Local Shortcut <span id="electronLocalShortcut"></span></div>
+                            <div class="license"><button class="linkButton" href="https://github.com/parro-it/electron-localshortcut/blob/master/license">Copyright &copy; 2017 Andrea Parodi<br />MIT License</button></div>
                         </div>
                         <div class="lib">
                             <div class="name">Chromium <script>document.write(process.versions.chrome)</script></div>
@@ -134,33 +139,69 @@
                             <div class="license"><button class="linkButton" href="https://github.com/openssl/openssl/blob/master/LICENSE">Copyright &copy; 1998-2018 The OpenSSL Project<br />Copyright &copy; 1995-1998 Eric A. Young, Tim J. Hudson<br />Apache License v2.0</button></div>
                         </div>
                         <div class="lib">
-                            <div class="name">TypeScript 3.7.2</div>
+                            <div class="name">TypeScript <span id="typeScript"></span></div>
                             <div class="license"><button class="linkButton" href="https://github.com/microsoft/TypeScript/blob/master/LICENSE.txt">Copyright &copy; Microsoft Corporation<br />Apache License v2.0</button></div>
                         </div>
                         <div class="lib">
-                            <div class="name">elliptic 6.5.1</div> <!-- <script>document.write(chargyApp.chargy.elliptic.version)</script></div> -->
-                            <div class="license"><button class="linkButton" href="https://github.com/indutny/elliptic">Copyright &copy; Fedor Indutny, 2014<br />MIT License</button></div>
+                            <div class="name">SASS <span id="SASS"></span></div>
+                            <div class="license"><button class="linkButton" href="https://github.com/sass/dart-sass/blob/master/LICENSE">Copyright &copy; 2016, Google Inc.<br />MIT License</button></div>
                         </div>
+
                         <div class="lib">
-                            <div class="name">moment 2.24.0</div>
+                            <div class="name">moment <span id="momentJS"></span></div>
                             <div class="license"><button class="linkButton" href="https://github.com/moment/moment/blob/develop/LICENSE">Copyright &copy; JS Foundation and other contributors<br />MIT License</button></div>
                         </div>
                         <div class="lib">
-                            <div class="name">leaflet 1.5.1</div>
+                            <div class="name">elliptic <span id="elliptic"></span></div>
+                            <div class="license"><button class="linkButton" href="https://github.com/indutny/elliptic">Copyright &copy; Fedor Indutny, 2014<br />MIT License</button></div>
+                        </div>
+                        <div class="lib">
+                            <div class="name">secp224k1 1.0.0</div>
+                            <div class="license"><button class="linkButton" href="https://github.com/CraigglesO/elliptic-curve-signature-algo">Copyright &copy; Craig OConnor<br />ISC License</button></div>
+                        </div>
+
+                        <div class="lib">
+                            <div class="name">decompress <span id="decompress"></span></div>
+                            <div class="license"><button class="linkButton" href="https://github.com/kevva/decompress/blob/master/license">Copyright &copy; Kevin Mårtensson<br />MIT License</button></div>
+                        </div>
+                        <div class="lib">
+                            <div class="name">decompress BZIP2 <span id="decompressBZIP2"></span></div>
+                            <div class="license"><button class="linkButton" href="https://github.com/kevva/decompress-bzip2/blob/master/license">Copyright &copy; Kevin Mårtensson<br />MIT License</button></div>
+                        </div>
+                        <div class="lib">
+                            <div class="name">decompress GZ <span id="decompressGZ"></span></div>
+                            <div class="license"><button class="linkButton" href="https://github.com/CarlosCarmona/decompress-gz/blob/master/license">Copyright &copy; Carlos Carmona Alcantara<br />MIT License</button></div>
+                        </div>
+                        <div class="lib">
+                            <div class="name">File Type <span id="fileType"></span></div>
+                            <div class="license"><button class="linkButton" href="https://github.com/sindresorhus/file-type/blob/master/license">Copyright &copy; Sindre Sorhus<br />MIT License</button></div>
+                        </div>
+                        <div class="lib">
+                            <div class="name">asn1.js <span id="asn1JS"></span></div>
+                            <div class="license"><button class="linkButton" href="https://github.com/PeculiarVentures/ASN1.js/blob/master/LICENSE">Copyright &copy; 2015-2019, Peculiar Ventures<br />BSD License</button></div>
+                        </div>
+                        <div class="lib">
+                            <div class="name">base32-decode <span id="base32Decode"></span></div>
+                            <div class="license"><button class="linkButton" href="https://github.com/LinusU/base32-decode">Copyright &copy; Linus Unnebäck<br />MIT License</button></div>
+                        </div>
+
+                        <div class="lib">
+                            <div class="name">leaflet <span id="leafletJS"></span></div>
                             <div class="license"><button class="linkButton" href="https://github.com/Leaflet/Leaflet/blob/master/LICENSE">Copyright &copy; 2010-2018, Vladimir Agafonkin<br />Copyright &copy; 2010-2011, CloudMade<br />MIT License</button></div>
                         </div>
                         <div class="lib">
-                            <div class="name">chart.js 2.8.0</div>
-                            <div class="license"><button class="linkButton" href="https://github.com/chartjs/Chart.js/blob/master/LICENSE.md">Copyright &copy; 2018 Chart.js Contributors<br />MIT License</button></div>
+                            <div class="name">leaflet Awesome Markers <span id="leafletAwesomeMarkers"></span></div>
+                            <div class="license"><button class="linkButton" href="https://github.com/Leaflet/Leaflet/blob/master/LICENSE">Copyright &copy; 2010-2018, Vladimir Agafonkin<br />Copyright &copy; 2010-2011, CloudMade<br />MIT License</button></div>
                         </div>
                         <div class="lib">
-                            <div class="name">SASS 1.22.1</div>
-                            <div class="license"><button class="linkButton" href="https://github.com/sass/dart-sass/blob/master/LICENSE">Copyright &copy; 2016, Google Inc.<br />MIT License</button></div>
+                            <div class="name">chart.js <span id="chartJS"></span></div>
+                            <div class="license"><button class="linkButton" href="https://github.com/chartjs/Chart.js/blob/master/LICENSE.md">Copyright &copy; 2018 Chart.js Contributors<br />MIT License</button></div>
                         </div>
                         <div class="lib">
                             <div class="name">FontAwesome 5.9.0</div>
                             <div class="license"><button class="linkButton" href="https://fontawesome.com/license/free">Copyright &copy; Fonticons, Inc.<br />Font Awesome Free License</button></div>
                         </div>
+
                     </div>
 
                     <p>
@@ -419,7 +460,10 @@
       }).addTo(map);
 
       var chargyApp = new ChargyApp("chargeIT mobility Edition",
-                                    "&copy; 2018-2020 chargeIT mobility GmbH");
+                                    "&copy; 2018-2020 chargeIT mobility GmbH",
+                                    "https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
+                                    ["info@chargeIT-mobility.com", "subject=Chargy%20Supportanfrage"],
+                                    ["+49093212680700",            "+49 (0) 9321 2680 700"]);
 
     </script>
 
