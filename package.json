@@ -52,8 +52,8 @@
     "moment": "^2.26.0"
   },
   "build": {
-    "appId": "cloud.charging.open.chargy.desktop",
-    "productName": "Chargy Transparenzsoftware",
+    "appId": "cloud.charging.chargeit.chargy.desktop",
+    "productName": "Chargy Transparenzsoftware chargeIT mobility Edition",
     "copyright": "Copyright © 2018-2020 GraphDefined GmbH",
     "extraFiles": [
       "build",

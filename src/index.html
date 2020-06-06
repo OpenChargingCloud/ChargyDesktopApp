@@ -62,10 +62,10 @@
     <div id="headline">
         <div id="logo"></div>
         <div id="windowButtons">
-            <button id="updateAvailableButton"                 ><i class="fas fa-exclamation-circle"></i></button>
-            <button id="aboutButton"                           ><i class="far fa-question-circle"   ></i></button>
-            <button id="fullScreenButton"                      ><i class="fas fa-expand"            ></i></button>
-            <button id="appQuitButton" onclick="window.close()"><i class="fas fa-times"             ></i></button>
+            <button id="updateAvailableButton"><i class="fas fa-exclamation-circle"></i></button>
+            <button id="aboutButton"          ><i class="far fa-question-circle"   ></i></button>
+            <button id="fullScreenButton"     ><i class="fas fa-expand"            ></i></button>
+            <button id="appQuitButton"        ><i class="fas fa-times"             ></i></button>
         </div>
     </div>
 
@@ -74,7 +74,7 @@
         <div id="leftbar">
 
             <div id="input">
-                
+
                 <div id="inputInfos">
 
                     <div id="text">Sie können einen oder mehrere Transparenzdatensätze und möglicherweise dazugehörigen
@@ -108,7 +108,7 @@
                         Diese Software ist Open Source und basiert auf den folgenden Open-Source-Software-Bibliotheken:
                     </p>
 
-                    <div id="OpenSourceLibs">
+                    <div id="openSourceLibs">
 
                         <div class="lib">
                             <div class="name">Chargy <span id="chargyVersion"></span></div>
@@ -215,18 +215,17 @@
                         Weitere Details zu den internen Datenstrukturen und Abläufen von Chargy gibt es auf <button class="linkButton" href="https://github.com/OpenChargingCloud/ChargyDesktopApp/tree/master/documentation">GitHub</button>.
                     </p>
 
-                    <div id="chargySHA512">
+                    <div id="applicationHash">
                         <div id="text">SHA-512 Hashwert dieser Software:</div>
                         <div id="value"><span stlye=\"font-style: italics\">Wird berechnet...</span></div>
                         <div id="sigHead"></div>
                         <div id="signatures"></div>
                     </div>
 
-                    <!-- Postponed to version 1.1 --------------------------
-                    <div id="chargySignature">
+                    <div id="applicationSignatures">
                         <div id="text">Digitale Signaturen dieser Software:</div>
                         <div id="value"><span stlye=\"font-style: italics\">Werden berechnet...</span></div>
-                    </div> ------------------------------------------------- -->
+                    </div>
 
                     <div id="TOSP">
                         Diese Software ist einer der Gewinner des <a href="javascript:OpenLink('https://www.it-leistungsschau.de/programm/TOSP2019/')">1.
@@ -238,7 +237,7 @@
                         <a href="javascript:OpenLink('https://www.itnet-th.de')">ITnet Thüringen e.V.</a> and the
                         <a href="javascript:OpenLink('https://www.thueringen.de/th6/tmwwdg/')">Thuringian Ministry for Economic Affairs, Science and Digital Society</a>-->
                         <div id="logos">
-                            <a id="TMWWDG" href="javascript:OpenLink('https://www.thueringen.de/th6/tmwwdg/')"><img src="images/TMWWDG.svg"                 alt="Thuringian Ministry for Economic Affairs, Science and Digital Society"></a>
+                            <a id="TMWWDG" href="javascript:OpenLink('https://www.thueringen.de/th6/tmwwdg/')"><img src="images/TMWWDG.svg"                 alt="Thüringer Ministerium für Wirtschaft, Wissenschaft und Digitale Gesellschaft"></a>
                             <a id="ITnet"  href="javascript:OpenLink('https://www.itnet.de')"                 ><img src="images/ITnet_Thueringen_small.png" alt="ITnet Thüringen e.V."></a>
                         </div>
                     </div>
@@ -259,7 +258,7 @@
 
                 <div id="invalidDataSetsScreen"></div>
 
-                <div id="backButtonDiv">
+                <div id="inputButtons">
                     <button id="backButton"><i class="fas fa-arrow-alt-circle-left"></i></button>
                     <div id="exportButtonDiv">
                         <button id="exportButton"><i class="fas fa-download"></i> Exportieren</button>
@@ -282,8 +281,8 @@
                 Treten Sie mit uns in Kontakt:
                 <div id="feedbackMethods">
                     <button id="showIssueTracker"><i class="far fa-comments"></i>Mängel melden</button>
-                    <a      id="eMail" href="mailto:info@chargeIT-mobility.com?subject=Chargy%20Supportanfrage"><i class="far fa-envelope"></i>info@chargeIT-mobility.com</a>
-                    <a      id="phone" href="tel:+49093212680700"><i class="fas fa-phone fa-rotate-90"></i>+49 (0) 9321 2680 700</a>
+                    <a      id="eMail"   href="mailto:..."><i class="far fa-envelope"></i></a>
+                    <a      id="hotline" href="tel:..."><i class="fas fa-phone fa-rotate-90"></i></a>
                 </div>
             </div>
 
@@ -449,7 +448,7 @@
       var ACCESS_TOKEN = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
 
       leaflet = L;
-      map     = L.map('map').setView([49.7325504,10.1424442], 10);
+      map     = L.map('map').setView([49.7325504, 10.1424442], 10);
 
       L.tileLayer('https://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + ACCESS_TOKEN, {
           maxZoom: 18,
@@ -459,11 +458,16 @@
           id: 'ahzf.nc811hb2'
       }).addTo(map);
 
+      // Remember to set the application file name for generating the application hash!
+      // Remember to set Content-Security-Policy for customer support URLs!
+      // Remember to set customer privacyStatement!
+      // Remember to set customer mapbox access token and map id!
       var chargyApp = new ChargyApp("chargeIT mobility Edition",
                                     "&copy; 2018-2020 chargeIT mobility GmbH",
                                     "https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
-                                    ["info@chargeIT-mobility.com", "subject=Chargy%20Supportanfrage"],
-                                    ["+49093212680700",            "+49 (0) 9321 2680 700"]);
+                                    ["info@chargeIT-mobility.com", "?subject=Chargy%20Supportanfrage"],
+                                    ["+49093212680700",            "+49 (0) 9321 2680 700"],
+                                    "https://chargeit.charging.cloud/chargy/issues");
 
     </script>
 

@@ -33,8 +33,8 @@
 // import { readSync } from "fs";
 // import { version } from "punycode";
 
-var map:     any        = "";
-var leaflet: any        = "";
+var map:     any  = "";
+var leaflet: any  = "";
 
 function OpenLink(url: string)
 {
@@ -59,34 +59,44 @@ class ChargyApp {
     private commandLineArguments        = [];
     public  packageJson:                any = {};
 
-    private exe_hash                    = "";
-    private app_asar_hash               = "";
-    private electron_asar_hash          = "";
-    private complete_hash               = "";
+    private applicationHash             = "";
 
-    private input:                      HTMLDivElement;
     private updateAvailableButton:      HTMLButtonElement;
     private aboutButton:                HTMLButtonElement;
     private fullScreenButton:           HTMLButtonElement;
+    private appQuitButton:              HTMLButtonElement;
 
     private updateAvailableScreen:      HTMLDivElement;
     private inputDiv:                   HTMLDivElement;
     private inputInfosDiv:              HTMLDivElement;
     private aboutScreenDiv:             HTMLDivElement;
-    private chargySHA512Div:            HTMLDivElement;
+    private applicationHashDiv:         HTMLDivElement;
+    private applicationHashValueDiv:    HTMLDivElement;
     private chargingSessionScreenDiv:   HTMLDivElement;
     private invalidDataSetsScreenDiv:   HTMLDivElement;
-    private backButtonDiv:              HTMLDivElement;
+    private inputButtonsDiv:            HTMLDivElement;
     private backButton:                 HTMLButtonElement;
     private exportButtonDiv:            HTMLDivElement;
     private exportButton:               HTMLButtonElement;
     private fileInputButton:            HTMLButtonElement;
     private fileInput:                  HTMLInputElement;
+    private pasteButton:                HTMLButtonElement;
     private evseTarifInfosDiv:          HTMLDivElement;
     private errorTextDiv:               HTMLDivElement;
     private feedbackDiv:                HTMLDivElement;
     private overlayDiv:                 HTMLDivElement;
     private overlayOkButton:            HTMLButtonElement;
+    private issueTrackerDiv:            HTMLDivElement;
+    private privacyStatement:           HTMLDivElement;
+    private feedbackMethodsDiv:         HTMLDivElement;
+    private showIssueTrackerButton:     HTMLButtonElement;
+    private issueTrackerText:           HTMLDivElement;
+    private showPrivacyStatement:       HTMLButtonElement;
+    private privacyStatementAccepted:   HTMLInputElement;
+    private sendIssueButton:            HTMLButtonElement;
+    private softwareInfosDiv:           HTMLDivElement;
+    private openSourceLibsDiv:          HTMLDivElement;
+    private issueBackButton:            HTMLButtonElement;
 
     private markers:                    any     = [];
     private minlat:                     number  = +1000;
@@ -108,7 +118,44 @@ class ChargyApp {
                 copyright?:        string,
                 versionsURL?:      string,
                 feedbackEMail?:    string[],
-                feedbackHotline?:  string[]) {
+                feedbackHotline?:  string[],
+                issueURL?:         string) {
+
+        this.aboutScreenDiv            = document.getElementById('aboutScreen')                           as HTMLDivElement;
+        this.updateAvailableScreen     = document.getElementById('updateAvailableScreen')                 as HTMLDivElement;
+        this.applicationHashDiv        = document.getElementById('applicationHash')                       as HTMLDivElement;
+        this.chargingSessionScreenDiv  = document.getElementById('chargingSessionScreen')                 as HTMLDivElement;
+        this.invalidDataSetsScreenDiv  = document.getElementById('invalidDataSetsScreen')                 as HTMLDivElement;
+        this.evseTarifInfosDiv         = document.getElementById('evseTarifInfos')                        as HTMLDivElement;
+        this.inputDiv                  = document.getElementById('input')                                 as HTMLDivElement;
+        this.inputInfosDiv             = document.getElementById('inputInfos')                            as HTMLDivElement;
+        this.errorTextDiv              = document.getElementById('errorText')                             as HTMLDivElement;
+        this.feedbackDiv               = document.getElementById('feedback')                              as HTMLDivElement;
+        this.inputButtonsDiv           = document.getElementById('inputButtons')                          as HTMLDivElement;
+        this.exportButtonDiv           = document.getElementById('exportButtonDiv')                       as HTMLDivElement;
+        this.issueTrackerDiv           = document.getElementById('issueTracker')                          as HTMLDivElement;
+        this.overlayDiv                = document.getElementById('overlay')                               as HTMLDivElement;
+        this.applicationHashValueDiv   = this.applicationHashDiv.querySelector("#value")                  as HTMLDivElement;
+        this.privacyStatement          = this.issueTrackerDiv.querySelector("#privacyStatement")          as HTMLDivElement;
+        this.feedbackMethodsDiv        = this.feedbackDiv.querySelector("#feedbackMethods")               as HTMLDivElement;
+        this.issueTrackerText          = this.issueTrackerDiv.querySelector("#issueTrackerText")          as HTMLDivElement;
+        this.softwareInfosDiv          = this.aboutScreenDiv.querySelector("#softwareInfos")              as HTMLDivElement;
+        this.openSourceLibsDiv         = this.aboutScreenDiv.querySelector("#openSourceLibs")             as HTMLDivElement;
+
+        this.updateAvailableButton     = document.getElementById('updateAvailableButton')                 as HTMLButtonElement;
+        this.aboutButton               = document.getElementById('aboutButton')                           as HTMLButtonElement;
+        this.fullScreenButton          = document.getElementById('fullScreenButton')                      as HTMLButtonElement;
+        this.appQuitButton             = document.getElementById('appQuitButton')                         as HTMLButtonElement;
+        this.overlayOkButton           = document.getElementById('overlayOkButton')                       as HTMLButtonElement;
+        this.fileInputButton           = document.getElementById('fileInputButton')                       as HTMLButtonElement;
+        this.pasteButton               = document.getElementById('pasteButton')                           as HTMLButtonElement;
+        this.backButton                = this.inputButtonsDiv.querySelector("#backButton")                as HTMLButtonElement;
+        this.exportButton              = this.exportButtonDiv.querySelector("#exportButton")              as HTMLButtonElement;
+        this.showPrivacyStatement      = this.issueTrackerDiv.querySelector("#showPrivacyStatement")      as HTMLButtonElement;
+        this.privacyStatementAccepted  = this.issueTrackerDiv.querySelector("#privacyStatementAccepted")  as HTMLInputElement;
+        this.sendIssueButton           = this.issueTrackerDiv.querySelector("#sendIssueButton")           as HTMLButtonElement;
+        this.showIssueTrackerButton    = this.feedbackMethodsDiv.querySelector("#showIssueTracker")       as HTMLButtonElement;
+        this.issueBackButton           = this.issueTrackerDiv.querySelector("#issueBackButton")           as HTMLButtonElement;
 
         this.appVersion                = this.ipcRenderer.sendSync('getAppVersion');
         this.appEdition                = appEdition  ?? "";
@@ -123,53 +170,211 @@ class ChargyApp {
         this.chargy                    = new Chargy(this.elliptic,
                                                     this.moment);
 
-        //const curves = require("crypto").getCurves();
-        //console.log(curves);
-        //const sha256 = require("crypto").createHash('sha256').update("text", 'utf8').digest('hex');
-        //const sha512 = require("crypto").createHash('sha512').update("text", 'utf8').digest('hex');
 
         //#region OnWindowResize
 
-        this.UpdateWindowSize();
+        this.updateWindowSize();
 
         window.onresize = (ev: UIEvent) => {
-            this.UpdateWindowSize();
+            this.updateWindowSize();
         }
 
         //#endregion
 
+        //#region Set infos of the about section
+
+            (this.softwareInfosDiv. querySelector("#appEdition")             as HTMLSpanElement).innerHTML = this.appEdition;
+            (this.softwareInfosDiv. querySelector("#appVersion")             as HTMLSpanElement).innerHTML = this.appVersion;
+            (this.softwareInfosDiv. querySelector("#copyright")              as HTMLSpanElement).innerHTML = this.copyright;
+
+            (this.openSourceLibsDiv.querySelector("#chargyVersion")          as HTMLSpanElement).innerHTML = this.appVersion;
+
+        if (this.packageJson.devDependencies)
+        {
+            (this.openSourceLibsDiv.querySelector("#electronBuilder")        as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["electron-builder"]?.       replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#typeScript")             as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["typescript"]?.             replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#SASS")                   as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["sass"]?.                   replace(/[^0-9\.]/g, "");
+        }
+
+        if (this.packageJson.dependencies)
+        {
+            (this.openSourceLibsDiv.querySelector("#electronLocalShortcut")  as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["electron-localshortcut"]?. replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#elliptic")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["elliptic"]?.               replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#momentJS")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["moment"]?.                 replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#decompress")             as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress"]?.             replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#decompressBZIP2")        as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress-bzip2"]?.       replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#decompressGZ")           as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress-gz"]?.          replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#fileType")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["file-type"]?.              replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#asn1JS")                 as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["asn1.js"]?.                replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#base32Decode")           as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["base32-decode"]?.          replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#leafletJS")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet"]?.                replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#leafletAwesomeMarkers")  as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet.awesome-markers"]?.replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#chartJS")                as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["chart.js"]?.               replace(/[^0-9\.]/g, "");
+        }
+
+        //#endregion
+
+        //#region Set infos of the feedback section
+
+        this.showIssueTrackerButton.onclick = (ev: MouseEvent) => {
+            this.issueTrackerDiv.style.display   = 'block';
+            this.privacyStatement.style.display  = "none";
+            this.issueTrackerText.scrollTop = 0;
+        }
+
+        if (feedbackEMail && feedbackEMail.length == 2)
+        {
+            (this.feedbackMethodsDiv.querySelector("#eMail")   as HTMLAnchorElement).href       = "mailto:" + feedbackEMail[0] + feedbackEMail[1];
+            (this.feedbackMethodsDiv.querySelector("#eMail")   as HTMLAnchorElement).innerHTML += feedbackEMail[0];
+        }
+
+        if (feedbackHotline && feedbackHotline.length == 2)
+        {
+            (this.feedbackMethodsDiv.querySelector("#hotline") as HTMLAnchorElement).href       = "tel:" + feedbackHotline[0];
+            (this.feedbackMethodsDiv.querySelector("#hotline") as HTMLAnchorElement).innerHTML += feedbackHotline[1];
+        }
+
+        //#endregion
+
+        //#region The Issue tracker
+
+        this.showPrivacyStatement.onclick = (ev: MouseEvent) => {
+            ev.preventDefault();
+            this.privacyStatement.style.display = "block";
+            this.issueTrackerText.scrollTop = this.issueTrackerText.scrollHeight;
+        }
+
+        this.privacyStatementAccepted.onchange = (ev: Event) => {
+            this.sendIssueButton.disabled  = !this.privacyStatementAccepted.checked;
+        }
+
+        this.sendIssueButton.onclick = (ev: MouseEvent) => {
+
+            ev.preventDefault();
+
+            try
+            {
+
+                //#region Collect issue data...
+
+                const newIssueForm  = document.getElementById('newIssueForm') as HTMLFormElement;
+                let   data          = {};
+
+                data["timestamp"]                  = new Date().toISOString();
+                data["chargyVersion"]              = this.appVersion;
+                data["platform"]                   = process.platform;
+
+                data["invalidCTR"]                 = (newIssueForm.querySelector("#invalidCTR")                as HTMLInputElement).checked;
+                data["InvalidStationData"]         = (newIssueForm.querySelector("#InvalidStationData")        as HTMLInputElement).checked;
+                data["invalidSignatures"]          = (newIssueForm.querySelector("#invalidSignatures")         as HTMLInputElement).checked;
+                data["invalidCertificates"]        = (newIssueForm.querySelector("#invalidCertificates")       as HTMLInputElement).checked;
+                data["transparencenySoftwareBug"]  = (newIssueForm.querySelector("#transparencenySoftwareBug") as HTMLInputElement).checked;
+                data["DSGVO"]                      = (newIssueForm.querySelector("#DSGVO")                     as HTMLInputElement).checked;
+                data["BITV"]                       = (newIssueForm.querySelector("#BITV")                      as HTMLInputElement).checked;
+
+                data["description"]                = (newIssueForm.querySelector("#issueDescription")          as HTMLTextAreaElement).value;
+
+                if ((newIssueForm.querySelector("#includeCTR") as HTMLSelectElement).value == "yes")
+                {
+                    let stringify = require('safe-stable-stringify');
+                    data["chargeTransparencyRecord"] = stringify(this.chargy.currentCTR);
+                }
+
+                data["name"]                       = (newIssueForm.querySelector("#issueName")                 as HTMLInputElement).value;
+                data["phone"]                      = (newIssueForm.querySelector("#issuePhone")                as HTMLInputElement).value;
+                data["eMail"]                      = (newIssueForm.querySelector("#issueEMail")                as HTMLInputElement).value;
+
+                //#endregion
+
+                //#region Send issue to API
+
+                let sendIssue = new XMLHttpRequest();
+
+                sendIssue.open("ADD",
+                               issueURL ?? "https://charging.cloud/chargy/issues",
+                               true);
+                sendIssue.setRequestHeader('Content-type', 'application/json');
+
+                sendIssue.onreadystatechange = function () {
+
+                    // 0 UNSENT | 1 OPENED | 2 HEADERS_RECEIVED | 3 LOADING | 4 DONE
+                    if (this.readyState == 4) {
+
+                        if (this.status == 201) { // HTTP 201 - Created
+                            (document.getElementById('issueTracker') as HTMLDivElement).style.display  = 'none';
+                            //ToDo: Show thank you for your issue!
+                        }
+
+                        else
+                        {
+                            alert("Leider ist ein Fehler bei der Datenübertragung aufgetreten. Bitte probieren Sie es erneut...");
+                        }
+
+                    }
+
+                }
+
+                sendIssue.send(JSON.stringify(data));
+
+                //#endregion
+
+            }
+            catch (exception)
+            { 
+                // Just do nothing!
+            }
+
+        }
+
+        this.issueBackButton.onclick = (ev: MouseEvent) => {
+            this.issueTrackerDiv.style.display = 'none';
+        }
+
+        //#endregion
+
+
         //#region Calculate application hash
+
+        let applicationFile  = "";
+        let appAsarFile      = "";
 
         switch (process.platform)
         {
 
             case "win32":
-                this.calcSHA512FileHash('Chargy Transparenzsoftware.exe',             hash => this.exe_hash           = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-                this.calcSHA512FileHash(this.path.join('resources', 'app.asar'),      hash => this.app_asar_hash      = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-                this.calcSHA512FileHash(this.path.join('resources', 'electron.asar'), hash => this.electron_asar_hash = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+                applicationFile  = 'Chargy Transparenzsoftware chargeIT mobility Edition.exe';
+                appAsarFile      = this.path.join('resources', 'app.asar');
                 break;
 
             case "linux":
             case "freebsd":
             case "openbsd":
-                this.calcSHA512FileHash('/opt/Chargy\ Transparenzsoftware/chargytransparenzsoftware', hash => this.exe_hash           = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-                this.calcSHA512FileHash('/opt/Chargy\ Transparenzsoftware/resources/app.asar',        hash => this.app_asar_hash      = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-                this.calcSHA512FileHash('/opt/Chargy\ Transparenzsoftware/resources/electron.asar',   hash => this.electron_asar_hash = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+                applicationFile  = '/opt/Chargy\ Transparenzsoftware/chargytransparenzsoftware';
+                appAsarFile      = '/opt/Chargy\ Transparenzsoftware/resources/app.asar';
                 break;
 
             case "darwin":
-                this.calcSHA512FileHash('/Applications/Chargy\ Transparenzsoftware.app/Contents/MacOS/Chargy Transparenzsoftware', hash => this.exe_hash           = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-                this.calcSHA512FileHash('/Applications/Chargy\ Transparenzsoftware.app/Contents/Resources/app.asar',               hash => this.app_asar_hash      = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
-                this.calcSHA512FileHash('/Applications/Chargy\ Transparenzsoftware.app/Contents/Resources/electron.asar',          hash => this.electron_asar_hash = hash, errorMessage => this.chargySHA512Div.children[1].innerHTML = "Dateien nicht gefunden!");
+                applicationFile  = '/Applications/Chargy\ Transparenzsoftware.app/Contents/MacOS/Chargy Transparenzsoftware';
+                appAsarFile      = '/Applications/Chargy\ Transparenzsoftware.app/Contents/Resources/app.asar';
                 break;
 
             default:
-                let chargySHA512Div = document.getElementById('chargySHA512');
-                if (chargySHA512Div != null && chargySHA512Div.children.length >= 2)
-                    chargySHA512Div.children[1].innerHTML = "Kann nicht berechnet werden!"
+                this.applicationHashValueDiv.innerHTML = "Kann nicht berechnet werden!"
                 break;
 
         }
+
+        if (applicationFile !== "" && appAsarFile !== "")
+            this.calcApplicationHash(applicationFile,
+                                     appAsarFile,
+                                     applicationHash => { 
+                                         this.applicationHash                          = applicationHash;
+                                         this.applicationHashValueDiv.innerHTML        = applicationHash.match(/.{1,8}/g)?.join(" ") ?? "";
+                                     },
+                                     errorMessage => {
+                                         this.applicationHashValueDiv.style.fontStyle  = "italics";
+                                         this.applicationHashValueDiv.innerHTML        = errorMessage;
+                                     });
 
         //#endregion
 
@@ -386,63 +591,13 @@ class ChargyApp {
 
         //#endregion
 
-
-        this.updateAvailableScreen     = document.getElementById('updateAvailableScreen')  as HTMLDivElement;
-        this.chargySHA512Div           = document.getElementById('chargySHA512')           as HTMLDivElement;
-        this.chargingSessionScreenDiv  = document.getElementById('chargingSessionScreen')  as HTMLDivElement;
-        this.invalidDataSetsScreenDiv  = document.getElementById('invalidDataSetsScreen')  as HTMLDivElement;
-        this.evseTarifInfosDiv         = document.getElementById('evseTarifInfos')         as HTMLDivElement;
-        this.inputDiv                  = document.getElementById('input')                  as HTMLDivElement;
-        this.inputInfosDiv             = document.getElementById('inputInfos')             as HTMLDivElement;
-        this.errorTextDiv              = document.getElementById('errorText')              as HTMLDivElement;
-
-
-        //#region Set infos of the about section
-
-        this.aboutScreenDiv            = document.getElementById('aboutScreen')                as HTMLDivElement;
-        (this.aboutScreenDiv.querySelector("#appEdition")            as HTMLSpanElement).innerHTML = this.appEdition;
-        (this.aboutScreenDiv.querySelector("#appVersion")            as HTMLSpanElement).innerHTML = this.appVersion;
-        (this.aboutScreenDiv.querySelector("#copyright")             as HTMLSpanElement).innerHTML = this.copyright;
-
-        const OpenSourceLibsDiv        = this.aboutScreenDiv.querySelector("#OpenSourceLibs")  as HTMLDivElement;
-        (  OpenSourceLibsDiv.querySelector("#chargyVersion")         as HTMLSpanElement).innerHTML = this.appVersion;
-
-        if (this.packageJson.devDependencies)
-        {
-            (  OpenSourceLibsDiv.querySelector("#electronBuilder")       as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["electron-builder"]?.       replace(/[^0-9\.]/g, "");
-            (  OpenSourceLibsDiv.querySelector("#typeScript")            as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["typescript"]?.             replace(/[^0-9\.]/g, "");
-            (  OpenSourceLibsDiv.querySelector("#SASS")                  as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["sass"]?.                   replace(/[^0-9\.]/g, "");
-        }
-
-        if (this.packageJson.dependencies)
-        {
-            (  OpenSourceLibsDiv.querySelector("#electronLocalShortcut") as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["electron-localshortcut"]?. replace(/[^0-9\.]/g, "");
-            (  OpenSourceLibsDiv.querySelector("#elliptic")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["elliptic"]?.               replace(/[^0-9\.]/g, "");
-            (  OpenSourceLibsDiv.querySelector("#momentJS")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["moment"]?.                 replace(/[^0-9\.]/g, "");
-            (  OpenSourceLibsDiv.querySelector("#decompress")            as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress"]?.             replace(/[^0-9\.]/g, "");
-            (  OpenSourceLibsDiv.querySelector("#decompressBZIP2")       as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress-bzip2"]?.       replace(/[^0-9\.]/g, "");
-            (  OpenSourceLibsDiv.querySelector("#decompressGZ")          as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress-gz"]?.          replace(/[^0-9\.]/g, "");
-            (  OpenSourceLibsDiv.querySelector("#fileType")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["file-type"]?.              replace(/[^0-9\.]/g, "");
-            (  OpenSourceLibsDiv.querySelector("#asn1JS")                as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["asn1.js"]?.                replace(/[^0-9\.]/g, "");
-            (  OpenSourceLibsDiv.querySelector("#base32Decode")          as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["base32-decode"]?.          replace(/[^0-9\.]/g, "");
-            (  OpenSourceLibsDiv.querySelector("#leafletJS")             as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet"]?.                replace(/[^0-9\.]/g, "");
-            (  OpenSourceLibsDiv.querySelector("#leafletAwesomeMarkers") as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet.awesome-markers"]?.replace(/[^0-9\.]/g, "");
-            (  OpenSourceLibsDiv.querySelector("#chartJS")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["chart.js"]?.               replace(/[^0-9\.]/g, "");
-        }
-
-        //#endregion
-
-        //#region Set infos of the about section
-
-        this.feedbackDiv               = document.getElementById('feedback')                   as HTMLDivElement;
-        (this.aboutScreenDiv.querySelector("#appEdition")    as HTMLSpanElement).innerHTML = this.appEdition;
+        //#region Verify application signatures
 
         //#endregion
 
 
         //#region Handle the 'Update available'-button
 
-        this.updateAvailableButton     = <HTMLButtonElement>   document.getElementById('updateAvailableButton');
         this.updateAvailableButton.onclick = (ev: MouseEvent) => {
             this.updateAvailableScreen.style.display     = "block";
             this.inputDiv.style.flexDirection            = "";
@@ -450,7 +605,7 @@ class ChargyApp {
             this.aboutScreenDiv.style.display            = "none";
             this.chargingSessionScreenDiv.style.display  = "none";
             this.invalidDataSetsScreenDiv.style.display  = "none";
-            this.backButtonDiv.style.display             = "block";
+            this.inputButtonsDiv.style.display           = "block";
             this.exportButtonDiv.style.display           = "none";
         }
 
@@ -458,7 +613,6 @@ class ChargyApp {
 
         //#region Handle the 'About'-button
 
-        this.aboutButton               = <HTMLButtonElement>   document.getElementById('aboutButton');
         this.aboutButton.onclick = (ev: MouseEvent) => {
 
             this.updateAvailableScreen.style.display     = "none";
@@ -467,69 +621,51 @@ class ChargyApp {
             this.aboutScreenDiv.style.display            = "block";
             this.chargingSessionScreenDiv.style.display  = "none";
             this.invalidDataSetsScreenDiv.style.display  = "none";
-            this.backButtonDiv.style.display             = "block";
+            this.inputButtonsDiv.style.display           = "block";
             this.exportButtonDiv.style.display           = "none";
 
-            //#region Calculate the over-all application hash
+            //#region Check application hash signatures, when given...
 
-            if (this.complete_hash      == "" &&
-                this.exe_hash           != "" &&
-                this.app_asar_hash      != "" &&
-                this.electron_asar_hash != "")
+            if (this.currentAppInfos     != null &&
+                this.currentVersionInfos != null &&
+                this.currentPackage      != null &&
+                this.applicationHash     != "")
             {
 
-                var sha512hash = require('crypto').createHash('sha512');
-                sha512hash.update(this.exe_hash);
-                sha512hash.update(this.app_asar_hash);
-                sha512hash.update(this.electron_asar_hash);
+                let sigHeadDiv    = this.applicationHashDiv.children[2];
+                let signaturesDiv = this.applicationHashDiv.children[3];
 
-                this.complete_hash = this.chargySHA512Div.children[1].innerHTML = sha512hash.digest('hex').match(/.{1,8}/g).join(" ");
+                // Bad hash value
+                if (this.currentPackage.cryptoHashes.SHA512.replace("0x", "") !== this.applicationHash)
+                    sigHeadDiv.innerHTML = "<i class=\"fas fa-times-circle\"></i> Ungültiger Hashwert!";
 
-                //#region Check application hash signatures, when given...
-
-                if (this.currentAppInfos     != null &&
-                    this.currentVersionInfos != null &&
-                    this.currentPackage      != null)
+                // At least the same hash value...
+                else
                 {
-    
-                    let sigHeadDiv    = this.chargySHA512Div.children[2];
-                    let signaturesDiv = this.chargySHA512Div.children[3];
-    
-                    // Bad hash value
-                    if (this.currentPackage.cryptoHashes.SHA512.replace("0x", "") !== this.complete_hash)
-                        sigHeadDiv.innerHTML = "<i class=\"fas fa-times-circle\"></i> Ungültiger Hashwert!";
-    
-                    // At least the same hash value...
+
+                    if (this.currentPackage.signatures == null || this.currentPackage.signatures.length == 0)
+                    {
+                        sigHeadDiv.innerHTML = "<i class=\"fas fa-check-circle\"></i> Gültiger Hashwert";
+                    }
+
+                    // Some crypto signatures found...
                     else
                     {
-    
-                        if (this.currentPackage.signatures == null || this.currentPackage.signatures.length == 0)
-                        {
-                            sigHeadDiv.innerHTML = "<i class=\"fas fa-check-circle\"></i> Gültiger Hashwert";
-                        }
-    
-                        // Some crypto signatures found...
-                        else
-                        {
-    
-                            sigHeadDiv.innerHTML = "Bestätigt durch...";
-    
-                            for (let signature of this.currentPackage.signatures)
-                            {
-                                let signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
-                                signatureDiv.innerHTML = this.CheckApplicationHashSignature(this.currentAppInfos,
-                                                                                            this.currentVersionInfos,
-                                                                                            this.currentPackage,
-                                                                                            signature);
-                            }
-    
-                        }
-    
-                    }
-    
-                }
 
-                //#endregion
+                        sigHeadDiv.innerHTML = "Bestätigt durch...";
+
+                        for (let signature of this.currentPackage.signatures)
+                        {
+                            let signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
+                            signatureDiv.innerHTML = this.checkApplicationHashSignature(this.currentAppInfos,
+                                                                                        this.currentVersionInfos,
+                                                                                        this.currentPackage,
+                                                                                        signature);
+                        }
+
+                    }
+
+                }
 
             }
 
@@ -539,10 +675,9 @@ class ChargyApp {
 
         //#endregion
 
-        //#region Handle the 'fullScreen'-button
+        //#region Handle the 'Full Screen'-button
 
-        var d                         = document as any;
-        this.fullScreenButton          = <HTMLButtonElement>   document.getElementById('fullScreenButton');
+        const d = document as any;
         this.fullScreenButton.onclick = (ev: MouseEvent) => {
             if (d.fullScreen || d.mozFullScreen || d.webkitIsFullScreen)
             {
@@ -560,10 +695,17 @@ class ChargyApp {
 
         //#endregion
 
+        //#region Handle the 'App Quit'-button
+
+        this.appQuitButton.onclick = (ev: MouseEvent) => {
+            window.close();
+        }
+
+        //#endregion
+
+
         //#region Handle the 'Overlay Ok'-button
 
-        this.overlayDiv                = <HTMLDivElement>      document.getElementById('overlay');
-        this.overlayOkButton           = <HTMLButtonElement>   document.getElementById('overlayOkButton');
         this.overlayOkButton.onclick = (ev: MouseEvent) => {
             this.overlayDiv.style.display = 'none';
         }
@@ -572,8 +714,7 @@ class ChargyApp {
 
         //#region Handle the 'fileInput'-button
 
-        this.fileInputButton           = <HTMLButtonElement>   document.getElementById('fileInputButton');
-        this.fileInput                 = <HTMLInputElement>    document.getElementById('fileInput');
+        this.fileInput  = document.getElementById('fileInput')  as HTMLInputElement;
         this.fileInputButton.onclick = (ev: MouseEvent) => {
             this.fileInput.value = '';
             this.fileInput.click();
@@ -593,25 +734,23 @@ class ChargyApp {
 
         //#region Handle Drag'n'Drop of charge transparency files
 
-        this.input                     = <HTMLDivElement>      document.getElementById('input');
-
-        this.input.addEventListener('dragenter', (event: DragEvent) => {
+        this.inputDiv.addEventListener('dragenter', (event: DragEvent) => {
             event.preventDefault();
             (event.currentTarget as HTMLDivElement)?.classList.add('over');
         }, false);
 
-        this.input.addEventListener('dragover',  (event: DragEvent) => {
+        this.inputDiv.addEventListener('dragover',  (event: DragEvent) => {
             event.stopPropagation();
             event.preventDefault();
             event.dataTransfer!.dropEffect = 'copy';
             (event.currentTarget as HTMLDivElement)?.classList.add('over');
         }, false);
 
-        this.input.addEventListener('dragleave', (event: DragEvent) => {
+        this.inputDiv.addEventListener('dragleave', (event: DragEvent) => {
             (event.currentTarget as HTMLDivElement)?.classList.remove('over');
         }, false);
 
-        this.input.addEventListener('drop',      (event: DragEvent) => {
+        this.inputDiv.addEventListener('drop',      (event: DragEvent) => {
             event.stopPropagation();
             event.preventDefault();
             (event.currentTarget as HTMLDivElement)?.classList.remove('over');
@@ -623,8 +762,7 @@ class ChargyApp {
 
         //#region Handle the 'paste'-button
 
-        var pasteButton               = <HTMLButtonElement>   document.getElementById('pasteButton');
-        pasteButton.onclick           = async (ev: MouseEvent)  => {
+        this.pasteButton.onclick = async (ev: MouseEvent)  => {
             await this.readClipboard();
         }
 
@@ -639,117 +777,9 @@ class ChargyApp {
         //#endregion
 
 
-        //#region The Issue tracker
-
-        var issueTracker              = <HTMLDivElement>      document.getElementById('issueTracker');
-        var showIssueTrackerButton    = <HTMLButtonElement>   document.getElementById('showIssueTracker');
-        showIssueTrackerButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
-            issueTracker.style.display     = 'block';
-            privacyStatement.style.display = "none";
-            issueTrackerText.scrollTop = 0;
-        }
-        var newIssueForm              = <HTMLFormElement>     document.getElementById('newIssueForm');
-        var issueTrackerText          = <HTMLDivElement>      document.getElementById('issueTrackerText');
-        var privacyStatement          = <HTMLDivElement>      document.getElementById('privacyStatement');
-        var showPrivacyStatement      = <HTMLButtonElement>   document.getElementById('showPrivacyStatement');
-        showPrivacyStatement.onclick = function(this: GlobalEventHandlers, ev: MouseEvent) {
-            ev.preventDefault();
-            privacyStatement.style.display = "block";
-            issueTrackerText.scrollTop = issueTrackerText.scrollHeight;
-        }
-        var privacyStatementAccepted  = <HTMLInputElement>    document.getElementById('privacyStatementAccepted');
-        privacyStatementAccepted.onchange = function(this: GlobalEventHandlers, ev: Event) {
-            sendIssueButton.disabled  = !privacyStatementAccepted.checked;
-        }
-        var sendIssueButton           = <HTMLButtonElement>   document.getElementById('sendIssueButton');
-        sendIssueButton.onclick = (ev: MouseEvent) => {
-
-            ev.preventDefault();
-
-            try
-            {
-
-                //#region Collect issue data...
-
-                var data = {};
-
-                data["timestamp"]                  = new Date().toISOString();
-                data["chargyVersion"]              = this.appVersion;
-                data["platform"]                   = process.platform;
-
-                data["invalidCTR"]                 = (newIssueForm.querySelector("#invalidCTR")                as HTMLInputElement).checked;
-                data["InvalidStationData"]         = (newIssueForm.querySelector("#InvalidStationData")        as HTMLInputElement).checked;
-                data["invalidSignatures"]          = (newIssueForm.querySelector("#invalidSignatures")         as HTMLInputElement).checked;
-                data["invalidCertificates"]        = (newIssueForm.querySelector("#invalidCertificates")       as HTMLInputElement).checked;
-                data["transparencenySoftwareBug"]  = (newIssueForm.querySelector("#transparencenySoftwareBug") as HTMLInputElement).checked;
-                data["DSGVO"]                      = (newIssueForm.querySelector("#DSGVO")                     as HTMLInputElement).checked;
-                data["BITV"]                       = (newIssueForm.querySelector("#BITV")                      as HTMLInputElement).checked;
-
-                data["description"]                = (newIssueForm.querySelector("#issueDescription")          as HTMLTextAreaElement).value;
-
-                if ((newIssueForm.querySelector("#includeCTR") as HTMLSelectElement).value == "yes")
-                {
-                    let stringify = require('safe-stable-stringify');
-                    data["chargeTransparencyRecord"] = stringify(this.chargy.currentCTR);
-                }
-
-                data["name"]                       = (newIssueForm.querySelector("#issueName")                 as HTMLInputElement).value;
-                data["phone"]                      = (newIssueForm.querySelector("#issuePhone")                as HTMLInputElement).value;
-                data["eMail"]                      = (newIssueForm.querySelector("#issueEMail")                as HTMLInputElement).value;
-
-                //#endregion
-
-                //#region Send issue to API
-
-                let sendIssue = new XMLHttpRequest();
-
-                sendIssue.open("ADD",
-                            "https://chargeit.charging.cloud/chargy/issues",
-                            true);
-                sendIssue.setRequestHeader('Content-type', 'application/json');
-            
-                sendIssue.onreadystatechange = function () {
-            
-                    // 0 UNSENT | 1 OPENED | 2 HEADERS_RECEIVED | 3 LOADING | 4 DONE
-                    if (this.readyState == 4) {
-
-                        if (this.status == 201) { // HTTP 201 - Created
-                            issueTracker.style.display     = 'none';
-                            // Show thank you for your issue
-                        }
-
-                        else
-                        {
-                            alert("Leider ist ein Fehler bei der Datenübertragung aufgetreten. Bitte probieren Sie es erneut...");
-                        }
-
-                    }
-
-                }
-
-                sendIssue.send(JSON.stringify(data));
-
-                //#endregion
-
-            }
-            catch (exception)
-            { 
-                // Just do nothing!
-            }
-
-        }
-        var issueBackButton           = <HTMLButtonElement>   document.getElementById('issueBackButton');
-        issueBackButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
-            issueTracker.style.display = 'none';
-        }
-
-        //#endregion
-
         //#region Handle the 'back'-button
 
-        this.backButtonDiv             = <HTMLDivElement>      document.getElementById('backButtonDiv');
-        this.backButton                = this.backButtonDiv.querySelector("#backButton") as HTMLButtonElement;
-        this.backButton.onclick        = (ev: MouseEvent) => {
+        this.backButton.onclick  = (ev: MouseEvent) => {
 
             this.updateAvailableScreen.style.display     = "none";
             this.inputDiv.style.flexDirection            = "";
@@ -757,7 +787,7 @@ class ChargyApp {
             this.aboutScreenDiv.style.display            = "none";
             this.chargingSessionScreenDiv.style.display  = "none";
             this.invalidDataSetsScreenDiv.style.display  = "none";
-            this.backButtonDiv.style.display             = "none";
+            this.inputButtonsDiv.style.display           = "none";
             this.exportButtonDiv.style.display           = "none";
             this.fileInput.value                         = "";
             this.evseTarifInfosDiv.innerHTML             = "";
@@ -775,11 +805,9 @@ class ChargyApp {
 
         //#endregion
 
-        //#region Handle the 'download'-button
+        //#region Handle the 'export'-button
 
-        this.exportButtonDiv         = <HTMLDivElement> document.getElementById('exportButtonDiv');
-        this.exportButton            = this.exportButtonDiv.querySelector("#exportButton") as HTMLButtonElement;
-        this.exportButton.onclick    = async (ev: MouseEvent) => {
+        this.exportButton.onclick  = async (ev: MouseEvent) => {
 
             try
             {
@@ -801,17 +829,18 @@ class ChargyApp {
 
         //#endregion
 
+
         //#region Modify external links to be opened in the external web browser
 
-        var shell        = require('electron').shell;
-        let linkButtons  = document.getElementsByClassName('linkButton') as HTMLCollectionOf<HTMLButtonElement>;
-        for (var i = 0; i < linkButtons.length; i++) {
+        const shell        = require('electron').shell;
+        const linkButtons  = document.getElementsByClassName('linkButton') as HTMLCollectionOf<HTMLButtonElement>;
+        for (let i = 0; i < linkButtons.length; i++) {
 
-            let linkButton = linkButtons[i];
+            const linkButton = linkButtons[i];
 
             linkButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
                 ev.preventDefault();
-                var link = linkButton.attributes["href"].nodeValue;
+                const link = linkButton.attributes["href"].nodeValue;
                 if (link.startsWith("http://") || link.startsWith("https://")) {
                     shell.openExternal(link);
                 }
@@ -846,112 +875,59 @@ class ChargyApp {
     }
 
 
-    //#region UpdateWindowSize()
+    //#region updateWindowSize()
 
-    private UpdateWindowSize() {
+    private updateWindowSize() {
         this.verifyframeDiv.style.maxHeight = (this.appDiv.clientHeight - this.headlineDiv.clientHeight).toString() + "px";
     }
 
     //#endregion
 
-    //#region calcSHA512FileHash(...)
+    //#region doGlobalError(...)
 
-    private calcSHA512FileHash(filename:   string,
-                               OnSuccess:  { (hash:         string):  any; },
-                               OnFailed:   { (errorMessage: string):  any; })
+    private doGlobalError(result:   ISessionCryptoResult,
+                          context?: any)
     {
 
-        const fs      = require('original-fs');
-        let   sha512  = require('crypto').createHash('sha512');
-        let   stream  = fs.createReadStream(filename);
+        let text = (result?.message ?? "Unbekannter Transparenzdatensatz!").trim();
 
-        stream.on('data', function(data: any) {
-            sha512.update(data) //update(text, 'utf8')
-        })
+        this.inputDiv.style.flexDirection            = "";
+        this.inputInfosDiv.style.display             = 'flex';
+        this.chargingSessionScreenDiv.style.display  = 'none';
+        this.chargingSessionScreenDiv.innerHTML      = '';
+        this.invalidDataSetsScreenDiv.style.display  = "none";
+        this.invalidDataSetsScreenDiv.innerText      = "";
+        this.errorTextDiv.style.display              = 'inline-block';
+        this.errorTextDiv.innerHTML                  = '<i class="fas fa-times-circle"></i> ' + text;
 
-        stream.on('error', function() {
-            OnFailed("File not found!");
-        })
+        // console.log(text);
+        // console.log(context);
 
-        stream.on('end', function() {
-            OnSuccess(sha512.digest('hex'));
-        })
+        this.ipcRenderer.sendSync('setVerificationResult', result);
 
     }
 
     //#endregion
 
-    //#region CheckApplicationHashSignature(...)
+    //#region readClipboard()
 
-    private CheckApplicationHashSignature(app:        any,
-                                          version:    any,
-                                          _package:   any,
-                                          signature:  any): string
+    private async readClipboard()
     {
-
-        if (app == null || version == null || _package == null || signature == null)
-            return "<i class=\"fas fa-times-circle\"></i>Ungültige Signatur!";
-
-        try {
-
-            var toCheck = {
-                "name":                 app.name,
-                "description":          app.description,
-
-                "version": {
-                    "version":              this.appVersion,
-                    "releaseDate":          version.releaseDate,
-                    "description":          version.description,
-                    "tags":                 version.tags,
-
-                    "package": {
-                        "name":                 _package.name,
-                        "description":          _package.description,
-                        "additionalInfo":       _package.additonalInfo,
-                        "platform":             _package.platform,
-                        "isInstaller":          _package.isInstaller, // Note: Might be null! Keep null values!
-                        "cryptoHashValue":      this.complete_hash,
-
-                        "signature": {
-                            "signer":               signature.signer,
-                            "timestamp":            signature.timestamp,
-                            "comment":              signature.comment,
-                            "algorithm":            signature.algorithm,
-                            "format":               signature.format
-                        }
-
-                    }
-
-                }
-
-            };
-
-            //ToDo: Checking the timestamp might be usefull!
-
-            var Input       = JSON.stringify(toCheck);
-            var sha256value = require('crypto').createHash('sha256').
-                                                update(Input, 'utf8').
-                                                digest('hex');
-
-            var result = new this.elliptic.ec('secp256k1').
-                                  keyFromPublic(signature.publicKey, 'hex').
-                                  verify       (sha256value,
-                                                signature.signature);
-
-            if (result)
-                return "<i class=\"fas fa-check-circle\"></i>" + signature.signer;
-
-
+        try
+        {
+            let text = await navigator.clipboard.readText();
+            this.detectAndConvertContentFormat(text);
         }
         catch (exception)
-        { }
-
-        return "<i class=\"fas fa-times-circle\"></i>" + signature.signer;
-
+        {
+            this.doGlobalError({
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Unbekannter Transparenzdatensatz!"
+            });
+        }
     }
 
     //#endregion
-
 
     //#region readFile(s)FromDisk()
 
@@ -1023,25 +999,129 @@ class ChargyApp {
 
     //#endregion
 
-    //#region readClipboard()
 
-    private async readClipboard()
+    //#region calcApplicationHash(...)
+
+    private calcApplicationHash(filename1: string,
+                                filename2: string,
+                                onSuccess: (applicationHash: string) => void,
+                                OnError:   (errorMessage:    string) => void)
     {
-        try
-        {
-            let text = await navigator.clipboard.readText();
-            this.detectAndConvertContentFormat(text);
-        }
-        catch (exception)
-        {
-            this.doGlobalError({
-                status:   SessionVerificationResult.InvalidSessionFormat,
-                message:  "Unbekannter Transparenzdatensatz!"
-            });
-        }
+
+        const fs                       = require('original-fs');
+        const sha512a                  = require('crypto').createHash('sha512');
+        const stream1                  = fs.createReadStream(filename1);
+        const applicationHashValueDiv  = this.applicationHashValueDiv;
+
+        stream1.on('data', function(data: any) {
+            sha512a.update(data)
+        })
+
+        stream1.on('error', function() {
+            OnError("File '" + filename1 + "' not found!");
+        })
+
+        stream1.on('end', function() {
+
+            const sha512b  = require('crypto').createHash('sha512');
+            const stream2  = fs.createReadStream(filename2);
+
+            stream2.on('data', function(data: any) {
+                sha512b.update(data)
+            })
+
+            stream2.on('error', function() {
+                applicationHashValueDiv.style.fontStyle  = "italics";
+                applicationHashValueDiv.innerHTML        = "File '" + filename2 + "' not found!";
+            })
+
+            stream2.on('end', function() {
+
+                var sha512hash = require('crypto').createHash('sha512');
+                sha512hash.update(sha512a.digest('hex'));
+                sha512hash.update(sha512b.digest('hex'));
+
+                onSuccess(sha512hash.digest('hex'));
+
+            })
+
+        })
+
     }
 
     //#endregion
+
+    //#region checkApplicationHashSignature(...)
+
+    private checkApplicationHashSignature(app:        any,
+                                          version:    any,
+                                          _package:   any,
+                                          signature:  any): string
+    {
+
+        if (app == null || version == null || _package == null || signature == null)
+            return "<i class=\"fas fa-times-circle\"></i>Ungültige Signatur!";
+
+        try {
+
+            var toCheck = {
+                "name":                 app.name,
+                "description":          app.description,
+
+                "version": {
+                    "version":              this.appVersion,
+                    "releaseDate":          version.releaseDate,
+                    "description":          version.description,
+                    "tags":                 version.tags,
+
+                    "package": {
+                        "name":                 _package.name,
+                        "description":          _package.description,
+                        "additionalInfo":       _package.additonalInfo,
+                        "platform":             _package.platform,
+                        "isInstaller":          _package.isInstaller, // Note: Might be null! Keep null values!
+                        "cryptoHashValue":      this.applicationHash,
+
+                        "signature": {
+                            "signer":               signature.signer,
+                            "timestamp":            signature.timestamp,
+                            "comment":              signature.comment,
+                            "algorithm":            signature.algorithm,
+                            "format":               signature.format
+                        }
+
+                    }
+
+                }
+
+            };
+
+            //ToDo: Checking the timestamp might be usefull!
+
+            var Input       = JSON.stringify(toCheck);
+            var sha256value = require('crypto').createHash('sha256').
+                                                update(Input, 'utf8').
+                                                digest('hex');
+
+            var result = new this.elliptic.ec('secp256k1').
+                                  keyFromPublic(signature.publicKey, 'hex').
+                                  verify       (sha256value,
+                                                signature.signature);
+
+            if (result)
+                return "<i class=\"fas fa-check-circle\"></i>" + signature.signer;
+
+
+        }
+        catch (exception)
+        { }
+
+        return "<i class=\"fas fa-times-circle\"></i>" + signature.signer;
+
+    }
+
+    //#endregion
+
 
     //#region detectAndConvertContentFormat(FileInfos)
 
@@ -1102,7 +1182,7 @@ class ChargyApp {
         this.chargingSessionScreenDiv.innerText      = "";
         this.invalidDataSetsScreenDiv.style.display  = "none";
         this.invalidDataSetsScreenDiv.innerText      = "";
-        this.backButtonDiv.style.display             = "flex";
+        this.inputButtonsDiv.style.display           = "flex";
         this.exportButtonDiv.style.display           = "flex";
 
         //#endregion
@@ -2139,31 +2219,4 @@ class ChargyApp {
 
     //#endregion
 
-    //#region Global error handling...
-
-    private doGlobalError(result:   ISessionCryptoResult,
-                          context?: any)
-    {
-
-        let text = (result?.message ?? "Unbekannter Transparenzdatensatz!").trim();
-
-        this.inputDiv.style.flexDirection            = "";
-        this.inputInfosDiv.style.display             = 'flex';
-        this.chargingSessionScreenDiv.style.display  = 'none';
-        this.chargingSessionScreenDiv.innerHTML      = '';
-        this.invalidDataSetsScreenDiv.style.display  = "none";
-        this.invalidDataSetsScreenDiv.innerText      = "";
-        this.errorTextDiv.style.display              = 'inline-block';
-        this.errorTextDiv.innerHTML                  = '<i class="fas fa-times-circle"></i> ' + text;
-
-        // console.log(text);
-        // console.log(context);
-
-        this.ipcRenderer.sendSync('setVerificationResult', result);
-
-    }
-
-    //#endregion
-
 }
-

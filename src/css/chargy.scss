@@ -255,7 +255,7 @@ body {
                             background-color:   #3c75a0;
                         }
 
-                        #chargySHA512 {
+                        #applicationHash {
 
                             margin:             1em 0 1em 0;
 
@@ -280,13 +280,14 @@ body {
                                     // top:                1px;
                                     padding-right:      3px;
                                 }
-                                
+
                             }
 
                         }
 
-                        #chargySignature {
+                        #applicationSignatures {
 
+                            display:            none;
                             margin:             1em 0 1em 0;
 
                             #value {
@@ -789,7 +790,7 @@ body {
                     }
 
 
-                    #backButtonDiv {
+                    #inputButtons {
 
                         display:        none;
                         position:       absolute;
@@ -852,22 +853,6 @@ body {
 
                 .over {
                     background-color:   cornflowerblue !important;
-                    /*border:             1px solid #2c4a60 !important;*/
-                }
-
-                #buttonsDiv {
-
-                    padding:            8px 17px 15px 15px;
-                    text-align:         right;
-
-                    button {
-                        border:             0;
-                        outline:            0;
-                        padding:            8px 15px;
-                        border-radius:      4px;
-                        box-shadow:         2px 2px 6px #999;
-                    }
-
                 }
 
             }
@@ -1192,7 +1177,7 @@ body {
                             }
                         }
 
-                        #phone {
+                        #hotline {
                             i {
                                 position:           relative;
                                 top:                2px;
@@ -1535,6 +1520,7 @@ body {
                             color:            #4b83d0;
                             font-size:          100%;
                             padding:            0px 1px 0px 6px;
+                            outline:            none;
                         }
 
                         #sendIssueButton {
