@@ -48,8 +48,8 @@ $ npm install decompress@latest
 $ npm install @types/decompress --save-dev
 + @types/decompress@4.2.3
 
-$ npm install decompress-tarxz@latest
-+ decompress-tarxz@3.0.0
+//$ npm install decompress-tarxz@latest
+//+ decompress-tarxz@3.0.0
 
 $ npm install decompress-bzip2@latest
 + decompress-bzip2@4.0.0

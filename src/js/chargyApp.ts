@@ -406,21 +406,29 @@ class ChargyApp {
 
         const OpenSourceLibsDiv        = this.aboutScreenDiv.querySelector("#OpenSourceLibs")  as HTMLDivElement;
         (  OpenSourceLibsDiv.querySelector("#chargyVersion")         as HTMLSpanElement).innerHTML = this.appVersion;
-        (  OpenSourceLibsDiv.querySelector("#electronBuilder")       as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["electron-builder"]?.       replace(/[^0-9\.]/g, "");
-        (  OpenSourceLibsDiv.querySelector("#electronLocalShortcut") as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["electron-localshortcut"]?. replace(/[^0-9\.]/g, "");
-        (  OpenSourceLibsDiv.querySelector("#typeScript")            as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["typescript"]?.             replace(/[^0-9\.]/g, "");
-        (  OpenSourceLibsDiv.querySelector("#SASS")                  as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["sass"]?.                   replace(/[^0-9\.]/g, "");
-        (  OpenSourceLibsDiv.querySelector("#elliptic")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["elliptic"]?.               replace(/[^0-9\.]/g, "");
-        (  OpenSourceLibsDiv.querySelector("#momentJS")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["moment"]?.                 replace(/[^0-9\.]/g, "");
-        (  OpenSourceLibsDiv.querySelector("#decompress")            as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress"]?.             replace(/[^0-9\.]/g, "");
-        (  OpenSourceLibsDiv.querySelector("#decompressBZIP2")       as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress-bzip2"]?.       replace(/[^0-9\.]/g, "");
-        (  OpenSourceLibsDiv.querySelector("#decompressGZ")          as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress-gz"]?.          replace(/[^0-9\.]/g, "");
-        (  OpenSourceLibsDiv.querySelector("#fileType")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["file-type"]?.              replace(/[^0-9\.]/g, "");
-        (  OpenSourceLibsDiv.querySelector("#asn1JS")                as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["asn1.js"]?.                replace(/[^0-9\.]/g, "");
-        (  OpenSourceLibsDiv.querySelector("#base32Decode")          as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["base32-decode"]?.          replace(/[^0-9\.]/g, "");
-        (  OpenSourceLibsDiv.querySelector("#leafletJS")             as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet"]?.                replace(/[^0-9\.]/g, "");
-        (  OpenSourceLibsDiv.querySelector("#leafletAwesomeMarkers") as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet.awesome-markers"]?.replace(/[^0-9\.]/g, "");
-        (  OpenSourceLibsDiv.querySelector("#chartJS")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["chart.js"]?.               replace(/[^0-9\.]/g, "");
+
+        if (this.packageJson.devDependencies)
+        {
+            (  OpenSourceLibsDiv.querySelector("#electronBuilder")       as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["electron-builder"]?.       replace(/[^0-9\.]/g, "");
+            (  OpenSourceLibsDiv.querySelector("#typeScript")            as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["typescript"]?.             replace(/[^0-9\.]/g, "");
+            (  OpenSourceLibsDiv.querySelector("#SASS")                  as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["sass"]?.                   replace(/[^0-9\.]/g, "");
+        }
+
+        if (this.packageJson.dependencies)
+        {
+            (  OpenSourceLibsDiv.querySelector("#electronLocalShortcut") as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["electron-localshortcut"]?. replace(/[^0-9\.]/g, "");
+            (  OpenSourceLibsDiv.querySelector("#elliptic")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["elliptic"]?.               replace(/[^0-9\.]/g, "");
+            (  OpenSourceLibsDiv.querySelector("#momentJS")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["moment"]?.                 replace(/[^0-9\.]/g, "");
+            (  OpenSourceLibsDiv.querySelector("#decompress")            as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress"]?.             replace(/[^0-9\.]/g, "");
+            (  OpenSourceLibsDiv.querySelector("#decompressBZIP2")       as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress-bzip2"]?.       replace(/[^0-9\.]/g, "");
+            (  OpenSourceLibsDiv.querySelector("#decompressGZ")          as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress-gz"]?.          replace(/[^0-9\.]/g, "");
+            (  OpenSourceLibsDiv.querySelector("#fileType")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["file-type"]?.              replace(/[^0-9\.]/g, "");
+            (  OpenSourceLibsDiv.querySelector("#asn1JS")                as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["asn1.js"]?.                replace(/[^0-9\.]/g, "");
+            (  OpenSourceLibsDiv.querySelector("#base32Decode")          as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["base32-decode"]?.          replace(/[^0-9\.]/g, "");
+            (  OpenSourceLibsDiv.querySelector("#leafletJS")             as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet"]?.                replace(/[^0-9\.]/g, "");
+            (  OpenSourceLibsDiv.querySelector("#leafletAwesomeMarkers") as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet.awesome-markers"]?.replace(/[^0-9\.]/g, "");
+            (  OpenSourceLibsDiv.querySelector("#chartJS")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["chart.js"]?.               replace(/[^0-9\.]/g, "");
+        }
 
         //#endregion
 
