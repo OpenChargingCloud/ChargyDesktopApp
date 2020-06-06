@@ -1889,6 +1889,7 @@ class ChargyApp {
                             switch (measurement.unit)
                             {
 
+                                case "kWh":
                                 case "KILO_WATT_HOURS":
                                     CreateDiv(MeasurementValueDiv, "unit1", "kWh");
                                     break;
@@ -1907,6 +1908,7 @@ class ChargyApp {
                             switch (measurement.unit)
                             {
 
+                                case "kWh":
                                 case "KILO_WATT_HOURS":
                                     currentValue = parseFloat((currentValue * Math.pow(10, measurementValue.measurement.scale)).toFixed(10));
                                     break;
