@@ -45,6 +45,29 @@ class ChargeIT {
 
             //#region Common format
 
+            //#region documentation
+
+            // {
+            //     "placeInfo": {
+            //         "evseId": "DE*BDO*74778874*1",
+            //         "address": {
+            //             "street": "Musterstraße 12",
+            //             "zipCode": "74789",
+            //             "town": "Stadt" 
+            //         },
+            //         "geoLocation": {
+            //             "lat": 12.3774,
+            //             "lon": 1.3774
+            //         }
+            //     },
+            //
+            //     "signedMeterValues":[{
+            //         [...]
+            //     }]
+            // }
+
+            //#endregion
+
             var placeInfo          = SomeJSON.placeInfo;
             var signedMeterValues  = SomeJSON.signedMeterValues as Array<any>;
 
@@ -660,7 +683,23 @@ class ChargeIT {
 
             if (_CTR.chargingSessions)
             {
+
+                _CTR.chargingPools[0].chargingStations[0].geoLocation = {
+                    "lat":        placeInfo.geoLocation.lat,
+                    "lng":        placeInfo.geoLocation.lon
+                };
+
+                _CTR.chargingPools[0].chargingStations[0].address = {
+                    "street":     placeInfo.address.street,
+                    "postalCode": placeInfo.address.zipCode,
+                    "city":       placeInfo.address.town
+                };
+
+                _CTR.chargingPools[0].chargingStations[0].EVSEs[0]["@id"] = placeInfo.evseId;
+                delete _CTR.chargingPools[0].chargingStations[0].EVSEs[0].description;
+
                 _CTR.chargingSessions[0].EVSEId = placeInfo.evseId;
+
             }
 
             return _CTR as IChargeTransparencyRecord;
