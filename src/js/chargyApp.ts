@@ -28,6 +28,7 @@
 ///<reference path="Alfen01.ts" />
 ///<reference path="Mennekes.ts" />
 
+// ToDo: Imports lead to strange errors!
 // import { debug } from "util";
 // import * as crypto from "crypto";
 // import { readSync } from "fs";
@@ -56,8 +57,8 @@ class ChargyApp {
     public  versionsURL                 = "";
     private ipcRenderer                 = require('electron').ipcRenderer;
     private path                        = require('path');
-    private commandLineArguments        = [];
-    public  packageJson:                any = {};
+    private commandLineArguments:       Array<string> = [];
+    public  packageJson:                any           = {};
 
     private applicationHash             = "";
 
@@ -114,9 +115,7 @@ class ChargyApp {
 
     //#endregion
 
-    constructor(appEdition?:       string,
-                copyright?:        string,
-                versionsURL?:      string,
+    constructor(versionsURL?:      string,
                 feedbackEMail?:    string[],
                 feedbackHotline?:  string[],
                 issueURL?:         string) {
@@ -157,9 +156,9 @@ class ChargyApp {
         this.showIssueTrackerButton    = this.feedbackMethodsDiv.querySelector("#showIssueTracker")       as HTMLButtonElement;
         this.issueBackButton           = this.issueTrackerDiv.querySelector("#issueBackButton")           as HTMLButtonElement;
 
-        this.appVersion                = this.ipcRenderer.sendSync('getAppVersion');
-        this.appEdition                = appEdition  ?? "";
-        this.copyright                 = copyright   ?? "&copy; 2018-2020 GraphDefined GmbH";
+        this.appVersion                = this.ipcRenderer.sendSync('getAppVersion') ?? "";
+        this.appEdition                = this.ipcRenderer.sendSync('getAppEdition') ?? "";
+        this.copyright                 = this.ipcRenderer.sendSync('getCopyright')  ?? "&copy; 2018-2020 GraphDefined GmbH";
         this.versionsURL               = versionsURL ?? "https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json";
         this.commandLineArguments      = this.ipcRenderer.sendSync('getCommandLineArguments');
         this.packageJson               = this.ipcRenderer.sendSync('getPackageJson');
@@ -173,11 +172,12 @@ class ChargyApp {
 
         //#region OnWindowResize
 
-        this.updateWindowSize();
-
         window.onresize = (ev: UIEvent) => {
-            this.updateWindowSize();
+            this.verifyframeDiv.style.maxHeight = (this.appDiv.clientHeight - this.headlineDiv.clientHeight).toString() + "px";
         }
+
+        // Call it once on application start
+        window.dispatchEvent(new Event("resize"));
 
         //#endregion
 
@@ -335,38 +335,12 @@ class ChargyApp {
 
         //#region Calculate application hash
 
-        let applicationFile  = "";
-        let appAsarFile      = "";
+        const appFileNames  = this.ipcRenderer.sendSync('getAppFileNames') ?? [];
 
-        switch (process.platform)
+        if (Array.isArray(appFileNames) && appFileNames[0] !== "" && appFileNames[1] !== "")
         {
-
-            case "win32":
-                applicationFile  = 'Chargy Transparenzsoftware chargeIT mobility Edition.exe';
-                appAsarFile      = this.path.join('resources', 'app.asar');
-                break;
-
-            case "linux":
-            case "freebsd":
-            case "openbsd":
-                applicationFile  = '/opt/Chargy\ Transparenzsoftware/chargytransparenzsoftware';
-                appAsarFile      = '/opt/Chargy\ Transparenzsoftware/resources/app.asar';
-                break;
-
-            case "darwin":
-                applicationFile  = '/Applications/Chargy\ Transparenzsoftware.app/Contents/MacOS/Chargy Transparenzsoftware';
-                appAsarFile      = '/Applications/Chargy\ Transparenzsoftware.app/Contents/Resources/app.asar';
-                break;
-
-            default:
-                this.applicationHashValueDiv.innerHTML = "Kann nicht berechnet werden!"
-                break;
-
-        }
-
-        if (applicationFile !== "" && appAsarFile !== "")
-            this.calcApplicationHash(applicationFile,
-                                     appAsarFile,
+            this.calcApplicationHash(appFileNames[0],
+                                     appFileNames[1],
                                      applicationHash => { 
                                          this.applicationHash                          = applicationHash;
                                          this.applicationHashValueDiv.innerHTML        = applicationHash.match(/.{1,8}/g)?.join(" ") ?? "";
@@ -375,6 +349,10 @@ class ChargyApp {
                                          this.applicationHashValueDiv.style.fontStyle  = "italics";
                                          this.applicationHashValueDiv.innerHTML        = errorMessage;
                                      });
+        }
+
+        else
+            this.applicationHashValueDiv.innerHTML = "Kann nicht berechnet werden!";
 
         //#endregion
 
@@ -704,6 +682,58 @@ class ChargyApp {
         //#endregion
 
 
+        //#region Handle the 'back'-button
+
+        this.backButton.onclick  = (ev: MouseEvent) => {
+
+            this.updateAvailableScreen.style.display     = "none";
+            this.inputDiv.style.flexDirection            = "";
+            this.inputInfosDiv.style.display             = 'flex';
+            this.aboutScreenDiv.style.display            = "none";
+            this.chargingSessionScreenDiv.style.display  = "none";
+            this.invalidDataSetsScreenDiv.style.display  = "none";
+            this.inputButtonsDiv.style.display           = "none";
+            this.exportButtonDiv.style.display           = "none";
+            this.fileInput.value                         = "";
+            this.evseTarifInfosDiv.innerHTML             = "";
+
+            // Clear the map and reset zoom bounds...
+            while(this.markers.length > 0)
+                map.removeLayer(this.markers.pop());
+
+            this.minlat = +1000;
+            this.maxlat = -1000;
+            this.minlng = +1000;
+            this.maxlng = -1000;
+
+        }
+
+        //#endregion
+
+        //#region Handle the 'export'-button
+
+        this.exportButton.onclick  = async (ev: MouseEvent) => {
+
+            try
+            {
+
+                const path = this.ipcRenderer.sendSync('showSaveDialog')
+
+                if (path != null)
+                    require('original-fs').writeFileSync(path,
+                                                         JSON.stringify(this.chargy.currentCTR, null, '\t'),
+                                                         'utf-8');
+
+            }
+            catch(exception)
+            {
+                alert('Failed to save the charge transparency record!' + exception);
+            }
+
+        }
+
+        //#endregion
+
         //#region Handle the 'Overlay Ok'-button
 
         this.overlayOkButton.onclick = (ev: MouseEvent) => {
@@ -711,6 +741,28 @@ class ChargyApp {
         }
 
         //#endregion
+
+
+        //#region Modify external links to be opened in the external web browser
+
+        const shell        = require('electron').shell;
+        const linkButtons  = document.getElementsByClassName('linkButton') as HTMLCollectionOf<HTMLButtonElement>;
+        for (let i = 0; i < linkButtons.length; i++) {
+
+            const linkButton = linkButtons[i];
+
+            linkButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
+                ev.preventDefault();
+                const link = linkButton.attributes["href"].nodeValue;
+                if (link.startsWith("http://") || link.startsWith("https://")) {
+                    shell.openExternal(link);
+                }
+            }
+
+        }
+
+        //#endregion
+
 
         //#region Handle the 'fileInput'-button
 
@@ -776,92 +828,9 @@ class ChargyApp {
 
         //#endregion
 
+        //#region Handle 'Open file'-events...
 
-        //#region Handle the 'back'-button
-
-        this.backButton.onclick  = (ev: MouseEvent) => {
-
-            this.updateAvailableScreen.style.display     = "none";
-            this.inputDiv.style.flexDirection            = "";
-            this.inputInfosDiv.style.display             = 'flex';
-            this.aboutScreenDiv.style.display            = "none";
-            this.chargingSessionScreenDiv.style.display  = "none";
-            this.invalidDataSetsScreenDiv.style.display  = "none";
-            this.inputButtonsDiv.style.display           = "none";
-            this.exportButtonDiv.style.display           = "none";
-            this.fileInput.value                         = "";
-            this.evseTarifInfosDiv.innerHTML             = "";
-
-            // Clear the map and reset zoom bounds...
-            while(this.markers.length > 0)
-                map.removeLayer(this.markers.pop());
-
-            this.minlat = +1000;
-            this.maxlat = -1000;
-            this.minlng = +1000;
-            this.maxlng = -1000;
-
-        }
-
-        //#endregion
-
-        //#region Handle the 'export'-button
-
-        this.exportButton.onclick  = async (ev: MouseEvent) => {
-
-            try
-            {
-
-                const path = this.ipcRenderer.sendSync('showSaveDialog')
-
-                if (path != null)
-                    require('original-fs').writeFileSync(path,
-                                                         JSON.stringify(this.chargy.currentCTR, null, '\t'),
-                                                         'utf-8');
-
-            }
-            catch(exception)
-            {
-                alert('Failed to save the charge transparency record!' + exception);
-            }
-
-        }
-
-        //#endregion
-
-
-        //#region Modify external links to be opened in the external web browser
-
-        const shell        = require('electron').shell;
-        const linkButtons  = document.getElementsByClassName('linkButton') as HTMLCollectionOf<HTMLButtonElement>;
-        for (let i = 0; i < linkButtons.length; i++) {
-
-            const linkButton = linkButtons[i];
-
-            linkButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
-                ev.preventDefault();
-                const link = linkButton.attributes["href"].nodeValue;
-                if (link.startsWith("http://") || link.startsWith("https://")) {
-                    shell.openExternal(link);
-                }
-            }
-
-        }
-
-        //#endregion
-
-        //#region Handle 'Open this file with Chargy'-events...
-
-        // Note: The following is synchronous, therefore must be at the end of the file...
-
-        // Windows and Linux
-        if (this.commandLineArguments.length > 0)
-            this.readFilesFromDisk(this.commandLineArguments);
-
-        // Mac OS X - first file to open
-        this.readFileFromDisk(this.ipcRenderer.sendSync('getChargyFilename'));
-
-        // Mac OS X - when app is running
+        // e.g. on Mac OS X - when app is running
         this.ipcRenderer.on('receiveFileToOpen', (event:any, filename:string) => {
             this.readFileFromDisk(filename);
         });
@@ -872,16 +841,27 @@ class ChargyApp {
 
         //#endregion
 
+        //#region Check command line parameters and 'Open this file with...'-events...
+
+        // ToDo: This is a work around, as events from main.js seem to fire too early!
+
+        // File to open on Mac OS X
+        const filename = this.ipcRenderer.sendSync('getFileToOpen');
+        if (filename !== "")
+            this.readFileFromDisk(filename);
+
+
+        // Open files sent via command line parameters
+        const filteredcommandLineArguments = this.commandLineArguments.filter(parameter => !parameter.startsWith('-'));
+
+        // Stupid workaround via setTimeout
+        if (filteredcommandLineArguments.length > 0)
+            setTimeout(() => this.readFilesFromDisk(filteredcommandLineArguments), 100);
+
+        //#endregion
+
     }
 
-
-    //#region updateWindowSize()
-
-    private updateWindowSize() {
-        this.verifyframeDiv.style.maxHeight = (this.appDiv.clientHeight - this.headlineDiv.clientHeight).toString() + "px";
-    }
-
-    //#endregion
 
     //#region doGlobalError(...)
 
@@ -1031,8 +1011,7 @@ class ChargyApp {
             })
 
             stream2.on('error', function() {
-                applicationHashValueDiv.style.fontStyle  = "italics";
-                applicationHashValueDiv.innerHTML        = "File '" + filename2 + "' not found!";
+                OnError("File '" + filename2 + "' not found!");
             })
 
             stream2.on('end', function() {

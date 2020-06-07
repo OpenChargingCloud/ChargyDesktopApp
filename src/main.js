@@ -1,37 +1,62 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, dialog, ipcMain } = require('electron')
-const path = require('path')
+const path                                    = require('path');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
-let filename = "";
+let applicationEdition    = "chargeIT mobility Edition";
+let copyright             = "&copy; 2018-2020 GraphDefined GmbH";
+let applicationFileName   = "";
+let appAsarFileName       = "";
+let commandLineArguments  = [];
+let fileToOpen            = "";
+
+
+// Run in development mode via run.sh
+// [
+//   'D:\\Coding\\OpenChargingCloud\\ChargyDesktopApp\\node_modules\\electron\\dist\\electron.exe',
+//   '.',
+//   '--debug'
+// ]
+if (process.argv.length >= 2 && process.argv[0].endsWith("electron.exe") && process.argv[1] === ".")
+    commandLineArguments = process.argv.slice(2);
+
+// Run the installed executable (via command line)
+// [
+//   'C:\\Program Files\\Chargy Transparenzsoftware\\Chargy Transparenzsoftware.exe',
+//   '--debug'
+// ]
+else
+    commandLineArguments = process.argv.slice(1);
+
 
 function createWindow () {
 
-    // Create the browser window
+    // Note: When the icon could not be loaded all will fail silently!
+    //       Also test the app via starting it from the command line within a different directory.
     mainWindow = new BrowserWindow({
 
         width:              1500,
         height:             900,
         autoHideMenuBar:    true,
-        icon:               'build/chargy_icon.png',
+        icon:               `${app.getAppPath()}/src/icons/chargy_icon.png`,
 
         webPreferences: {
-            nodeIntegration:  true,
-            preload:          path.join(__dirname, 'preload.js')
+            nodeIntegration:  true
+       //     preload:          path.join(__dirname, 'preload.js')
         },
 
         // Don't show the window until it's ready, this prevents any white flickering
         show:              false
 
-    })
+    });
 
     mainWindow.removeMenu();
-    mainWindow.loadFile('src/index.html')
+    mainWindow.loadURL(`file://${app.getAppPath()}/src/index.html`);
 
     if (app.commandLine.hasSwitch('debug') && !app.commandLine.hasSwitch('nogui'))
-        mainWindow.webContents.openDevTools()
+        mainWindow.webContents.openDevTools();
 
     // Emitted when the window is closed
     mainWindow.on('closed', function () {
@@ -39,15 +64,27 @@ function createWindow () {
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
         mainWindow = null
-    })
+    });
 
     // Show main window when page is ready
-    mainWindow.on('ready-to-show', () => {
+    mainWindow.once('ready-to-show', () => {
+
         if (!app.commandLine.hasSwitch('nogui'))
             mainWindow.show();
-    })
 
-    // Register key short-cut for PASTE
+        // This event seems to fire too early!
+
+        // const filteredcommandLineArguments = commandLineArguments.filter(parameter => !parameter.startsWith('-'));
+
+        // if (filteredcommandLineArguments.length > 0)
+        //     mainWindow.webContents.send('receiveFilesToOpen', filteredcommandLineArguments);
+
+        // else if (ipcFilesToOpen != "")
+        //     mainWindow.webContents.send('receiveFilesToOpen', ipcFilesToOpen);
+
+    });
+
+    // Register key short-cut for Ctrl+V (Paste)
     require('electron-localshortcut').register(mainWindow, 'Ctrl+V', () => {
         if (mainWindow != null)
             mainWindow.webContents.send('receiveReadClipboard');
@@ -55,44 +92,93 @@ function createWindow () {
 
 }
 
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-    createWindow()
+
+    //console.log(process.env);
+
+    switch (process.platform)
+    {
+
+        case "win32":
+            applicationFileName  = !process.argv[0].endsWith("electron.exe")
+                                       ? process.argv[0].substring(process.argv[0].lastIndexOf(path.sep) + path.sep.length, process.argv[0].length)
+                                       : "";
+            appAsarFileName      = path.join('resources', 'app.asar');
+            break;
+
+        case "linux":
+        case "freebsd":
+        case "openbsd":
+            applicationFileName  = "/opt/Chargy\ Transparenzsoftware/chargytransparenzsoftware";
+            appAsarFileName      = "/opt/Chargy\ Transparenzsoftware/resources/app.asar";
+            break;
+
+        case "darwin":
+            applicationFileName  = "/Applications/Chargy\ Transparenzsoftware.app/Contents/MacOS/Chargy Transparenzsoftware" + (applicationEdition !== "" ? " " + applicationEdition : "");
+            appAsarFileName      = "/Applications/Chargy\ Transparenzsoftware.app/Contents/Resources/app.asar";
+            break;
+
+    }
+
+    if (app.commandLine.hasSwitch('help'))
+    {
+        console.log("Chargy Transparenzsoftware " + applicationEdition + " v" + app.getVersion());
+        console.log(copyright);
+        console.log("");
+        console.log("Usage: " + applicationFileName + " [switches] file1, file2, ...");
+        console.log("");
+        console.log("Switches:");
+        console.log(" --help           Show this information");
+        console.log(" --debug          Run in debug modus and open development tools");
+        console.log(" --nogui          Run in command line modus (cli mode)");
+      //console.log(" --output=format  Set the output format in cli/debug mode [text (default)|csv|json|xml]");
+        console.log("");
+        app.quit();
+    }
+
+    if (app.commandLine.hasSwitch('version'))
+    {
+        console.log(app.getVersion());
+        app.quit();
+    }
+
+    createWindow();
+
 });
 
 app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0)
-        createWindow()
-})
+        createWindow();
+});
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
     // On macOS it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== 'darwin')
-        app.quit()
-})
+        app.quit();
+});
 
 app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (mainWindow === null)
-        createWindow()
-})
+        createWindow();
+});
 
-// IPC communication for Mac OS X
-// https://medium.com/@nornagon/electrons-remote-module-considered-harmful-70d69500f31#d978
+// Mac OS X IPC communication "file open with..."
 app.on('open-file', (event, path) => {
     event.preventDefault();
-    filename = path;
+    fileToOpen = path;
     if (mainWindow != null)
-        mainWindow.webContents.send('receiveFileToOpen', path);
+        mainWindow.webContents.send('receiveFileToOpen', fileToOpen);
 });
+
 
 
 ipcMain.on('isDebug', (event) => {
@@ -103,20 +189,32 @@ ipcMain.on('noGUI', (event) => {
   event.returnValue = app.commandLine.hasSwitch('nogui');
 });
 
-ipcMain.on('getChargyFilename', (event) => {
-    event.returnValue = filename;
+ipcMain.on('getAppFileNames', (event) => {
+    event.returnValue = [ applicationFileName, appAsarFileName ];
 });
 
 ipcMain.on('getAppVersion', (event) => {
     event.returnValue = app.getVersion();
 });
 
+ipcMain.on('getAppEdition', (event) => {
+    event.returnValue = applicationEdition;
+});
+
+ipcMain.on('getCopyright', (event) => {
+    event.returnValue = copyright;
+});
+
 ipcMain.on('getCommandLineArguments', (event) => {
-    event.returnValue = process.argv.slice(2);
+    event.returnValue = commandLineArguments;
 });
 
 ipcMain.on('getPackageJson', (event) => {
     event.returnValue = require('../package.json');
+});
+
+ipcMain.on('getFileToOpen', (event) => {
+    event.returnValue = fileToOpen;
 });
 
 ipcMain.on('showSaveDialog', (event, arg) => {
@@ -141,6 +239,8 @@ ipcMain.on('setVerificationResult', (event, result) => {
 
         for (let singleResult of result)
         {
+
+            //#region Convert status enum to text
 
             let status = "";
 
@@ -183,6 +283,8 @@ ipcMain.on('setVerificationResult', (event, result) => {
                     break;
 
             }
+
+            //#endregion
 
             console.log(status + (singleResult.message != null ? " - " + singleResult.message : ""));
 
