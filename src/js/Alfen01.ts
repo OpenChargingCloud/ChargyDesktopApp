@@ -62,6 +62,7 @@ class Alfen01  {
 
             var common = {
                     PublicKey:          "",
+                    PublicKeyFormat:    "",
                     AdapterId:          "",
                     AdapterFWVersion:   "",
                     AdapterFWChecksum:  "",
@@ -96,7 +97,7 @@ class Alfen01  {
                 let FormatId               = elements[0];                           //  2 bytes
                 let Type                   = elements[1];                           //  1 byte; "0": start meter value | "1": stop meter value | "2": intermediate value
                 let BlobVersion            = elements[2];                           //  1 byte; "3" (current version)
-                let PublicKey:ArrayBuffer  = base32Decode(elements[3], 'RFC4648');  // 25 bytes; base32 encoded
+                let PublicKey:ArrayBuffer  = base32Decode(elements[3], 'RFC4648');  // 25 bytes; base32 encoded; secp192r1
                 let DataSet:  ArrayBuffer  = base32Decode(elements[4], 'RFC4648');  // 82 bytes; base32 encoded
                 let Signature:ArrayBuffer  = base32Decode(elements[5], 'RFC4648');  // 48 bytes; base32 encoded; secp192r1
 
@@ -121,6 +122,13 @@ class Alfen01  {
                         status:   SessionVerificationResult.InvalidSessionFormat,
                         message:  "Invalid data format!"
                     };
+                }
+
+                switch (PublicKey.byteLength)
+                {
+                    case 25:
+                        common.PublicKeyFormat   = "secp192r1";
+                        break;
                 }
 
                 // Everything is Little Endian
@@ -243,7 +251,6 @@ class Alfen01  {
 
             }
 
-
             var n = common.dataSets.length-1;
             var _CTR: any = { //IChargeTransparencyRecord = {
 
@@ -266,12 +273,12 @@ class Alfen01  {
 
                  "chargingPools": [
                      {
-                         "@id":                      "DE*BDO*POOL*1",
+                         "@id":                      "DE*GEF*POOL*1",
                          "description":              { "de": "GraphDefined Virtual Charging Pool - CI-Tests Pool 1" },
 
                          "chargingStations": [
                              {
-                                 "@id":                      "DE*BDO*STATION*1*A",
+                                 "@id":                      "DE*GEF*STATION*1*A",
                                  "description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A" },
             //                     "firmwareVersion":          CTRArray[0]["Alfen"]["softwareVersion"],
             //                     "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
@@ -282,7 +289,7 @@ class Alfen01  {
             //                     },
                                  "EVSEs": [
                                      {
-                                         "@id":                      "DE*BDO*EVSE*1*A*1",
+                                         "@id":                      "DE*GEF*EVSE*1*A*1",
                                          "description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A / EVSE 1" },
                                          "sockets":                  [ { } ],
                                          "meters": [
@@ -296,9 +303,10 @@ class Alfen01  {
             //                                     "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
                                                  "publicKeys": [
                                                      {
-                                                         "algorithm":        "secp192r1",
+                                                         "value":            common.PublicKey,
+                                                         "algorithm":        common.PublicKeyFormat,
                                                          "format":           "DER",
-                                                         "value":            common.PublicKey
+                                                         "encoding":         "base32"
                                                       //   "signatures":       CTRArray[0]["meterInfo"]["publicKeySignatures"]
                                                      }
                                                  ]
@@ -349,8 +357,9 @@ class Alfen01  {
                                  "signatureInfos": {
                                      "hash":                 "SHA256",
                                      "algorithm":            "ECC",
-                                     "curve":                "secp192r1",
-                                     "format":               "rs"
+                                     "curve":                common.PublicKeyFormat,
+                                     "format":               "rs",
+                                     "encoding":             "base32"
                                  },
 
                                  "values": [ ]
@@ -440,7 +449,7 @@ interface IAlfenCrypt01Result extends ICryptoResult
     sessionId?:                    string,
     paging?:                       string,
 
-    sha256value?:                  any,
+    hashValue?:                    any,
     publicKey?:                    string,
     publicKeyFormat?:              string,
     publicKeySignatures?:          any,
@@ -450,11 +459,9 @@ interface IAlfenCrypt01Result extends ICryptoResult
 
 class AlfenCrypt01 extends ACrypt {
 
-    readonly curve = new this.chargy.elliptic.ec('p192');
-
     constructor(chargy:  Chargy) {
 
-        super("ECC secp192r1",
+        super("Alfen",
               chargy);
 
     }
@@ -462,7 +469,7 @@ class AlfenCrypt01 extends ACrypt {
 
     GenerateKeyPair()//options?: elliptic.ec.GenKeyPairOptions)
     {
-        return this.curve.genKeyPair();
+        return this.curve192r1.genKeyPair();
         // privateKey     = keypair.getPrivate();
         // publicKey      = keypair.getPublic();
         // privateKeyHEX  = privateKey.toString('hex').toLowerCase();
@@ -553,13 +560,13 @@ class AlfenCrypt01 extends ACrypt {
         };
 
         // Only the first 24 bytes/192 bits are used!
-        cryptoResult.sha256value  = (await sha256(cryptoBuffer)).substring(0, 48);
+        cryptoResult.hashValue  = (await sha256(cryptoBuffer)).substring(0, 48);
 
         // cryptoResult.publicKey    = publicKey.encode('hex').
         //                                       toLowerCase();
 
-        const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
-                                               sign(cryptoResult.sha256value);
+        const signature           = this.curve192r1.keyFromPrivate(privateKey.toString('hex')).
+                                                    sign(cryptoResult.hashValue);
 
         switch (measurementValue.measurement.signatureInfos.format)
         {
@@ -646,9 +653,6 @@ class AlfenCrypt01 extends ACrypt {
                     s:          signatureExpected.s
                 };
 
-                cryptoResult.sha256value = (await sha256(cryptoBuffer));
-
-
                 const meter = this.chargy.GetMeter(measurementValue.measurement.energyMeterId);
                 if (meter != null)
                 {
@@ -668,11 +672,53 @@ class AlfenCrypt01 extends ACrypt {
                             try
                             {
 
-                                const base32Decode = require('base32-decode');
+                                const base32Decode  = require('base32-decode');
+                                const publicKey     = buf2hex(base32Decode(cryptoResult.publicKey.toUpperCase(), 'RFC4648'));
+                                let   result        = false;
 
-                                if (this.curve.keyFromPublic(buf2hex(base32Decode(cryptoResult.publicKey.toUpperCase(), 'RFC4648')) , 'hex').
-                                               verify       (cryptoResult.sha256value.toUpperCase(),
-                                                             cryptoResult.signature))
+                                switch (meter.publicKeys[0].algorithm)
+                                {
+
+                                    case "secp192r1":
+                                        cryptoResult.hashValue  = (await sha256(cryptoBuffer));
+                                        result                  = this.curve192r1.keyFromPublic(publicKey, 'hex').
+                                                                                  verify       (cryptoResult.hashValue.toUpperCase(),
+                                                                                                cryptoResult.signature);
+                                        break;
+
+                                     case "curve224k1":
+                                        cryptoResult.hashValue  = (BigInt("0x" + (await sha256(cryptoBuffer))) >> BigInt(31));//.toString(16);
+                                        result                  = this.curve224k1.validate(BigInt("0x" + cryptoResult.hashValue),
+                                                                            BigInt("0x" + signatureExpected.r),
+                                                                            BigInt("0x" + signatureExpected.s),
+                                                                            [ BigInt("0x" + publicKey.substr(2,  56)),
+                                                                              BigInt("0x" + publicKey.substr(58, 56)) ])
+                                         break;
+
+                                    case "curve256r1":
+                                        cryptoResult.hashValue  = (await sha256(cryptoBuffer));
+                                        result                  = this.curve192r1.keyFromPublic(publicKey, 'hex').
+                                                                                  verify       (cryptoResult.hashValue.toUpperCase(),
+                                                                                                cryptoResult.signature);
+                                        break;
+
+                                    case "curve384r1":
+                                        cryptoResult.hashValue  = (await sha384(cryptoBuffer));
+                                        result                  = this.curve192r1.keyFromPublic(publicKey, 'hex').
+                                                                                  verify       (cryptoResult.hashValue.toUpperCase(),
+                                                                                                cryptoResult.signature);
+                                        break;
+
+                                    case "curve521r1":
+                                        cryptoResult.hashValue  = (await sha512(cryptoBuffer));
+                                        result                  = this.curve192r1.keyFromPublic(publicKey, 'hex').
+                                                                                  verify       (cryptoResult.hashValue.toUpperCase(),
+                                                                                                cryptoResult.signature);
+                                        break;
+
+                                }
+
+                                if (result)
                                 {
                                     return setResult(VerificationResult.ValidSignature);
                                 }
@@ -773,7 +819,7 @@ class AlfenCrypt01 extends ACrypt {
             if (HashedPlainTextDiv.parentElement != null)
                 HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text (SHA256, hex)";
 
-            HashedPlainTextDiv.innerHTML                                 = result.sha256value.match(/.{1,8}/g).join(" ");
+            HashedPlainTextDiv.innerHTML                                 = result.hashValue.match(/.{1,8}/g).join(" ");
 
         }
 

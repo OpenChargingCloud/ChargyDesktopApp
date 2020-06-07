@@ -18,6 +18,7 @@
 ///<reference path="certificates.ts" />
 ///<reference path="chargyInterfaces.ts" />
 ///<reference path="chargyLib.ts" />
+///<reference path="ACrypt.ts" />
 
 class Chargy {
 

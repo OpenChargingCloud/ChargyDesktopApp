@@ -917,7 +917,7 @@ class ChargePointCrypt01 extends ACrypt {
 
                         case "secp521r1":
                             sha512Value          = sha512Value ?? await sha512(plainText);
-                            sessionResult        = this.curve512r1.keyFromPublic(publicKey.value, 'hex').
+                            sessionResult        = this.curve521r1.keyFromPublic(publicKey.value, 'hex').
                                                                    verify       (sha512Value,
                                                                                  chargingSession.signature)
                                                        ? SessionVerificationResult.ValidSignature

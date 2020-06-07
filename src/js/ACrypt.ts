@@ -25,10 +25,11 @@ abstract class ACrypt {
     readonly description:  string;
     readonly chargy:       Chargy;
 
+    readonly curve192r1:   any;
     readonly curve224k1:   secp224k1;
     readonly curve256r1:   any;
     readonly curve384r1:   any;
-    readonly curve512r1:   any;
+    readonly curve521r1:   any;
 
     //#endregion
 
@@ -37,6 +38,10 @@ abstract class ACrypt {
 
         this.description  = description;
         this.chargy       = chargy;
+
+        // NIST/ANSI X9.62 named 192-bit elliptic curve: secp192r1
+        // https://www.secg.org/sec2-v2.pdf
+        this.curve192r1   = new this.chargy.elliptic.ec('p192');
 
         // Koblitz 224-bit curve: secp224k1
         // https://www.secg.org/sec2-v2.pdf
@@ -52,7 +57,7 @@ abstract class ACrypt {
 
         // NIST/ANSI X9.62 named 521-bit elliptic curve: secp521r1
         // https://www.secg.org/sec2-v2.pdf
-        this.curve512r1   = new this.chargy.elliptic.ec('p521');
+        this.curve521r1   = new this.chargy.elliptic.ec('p521');
 
     }
 
