@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<values>
+
+   <chargingStation xmlns="http://open.charging.cloud/CTR/2020/01">
+
+      <id>DE*GEF*STATION*CI*TESTS*1*A</id>
+      <description language="en">
+         GraphDefined Charging Station - CI-Tests Pool 1 / Station A
+      </description>
+      <softwareVersion>3.0.25.2089</softwareVersion>
+
+      <geoLocation>
+         <latitude>50.387945</latitude>
+         <longitude>10.4304</longitude>
+      </geoLocation>
+
+      <EVSEs>
+         <EVSE>
+             <id>DE*GEF*EVSE*CI*TESTS*1*A*1</id>
+             <description language="en">
+                GraphDefined EVSE - CI-Tests Pool 1 / Station A / EVSE 1
+             </description>
+             <socket>Type-2</socket>
+         </EVSE>
+      </EVSEs>
+
+   </chargingStation>
+
+   <value>
+      <signedData format="ALFEN">AP;0;3;AJB42AIR7NC5W5MCFWZHMIQD7SSYVIUCHYEJ7Z2E;BIHEIWSHAAA2WZUSOYYDCNWTWAFACRC2I4ADGAEFAYAAAABA6SLUQAB2NSTVYAIAAEEAB7Y6ACJVQAAAAAAAAABQGQ3UCN2BIJAUKMBVIM4DCAAAAAAAAAATAAAAAIYAAAAA====;X736PV2AD3IVH5LQJ4SPMZLMYNZNGOUBNLF23B7UBYAFOV6KXVPIMIVZJLKBNLJVSQAN7DJLMTWL2===;
+      </signedData>
+   </value>
+
+   <value>
+      <signedData format="ALFEN">AP;0;3;AJB42AIR7NC5W5MCFWZHMIQD7SSYVIUCHYEJ7Z2E;BIHEIWSHAAA2WZUSOYYDCNWTWAFACRC2I4ADGAEFAYAAAABA6SLUQAB2NSTVYAIAAEEAB7Y6ACJVQAAAAAAAAABQGQ3UCN2BIJAUKMBVIM4DCAAAAAAAAAATAAAAAIYAAAAA====;X736PV2AD3IVH5LQJ4SPMZLMYNZNGOUBNLF23B7UBYAFOV6KXVPIMIVZJLKBNLJVSQAN7DJLMTWL2===;
+      </signedData>
+   </value>
+
+</values>
