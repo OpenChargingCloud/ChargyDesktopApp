@@ -125,18 +125,63 @@ app.whenReady().then(() => {
 
     if (app.commandLine.hasSwitch('help'))
     {
+
+        //#region Init stuff
+
+        // Just to make the cli help not look broken!
+        if (applicationFileName === "")
+            applicationFileName = "Chargy Transparenzsoftware.exe";
+
+        if (appAsarFileName     === "")
+            appAsarFileName     = path.join('resources', 'app.asar');
+
+
+        let helpTopic = "";
+
+        for (let i=0; i<commandLineArguments.length; i++)
+        {
+            if (commandLineArguments[i] === "--help" && i+1 <= commandLineArguments.length && commandLineArguments[i+1] === "output")
+                helpTopic = "output";
+        }
+
+        //#endregion
+
         console.log("Chargy Transparenzsoftware " + applicationEdition + " v" + app.getVersion());
-        console.log(copyright);
+        console.log(copyright.replace("&copy;", "(c)"));
         console.log("");
-        console.log("Usage: " + applicationFileName + " [switches] file1, file2, ...");
-        console.log("");
-        console.log("Switches:");
-        console.log(" --help           Show this information");
-        console.log(" --debug          Run in debug modus and open development tools");
-        console.log(" --nogui          Run in command line modus (cli mode)");
-      //console.log(" --output=format  Set the output format in cli/debug mode [text (default)|csv|json|xml]");
+
+        switch (helpTopic)
+        {
+
+            case "output":
+                console.log("Usage: " + applicationFileName + " --output=[text (default)|csv|json|xml|chargy] file1, file2, ...");
+                console.log("");
+                console.log("Set the verification result output format in cli/debug mode");
+                console.log("");
+                console.log(" text               The default human readable output format.");
+                console.log(" csv                Use the CSV (comma seperated values) format.");
+                console.log(" json               Use the JSON format.");
+                console.log(" xml                Use the XML format.");
+                console.log(" chargy             In combination with '--export' include the verification results into the charge transpary file.");
+                break;
+
+            default:
+                console.log("Usage: " + applicationFileName + " [switches] file1, file2, ...");
+                console.log("");
+                console.log("Switches:");
+                console.log(" --help             Show this information");
+              //console.log(" --help topic       Show information on the given topic");
+                console.log(" --debug            Run in debug modus and open development tools");
+                console.log(" --nogui            Run in command line modus (cli mode)");
+              //console.log(" --output=format    Set the verification result output format in cli/debug mode [text (default)|csv|json|xml|chargy]");
+              //console.log(" --export filename  Convert all input files into the Chargy Transparency Format and save the result to the given file");
+                break;
+
+        }
+
         console.log("");
         app.quit();
+
     }
 
     if (app.commandLine.hasSwitch('version'))
