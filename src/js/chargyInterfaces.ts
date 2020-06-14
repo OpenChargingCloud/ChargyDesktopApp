@@ -31,6 +31,22 @@ function IsAChargeTransparencyRecord(data: IChargeTransparencyRecord|IPublicKeyL
 
 }
 
+function IsAPublicKeyInfo(data: any): data is IPublicKeyInfo
+{
+
+    if (data == null || data == undefined)
+        return false;
+
+    let publicKeyInfo = data as IPublicKeyInfo;
+
+    return publicKeyInfo["@id"]       !== undefined &&
+           publicKeyInfo["@context"]  !== undefined &&
+           publicKeyInfo.type         !== undefined &&
+           publicKeyInfo.curve        !== undefined &&
+           publicKeyInfo.value        !== undefined;
+
+}
+
 function IsAPublicKeyLookup(data: IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult|undefined): data is IPublicKeyLookup
 {
 
@@ -112,10 +128,20 @@ interface IPublicKeyLookup
 
 interface IPublicKeyInfo
 {
-    id:                         string;
+    "@id":                      string;
+    "@context":                 string;
     type:                       IOIDInfo;
     curve:                      IOIDInfo;
     value:                      string;
+    signatures?:                Array<IPublicKeysignature>;
+}
+
+interface IPublicKeysignature
+{
+    "@id":                      string;
+    "@context":                 string;
+    timestamp:                  string;
+    keyUsage:                   Array<string>;
 }
 
 interface IOIDInfo
@@ -123,6 +149,19 @@ interface IOIDInfo
     oid:                        string;
     description?:               string;
 }
+
+function ISOIDInfo(data: any): data is IOIDInfo
+{
+
+    if (data == null || data == undefined)
+        return false;
+
+    let OIDInfo = data as IOIDInfo;
+
+    return OIDInfo.oid !== undefined;
+
+}
+
 
 interface IKeyInfo
 {

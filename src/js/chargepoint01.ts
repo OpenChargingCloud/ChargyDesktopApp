@@ -846,7 +846,7 @@ class ChargePointCrypt01 extends ACrypt {
 
                 for (let publicKeyInfo of chargingSession.ctr?.publicKeys)
                 {
-                    if (publicKeyInfo.id === publicKeyId)
+                    if (publicKeyInfo["@id"] === publicKeyId)
                         publicKeys.push(publicKeyInfo);
                 }
 

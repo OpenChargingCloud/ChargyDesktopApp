@@ -547,7 +547,8 @@ class Chargy {
                         "@context":  "https://open.charging.cloud/contexts/CTR+json",
                         publicKeys: [
                             {
-                                id:     keyId,
+                                "@id":            keyId,
+                                "@context":       "https://open.charging.cloud/contexts/CTR+json/publicKey",
                                 type: {
                                     oid:          KeyType_OID,
                                     description:  KeyType
@@ -586,6 +587,10 @@ class Chargy {
 
                         case "https://open.charging.cloud/contexts/CTR+json":
                             processedFile.result = JSONContent as IChargeTransparencyRecord;
+                            break;
+
+                        case "https://open.charging.cloud/contexts/CTR+json/publicKey":
+                            processedFile.result = JSONContent as IPublicKeyInfo;
                             break;
 
                         default:
@@ -721,6 +726,16 @@ class Chargy {
                     else if (processedFileResult.mediationServices)
                         for (let mediationService of processedFileResult.mediationServices)
                             mergedCTR.mediationServices.push(mediationService);
+
+                }
+
+                else if (IsAPublicKeyInfo(processedFileResult))
+                {
+
+                    if (!mergedCTR.publicKeys)
+                        mergedCTR.publicKeys = new Array<IPublicKeyInfo>();
+
+                    mergedCTR.publicKeys.push(processedFileResult);
 
                 }
 

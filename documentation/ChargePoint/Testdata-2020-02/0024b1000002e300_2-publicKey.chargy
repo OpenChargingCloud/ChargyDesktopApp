@@ -1,0 +1,13 @@
+{
+	"@id":      "0024b1000002e300_2",
+	"@context": "https://open.charging.cloud/contexts/CTR+json/publicKey",
+	"type": {
+		"oid":         "1.2.840.10045.2.1",
+		"description": "ecPublicKey"
+	},
+	"curve": {
+		"oid":         "1.3.132.0.32",
+		"description": "secp224k1"
+	},
+	"value": "04d4c176108baa683125247c8af51eb84858c9e50d8753a745e3fd299aa044826c9c9d49ce3904cd9bdc68b3b09fb39ebeaac0b9ec0ab9ad76"
+}
