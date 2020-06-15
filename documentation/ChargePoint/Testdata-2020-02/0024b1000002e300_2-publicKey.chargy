@@ -1,6 +1,6 @@
 {
 	"@context":     "https://open.charging.cloud/contexts/publicKey+json",
-	"subject": {
+    "subject": {
         "EVSEId":       "0024b1000002e300_2"
     },
 	"type": {
