@@ -1,0 +1,64 @@
+{
+    "@id":                  "6586r86f7f8d8f8f6s4w6d7df7f7tf86f7",
+    "@context":             "https://open.charging.cloud/contexts/certificate+json",
+    "subject": {
+	    "EVSEId":               "0024b1000002e300_2"
+    },
+    "validOperations": {
+        "signMeterValues":      true,
+    },
+    "publicKeys": [
+
+        {
+	        "@context":         "https://open.charging.cloud/contexts/publicKey+json",
+	        "notBefore":        "2020-06-15T00:00:00Z",
+            "notAfter":         "2025-06-15T00:00:00Z",
+	        "type": {
+		        "oid":              "1.2.840.10045.2.1",
+		        "description":      "ecPublicKey"
+	        },
+	        "algorithm": {
+		        "oid":              "1.3.132.0.32",
+		        "description":      "secp224k1"
+	        },
+	        "format":           "DER",
+	        "encoding":         "HEX",
+	        "value":            "04d4c176108baa683125247c8af51eb84858c9e50d8753a745e3fd299aa044826c9c9d49ce3904cd9bdc68b3b09fb39ebeaac0b9ec0ab9ad76",
+	        "signatures": [
+                {
+                    "issuer":       "selfSigned",
+                    "format":       "DER",
+                    "encoding":     "HEX",
+                    "value":        "303502181dce9223416d64e5362bc8eb46eddf23adcb74382b602e1f021900eca85b1a48bc1f64d25951e947c7e48fa0b070b82e2cae41"
+                }
+            ]
+        }
+
+    ],
+    "comment": {
+        "en":               "Hello e-mobility world!"
+    },
+    "signatures": [
+        {
+            "certificateId":    "6586r86f7f8d8f8f6s4w6d7df7f7tf86f7",
+            "revocationURIs":   [],
+            "issuer": {
+                "name":             "GraphDefined",
+                "description": {
+                    "de":               "GraphDefined GmbH"
+                },
+                "email":            "mail@graphdefined.com",
+                "web":              "https://www.graphdefined.com",
+                "logoUrl":          "https://www.graphdefined.com/logos/logo01.png"
+            },
+            "comment": {
+                "en":               "A really useful service!"
+            },
+            "algorithm":        "secp256r1",
+            "format":           "DER",
+            "encoding":         "HEX",
+            "publicKey":        "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
+            "value":            "303502181dce9223416d64e5362bc8eb46eddf23adcb74382b602e1f021900eca85b1a48bc1f64d25951e947c7e48fa0b070b82e2cae41"
+        }
+    ]
+}
