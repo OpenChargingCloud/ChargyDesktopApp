@@ -69,10 +69,10 @@ $ sudo npm install -g electron-builder@latest
 + electron-builder@22.7.0
 
 $ sudo npm install -g typescript@latest
-+ typescript@3.9.3
++ typescript@3.9.5
 
 $ sudo npm install -g sass@latest
-+ sass@1.26.7
++ sass@1.26.8
 ```
 
 

@@ -548,14 +548,15 @@ class Chargy {
                         publicKeys: [
                             {
                                 "@id":            keyId,
-                                "@context":       "https://open.charging.cloud/contexts/CTR+json/publicKey",
+                                "@context":       "https://open.charging.cloud/contexts/publicKey+json",
+                                "subject":        keyId,
                                 type: {
                                     oid:          KeyType_OID,
-                                    description:  KeyType
+                                    name:         KeyType
                                 },
-                                curve: {
+                                algorithm: {
                                     oid:          Curve_OID,
-                                    description:  Curve
+                                    name:         Curve
                                 },
                                 value:  buf2hex(publicKeyDER.publicKey.data)
                             }
@@ -589,7 +590,7 @@ class Chargy {
                             processedFile.result = JSONContent as IChargeTransparencyRecord;
                             break;
 
-                        case "https://open.charging.cloud/contexts/CTR+json/publicKey":
+                        case "https://open.charging.cloud/contexts/publicKey+json":
                             processedFile.result = JSONContent as IPublicKeyInfo;
                             break;
 

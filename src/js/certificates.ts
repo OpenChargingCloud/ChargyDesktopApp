@@ -26,7 +26,7 @@ class certificates {
 
         this.GraphDefined = {
             "@id":                    "6586r86f7f8d8f8f6s4w6d7df7f7tf86f7",
-            "@context":               "https://open.charging.cloud/contexts/certificate",
+            "@context":               "https://open.charging.cloud/contexts/certificate+json",
             "name":                   "GraphDefined",
             "description": {
                 "de":                 "GraphDefined GmbH"
@@ -34,6 +34,7 @@ class certificates {
             "email":                  "mail@graphdefined.com",
             "web":                    "https://open.charging.cloud",
             "logoUrl":                "...",
+            "revocationURLs":         [],
             "operations": {
                 "signCertificates": {
                     "matchName":                   "*",
@@ -75,7 +76,8 @@ class certificates {
             "signatures": [
                 {
                     "certificateId":    "6586r86f7f8d8f8f6s4w6d7df7f7tf86f7",
-                    "revocationURIs":   [],
+                    "notBefore":        "2018-11-04T16:47:01Z",
+                    "notAfter":         "2023-03-12T13:54:12Z",
                     "comment": {
                         "en":           "A really useful service!"
                     },
@@ -86,7 +88,8 @@ class certificates {
                 },
                 {
                     "certificateId":    "6586r86f7f8d8f8f6s4w6d7df7f7tf86f7",
-                    "revocationURIs":   [],
+                    "notBefore":        "2018-11-04T16:47:01Z",
+                    "notAfter":         "2023-03-12T13:54:12Z",
                     "comment": {
                         "en":           "A really useful service!"
                     },

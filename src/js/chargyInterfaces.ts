@@ -39,10 +39,9 @@ function IsAPublicKeyInfo(data: any): data is IPublicKeyInfo
 
     let publicKeyInfo = data as IPublicKeyInfo;
 
-    return publicKeyInfo["@id"]       !== undefined &&
-           publicKeyInfo["@context"]  !== undefined &&
-           publicKeyInfo.type         !== undefined &&
-           publicKeyInfo.curve        !== undefined &&
+    return publicKeyInfo["@context"]  !== undefined &&
+           publicKeyInfo.subject      !== undefined &&
+           publicKeyInfo.algorithm    !== undefined &&
            publicKeyInfo.value        !== undefined;
 
 }
@@ -128,10 +127,11 @@ interface IPublicKeyLookup
 
 interface IPublicKeyInfo
 {
-    "@id":                      string;
+    "@id":                      string; // Just for merging with IChargeTransparencyRecord!
     "@context":                 string;
-    type:                       IOIDInfo;
-    curve:                      IOIDInfo;
+    subject:                    string|any;
+    type?:                      string|IOIDInfo;
+    algorithm:                  string|IOIDInfo;
     value:                      string;
     signatures?:                Array<IPublicKeysignature>;
 }
@@ -147,7 +147,7 @@ interface IPublicKeysignature
 interface IOIDInfo
 {
     oid:                        string;
-    description?:               string;
+    name:                       string;
 }
 
 function ISOIDInfo(data: any): data is IOIDInfo

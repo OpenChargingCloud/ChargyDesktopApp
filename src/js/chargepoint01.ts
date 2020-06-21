@@ -879,10 +879,16 @@ class ChargePointCrypt01 extends ACrypt {
                 let sha385Value: string|null = null;
                 let sha512Value: string|null = null;
 
+                
+
                 for (const publicKey of publicKeys)
                 {
 
-                    switch (publicKey.curve.description)
+                    let algorithm = (typeof publicKey.algorithm === "object")
+                                        ? publicKey.algorithm.name
+                                        : publicKey.algorithm;
+
+                    switch (algorithm)
                     {
 
                         case "secp224k1":
@@ -931,7 +937,7 @@ class ChargePointCrypt01 extends ACrypt {
 
                         chargingSession.publicKey = publicKey;
 
-                        switch (publicKey.curve.description)
+                        switch (algorithm)
                         {
 
                             case "secp224k1":
@@ -1132,7 +1138,7 @@ class ChargePointCrypt01 extends ACrypt {
         //                                       toLowerCase();
 
         const signature           = this.curve256r1.keyFromPrivate(privateKey.toString('hex')).
-                                               sign(cryptoResult.sha256value);
+                                                    sign(cryptoResult.sha256value);
 
         switch (measurementValue.measurement.signatureInfos.format)
         {
@@ -1205,12 +1211,15 @@ class ChargePointCrypt01 extends ACrypt {
 
         let chargingSession    = measurementValue?.measurement?.chargingSession;
         let result             = measurementValue.result as IChargePointCrypt01Result;
-        let cryptoAlgorithm    = chargingSession?.publicKey?.curve.description != null
-                                     ? " (" + chargingSession?.publicKey?.curve.description + ")"
-                                     : "";
+        let algorithmName      = (typeof chargingSession?.publicKey?.algorithm === "object")
+                                        ? chargingSession?.publicKey?.algorithm.name
+                                        : chargingSession?.publicKey?.algorithm;
+        let algorithmType      = (typeof chargingSession?.publicKey?.type      === "object")
+                                        ? chargingSession?.publicKey?.type.name
+                                        : chargingSession?.publicKey?.type;
 
         let cryptoSpan         = introDiv?.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
-        cryptoSpan.innerHTML   = "ChargePointCrypt01" + cryptoAlgorithm;
+        cryptoSpan.innerHTML   = "ChargePointCrypt01 (" + algorithmName + ")";
 
         //#region Plain text
 
@@ -1237,7 +1246,7 @@ class ChargePointCrypt01 extends ACrypt {
 
             let hashInfo = "";
 
-            switch (chargingSession.publicKey?.curve.description)
+            switch (algorithmName)
             {
 
                 case "secp224k1":
@@ -1274,11 +1283,11 @@ class ChargePointCrypt01 extends ACrypt {
 
             if (PublicKeyDiv.parentElement != null)
                 PublicKeyDiv.parentElement.children[0].innerHTML  = "Public Key (" +
-                                                                         (chargingSession.publicKey.type.description
-                                                                              ? chargingSession.publicKey.type.description + ", "
+                                                                         (algorithmType
+                                                                              ? algorithmType + ", "
                                                                               : "") +
-                                                                         (chargingSession.publicKey.curve.description
-                                                                              ? chargingSession.publicKey.curve.description + ", "
+                                                                         (algorithmName
+                                                                              ? algorithmName + ", "
                                                                               : "") +
                                                                           "hex)";
 
@@ -1293,29 +1302,35 @@ class ChargePointCrypt01 extends ACrypt {
             if (PublicKeyDiv.parentElement != null)
                 PublicKeyDiv.parentElement.children[3].innerHTML = "";
 
-            if (!IsNullOrEmpty(result.publicKeySignatures)) {
+            if (chargingSession.publicKey.signatures) {
 
-                for (let signature of result.publicKeySignatures)
+                for (let signature of chargingSession.publicKey.signatures)
                 {
 
                     try
                     {
 
-                        let signatureDiv = PublicKeyDiv.parentElement!.children[3].appendChild(document.createElement('div'));
-                        signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
-                                                                                                measurementValue.measurement.chargingSession.EVSE,
-                                                                                                //@ts-ignore
-                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                                                //@ts-ignore
-                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
-                                                                                                signature);
+                        let signatureDiv2 = PublicKeyDiv.parentElement;
+                        
+                        if (signatureDiv2 != null)
+                        {
+                            let signatureDiv = signatureDiv2.children[3].appendChild(document.createElement('div'));
+                            //signatureDiv.innerHTML = "!!!!!";
+                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
+                                                                                                    measurementValue.measurement.chargingSession.EVSE,
+                                                                                                    //@ts-ignore
+                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                                                                    //@ts-ignore
+                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                                                                    signature);
+                        }
 
                     }
                     catch (exception)
                     { }
 
                 }
-                
+
             }
 
             //#endregion

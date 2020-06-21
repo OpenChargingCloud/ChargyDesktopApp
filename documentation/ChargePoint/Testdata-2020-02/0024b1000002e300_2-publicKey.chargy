@@ -1,17 +1,47 @@
 {
-	"@context":     "https://open.charging.cloud/contexts/publicKey+json",
+    "@context":         "https://open.charging.cloud/contexts/publicKey+json",
     "subject": {
         "EVSEId":       "0024b1000002e300_2"
     },
-	"type": {
-		"oid":          "1.2.840.10045.2.1",
-		"description":  "ecPublicKey"
-	},
-	"algorithm": {
-		"oid":          "1.3.132.0.32",
-		"description":  "secp224k1"
-	},
-	"format":       "DER",
-	"encoding":     "HEX",
-	"value":        "04d4c176108baa683125247c8af51eb84858c9e50d8753a745e3fd299aa044826c9c9d49ce3904cd9bdc68b3b09fb39ebeaac0b9ec0ab9ad76"
+    "type": {
+        "oid":          "1.2.840.10045.2.1",
+        "name":         "ecPublicKey"
+    },
+    "algorithm": {
+        "oid":          "1.3.132.0.32",
+        "name":         "secp224k1"
+    },
+    "format":           "DER",
+    "encoding":         "HEX",
+    "value":            "04d4c176108baa683125247c8af51eb84858c9e50d8753a745e3fd299aa044826c9c9d49ce3904cd9bdc68b3b09fb39ebeaac0b9ec0ab9ad76",
+    "signatures": [
+        {
+            "@context":             "https://open.charging.cloud/contexts/signature+json",
+            "timestamp":            "2020-06-21T07:28:45.130Z",
+            "issuer":               "Open Charging Cloud - Energy Metering Public Key Certification #1",
+            "notBefore":            "2019-11-04T16:47:01Z",
+            "notAfter":             "2029-03-12T13:54:12Z",
+            "algorithm": {
+                "oid":              "1.3.132.0.35",
+                "name":             "secp521r1",
+                "description":      "NIST / ANSI X9.62 named 521 - bit elliptic curve used with SHA512"
+            },
+            "publicKey": {
+                "format":           "DER",
+                "encoding":         "HEX",
+                "value":            "040182c740a82d0d9e34168e4ee9c81d535983e48383678de1011659182e5446ee71e30babe389d2c8a29498cde15b2d959ed8f63409896ca2bcdc05588e210323961e01ccb785a29b14cda193be82354091445d86ada3b5390632b19d38f57cf3d9c43f8dc3fcd02848788bedc0b17e0ca073b72c03344daf9cbc004fb1b6f5ce2fa0bd1e"
+            },
+            "operations": {
+                "signMeterValues":  true
+            },
+            "signature": {
+                "format":           "DER",
+                "encoding":         "HEX",
+                "value":            "30818502416c4b1d59f1f7923327618d241dc8d0847da9a92764f4b8963ada20e3ad24f5563aad2f9fc8f11925e391f091b5b21ed8f45e4bb733a620fa95a3ceb66764bb98ba02402c84be1d6bbe30612f628a06caf29e76cdc70aeca10360f2dae59249d2de0da4e63bd232be2b50f2345861ad684aeff5149f0445e5106353e994ddf61e0b447b"
+            },
+            "comment": {
+                "en":               "A really useful service!"
+            }
+        }
+    ]
 }
