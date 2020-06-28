@@ -1216,7 +1216,7 @@ class ChargyApp {
 
                     //#region Highlight the selected charging session...
 
-                    var AllChargingSessionsDivs = document.getElementsByClassName("chargingSessions");
+                    var AllChargingSessionsDivs = document.getElementsByClassName("chargingSession");
                     for(var i=0; i<AllChargingSessionsDivs.length; i++)
                         AllChargingSessionsDivs[i].classList.remove("activated");
 
