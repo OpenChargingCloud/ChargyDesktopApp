@@ -1,10 +1,10 @@
 {
     "@context":   "https://open.charging.cloud/contexts/publicKey+json",
     "subject": {
-        "EVSEId":     "0024b1000002e300_2"
+        "EVSEId":     "DE*CPI*74778874*1"
     },
-    "algorithm":  "secp224k1",
-    "value":      "04d4c176108baa683125247c8af51eb84858c9e50d8753a745e3fd299aa044826c9c9d49ce3904cd9bdc68b3b09fb39ebeaac0b9ec0ab9ad76",
+    "algorithm":  "secp256r1",
+    "value":      "0484f680d53c41c45cf23fdc4dfe2334329c6f2f0a1b0f760bba1b51665d04f02b454cd0f4896c6a76f2fe2f7d7301c14b1831dee744a32ee5fcc9733f0ad10ca8",
     "signatures": [
         {
             "@context":     "https://open.charging.cloud/contexts/signature+json",
