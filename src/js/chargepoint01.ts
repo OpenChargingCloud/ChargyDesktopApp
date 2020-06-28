@@ -293,11 +293,11 @@ class Chargepoint01 {
                                 {
                                     "@id":                      SomeJSON.additional_info.station_mac,
                                     "firmwareVersion":          "",
-                                    "geoLocation":              null,
-                                    "address":                  null,
+                                    "geoLocation":              SomeJSON.geoLocation,
+                                    "address":                  SomeJSON.address,
                                     "EVSEs": [
                                         {
-                                            "@id":                      SomeJSON.additional_info.station_mac + "-" + SomeJSON.additional_info.outlet,
+                                            "@id":                      SomeJSON.EVSEId ?? SomeJSON.additional_info.station_mac + "-" + SomeJSON.additional_info.outlet,
                                             "sockets":                  [ { } ],
                                             "meters": [
                                                 {
@@ -361,8 +361,7 @@ class Chargepoint01 {
                             "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json",
                             "begin":                        this.moment.unix(sessionStart).utc().format(),
                             "end":                          this.moment.unix(sessionEnd).utc().format(),
-                            "EVSEId":                       SomeJSON.additional_info.station_mac + "-" +
-                                                            SomeJSON.additional_info.outlet,
+                            "EVSEId":                       SomeJSON.EVSEId ?? SomeJSON.additional_info.station_mac + "-" + SomeJSON.additional_info.outlet,
 
                             "authorizationStart": {
                                 "@id":                      SomeJSON.additional_info.driver_info,
@@ -593,11 +592,11 @@ class Chargepoint01 {
                                 {
                                     "@id":                      SomeJSON.station_mac,
                                     "firmwareVersion":          "",
-                                    "geoLocation":              null,
-                                    "address":                  null,
+                                    "geoLocation":              SomeJSON.geoLocation,
+                                    "address":                  SomeJSON.address,
                                     "EVSEs": [
                                         {
-                                            "@id":                      SomeJSON.station_mac + "-" + SomeJSON.outlet,
+                                            "@id":                      SomeJSON.EVSEId ?? SomeJSON.station_mac + "-" + SomeJSON.outlet,
                                             "sockets":                  [ { } ],
                                             "meters": [
                                                 {
@@ -639,8 +638,7 @@ class Chargepoint01 {
                             "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json",
                             "begin":                        this.moment.unix(SomeJSON.start_time).utc().format(),
                             "end":                          this.moment.unix(SomeJSON.end_time).utc().format(),
-                            "EVSEId":                       SomeJSON.station_mac + "-" +
-                                                            SomeJSON.outlet,
+                            "EVSEId":                       SomeJSON.EVSEId ?? SomeJSON.station_mac + "-" + SomeJSON.outlet,
 
                             "authorizationStart": {
                                 "@id":                      SomeJSON.driver_info,
