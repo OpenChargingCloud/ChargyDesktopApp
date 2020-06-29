@@ -279,8 +279,13 @@ class ChargyApp {
                 {
                     try
                     {
-                        let stringify = require('safe-stable-stringify');
-                        data["chargeTransparencyRecord"] = stringify(this.chargy.currentCTR);
+
+                        const stringify  = require('safe-stable-stringify');
+                        const ctr        = stringify(this.chargy.currentCTR);
+
+                        if (ctr !== "{}")
+                            data["chargeTransparencyRecord"] = ;
+
                     }
                     catch (exception)
                     { }

@@ -112,13 +112,13 @@ app.whenReady().then(() => {
         case "linux":
         case "freebsd":
         case "openbsd":
-            applicationFileName  = "/opt/Chargy\ Transparenzsoftware/chargytransparenzsoftware";
-            appAsarFileName      = "/opt/Chargy\ Transparenzsoftware/resources/app.asar";
+            applicationFileName  = "/opt/Chargy Transparenzsoftware" + (applicationEdition !== "" ? " " + applicationEdition : "") + "/chargytransparenzsoftware";
+            appAsarFileName      = "/opt/Chargy Transparenzsoftware" + (applicationEdition !== "" ? " " + applicationEdition : "") + "/resources/app.asar";
             break;
 
         case "darwin":
-            applicationFileName  = "/Applications/Chargy\ Transparenzsoftware.app/Contents/MacOS/Chargy Transparenzsoftware" + (applicationEdition !== "" ? " " + applicationEdition : "");
-            appAsarFileName      = "/Applications/Chargy\ Transparenzsoftware.app/Contents/Resources/app.asar";
+            applicationFileName  = "/Applications/Chargy Transparenzsoftware" + (applicationEdition !== "" ? " " + applicationEdition : "") + ".app/Contents/MacOS/Chargy Transparenzsoftware" + (applicationEdition !== "" ? " " + applicationEdition : "");
+            appAsarFileName      = "/Applications/Chargy Transparenzsoftware" + (applicationEdition !== "" ? " " + applicationEdition : "") + ".app/Contents/Resources/app.asar";
             break;
 
     }
