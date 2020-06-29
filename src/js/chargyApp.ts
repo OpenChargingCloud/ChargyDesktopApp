@@ -367,18 +367,19 @@ class ChargyApp {
 
         //#endregion
 
-        //#region Get list of Chargy versions from GitHub
+        //#region Get list of Chargy versions
 
-        let GetListOfVersionsFromGitHub = new XMLHttpRequest();
-        GetListOfVersionsFromGitHub.open("GET",
-                                         this.versionsURL,
-                                         true);
+        let GetListOfVersions = new XMLHttpRequest();
+        GetListOfVersions.open("GET",
+                               this.versionsURL,
+                               true);
+        GetListOfVersions.setRequestHeader('Accept', 'application/json');
 
-        GetListOfVersionsFromGitHub.onreadystatechange = () => {
+        GetListOfVersions.onreadystatechange = () => {
 
             // 0 UNSENT | 1 OPENED | 2 HEADERS_RECEIVED | 3 LOADING | 4 DONE
-            if (GetListOfVersionsFromGitHub.readyState == 4) {
-                if (GetListOfVersionsFromGitHub.status == 200) { // HTTP 200 - OK
+            if (GetListOfVersions.readyState == 4) {
+                if (GetListOfVersions.status == 200) { // HTTP 200 - OK
 
                     try {
 
@@ -386,7 +387,7 @@ class ChargyApp {
                         if (versionsDiv != null)
                         {
 
-                            this.currentAppInfos = JSON.parse(GetListOfVersionsFromGitHub.responseText) as IVersions;
+                            this.currentAppInfos = JSON.parse(GetListOfVersions.responseText) as IVersions;
 
                             for (let version of this.currentAppInfos.versions)
                             {
@@ -576,7 +577,7 @@ class ChargyApp {
 
         }
 
-        GetListOfVersionsFromGitHub.send();
+        GetListOfVersions.send();
 
         //#endregion
 
