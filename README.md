@@ -17,115 +17,16 @@ Chargy is a transparency software for secure and transparent e-mobility charging
 
 ## Versions and Milestones
 
-The current version of the Chargy Transparency Software is 1.0.x. This version is *feature complete* and currently under review by the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) and other regulators. If you are a charge point vendor and want to use this software to verify your compliance to the German Eichrecht you can talk to your partner [chargeIT mobility](https://www.chargeit-mobility.com) and obtain the required legal documents. If you need help with the Chargy software, talk to us.
+Version 1.0.x of the Chargy Transparency Software was reviewed and certified by [Physikalisch-Technische Bundesanstalt (PTB)](https://www.ptb.de). If you are a charge point vendor and want to use this software to verify the compliance with the German Eichrecht you can talk to our partner [chargeIT mobility](https://www.chargeit-mobility.com) and obtain the required legal documents.
 
-The development of version 1.1.x already started and will focus on a better seperation of core software and the chargeIT edition (white labeling), better security concepts and more digital certificates.
+Version 1.2.x of the Chargy Transparency Software was reviewed and certified by [Verband der Elektrotechnik Elektronik Informationstechnik e.V. (VDE)](https://www.vde.com/de). If you are a charge point vendor and want to use this software to verify the compliance with the German Eichrecht you can talk to our partner [ChargePoint](https://www.chargepoint.com/de-de/) and obtain the required legal documents.
 
+If you need help with the Chargy Transparency Software or want to include your smarty energy meter or transparency data format, talk to [us](https://open.charging.cloud).
 
-## Compiling from source
+The development of version [v1.3](https://github.com/OpenChargingCloud/ChargyDesktopApp/tree/v1.3) already started and will focus on enhanced security concepts, more digital certificates and pricing information.
 
-This application is based on [Electron](https://github.com/electron-userland/electron-forge/tree/5.x), a cross platform Open Source framework for creating native applications with web technologies like Java-/TypeScript, HTML, and (S)CSS.    
+## Awards
 
-Chargy is developed for and tested on the following operating systems:
+The Chargy Transparency Software is one of the winners of the [1. Thuringia's Open-Source Prize](https://www.it-leistungsschau.de/programm/TOSP2019/) </a> in March 2019. This prize was awarded by [Wolfgang Tiefensee](https://de.wikipedia.org/wiki/Wolfgang_Tiefensee), [Thuringia’s Secretary of Commerce](https://www.thueringen.de/th6/tmwwdg/), in conjunction with the board of directors of the IT industry network [ITNet Thuringia](https://www.itnet-th.de).
 
- - Microsoft Windows 10+
- - Apple Mac OS X
- - Linux Debian/Ubuntu
-
-The Chargy Desktop project has a sister project called [Chargy Mobile](https://github.com/OpenChargingCloud/ChargyMobileApp) which provides the same features, but is based on [Apache Cordova](https://cordova.apache.org) and is available for the following operating systems:
-
- - Apple iOS
- - Google Android
-
-
-### System Requirements
-
-You can download node.js 14.4.0 with npm 6.14.5 for Microsoft Windows or Mac OS X from https://nodejs.org/en/download/current/    
-Please note, that you have to reinstall this software for every update.    
-
-On Linux you can install Node.js via...
-```
-sudo apt install git curl
-sudo curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-sudo apt install -y nodejs
-```
-
-Or when you want to update a previous Linux installation update Node.js and npm via...
-```
-sudo npm cache clean -f
-sudo npm install -g n
-sudo n latest
-
-sudo npm install -g npm
-```
-
-Afterwards you can install the remaining software using the node packet manager
-```
-$ sudo npm install -g electron@latest
-+ electron@9.0.0
-(If this fails on Linux try: sudo npm install -g electron --unsafe-perm=true --allow-root)
-
-$ sudo npm install -g electron-builder@latest
-+ electron-builder@22.7.0
-
-$ sudo npm install -g typescript@latest
-+ typescript@3.9.5
-
-$ sudo npm install -g sass@latest
-+ sass@1.26.8
-```
-
-
-### Get the latest version
-
-Clone the github repository for the latest version of chargy and install
-its nodejs dependencies:
-```
-git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
-cd ChargyDesktopApp
-npm install
-```
-Now you can test the software via...
-```
-./run.sh
-```
-If you prefer a command line version of this software you can pass this to the run script
-```
-./run.sh  --nogui  documentation/ChargePoint/Testdata-secp224k1/0024b1000002e300_2.zip  documentation/ChargePoint/Testdata-secp224k1/0024b1000002e300_2.pem
-
-Valid signature
-```
-
-**Please be aware**, that Electron comes with its own internal version of Node.js. This version is currently still 12.0.0. Therefore Chargy will also show "12.0.0" and not the version number of the Node.js installation on your computer, e.g. "12.4.0". It is possible to rebuild the internal Node.js version, but we do not recommend this.
-
-
-### Building a Windows Installer
-
-The Windows version can only be build on a Windows machine and uses [NSIS](https://www.electron.build/configuration/nsis) as an installation framework.
-```
-./build.sh
-```
-The resulting installer is located at...
-```
-~/dist/Chargy Transparenz Software Setup x.y.z.exe
-```
-
-
-### Building a Linux package
-
-On a Debian GNU/Linux or Ubuntu machine you can run the following commands to create a Debian software package. More information about this process can be found at: https://github.com/electron-userland/electron-installer-debian
-```
-sudo apt install debootstrap binutils
-./build.sh
-```
-
-Now you can use the normal package management tools of your Linux distribution to install the app:
-```
-cd dist
-sudo apt install ./chargytransparenzsoftware_X.Y.Z_amd64.deb
-```
-
-
-### Building a Linux Live DVD / ISO Image
-
-For special users like the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) Chargy is also available as a Linux Live CD/DVD. The creation of the ISO image is described in the following document [Linux Live DVD](https://github.com/OpenChargingCloud/ChargyDesktopApp/blob/master/documentation/LinuxLiveDVD.md).
+<img src="src/images/TMWWDG.svg" width="300"> <img src="src/images/ITnet_Thueringen_small.png" height="60">
