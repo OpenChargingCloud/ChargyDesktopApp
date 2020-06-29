@@ -17,7 +17,7 @@ Chargy is a transparency software for secure and transparent e-mobility charging
 
 ## Versions and Milestones
 
-Version 1.0.x of the Chargy Transparency Software was reviewed and certified by [Physikalisch-Technische Bundesanstalt](https://www.ptb.de). If you are a charge point vendor and want to use this software to verify the compliance with the German Eichrecht you can talk to our partner [chargeIT mobility](https://www.chargeit-mobility.com) and obtain the required legal documents.
+Version 1.0.x of the Chargy Transparency Software was reviewed and certified by [Physikalisch-Technische Bundesanstalt (PTB)](https://www.ptb.de). If you are a charge point vendor and want to use this software to verify the compliance with the German Eichrecht you can talk to our partner [chargeIT mobility](https://www.chargeit-mobility.com) and obtain the required legal documents.
 
 Version 1.2.x of the Chargy Transparency Software was reviewed and certified by [Verband der Elektrotechnik Elektronik Informationstechnik e.V. (VDE)](https://www.vde.com/de). If you are a charge point vendor and want to use this software to verify the compliance with the German Eichrecht you can talk to our partner [ChargePoint](https://www.chargepoint.com/de-de/) and obtain the required legal documents.
 
