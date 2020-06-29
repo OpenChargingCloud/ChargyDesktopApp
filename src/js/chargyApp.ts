@@ -47,71 +47,72 @@ class ChargyApp {
 
     //#region Data
 
-    private elliptic:                   any;
-    private moment:                     any;
-    private chargy:                     Chargy;
+    private elliptic:                      any;
+    private moment:                        any;
+    private chargy:                        Chargy;
 
-    public  appEdition                  = "";
-    public  copyright                   = "";
-    public  appVersion                  = "";
-    public  versionsURL                 = "";
-    private ipcRenderer                 = require('electron').ipcRenderer;
-    private path                        = require('path');
-    private commandLineArguments:       Array<string> = [];
-    public  packageJson:                any           = {};
+    public  appEdition:                    string              = "";
+    public  copyright:                     string              = "";
+    public  appVersion:                    string              = "";
+    public  versionsURL:                   string              = "";
+    public  feedbackEMail:                 string[]            = [];
+    public  feedbackHotline:               string[]            = [];
+    public  issueURL:                      string              = "";
+    private ipcRenderer                                        = require('electron').ipcRenderer;
+    private commandLineArguments:          Array<string>       = [];
+    public  packageJson:                   any                 = {};
 
-    private applicationHash             = "";
+    private currentAppInfos:               any                 = null;
+    private currentVersionInfos:           any                 = null;
+    private currentPackage:                any                 = null;
+    private applicationHash:               string              = "";
 
-    private updateAvailableButton:      HTMLButtonElement;
-    private aboutButton:                HTMLButtonElement;
-    private fullScreenButton:           HTMLButtonElement;
-    private appQuitButton:              HTMLButtonElement;
+    private markers:                       any                 = [];
+    private minlat:                        number              = +1000;
+    private maxlat:                        number              = -1000;
+    private minlng:                        number              = +1000;
+    private maxlng:                        number              = -1000;
 
-    private updateAvailableScreen:      HTMLDivElement;
-    private inputDiv:                   HTMLDivElement;
-    private inputInfosDiv:              HTMLDivElement;
-    private aboutScreenDiv:             HTMLDivElement;
-    private applicationHashDiv:         HTMLDivElement;
-    private applicationHashValueDiv:    HTMLDivElement;
-    private chargingSessionScreenDiv:   HTMLDivElement;
-    private invalidDataSetsScreenDiv:   HTMLDivElement;
-    private inputButtonsDiv:            HTMLDivElement;
-    private backButton:                 HTMLButtonElement;
-    private exportButtonDiv:            HTMLDivElement;
-    private exportButton:               HTMLButtonElement;
-    private fileInputButton:            HTMLButtonElement;
-    private fileInput:                  HTMLInputElement;
-    private pasteButton:                HTMLButtonElement;
-    private evseTarifInfosDiv:          HTMLDivElement;
-    private errorTextDiv:               HTMLDivElement;
-    private feedbackDiv:                HTMLDivElement;
-    private overlayDiv:                 HTMLDivElement;
-    private overlayOkButton:            HTMLButtonElement;
-    private issueTrackerDiv:            HTMLDivElement;
-    private privacyStatement:           HTMLDivElement;
-    private feedbackMethodsDiv:         HTMLDivElement;
-    private showIssueTrackerButton:     HTMLButtonElement;
-    private issueTrackerText:           HTMLDivElement;
-    private showPrivacyStatement:       HTMLButtonElement;
-    private privacyStatementAccepted:   HTMLInputElement;
-    private sendIssueButton:            HTMLButtonElement;
-    private softwareInfosDiv:           HTMLDivElement;
-    private openSourceLibsDiv:          HTMLDivElement;
-    private issueBackButton:            HTMLButtonElement;
+    private appDiv:                        HTMLDivElement;
+    private headlineDiv:                   HTMLDivElement;
+    private verifyframeDiv:                HTMLDivElement;
 
-    private markers:                    any     = [];
-    private minlat:                     number  = +1000;
-    private maxlat:                     number  = -1000;
-    private minlng:                     number  = +1000;
-    private maxlng:                     number  = -1000;
+    private updateAvailableButton:         HTMLButtonElement;
+    private aboutButton:                   HTMLButtonElement;
+    private fullScreenButton:              HTMLButtonElement;
+    private appQuitButton:                 HTMLButtonElement;
 
-    private currentAppInfos:            any     = null;
-    private currentVersionInfos:        any     = null;
-    private currentPackage:             any     = null;
-
-    private appDiv                     = document.getElementById('app')         as HTMLDivElement;
-    private headlineDiv                = document.getElementById('headline')    as HTMLDivElement;
-    private verifyframeDiv             = document.getElementById('verifyframe') as HTMLDivElement;
+    private updateAvailableScreen:         HTMLDivElement;
+    private inputDiv:                      HTMLDivElement;
+    private inputInfosDiv:                 HTMLDivElement;
+    private aboutScreenDiv:                HTMLDivElement;
+    private applicationHashDiv:            HTMLDivElement;
+    private applicationHashValueDiv:       HTMLDivElement;
+    private chargingSessionScreenDiv:      HTMLDivElement;
+    private invalidDataSetsScreenDiv:      HTMLDivElement;
+    private inputButtonsDiv:               HTMLDivElement;
+    private backButton:                    HTMLButtonElement;
+    private exportButtonDiv:               HTMLDivElement;
+    private exportButton:                  HTMLButtonElement;
+    private fileInputButton:               HTMLButtonElement;
+    private fileInput:                     HTMLInputElement;
+    private pasteButton:                   HTMLButtonElement;
+    private evseTarifInfosDiv:             HTMLDivElement;
+    private errorTextDiv:                  HTMLDivElement;
+    private feedbackDiv:                   HTMLDivElement;
+    private overlayDiv:                    HTMLDivElement;
+    private overlayOkButton:               HTMLButtonElement;
+    private issueTrackerDiv:               HTMLDivElement;
+    private privacyStatement:              HTMLDivElement;
+    private feedbackMethodsDiv:            HTMLDivElement;
+    private showIssueTrackerButton:        HTMLButtonElement;
+    private issueTrackerText:              HTMLDivElement;
+    private showPrivacyStatement:          HTMLButtonElement;
+    private privacyStatementAccepted:      HTMLInputElement;
+    private sendIssueButton:               HTMLButtonElement;
+    private softwareInfosDiv:              HTMLDivElement;
+    private openSourceLibsDiv:             HTMLDivElement;
+    private issueBackButton:               HTMLButtonElement;
 
     //#endregion
 
@@ -119,6 +120,10 @@ class ChargyApp {
                 feedbackEMail?:    string[],
                 feedbackHotline?:  string[],
                 issueURL?:         string) {
+
+        this.appDiv                    = document.getElementById('app')                                   as HTMLDivElement;
+        this.headlineDiv               = document.getElementById('headline')                              as HTMLDivElement;
+        this.verifyframeDiv            = document.getElementById('verifyframe')                           as HTMLDivElement;
 
         this.aboutScreenDiv            = document.getElementById('aboutScreen')                           as HTMLDivElement;
         this.updateAvailableScreen     = document.getElementById('updateAvailableScreen')                 as HTMLDivElement;
@@ -156,10 +161,13 @@ class ChargyApp {
         this.showIssueTrackerButton    = this.feedbackMethodsDiv.querySelector("#showIssueTracker")       as HTMLButtonElement;
         this.issueBackButton           = this.issueTrackerDiv.querySelector("#issueBackButton")           as HTMLButtonElement;
 
-        this.appVersion                = this.ipcRenderer.sendSync('getAppVersion') ?? "";
-        this.appEdition                = this.ipcRenderer.sendSync('getAppEdition') ?? "";
-        this.copyright                 = this.ipcRenderer.sendSync('getCopyright')  ?? "&copy; 2018-2020 GraphDefined GmbH";
-        this.versionsURL               = versionsURL ?? "https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json";
+        this.appVersion                = this.ipcRenderer.sendSync('getAppVersion')     ?? "";
+        this.appEdition                = this.ipcRenderer.sendSync('getAppEdition')     ?? "";
+        this.copyright                 = this.ipcRenderer.sendSync('getCopyright')      ?? "&copy; 2018-2020 GraphDefined GmbH";
+        this.versionsURL               = versionsURL                                    ?? "https://open.charging.cloud/chargy/versions";
+        this.issueURL                  = issueURL                                       ?? "https://open.charging.cloud/chargy/issues";
+        this.feedbackEMail             = feedbackEMail   != undefined ? feedbackEMail   : ["support@open.charging.cloud", "?subject=Chargy%20Supportanfrage"];
+        this.feedbackHotline           = feedbackHotline != undefined ? feedbackHotline : ["+491728930852",               "+49 172 8930852"];
         this.commandLineArguments      = this.ipcRenderer.sendSync('getCommandLineArguments');
         this.packageJson               = this.ipcRenderer.sendSync('getPackageJson');
 
@@ -223,16 +231,16 @@ class ChargyApp {
             this.issueTrackerText.scrollTop = 0;
         }
 
-        if (feedbackEMail && feedbackEMail.length == 2)
+        if (this.feedbackEMail && this.feedbackEMail.length == 2)
         {
-            (this.feedbackMethodsDiv.querySelector("#eMail")   as HTMLAnchorElement).href       = "mailto:" + feedbackEMail[0] + feedbackEMail[1];
-            (this.feedbackMethodsDiv.querySelector("#eMail")   as HTMLAnchorElement).innerHTML += feedbackEMail[0];
+            (this.feedbackMethodsDiv.querySelector("#eMail")   as HTMLAnchorElement).href       = "mailto:" + this.feedbackEMail[0] + this.feedbackEMail[1];
+            (this.feedbackMethodsDiv.querySelector("#eMail")   as HTMLAnchorElement).innerHTML += this.feedbackEMail[0];
         }
 
-        if (feedbackHotline && feedbackHotline.length == 2)
+        if (this.feedbackHotline && this.feedbackHotline.length == 2)
         {
-            (this.feedbackMethodsDiv.querySelector("#hotline") as HTMLAnchorElement).href       = "tel:" + feedbackHotline[0];
-            (this.feedbackMethodsDiv.querySelector("#hotline") as HTMLAnchorElement).innerHTML += feedbackHotline[1];
+            (this.feedbackMethodsDiv.querySelector("#hotline") as HTMLAnchorElement).href       = "tel:" + this.feedbackHotline[0];
+            (this.feedbackMethodsDiv.querySelector("#hotline") as HTMLAnchorElement).innerHTML += this.feedbackHotline[1];
         }
 
         //#endregion
@@ -302,7 +310,7 @@ class ChargyApp {
                 let sendIssue = new XMLHttpRequest();
 
                 sendIssue.open("ADD",
-                               issueURL ?? "https://open.charging.cloud/chargy/issues",
+                               this.issueURL,
                                true);
                 sendIssue.setRequestHeader('Content-type', 'application/json');
 
@@ -318,7 +326,7 @@ class ChargyApp {
 
                         else
                         {
-                            alert("Leider ist ein Fehler bei der Datenübertragung aufgetreten. Bitte probieren Sie es erneut...");
+                            alert("Leider ist ein Fehler bei der Datenübertragung aufgetreten. Bitte probieren Sie es erneut!");
                         }
 
                     }
@@ -331,8 +339,8 @@ class ChargyApp {
 
             }
             catch (exception)
-            { 
-                // Just do nothing!
+            {
+                alert("Leider ist ein Fehler bei der Datenübertragung aufgetreten. Bitte probieren Sie es erneut!");
             }
 
         }
@@ -381,9 +389,10 @@ class ChargyApp {
             if (GetListOfVersions.readyState == 4) {
                 if (GetListOfVersions.status == 200) { // HTTP 200 - OK
 
-                    try {
+                    try
+                    {
 
-                        var versionsDiv = this.updateAvailableScreen.querySelector("#versions") as HTMLDivElement;
+                        const versionsDiv = this.updateAvailableScreen.querySelector("#versions") as HTMLDivElement;
                         if (versionsDiv != null)
                         {
 
@@ -392,8 +401,8 @@ class ChargyApp {
                             for (let version of this.currentAppInfos.versions)
                             {
 
-                                var thisVersion   = this.appVersion.split('.');
-                                var remoteVersion = version.version.split('.');
+                                const thisVersion    = this.appVersion.split('.');
+                                const remoteVersion  = version.version.split('.');
 
                                 //#region Find current version package
 
@@ -430,51 +439,51 @@ class ChargyApp {
 
                                     this.updateAvailableButton.style.display = "block";
 
-                                    let versionDiv = versionsDiv.appendChild(document.createElement('div'));
+                                    const versionDiv = versionsDiv.appendChild(document.createElement('div'));
                                     versionDiv.className = "version";
 
-                                    let headlineDiv = versionDiv.appendChild(document.createElement('div'));
+                                    const headlineDiv = versionDiv.appendChild(document.createElement('div'));
                                     headlineDiv.className = "headline";
 
-                                    let versionnumberDiv = headlineDiv.appendChild(document.createElement('div'));
+                                    const versionnumberDiv = headlineDiv.appendChild(document.createElement('div'));
                                     versionnumberDiv.className = "versionnumber";
                                     versionnumberDiv.innerHTML = "Version " + version.version;
 
-                                    let releaseDateDiv = headlineDiv.appendChild(document.createElement('div'));
+                                    const releaseDateDiv = headlineDiv.appendChild(document.createElement('div'));
                                     releaseDateDiv.className = "releaseDate";
                                     releaseDateDiv.innerHTML = parseUTC(version.releaseDate).format("ll");
 
-                                    let descriptionDiv = versionDiv.appendChild(document.createElement('div'));
+                                    const descriptionDiv = versionDiv.appendChild(document.createElement('div'));
                                     descriptionDiv.className = "description";
                                     descriptionDiv.innerHTML = version.description["de"];
 
-                                    let tagsDiv = versionDiv.appendChild(document.createElement('div'));
+                                    const tagsDiv = versionDiv.appendChild(document.createElement('div'));
                                     tagsDiv.className = "tags";
 
                                     for (let tag of version.tags)
                                     {
-                                        let tagDiv = tagsDiv.appendChild(document.createElement('div'));
+                                        const tagDiv = tagsDiv.appendChild(document.createElement('div'));
                                         tagDiv.className = "tag";
                                         tagDiv.innerHTML = tag;
                                     }
 
-                                    let packagesDiv = versionDiv.appendChild(document.createElement('div'));
+                                    const packagesDiv = versionDiv.appendChild(document.createElement('div'));
                                     packagesDiv.className = "packages";
 
                                     for (let versionpackage of version.packages)
                                     {
 
-                                        let packageDiv = packagesDiv.appendChild(document.createElement('div'));
+                                        const packageDiv = packagesDiv.appendChild(document.createElement('div'));
                                         packageDiv.className = "package";
 
-                                        let nameDiv = packageDiv.appendChild(document.createElement('div'));
+                                        const nameDiv = packageDiv.appendChild(document.createElement('div'));
                                         nameDiv.className = "name";
                                         nameDiv.innerHTML = versionpackage.name;
 
                                         if (versionpackage.description &&
                                             versionpackage.description["de"])
                                         {
-                                            let descriptionDiv = packageDiv.appendChild(document.createElement('div'));
+                                            const descriptionDiv = packageDiv.appendChild(document.createElement('div'));
                                             descriptionDiv.className = "description";
                                             descriptionDiv.innerHTML = versionpackage.description["de"];
                                         }
@@ -482,22 +491,22 @@ class ChargyApp {
                                         if (versionpackage.additionalInfo &&
                                             versionpackage.additionalInfo["de"])
                                         {
-                                            let additionalInfoDiv = packageDiv.appendChild(document.createElement('div'));
+                                            const additionalInfoDiv = packageDiv.appendChild(document.createElement('div'));
                                             additionalInfoDiv.className = "additionalInfo";
                                             additionalInfoDiv.innerHTML = versionpackage.additionalInfo["de"];
                                         }
 
 
-                                        let cryptoHashesDiv = packageDiv.appendChild(document.createElement('div'));
+                                        const cryptoHashesDiv = packageDiv.appendChild(document.createElement('div'));
                                         cryptoHashesDiv.className = "cryptoHashes";
 
                                         for (let cryptoHash in versionpackage.cryptoHashes)
                                         {
 
-                                            let cryptoHashDiv = cryptoHashesDiv.appendChild(document.createElement('div'));
+                                            const cryptoHashDiv = cryptoHashesDiv.appendChild(document.createElement('div'));
                                             cryptoHashDiv.className = "cryptoHash";
 
-                                            let cryptoHashNameDiv = cryptoHashDiv.appendChild(document.createElement('div'));
+                                            const cryptoHashNameDiv = cryptoHashDiv.appendChild(document.createElement('div'));
                                             cryptoHashNameDiv.className = "name";
                                             cryptoHashNameDiv.innerHTML = cryptoHash;
 
@@ -506,31 +515,31 @@ class ChargyApp {
                                             if (value.startsWith("0x"))
                                                 value = value.substring(2);
 
-                                            let cryptoHashValueDiv = cryptoHashDiv.appendChild(document.createElement('div'));
+                                            const cryptoHashValueDiv = cryptoHashDiv.appendChild(document.createElement('div'));
                                             cryptoHashValueDiv.className = "value";
                                             cryptoHashValueDiv.innerHTML = value.match(/.{1,8}/g).join(" ");
 
                                         }
 
 
-                                        let signaturesTextDiv = packageDiv.appendChild(document.createElement('div'));
+                                        const signaturesTextDiv = packageDiv.appendChild(document.createElement('div'));
                                         signaturesTextDiv.className = "signaturesText";
                                         signaturesTextDiv.innerHTML = "Die Authentizität diese Software wurde durch folgende digitale Signaturen bestätigt";
 
-                                        let signaturesDiv = packageDiv.appendChild(document.createElement('div'));
+                                        const signaturesDiv = packageDiv.appendChild(document.createElement('div'));
                                         signaturesDiv.className = "signatures";
 
                                         for (let signature of versionpackage.signatures)
                                         {
 
-                                            let signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
+                                            const signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
                                             signatureDiv.className = "signature";
 
-                                            let signatureCheckDiv = signatureDiv.appendChild(document.createElement('div'));
+                                            const signatureCheckDiv = signatureDiv.appendChild(document.createElement('div'));
                                             signatureCheckDiv.className = "signatureCheck";
                                             signatureCheckDiv.innerHTML = "<i class=\"fas fa-question-circle fa-question-circle-orange\"></i>";
 
-                                            let authorDiv = signatureDiv.appendChild(document.createElement('div'));
+                                            const authorDiv = signatureDiv.appendChild(document.createElement('div'));
                                             authorDiv.className = "signer";
                                             authorDiv.innerHTML = signature.signer;
 
@@ -540,16 +549,16 @@ class ChargyApp {
                                         if (versionpackage.downloadURLs)
                                         {
 
-                                            let downloadURLsTextDiv = packageDiv.appendChild(document.createElement('div'));
+                                            const downloadURLsTextDiv = packageDiv.appendChild(document.createElement('div'));
                                             downloadURLsTextDiv.className = "downloadURLsText";
                                             downloadURLsTextDiv.innerHTML = "Diese Software kann über folgende Weblinks runtergeladen werden";
 
-                                            let downloadURLsDiv = packageDiv.appendChild(document.createElement('div'));
+                                            const downloadURLsDiv = packageDiv.appendChild(document.createElement('div'));
                                             downloadURLsDiv.className = "downloadURLs";
 
                                             for (let downloadURLName in versionpackage.downloadURLs)
                                             {
-                                                let downloadURLDiv = downloadURLsDiv.appendChild(document.createElement('div'));
+                                                const downloadURLDiv = downloadURLsDiv.appendChild(document.createElement('div'));
                                                 downloadURLDiv.className = "downloadURL";
                                                 downloadURLDiv.innerHTML = "<a href=\"javascript:OpenLink('" + versionpackage.downloadURLs[downloadURLName] + "')\" title=\"" + versionpackage.downloadURLs[downloadURLName] + "\"><i class=\"fas fa-globe\"></i>" + downloadURLName + "</a>";
                                             }
