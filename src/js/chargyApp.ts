@@ -284,7 +284,7 @@ class ChargyApp {
                         const ctr        = stringify(this.chargy.currentCTR);
 
                         if (ctr !== "{}")
-                            data["chargeTransparencyRecord"] = ;
+                            data["chargeTransparencyRecord"] = ctr;
 
                     }
                     catch (exception)
