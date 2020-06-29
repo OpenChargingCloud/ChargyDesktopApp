@@ -17,7 +17,10 @@ Chargy is a transparency software for secure and transparent e-mobility charging
 
 ## Versions and Milestones
 
-The current version of the Chargy Transparency Software is 1.0.x. This version is *feature complete* and currently under review by the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) and other regulators. If you are a charge point vendor and want to use this software to verify your compliance to the German Eichrecht you can talk to your partner [chargeIT mobility](https://www.chargeit-mobility.com) and obtain the required legal documents. If you need help with the Chargy software, talk to us.
+The version 1.0.x of the Chargy Transparency Software was reviewed and certified by [Physikalisch-Technische Bundesanstalt](https://www.ptb.de). If you are a charge point vendor and want to use this software to verify the compliance with the German Eichrecht you can talk to our partner [chargeIT mobility](https://www.chargeit-mobility.com) and obtain the required legal documents.
 
+The version 1.2.x of the Chargy Transparency Software was reviewed and certified by [Verband der Elektrotechnik Elektronik Informationstechnik e.V. (VDE)](https://www.vde.com/de). If you are a charge point vendor and want to use this software to verify the compliance with the German Eichrecht you can talk to our partner [ChargePoint](https://www.chargepoint.com/de-de/) and obtain the required legal documents.
 
-The development of version [v1.1](https://github.com/OpenChargingCloud/ChargyDesktopApp/tree/v1.1) already started and will focus on a better seperation of core software and the chargeIT edition (white labeling), better security concepts and more digital certificates.
+If you need help with the Chargy Transparency Software or want to include your smarty energy meter or transparency data format, talk to [us](https://open.charging.cloud).
+
+The development of version [v1.3](https://github.com/OpenChargingCloud/ChargyDesktopApp/tree/v1.3) already started and will focus on a better seperation of core software and the chargeIT edition (white labeling), better security concepts and more digital certificates.
