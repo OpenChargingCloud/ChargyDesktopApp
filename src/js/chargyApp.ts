@@ -367,7 +367,7 @@ class ChargyApp {
 
         //#endregion
 
-        //#region Get list of Chargy versions from GitHub
+        //#region Get list of Chargy versions
 
         let GetListOfVersionsFromGitHub = new XMLHttpRequest();
         GetListOfVersionsFromGitHub.open("GET",
@@ -581,6 +581,9 @@ class ChargyApp {
         //#endregion
 
         //#region Verify application signatures
+
+
+
 
         //#endregion
 
