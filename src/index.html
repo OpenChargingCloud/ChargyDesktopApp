@@ -26,7 +26,7 @@
     <meta name="description" content="Transparenzsoftware für die Elektromobilität">
     <meta name="author"      content="achim.friedland@graphdefined.com">
     <meta name="viewport"    content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://chargeit.charging.cloud/chargy/ https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://chargepoint.charging.cloud/chargy/ https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
 
     <!--<link rel="icon"       href="/favicon.png"                 type="image/png" />-->
     <link rel="stylesheet" href="css/fontawesome-all.min.css"            type="text/css" />
@@ -183,6 +183,10 @@
                             <div class="lib">
                                 <div class="name">base32-decode <span id="base32Decode"></span></div>
                                 <div class="license"><button class="linkButton" href="https://github.com/LinusU/base32-decode">Copyright &copy; Linus Unnebäck<br />MIT License</button></div>
+                            </div>
+                            <div class="lib">
+                                <div class="name">safe-stable-stringify <span id="safeStableStringify"></span></div>
+                                <div class="license"><button class="linkButton" href="https://github.com/BridgeAR/safe-stable-stringify/blob/master/LICENSE">Copyright &copy; 2018 Ruben Bridgewater<br />MIT License</button></div>
                             </div>
 
                             <div class="lib">
@@ -382,11 +386,11 @@
                             beantworten und somit die Kundenzufriedenheit zu erhalten und zu fördern.
                         </p>
                         <p>
-                            Eine Weitergabe der Daten an Dritte außerhalb von der chargeIT mobility GmbH schließen wir grundsätzlich aus.
+                            Eine Weitergabe der Daten an Dritte außerhalb von ChargePoint Network (Netherlands) BV schließen wir grundsätzlich aus.
                             Ausnahmsweise werden Daten in unserem Auftrag von Auftragsverarbeitern verarbeitet. Diese sind jeweils sorgfältig
                             ausgesucht, werden von uns zudem auditiert und vertraglich nach Art. 28 DSGVO verpflichtet. Sollten Sie kein
                             direkter Kunde von uns, sondern ein Roamingkunde sein, so zählen zu den Auftragsverarbeitern auch Roaminganbieter
-                            wie Hubject oder e-clearing.net und Ihr eigener E-Mobility Provider.
+                            wie beispielsweise Hubject, Gireve oder e-clearing.net und Ihr eigener E-Mobility Provider.
                         </p>
                         <p>
                             Alle personenbezogenen Angaben, die Sie uns gegenüber bei Anfragen zukommen lassen, werden von uns spätestens 90
@@ -405,21 +409,26 @@
                             Datenschutz-Aufsichtsbehörde des Bundeslandes, in dem Sie wohnen oder in dem der Verantwortliche seinen Sitz hat.
                         </p>
                         <p>
-                            Unser betrieblicher Datenschutzbeauftragter steht Ihnen gerne für Auskünfte oder Anregungen zum Thema Datenschutz zur Verfügung:<br />
+                            Unser Datenschutzbeauftragter steht Ihnen gerne für Auskünfte oder Anregungen zum Thema Datenschutz zur Verfügung:<br />
                             <br />
-                            Dr. iur. Christian Borchers<br />
-                            datenschutz süd GmbH<br />
-                            Wörthstrasse 15<br />
-                            97082 Würzburg<br />
-                            <a href="mailto:datenschutz@chargeit-mobility.com">datenschutz@chargeit-mobility.com</a>
+                            ChargePoint<br />
+                            Attn: Data Protection Officer<br />
+                            ChargePoint Network (Netherlands) B.V.<br />
+                            Hoogoorddreef 56E<br />
+                            1101BE Amsterdam<br />
+                            Netherlands<br />
+                            <a href="mailto:privacy.eu@chargepoint.com">privacy.eu@chargepoint.com</a>
                             <br />
                             Verantwortlicher i.S.d. Art. 4 Ziff. 7 DSGVO<br />
                             <br />
-                            chargeIT mobility GmbH<br />
-                            Steigweg 24<br />
-                            97318 Kitzingen, Deutschland<br />
-                            Telefon: <a href="tel:+4993212680700">+49 (0) 9321 2680 700</a><br />
-                            <a href="mailto:info@chargeit-mobility.com">info@chargeit-mobility.com</a>
+                            ChargePoint<br />
+                            Attn: Customer Service<br />
+                            ChargePoint Network (Netherlands) B.V.<br />
+                            Hoogoorddreef 56E<br />
+                            1101BE Amsterdam<br />
+                            Netherlands<br />
+                            Telefon: <a href="tel:+493072621258">+49 (30) 72621258</a><br />
+                            <a href="mailto:sales@chargepoint.com">sales@chargepoint.com</a>
                         </p>
                     </div>
 
@@ -463,9 +472,9 @@
       // Remember to set customer privacyStatement!
       // Remember to set customer mapbox access token and map id!
       var chargyApp = new ChargyApp("https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
-                                    ["info@chargeIT-mobility.com", "?subject=Chargy%20Supportanfrage"],
-                                    ["+49093212680700",            "+49 (0) 9321 2680 700"],
-                                    "https://chargeit.charging.cloud/chargy/issues");
+                                    ["support.eu@chargepoint.com", "?subject=Chargy%20Supportanfrage"],
+                                    ["+496995307383",            "+49 69 95307383"],
+                                    "https://chargepoint.charging.cloud/chargy/issues");
 
     </script>
 

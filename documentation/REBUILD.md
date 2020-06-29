@@ -74,6 +74,9 @@ $ npm install @types/leaflet@latest --save-dev
 
 $ npm install leaflet.awesome-markers@latest --save
 + leaflet.awesome-markers@2.0.5
+
+$ npm install safe-stable-stringify --save
++ safe-stable-stringify@1.1.1
 ```
 
 
