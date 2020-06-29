@@ -1,0 +1,114 @@
+{
+	"@id": "chargepoint-0024b1000002e300-2-55",
+	"@context": "https://open.charging.cloud/contexts/CTR+json",
+	"publicKeys": [
+		{
+			"@id": "0024b1000002e300_2",
+			"type": {
+				"oid": "1.2.840.10045.2.1",
+				"description": "ecPublicKey"
+			},
+			"curve": {
+				"oid": "1.3.132.0.32",
+				"description": "secp224k1"
+			},
+			"value": "04d4c176108baa683125247c8af51eb84858c9e50d8753a745e3fd299aa044826c9c9d49ce3904cd9bdc68b3b09fb39ebeaac0b9ec0ab9ad76"
+		}
+	],
+	"begin": "2020-02-15T10:49:18Z",
+	"end": "2020-02-15T13:20:02Z",
+	"description": {
+		"de": "Alle Ladevorgänge"
+	},
+	"contract": {
+		"@id": "b2dd852e99433cab70ccd45dad5aff55",
+		"type": "userId"
+	},
+	"chargingStationOperators": [
+		{
+			"@id": "ChargePoint",
+			"description": {
+				"de": "Charge Point - Charging Station Operator Services"
+			},
+			"contact": {
+				"email": "sales@chargepoint.com",
+				"web": "https://www.chargepoint.com",
+				"logoUrl": "https://www.chargepoint.com/themes/chargepoint/logo.svg"
+			},
+			"support": {
+				"hotline": "+49(69) 95307383",
+				"email": "support.eu@chargepoint.com",
+				"web": "https://chargepoint.charging.cloud/issues"
+			},
+			"privacy": {
+				"contact": "ChargePoint, Attn: Data Protection Officer, ChargePoint Network (Netherlands) B.V., Hoogoorddreef 56E, 1101BE Amsterdam",
+				"email": "privacy.eu@chargepoint.com ",
+				"web": "https://de.chargepoint.com/privacy_policy"
+			},
+			"chargingStations": [
+				{
+					"@id": "0024b1000002e300",
+					"firmwareVersion": "",
+					"geoLocation": null,
+					"address": null,
+					"EVSEs": [
+						{
+							"@id": "0024b1000002e300-2",
+							"sockets": [
+								{}
+							],
+							"meters": [
+								{
+									"@id": "240008S",
+									"vendor": "Carlo Gavazzi",
+									"model": "EM340-DIN.AV2.3.X.S1.X"
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	],
+	"chargingSessions": [
+		{
+			"original": "ewogIm91dGxldCI6IDIsCiAic2Vzc2lvbl9pZCI6IDU1LAogInN0YXRpb25fbWFjIjogIjAwMjRiMTAwMDAwMmUzMDAiLAogImRyaXZlcl9pbmZvIjogImIyZGQ4NTJlOTk0MzNjYWI3MGNjZDQ1ZGFkNWFmZjU1IiwKICJtZXRlcl9zZXJpYWwiOiAiMjQwMDA4UyIsCiAibWV0ZXJfc3RhcnRyZWFkaW5nIjogNzQuNiwKICJtZXRlcl9lbmRyZWFkaW5nIjogODYuNiwKICJ0b3RhbF9lbmVyZ3kiOiAxMi4wLAogImVuZXJneV91bml0cyI6ICJrV2giLAogInN0YXJ0X3RpbWUiOiAxNTgxNzYzNzU4LAogImVuZF90aW1lIjogMTU4MTc3MjgwMgp9",
+			"signature": "303c021c2340aa91eca87ab5eb31ecfcbfec657f008a08579fa3fa4af1fbdd1b021c46122b7b1baac16fd33f51efd9ba4379e69e610758a103edcc57dc0d",
+			"@id": "0024b1000002e300-2-55",
+			"@context": "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json",
+			"begin": "2020-02-15T10:49:18Z",
+			"end": "2020-02-15T13:20:02Z",
+			"EVSEId": "0024b1000002e300-2",
+			"authorizationStart": {
+				"@id": "b2dd852e99433cab70ccd45dad5aff55",
+				"type": "userId"
+			},
+			"chargingProductRelevance": {
+				"time": 2,
+				"energy": 3,
+				"parking": 2,
+				"sessionFee": 2
+			},
+			"measurements": [
+				{
+					"energyMeterId": "240008S",
+					"@context": "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargePointCrypt01+json",
+					"name": "Bezogene Energiemenge",
+					"obis": "1-0:1.8.0",
+					"unit": "kWh",
+					"scale": 0,
+					"values": [
+						{
+							"timestamp": "2020-02-15T10:49:18Z",
+							"value": 74.6
+						},
+						{
+							"timestamp": "2020-02-15T13:20:02Z",
+							"value": 86.6
+						}
+					]
+				}
+			]
+		}
+	]
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2020 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -20,37 +20,48 @@
 
 abstract class ACrypt {
 
-    readonly description:                   string;
-    readonly GetMeter:                      GetMeterFunc;
-    readonly CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc;
+    //#region Data
 
-    readonly elliptic: any;
-    readonly moment:   any;
-    // variable 'crypto' is already defined differently in Google Chrome!
-    readonly crypt     = require('electron').remote.require('crypto');
+    readonly description:  string;
+    readonly chargy:       Chargy;
 
-    constructor(description:                   string,
-                GetMeter:                      GetMeterFunc,
-                CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc) {
+    readonly curve192r1:   any;
+    readonly curve224k1:   secp224k1;
+    readonly curve256r1:   any;
+    readonly curve384r1:   any;
+    readonly curve521r1:   any;
 
-        this.description                   = description;
-        this.GetMeter                      = GetMeter;
-        this.CheckMeterPublicKeySignature  = CheckMeterPublicKeySignature;
+    //#endregion
 
-        this.elliptic                      = require('elliptic');
-        this.moment                        = require('moment');
+    constructor(description:  string,
+                chargy:       Chargy) {
+
+        this.description  = description;
+        this.chargy       = chargy;
+
+        // NIST/ANSI X9.62 named 192-bit elliptic curve: secp192r1
+        // https://www.secg.org/sec2-v2.pdf
+        this.curve192r1   = new this.chargy.elliptic.ec('p192');
+
+        // Koblitz 224-bit curve: secp224k1
+        // https://www.secg.org/sec2-v2.pdf
+        this.curve224k1   = new secp224k1();
+
+        // NIST/ANSI X9.62 named 256-bit elliptic curve: secp256r1
+        // https://www.secg.org/sec2-v2.pdf
+        this.curve256r1   = new this.chargy.elliptic.ec('p256');
+
+        // NIST/ANSI X9.62 named 384-bit elliptic curve: secp384r1
+        // https://www.secg.org/sec2-v2.pdf
+        this.curve384r1   = new this.chargy.elliptic.ec('p384');
+
+        // NIST/ANSI X9.62 named 521-bit elliptic curve: secp521r1
+        // https://www.secg.org/sec2-v2.pdf
+        this.curve521r1   = new this.chargy.elliptic.ec('p521');
 
     }
 
-    protected pad(text: string|undefined, paddingValue: number) {
-
-        if (text == null || text == undefined)
-            text = "";
-
-        return (text + Array(2*paddingValue).join('0')).substring(0, 2*paddingValue);
-
-    };
-
+    //#region Protected methods
 
     protected CreateLine(id:         string,
                          value:      string|number,
@@ -61,12 +72,11 @@ abstract class ACrypt {
 
         var lineDiv = CreateDiv(infoDiv, "row");
                       CreateDiv(lineDiv, "id",    id);
-                      CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value.toString()));
+                      CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value?.toString()));
 
         this.AddToVisualBuffer(valueHEX, bufferDiv, lineDiv);
 
     }
-
 
     protected AddToVisualBuffer(valueHEX:   string,
                                 bufferDiv:  HTMLDivElement,
@@ -95,28 +105,32 @@ abstract class ACrypt {
 
     }
 
-    async sha256(message: DataView) {
-        const hashBuffer = await crypto.subtle.digest('SHA-256', message);// new TextEncoder().encode(message));
-        const hashArray  = Array.from(new Uint8Array(hashBuffer));                                       // convert hash to byte array
-        const hashHex    = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('').toLowerCase(); // convert bytes to hex string
-        return hashHex;
-    }
+    //#endregion
 
-    abstract VerifyChargingSession(chargingSession:   IChargingSession): ISessionCryptoResult;
 
-    abstract SignMeasurement(measurementValue:        IMeasurementValue,
-                             privateKey:              any,
-                             publicKey:               any): ICryptoResult;
+    abstract GenerateKeyPair(): any;
 
-    abstract VerifyMeasurement(measurementValue:      IMeasurementValue): ICryptoResult;
 
-    abstract ViewMeasurement(measurementValue:        IMeasurementValue,
-                             introDiv:                HTMLDivElement,
-                             infoDiv:                 HTMLDivElement,
-                             bufferValue:             HTMLDivElement,
-                             hashedBufferValue:       HTMLDivElement,
-                             publicKeyValue:          HTMLDivElement,
-                             signatureExpectedValue:  HTMLDivElement,
-                             signatureCheckValue:     HTMLDivElement) : void;
+
+    abstract SignChargingSession  (chargingSession:         IChargingSession,
+                                   privateKey:              any):              Promise<ISessionCryptoResult>;
+
+    abstract VerifyChargingSession(chargingSession:         IChargingSession): Promise<ISessionCryptoResult>;
+
+
+
+    abstract SignMeasurement      (measurementValue:        IMeasurementValue,
+                                   privateKey:              any):               Promise<ICryptoResult>;
+
+    abstract VerifyMeasurement    (measurementValue:        IMeasurementValue): Promise<ICryptoResult>;
+
+    abstract ViewMeasurement      (measurementValue:        IMeasurementValue,
+                                   introDiv:                HTMLDivElement,
+                                   infoDiv:                 HTMLDivElement,
+                                   bufferValue:             HTMLDivElement,
+                                   hashedBufferValue:       HTMLDivElement,
+                                   publicKeyValue:          HTMLDivElement,
+                                   signatureExpectedValue:  HTMLDivElement,
+                                   signatureCheckValue:     HTMLDivElement) : void;
 
 }

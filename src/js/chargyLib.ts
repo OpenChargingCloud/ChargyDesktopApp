@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2018-2019 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2020 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -48,12 +48,29 @@ function parseUTC(UTCTime: string|number): any {
 
 }
 
+function UTC2human(UTCTime: string|number): any {
+
+    var moment = require('moment');
+
+    moment.locale(window.navigator.language);
+
+    return (typeof UTCTime === 'string'
+                ? moment.utc(UTCTime)
+                : moment.unix(UTCTime)).
+               format('dddd, D; MMM YYYY HH:mm:ss').
+                   replace(".", "").    // Nov. -> Nov
+                   replace(";", ".") +  // 14;  -> 14.
+                   " Uhr";
+
+}
+
 function parseOBIS(OBIS: string): string
 {
 
     if (OBIS.length != 12)
-        return OBIS;
+        throw "Invalid OBIS number '" + OBIS + "'!";
 
+    // DIN EN 62056-61:2002
     // https://wiki.volkszaehler.org/software/obis
     // https://github.com/volkszaehler/vzlogger/blob/master/src/Obis.cpp
     // https://www.promotic.eu/en/pmdoc/Subsystems/Comm/PmDrivers/IEC62056_OBIS.htm
@@ -63,8 +80,8 @@ function parseOBIS(OBIS: string): string
     // format: "A-B:C.D.E[*&]F"
     // A, B, E, F are optional
     // C & D are mandatory
-    var media       = parseInt(OBIS.substring( 0,  2), 16); // A
-    var channel     = parseInt(OBIS.substring( 2,  4), 16); // B
+    var media       = parseInt(OBIS.substring( 0,  2), 16); // A =>  1: Energie
+    var channel     = parseInt(OBIS.substring( 2,  4), 16); // B =>  0: No channels available
     var indicator   = parseInt(OBIS.substring( 4,  6), 16); // C =>  1: Wirkenergie Bezug P+, kWh
     var mode        = parseInt(OBIS.substring( 6,  8), 16); // D => 17: Signierter Momentanwert (vgl. 7)
     var quantities  = parseInt(OBIS.substring( 8, 10), 16); // E =>  0: Total
@@ -74,7 +91,44 @@ function parseOBIS(OBIS: string): string
 
 }
 
-function translateMeasurementName(In: string) : string
+const OBIS_RegExpr = new RegExp("((\\d+)\\-)?((\\d+):)?((\\d+)\\.)(\\d+)(\\.(\\d+))?(\\*(\\d+))?");
+
+function OBIS2Hex(OBIS: string): string
+{
+
+    //  1-0:1.8.0*255 => 0100010800ff
+
+    let OBISElements = OBIS.match(OBIS_RegExpr);
+
+    return OBISElements == null
+               ? "000000000000"
+               : parseInt(OBISElements[ 2] ?? "00").toString(16).padStart(2, "0") +   // optional  A
+                 parseInt(OBISElements[ 4] ?? "00").toString(16).padStart(2, "0") +   // optional  B
+                 parseInt(OBISElements[ 6] ?? "00").toString(16).padStart(2, "0") +   // mandatory C
+                 parseInt(OBISElements[ 7] ?? "00").toString(16).padStart(2, "0") +   // mandatory D
+                 parseInt(OBISElements[ 9] ?? "00").toString(16).padStart(2, "0") +   // optional  E
+                 parseInt(OBISElements[11] ?? "00").toString(16).padStart(2, "0");    // optional  F
+
+}
+
+function OBIS2MeasurementName(In: string) : string
+{
+    switch (In)
+    {
+
+        case "1-0:1.8.0*255":
+            return "ENERGY_TOTAL";      // Sum Li Active Power+ (Q1+QIV), Time integral 1 [kWh]
+
+        case "1-0:1.17.0*255":
+            return "ENERGY_TOTAL";    // Sum Li Active Power+ (Q1+QIV), Time integral 7 [kWh]
+
+        default:
+            return In;
+
+    }
+}
+
+function measurementName2human(In: string) : string
 {
     switch (In)
     {
@@ -101,8 +155,22 @@ function WhenNullOrEmpty(value: string|undefined, replacement: string): string {
 
 }
 
-function hex2bin(hex: string) : string {
+function hex2bin(hex: string, Reverse?: Boolean) : string {
+
+    if (Reverse)
+    {
+
+        let reversed = [];
+
+        for (var i = 0; i < hex.length; i += 2)
+            reversed.push(hex.substring(i, i + 2));
+
+        return ("00000000" + (parseInt(reversed.reverse().join(""), 16)).toString(2)).substr(-8);
+
+    }
+
     return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
+
 }
 
 function hex32(val: number) {
@@ -139,6 +207,22 @@ function createHexString(arr: Iterable<number>) {
 
 function buf2hex(buffer: ArrayBuffer) {
     return Array.prototype.map.call(new Uint8Array(buffer), (x:number) => ('00' + x.toString(16)).slice(-2)).join('');
+}
+
+function hexToArrayBuffer(hex: string): ArrayBuffer {
+
+    if ((hex.length % 2) !== 0) {
+        throw new RangeError('Expected string to be an even number of characters')
+    }
+
+    var view = new Uint8Array(hex.length / 2)
+
+    for (var i = 0; i < hex.length; i += 2) {
+        view[i / 2] = parseInt(hex.substring(i, i + 2), 16)
+    }
+
+    return view.buffer
+
 }
 
 function intFromBytes(x: number[]){
@@ -199,13 +283,13 @@ function SetHex(dv: DataView, hex: string, offset: number, reverse?: boolean): s
 
 }
 
-function SetTimestamp(dv: DataView, timestamp: any, offset: number): string
+function SetTimestamp(dv: DataView, timestamp: any, offset: number, addLocalOffset: boolean = true): string
 {
 
     if (typeof timestamp === 'string')
         timestamp = parseUTC(timestamp);
 
-    var unixtime  = timestamp.unix();
+    var unixtime  = timestamp.unix() + (addLocalOffset ? 60 * timestamp.utcOffset() : 0); // Usage of utcOffset() is afaik EMH specific!
     var bytes     = getInt64Bytes(unixtime);
     var buffer    = new ArrayBuffer(8);
     var tv        = new DataView(buffer);
@@ -219,13 +303,13 @@ function SetTimestamp(dv: DataView, timestamp: any, offset: number): string
 
 }
 
-function SetTimestamp32(dv: DataView, timestamp: any, offset: number): string
+function SetTimestamp32(dv: DataView, timestamp: any, offset: number, addLocalOffset: boolean = true): string
 {
 
     if (typeof timestamp === 'string')
         timestamp = parseUTC(timestamp);
 
-    var unixtime  = timestamp.unix() + 60 * timestamp.utcOffset(); // Usage of utcOffset() is afaik EMH specific!
+    var unixtime  = timestamp.unix() + (addLocalOffset ? 60 * timestamp.utcOffset() : 0); // Usage of utcOffset() is afaik EMH specific!
     var bytes     = getInt64Bytes(unixtime);
     var buffer    = new ArrayBuffer(4);
     var tv        = new DataView(buffer);
@@ -379,6 +463,29 @@ function CreateDiv(ParentDiv:   HTMLDivElement,
 
 }
 
+function CreateDiv2(ParentDiv:        HTMLDivElement,
+                    ChildClassName:   string,
+               //     ChildAClassName:  string,
+                    ChildAInnerHTML:  string,
+              //      ChildBClassName:  string,
+                    ChildBInnerHTML:  string) : HTMLDivElement
+{
+
+    let childDiv            = ParentDiv.appendChild(document.createElement('div'));
+        childDiv.className  = ChildClassName;
+
+    let childADiv           = childDiv.appendChild(document.createElement('div'));
+    childADiv.className     = ChildClassName + "Id";
+    childADiv.innerHTML     = ChildAInnerHTML;
+
+    let childBDiv           = childDiv.appendChild(document.createElement('div'));
+    childBDiv.className     = ChildClassName + "IdValue";
+    childBDiv.innerHTML     = ChildBInnerHTML;
+
+    return childDiv;
+
+}
+
 
 function OpenExternal(URL: string)
 {
@@ -386,5 +493,93 @@ function OpenExternal(URL: string)
     var shell = require('electron').shell;
 
     shell.openExternal(URL);
+
+}
+
+
+interface String {
+    isNullOrEmpty(): boolean;
+    isNotNullOrEmpty(): boolean;
+}
+
+String.prototype.isNullOrEmpty = function() {
+    return !(typeof this === "string" && this.length > 0);
+}
+
+String.prototype.isNotNullOrEmpty = function() {
+    return typeof this === "string" && this.length > 0;
+}
+
+function pad(text: string|undefined, paddingValue: number) {
+
+    if (text == null || text == undefined)
+        text = "";
+
+    return (text + Array(2*paddingValue).join('0')).substring(0, 2*paddingValue);
+
+};
+
+async function sha224(message: string|DataView) {
+
+    let hashBuffer = null;
+    const SHA224 = require("sha224");
+
+    if (typeof message === 'string')
+        hashBuffer = SHA224(Buffer.from(message, 'utf8'));
+    else
+        hashBuffer = SHA224(message);
+
+  //  const hashArray  = Array.from(hashBuffer);                                       // convert hash to byte array
+    const hashHex    = hashBuffer.toString("hex");
+
+    return hashHex;
+
+}
+
+async function sha256(message: string|DataView) {
+
+    let hashBuffer = null;
+
+    if (typeof message === 'string')
+        hashBuffer = await crypto.subtle.digest('SHA-256', Buffer.from(message, 'utf8'));
+    else
+        hashBuffer = await crypto.subtle.digest('SHA-256', message);
+
+    const hashArray  = Array.from(new Uint8Array(hashBuffer));                                       // convert hash to byte array
+    const hashHex    = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('').toLowerCase(); // convert bytes to hex string
+
+    return hashHex;
+
+}
+
+async function sha384(message: string|DataView) {
+
+    let hashBuffer = null;
+
+    if (typeof message === 'string')
+        hashBuffer = await crypto.subtle.digest('SHA-384', Buffer.from(message, 'utf8'));
+    else
+        hashBuffer = await crypto.subtle.digest('SHA-384', message);
+
+    const hashArray  = Array.from(new Uint8Array(hashBuffer));                                       // convert hash to byte array
+    const hashHex    = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('').toLowerCase(); // convert bytes to hex string
+
+    return hashHex;
+
+}
+
+async function sha512(message: string|DataView) {
+
+    let hashBuffer = null;
+
+    if (typeof message === 'string')
+        hashBuffer = await crypto.subtle.digest('SHA-512', Buffer.from(message, 'utf8'));
+    else
+        hashBuffer = await crypto.subtle.digest('SHA-512', message);
+
+    const hashArray  = Array.from(new Uint8Array(hashBuffer));                                       // convert hash to byte array
+    const hashHex    = hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('').toLowerCase(); // convert bytes to hex string
+
+    return hashHex;
 
 }

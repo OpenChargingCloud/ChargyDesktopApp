@@ -1,6 +1,6 @@
 {
   "name": "chargytransparenzsoftware",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Chargy ist eine Transparenzsoftware für das Eichrecht in der Elektromobilität. Hiermit können Endkunden und E-Mobilitäts-Anbieter die Plausibilitäts und Validität von Ladevorgängen überprüfen.",
   "main": "src/main.js",
   "scripts": {
@@ -20,34 +20,43 @@
     "E-Mobility",
     "Ladestationen",
     "charging stations",
-    "PTB"
+    "PTB",
+    "VDE"
   ],
-  "author": "Achim Friedland <achim.friedland@graphdefined.com>",
+  "author": "GraphDefined GmbH <achim.friedland@graphdefined.com>",
   "license": "AGPL-3.0-or-later",
   "homepage": "https://github.com/OpenChargingCloud/ChargyDesktopApp",
-  "dependencies": {
-    "@types/chart.js": "^2.7.54",
-    "@types/elliptic": "^6.4.9",
-    "@types/leaflet": "^1.4.4",
-    "chart.js": "^2.8.0",
-    "elliptic": "^6.5.0",
-    "leaflet": "^1.5.1",
-    "leaflet.awesome-markers": "^2.0.5",
-    "moment": "^2.24.0"
-  },
   "devDependencies": {
-    "@types/node": "^12.0.10",
-    "electron": "^5.0.6",
-    "electron-builder": "^20.44.4",
-    "sass": "^1.22.1",
-    "typescript": "^3.5.2"
+    "@types/chart.js": "^2.9.21",
+    "@types/decompress": "^4.2.3",
+    "@types/elliptic": "^6.4.12",
+    "@types/leaflet": "^1.5.12",
+    "@types/node": "^14.0.11",
+    "electron": "^9.0.2",
+    "electron-builder": "^22.7.0",
+    "sass": "^1.26.8",
+    "typescript": "^3.9.5"
+  },
+  "dependencies": {
+    "asn1.js": "^5.3.0",
+    "base32-decode": "^1.0.0",
+    "chart.js": "^2.9.3",
+    "decompress": "^4.2.1",
+    "decompress-bzip2": "^4.0.0",
+    "decompress-gz": "0.0.1",
+    "electron-localshortcut": "^3.2.1",
+    "elliptic": "^6.5.2",
+    "file-type": "^14.6.0",
+    "leaflet": "^1.6.0",
+    "leaflet.awesome-markers": "^2.0.5",
+    "moment": "^2.26.0",
+    "safe-stable-stringify": "^1.1.1"
   },
   "build": {
-    "appId": "cloud.charging.open.chargy.desktop",
-    "productName": "Chargy Transparenzsoftware",
-    "copyright": "Copyright © 2018-2019 GraphDefined GmbH",
+    "appId": "cloud.charging.chargepoint.chargy.desktop",
+    "productName": "Chargy Transparenzsoftware ChargePoint Edition",
+    "copyright": "Copyright © 2018-2020 GraphDefined GmbH",
     "extraFiles": [
-      "build",
       "documentation",
       "versions"
     ],
@@ -63,11 +72,11 @@
       "target": [
         "nsis"
       ],
-      "icon": "build/chargy.ico"
+      "icon": "src/icons/chargepoint2.ico"
     },
     "nsis": {
       "perMachine": true,
-      "installerIcon": "build/chargy.ico",
+      "installerIcon": "src/icons/chargepoint2.ico",
       "deleteAppDataOnUninstall": true,
       "runAfterFinish": true
     },
@@ -75,7 +84,11 @@
       "target": [
         "deb"
       ],
-      "icon": "build/chargy_icon.png"
+      "icon": "src/icons/chargepoint2.png"
+    },
+    "mac": {
+      "category": "public.app-category.business",
+      "type": "distribution"
     }
   }
 }

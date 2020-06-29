@@ -1,0 +1,177 @@
+{
+	"@id": "1554181214441:-1965658344385548683:2",
+	"@context": "https://open.charging.cloud/contexts/CTR+json",
+	"begin": "2019-04-02T05:00:19Z",
+	"end": "2019-04-02T05:13:52Z",
+	"description": {
+		"de": "Alle Ladevorgänge"
+	},
+	"contract": {
+		"@id": "8057F5AA592904",
+		"type": "RFID_TAG_ID",
+		"username": "",
+		"email": ""
+	},
+	"chargingStationOperators": [{
+		"@id": "chargeITmobilityCSO",
+		"eMobilityIds": ["DE*BDO", "DE*LVF", "+49*822"],
+		"description": {
+			"de": "chargeIT mobility GmbH - Charging Station Operator Services"
+		},
+		"contact": {
+			"email": "info@chargeit-mobility.com",
+			"web": "https://www.chargeit-mobility.com",
+			"logoUrl": "http://www.chargeit-mobility.com/fileadmin/BELECTRIC_Drive/templates/pics/chargeit_logo_408x70.png",
+			"publicKeys": [{
+				"algorithm": "secp192r1",
+				"format": "DER",
+				"value": "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
+				"signatures": [{
+					"keyId": "...",
+					"algorithm": "secp192r1",
+					"format": "DER",
+					"value": "????"
+				}]
+			}, {
+				"algorithm": "secp256k1",
+				"format": "DER",
+				"value": "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+				"signatures": []
+			}]
+		},
+		"support": {
+			"hotline": "+49 9321 / 2680 - 700",
+			"email": "service@chargeit-mobility.com",
+			"web": "https://cso.chargeit.charging.cloud/issues"
+		},
+		"privacy": {
+			"contact": "Dr. iur. Christian Borchers, datenschutz süd GmbH",
+			"email": "datenschutz@chargeit-mobility.com",
+			"web": "http://www.chargeit-mobility.com/de/datenschutz/"
+		},
+		"chargingStations": [{
+			"@id": "DE*BDO*E8025334492",
+			"firmwareVersion": "3.0.25.2089",
+			"geoLocation": {
+				"lat": 48.035131,
+				"lng": 10.50635
+			},
+			"address": {
+				"street": "Breitenbergstr. 2",
+				"postalCode": "87719",
+				"city": "Mindelheim"
+			},
+			"EVSEs": [{
+				"@id": "DE*BDO*E8025334492*2",
+				"sockets": [{}],
+				"meters": [{
+					"@id":              "0901454D48000083E076",
+					"vendor":           "EMH",
+					"vendorURL":        "http://www.emh-metering.de",
+					"model":            "eHZ IW8E EMH",
+					"hardwareVersion":  "1.0",
+					"firmwareVersion":  "123",
+					"signatureFormat":  "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+					"publicKeys": [{
+					    "@context":             "https://open.charging.cloud/contexts/signature+json",
+						"algorithm":            "secp192r1",
+						"format":               "DER",
+						"value":                "049EA8697F5C3126E86A37295566D560DE8EA690325791C9CBA79D30612B8EA8E00908FBAD5374812D55DCC3D809C3A36C",
+						"signatures": [{
+						    "@context":             "https://open.charging.cloud/contexts/signature+json",
+							"timestamp":            "2019-06-30T00:00:00Z",
+							"issuer":               "Open Charging Cloud",
+							"notBefore":            "2018-11-04T16:47:01Z",
+							"notAfter":             "2023-03-12T13:54:12Z",
+							"algorithm":            "secp521r1",
+							"format":               "DER",
+							"publicKey":            "040182c740a82d0d9e34168e4ee9c81d535983e48383678de1011659182e5446ee71e30babe389d2c8a29498cde15b2d959ed8f63409896ca2bcdc05588e210323961e01ccb785a29b14cda193be82354091445d86ada3b5390632b19d38f57cf3d9c43f8dc3fcd02848788bedc0b17e0ca073b72c03344daf9cbc004fb1b6f5ce2fa0bd1e",
+							"operations": {
+								"signMeterValues":  true
+							},
+							"signature":            "303502181dce9223416d64e5362bc8eb46eddf23adcb74382b602e1f021900eca85b1a48bc1f64d25951e947c7e48fa0b070b82e2cae41",
+							"comment": {            
+								"en":               "Hello world!"
+							}
+						}, {
+						    "@context":             "https://open.charging.cloud/contexts/signature+json",
+							"timestamp":            "2019-06-30T00:00:00Z",
+							"issuer":               "chargeIT mobility",
+							"notBefore":            "2018-11-04T16:47:01Z",
+							"notAfter":             "2023-03-12T13:54:12Z",
+							"algorithm":            "secp256k1",
+							"format":               "DER",
+							"publicKey":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+							"operations": {
+								"signMeterValues":  true
+							},
+							"signature":            "303502181dce9223416d64e5362bc8eb46eddf23adcb74382b602e1f021900eca85b1a48bc1f64d25951e947c7e48fa0b070b82e2cae41",
+                            "comment": {
+								"en":               "Hello world!"
+							}
+						}]
+					}]
+				}]
+			}]
+		}]
+	}],
+	"chargingSessions": [{
+		"@id": "1554181214441:-1965658344385548683:2",
+		"@context": "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
+		"begin": "2019-04-02T05:00:19Z",
+		"end": "2019-04-02T05:13:52Z",
+		"EVSEId": "DE*BDO*E8025334492*2",
+		"authorizationStart": {
+			"@id": "8057F5AA592904",
+			"type": "RFID_TAG_ID",
+			"timestamp": "2019-04-02T07:00:19+02:00"
+		},
+		"signatureInfos": {
+			"hash": "SHA512",
+			"hashTruncation": "24",
+			"algorithm": "ECC",
+			"curve": "secp192r1",
+			"format": "rs"
+		},
+		"measurements": [{
+			"energyMeterId": "0901454D48000083E076",
+			"@context": "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
+			"name": "ENERGY_TOTAL",
+			"obis": "1-0:1.17.0*255",
+			"unit": "WATT_HOUR",
+			"unitEncoded": 30,
+			"valueType": "Integer64",
+			"scale": -1,
+			"signatureInfos": {
+				"hash": "SHA512",
+				"hashTruncation": "24",
+				"algorithm": "ECC",
+				"curve": "secp192r1",
+				"format": "rs"
+			},
+			"values": [{
+				"timestamp": "2019-04-02T07:00:19+02:00",
+				"value": "66260",
+				"infoStatus": "08",
+				"secondsIndex": 65058,
+				"paginationId": "00000012",
+				"logBookIndex": "0006",
+				"signatures": [{
+					"r": "71F76A80F170F87675AAEB19606BBD298355FDA7B0851700",
+					"s": "2FAD322FA073255BD8B971BD69BFF051BCA9330703172E3C"
+				}]
+			}, {
+				"timestamp": "2019-04-02T07:13:52+02:00",
+				"value": "67327",
+				"infoStatus": "08",
+				"secondsIndex": 65871,
+				"paginationId": "00000013",
+				"logBookIndex": "0006",
+				"signatures": [{
+					"r": "6DF01D7603CB49BB76141F8E67B371351BF1F87C1F8D38AE",
+					"s": "B3600A9432B8CE0A378126D4FB9D9581457651A5D208AD9E"
+				}]
+			}]
+		}]
+	}]
+}

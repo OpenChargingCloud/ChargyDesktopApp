@@ -1,0 +1,116 @@
+ESCAPE     1b1b1b1b
+START  	   01010101		#Start Version 1.0
+
+76											#Liste mit 6 Einträgen (1. SML Nachricht in diesem Telegramm)
+	0500000001								#transactionID
+	6200									#groupNo
+	6200									#abortOnError
+	72										#Liste mit 2 Einträgen
+		63 0101								#Nachricht 0101 = SML_PublicOpen.Res
+		76									#Liste mit 6 Einträgen
+			01								#codepage (leer)
+			04 313233						#???
+			03 007f							#???
+			0b 0901454d4800008f7ea0			#Server ID
+			01								#username (leer)
+			01								#password (leer)
+	637874									#CRC
+	00										#Ende der Nachricht
+		
+76		
+	0500000002								#transactionID
+	6200									#groupNo
+	6200									#abortOnError
+	72										#Liste mit 2 Einträgen
+		63 0701								#Nachricht 0701 = SML_GetList.Res
+		77									#Liste mit 7 Einträgen
+			01								#clientID (leer)
+			0b 0901454d4800008f7ea0			#ServerId
+			07 8180817103ff					#listName
+			72								# Liste mit 2 Einträgen
+				62 01						# Typ = Sekundenindex
+				65 000ad029					# Sekunden-Index als unsigned 32
+			
+			74								# Liste mit 4 Einträgen
+			
+				77
+				07 8182815401ff				# TYPE_CONTRACT_ID
+				01 							#status
+				72							#value time 
+					62 03
+					73
+						65 5ebb9c1a
+						53 003c
+						53 003c
+				01
+				01
+				0b 9110105ebb9be85c0dd8	 	#Contract-ID
+				01							#valueSignature
+				
+				
+				77
+				07 0100011100ff				# TYPE_SIGNED_VALUE
+				64 000008					#status
+				72							#value time
+					62 03
+					73
+						65 5ebb9cc1
+						53 003c
+						53 003c
+				62 1e						#unit   (TL[1] + unsigned[1]), 1e = Wh
+				52 ff						#scaler (TL[1] + signed[1]),   -1 = *10^-1 = /10
+				56 000001e9d4				#value (e.g. 56 00 01 29 71 4F => value 19493967/10 = 1949396,7 Wh = 1949,3967 kWh)
+				01							#valueSignature
+				
+				
+				77
+				07 810060080001				# TYPE_SECONDS_INDEX
+				01							#status
+				01							#value time 
+				01							#unit
+				01							#scaler
+				72
+					62 01
+					72
+						62 01
+						65 000acffe			#Sekunden-Index
+				01							#valueSignature
+				
+				
+				77
+				07 8180817101ff				# TYPE_PAGINATION
+				01							#status
+				01							#value time 
+				01							#unit
+				01							#scaler
+				65 000000de					#value == 222
+				01							#valueSignature
+				
+		83 04 Signatur: cc92a5fa65b7db0162d7ea5b0fd7cf44aad152f50ea6559da395d5d550253bbd90365829e83e816d378c00859f66e67f0110	#listSignature "83 04" => "0x34" == 52 dez (2 length bytes + 50 bytes signature)
+		01									#actGatewayTime (leer)
+		63 8c8c								#CRC Prüfsumme
+		00									#Ende Nachricht
+					
+76											#7=Liste 6=Anzahl der Einträge
+	05 00000003								#transactionId:
+	6200									#groupNo
+	6200									#abortOnError
+	72
+		63 0201								#Nachricht 0201 = SML_PublicClose.Res
+		71
+			01								#Signature (leer)
+	63 a8e6									#CRC Prüfsumme
+	00										#Ende
+
+0000										#Ende
+
+ESCAPE 	   1b1b1b1b1
+Prüfsumme  a02afc6
+
+
+
+
+
+
+OBIS "8181C78205FF" => Public Key des Zählers
+

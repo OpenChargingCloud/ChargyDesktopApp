@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2020 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -45,14 +45,12 @@ interface IGDFCrypt01Result extends ICryptoResult
 
 class GDFCrypt01 extends ACrypt {
 
-    readonly curve        = new this.elliptic.ec('p256');
+    readonly curve = new this.chargy.elliptic.ec('p256');
 
-    constructor(GetMeter:                      GetMeterFunc,
-                CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc) {
+    constructor(chargy:  Chargy) {
 
         super("ECC secp256r1",
-              GetMeter,
-              CheckMeterPublicKeySignature);
+              chargy);
 
     }
 
@@ -66,16 +64,71 @@ class GDFCrypt01 extends ACrypt {
         // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
     }
 
-    SignMeasurement(measurementValue:  IGDFMeasurementValue,
-                    privateKey:        any,
-                    publicKey:         any): IGDFCrypt01Result
+
+    async SignChargingSession  (chargingSession:         IChargingSession,
+                                privateKey:              any):              Promise<ISessionCryptoResult>
     {
 
-        // var keypair                      = this.curve.genKeyPair();
-        //     privateKey                   = keypair.getPrivate();
-        //     publicKey                    = keypair.getPublic();        
-        // var privateKeyHEX                = privateKey.toString('hex').toLowerCase();
-        // var publicKeyHEX                 = publicKey.encode('hex').toLowerCase();
+        return {
+            status: SessionVerificationResult.UnknownSessionFormat
+        }
+
+    }
+
+    async VerifyChargingSession(chargingSession:         IChargingSession): Promise<ISessionCryptoResult>
+    {
+
+        var sessionResult = SessionVerificationResult.UnknownSessionFormat;
+
+        if (chargingSession.measurements)
+        {
+            for (var measurement of chargingSession.measurements)
+            {
+
+                measurement.chargingSession = chargingSession;
+
+                // Must include at least two measurements (start & stop)
+                if (measurement.values && measurement.values.length > 1)
+                {
+
+                    // Validate...
+                    for (var measurementValue of measurement.values)
+                    {
+                        measurementValue.measurement = measurement;
+                        await this.VerifyMeasurement(measurementValue as IGDFMeasurementValue);
+                    }
+
+
+                    // Find an overall result...
+                    sessionResult = SessionVerificationResult.ValidSignature;
+
+                    for (var measurementValue of measurement.values)
+                    {
+                        if (sessionResult                  == SessionVerificationResult.ValidSignature &&
+                            measurementValue.result.status != VerificationResult.ValidSignature)
+                        {
+                            sessionResult = SessionVerificationResult.InvalidSignature;
+                        }
+                    }
+
+                }
+
+                else
+                    sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsRequired;
+
+            }
+        }
+
+        return {
+            status: sessionResult
+        } ;
+
+    }
+
+
+    async SignMeasurement(measurementValue:  IGDFMeasurementValue,
+                          privateKey:        any): Promise<IGDFCrypt01Result>
+    {
 
         var buffer                       = new ArrayBuffer(320);
         var cryptoBuffer                 = new DataView(buffer);
@@ -92,13 +145,10 @@ class GDFCrypt01 extends ACrypt {
             authorizationStartTimestamp:  SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
         };
 
-        cryptoResult.sha256value  = this.crypt.createHash ('sha256').
-                                               update     (cryptoBuffer).
-                                               digest     ('hex').
-                                               toLowerCase();
+        cryptoResult.sha256value  = await sha256(cryptoBuffer);
 
-        cryptoResult.publicKey    = publicKey.encode('hex').
-                                              toLowerCase();
+        // cryptoResult.publicKey    = publicKey.encode('hex').
+        //                                       toLowerCase();
 
         const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
                                                sign(cryptoResult.sha256value);
@@ -139,59 +189,7 @@ class GDFCrypt01 extends ACrypt {
 
     }
 
-
-    VerifyChargingSession(chargingSession:   IChargingSession): ISessionCryptoResult
-    {
-
-        var sessionResult = SessionVerificationResult.UnknownSessionFormat;
-
-        if (chargingSession.measurements)
-        {
-            for (var measurement of chargingSession.measurements)
-            {
-
-                measurement.chargingSession = chargingSession;
-
-                // Must include at least two measurements (start & stop)
-                if (measurement.values && measurement.values.length > 1)
-                {
-
-                    // Validate...
-                    for (var measurementValue of measurement.values)
-                    {
-                        measurementValue.measurement = measurement;
-                        this.VerifyMeasurement(measurementValue as IGDFMeasurementValue);
-                    }
-
-
-                    // Find an overall result...
-                    sessionResult = SessionVerificationResult.ValidSignature;
-
-                    for (var measurementValue of measurement.values)
-                    {
-                        if (sessionResult                  == SessionVerificationResult.ValidSignature &&
-                            measurementValue.result.status != VerificationResult.ValidSignature)
-                        {
-                            sessionResult = SessionVerificationResult.InvalidSignature;
-                        }
-                    }
-
-                }
-
-                else
-                    sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsExpected;
-
-            }
-        }
-
-        return {
-            status: sessionResult
-        } ;
-
-    }
-
-
-    VerifyMeasurement(measurementValue:  IGDFMeasurementValue): IGDFCrypt01Result
+    async VerifyMeasurement(measurementValue:  IGDFMeasurementValue): Promise<IGDFCrypt01Result>
     {
 
         function setResult(vr: VerificationResult)
@@ -200,6 +198,8 @@ class GDFCrypt01 extends ACrypt {
             measurementValue.result = cryptoResult;
             return cryptoResult;
         }
+
+        measurementValue.method = this;
 
         var buffer        = new ArrayBuffer(320);
         var cryptoBuffer  = new DataView(buffer);
@@ -230,26 +230,24 @@ class GDFCrypt01 extends ACrypt {
                     s:          signatureExpected.s
                 };
 
-                cryptoResult.sha256value = this.crypt.createHash('sha256').
-                                                      update(cryptoBuffer).
-                                                      digest('hex');
+                cryptoResult.sha256value = await sha256(cryptoBuffer);
 
 
-                const meter = this.GetMeter(measurementValue.measurement.energyMeterId);
+                const meter = this.chargy.GetMeter(measurementValue.measurement.energyMeterId);
                 if (meter != null)
                 {
 
                     cryptoResult.meter = meter;
 
-                    var iPublicKey = meter.publicKeys[0] as IPublicKey;
-                    if (iPublicKey != null)
+                    if (meter.publicKeys != null && meter.publicKeys.length > 0)
                     {
 
                         try
                         {
 
-                            cryptoResult.publicKey        = iPublicKey.value.toLowerCase();
-                            cryptoResult.publicKeyFormat  = iPublicKey.format;
+                            cryptoResult.publicKey            = meter.publicKeys[0].value.toLowerCase();
+                            cryptoResult.publicKeyFormat      = meter.publicKeys[0].format;
+                            cryptoResult.publicKeySignatures  = meter.publicKeys[0].signatures;
 
                             try
                             {
@@ -297,15 +295,14 @@ class GDFCrypt01 extends ACrypt {
 
     }
 
-
-    ViewMeasurement(measurementValue:        IMeasurementValue,
-                    introDiv:                HTMLDivElement,
-                    infoDiv:                 HTMLDivElement,
-                    bufferValue:             HTMLDivElement,
-                    hashedBufferValue:       HTMLDivElement,
-                    publicKeyValue:          HTMLDivElement,
-                    signatureExpectedValue:  HTMLDivElement,
-                    signatureCheckValue:     HTMLDivElement)
+    async ViewMeasurement(measurementValue:        IMeasurementValue,
+                          introDiv:                HTMLDivElement,
+                          infoDiv:                 HTMLDivElement,
+                          bufferValue:             HTMLDivElement,
+                          hashedBufferValue:       HTMLDivElement,
+                          publicKeyValue:          HTMLDivElement,
+                          signatureExpectedValue:  HTMLDivElement,
+                          signatureCheckValue:     HTMLDivElement)
     {
 
         const result    = measurementValue.result as IGDFCrypt01Result;

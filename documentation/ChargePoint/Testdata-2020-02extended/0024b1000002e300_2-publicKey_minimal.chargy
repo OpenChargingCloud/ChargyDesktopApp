@@ -1,0 +1,23 @@
+{
+    "@context":   "https://open.charging.cloud/contexts/publicKey+json",
+    "subject": {
+        "EVSEId":     "DE*CPI*74778874*1"
+    },
+    "algorithm":  "secp256r1",
+    "value":      "0484f680d53c41c45cf23fdc4dfe2334329c6f2f0a1b0f760bba1b51665d04f02b454cd0f4896c6a76f2fe2f7d7301c14b1831dee744a32ee5fcc9733f0ad10ca8",
+    "signatures": [
+        {
+            "@context":     "https://open.charging.cloud/contexts/signature+json",
+            "timestamp":    "2020-06-21T07:59:07.456Z",
+            "issuer":       "Open Charging Cloud - Energy Metering Public Key Certification #1",
+            "notBefore":    "2019-11-04T16:47:01Z",
+            "notAfter":     "2029-03-12T13:54:12Z",
+            "algorithm":    "secp521r1",
+            "publicKey":    "040182c740a82d0d9e34168e4ee9c81d535983e48383678de1011659182e5446ee71e30babe389d2c8a29498cde15b2d959ed8f63409896ca2bcdc05588e210323961e01ccb785a29b14cda193be82354091445d86ada3b5390632b19d38f57cf3d9c43f8dc3fcd02848788bedc0b17e0ca073b72c03344daf9cbc004fb1b6f5ce2fa0bd1e",
+            "operations": {
+                "signMeterValues":  true
+            },
+            "signature":    "30818702415fb497701ea9066eaa37d9a5217397fbced09499189764c1930e24b2261dc6b8bd0bf2f36a91b3f5a6bf655fdec69d03d3bb023f6a1177f6f48408004daaf9ebf3024201c4f894ae21d1ec2d29a491abd39826fb514dce390e5050e3181198d5a64e3c88a743c6c7907b7a0357312ac7d8580e6372a01fd58012a8479b064b1c4257ec42a6"
+        }
+    ]
+}

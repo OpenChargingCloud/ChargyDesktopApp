@@ -1,0 +1,13 @@
+{
+ "outlet": 2,
+ "session_id": 55,
+ "station_mac": "0024b1000002e300",
+ "driver_info": "b2dd852e99433cab70ccd45dad5aff55",
+ "meter_serial": "240008S",
+ "meter_startreading": 74.6,
+ "meter_endreading": 86.6,
+ "total_energy": 12.0,
+ "energy_units": "kWh",
+ "start_time": 1581763758,
+ "end_time": 1581772802
+}

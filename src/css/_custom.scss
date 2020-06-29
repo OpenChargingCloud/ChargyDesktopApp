@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2018-2019 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2020 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -17,7 +17,7 @@
 
 body {
 
- //   #outerframe {
+    #app {
 
         background-color:   #ffffff;
 
@@ -25,44 +25,41 @@ body {
 
             #logo {
                 background-color:   #ffffff;
-                background-image:     url('../images/chargeIT-logo.jpg');
+                background-image:     url('../images/ChargePoint_logo_HEX.png');
             }
 
             #windowButtons {
                 button:hover {
-                    color:              #b7b7b7;
+                    color:          #b7b7b7;
                 }
             }
 
         }
-        
+
         #verifyframe {
 
             #leftbar {
                 #input {
 
-                    background-color: #f1f1f1;
+                    background-color:   #f1f1f1;
 
                     #inputInfos {
                         #buttonsDiv {
 
                             button {
 
-                                color:      #8d420e;
-                                background:   linear-gradient(to right, rgb(236,96,57) 0%,rgb(247,164,36) 100%);
-                                // font-size:    1.5vw;
-                                // width:        12vw;
-                                // height:       12vw;
+                                color:              #8d420e;
+                                background:         linear-gradient(to right, rgb(236,96,57) 0%,rgb(247,164,36) 100%);
 
                                 i {
-                                    font-size:  120%;
+                                    font-size:          120%;
                                 }
 
                             }
-                
+
                             button:hover {
-                                color:      #fff2ee;
-                                background:   linear-gradient(to right, rgb(239, 136, 107) 0%,rgb(240, 182, 93) 100%);
+                                color:              #fff2ee;
+                                background:         linear-gradient(to right, rgb(239, 136, 107) 0%,rgb(240, 182, 93) 100%);
                             }
 
                         }
@@ -70,14 +67,15 @@ body {
 
                     #chargingSessionReport {
                         #chargingSessions {
+
                             .chargingSessions {
-
-                                background-color: #dbdbdb;
-
+                                background-color:   #dbdbdb;
                             }
+
                             .activated {
-                                background-color: #c4c4c4;
+                                background-color:   #c4c4c4;
                             }
+
                         }
                     }
 
@@ -89,7 +87,7 @@ body {
                 background-color: #f1f1f1;
                 // width:              calc(50% - 15px);
                 // border-radius:      8px 8px 8px 8px;
-                // height:             calc(100% - 15px);                
+                // height:             calc(100% - 15px);
 
                 #feedback {
 
@@ -107,6 +105,6 @@ body {
 
         }
 
-  //  }
+    }
 
 }

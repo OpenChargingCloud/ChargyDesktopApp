@@ -37,6 +37,6 @@
     },
     "exclude": [ "node_modules" ],
     "files": [
-        "src/js/chargy.ts"
+        "src/js/chargyApp.ts"
     ]
   }
