@@ -29,4 +29,4 @@ The development of version [v1.3](https://github.com/OpenChargingCloud/ChargyDes
 
 The Chargy Transparency Software is one of the winners of the [1. Thuringia's Open-Source Prize](https://www.it-leistungsschau.de/programm/TOSP2019/) </a> in March 2019. This prize was awarded by [Wolfgang Tiefensee](https://de.wikipedia.org/wiki/Wolfgang_Tiefensee), [Thuringia’s Secretary of Commerce](https://www.thueringen.de/th6/tmwwdg/), in conjunction with the board of directors of the IT industry network [ITNet Thuringia](https://www.itnet-th.de).
 
-![](src/images/TMWWDG.svg | width=300)
+<img src="src/images/TMWWDG.svg" width="300"> <img src="src/images/ITnet_Thueringen_small.png" height="60">
