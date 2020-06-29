@@ -207,6 +207,7 @@ class ChargyApp {
             (this.openSourceLibsDiv.querySelector("#fileType")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["file-type"]?.              replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#asn1JS")                 as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["asn1.js"]?.                replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#base32Decode")           as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["base32-decode"]?.          replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#safeStableStringify")    as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["safe-stable-stringify"]?.  replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#leafletJS")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet"]?.                replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#leafletAwesomeMarkers")  as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet.awesome-markers"]?.replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#chartJS")                as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["chart.js"]?.               replace(/[^0-9\.]/g, "");
@@ -276,8 +277,13 @@ class ChargyApp {
 
                 if ((newIssueForm.querySelector("#includeCTR") as HTMLSelectElement).value == "yes")
                 {
-                    let stringify = require('safe-stable-stringify');
-                    data["chargeTransparencyRecord"] = stringify(this.chargy.currentCTR);
+                    try
+                    {
+                        let stringify = require('safe-stable-stringify');
+                        data["chargeTransparencyRecord"] = stringify(this.chargy.currentCTR);
+                    }
+                    catch (exception)
+                    { }
                 }
 
                 data["name"]                       = (newIssueForm.querySelector("#issueName")                 as HTMLInputElement).value;
@@ -291,7 +297,7 @@ class ChargyApp {
                 let sendIssue = new XMLHttpRequest();
 
                 sendIssue.open("ADD",
-                               issueURL ?? "https://charging.cloud/chargy/issues",
+                               issueURL ?? "https://open.charging.cloud/chargy/issues",
                                true);
                 sendIssue.setRequestHeader('Content-type', 'application/json');
 

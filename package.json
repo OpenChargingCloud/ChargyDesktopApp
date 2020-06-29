@@ -49,7 +49,8 @@
     "file-type": "^14.6.0",
     "leaflet": "^1.6.0",
     "leaflet.awesome-markers": "^2.0.5",
-    "moment": "^2.26.0"
+    "moment": "^2.26.0",
+    "safe-stable-stringify": "^1.1.1"
   },
   "build": {
     "appId": "cloud.charging.chargeit.chargy.desktop",
