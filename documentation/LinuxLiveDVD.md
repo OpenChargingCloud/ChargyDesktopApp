@@ -6,11 +6,11 @@ This documentation is based on the following HowTo ["How to customize the Ubuntu
 
 ### Preparing the Linux Live ISO Image
 
-We use [Ubuntu 19.04 (amd64)](http://releases.ubuntu.com/19.04/ubuntu-19.04-desktop-amd64.iso) as the base for our ISO image. We expect this ChargyDesktopApp git repository located at *../ChargyDesktopApp*.
+We use [Ubuntu 20.04 (amd64)](https://releases.ubuntu.com/20.04/ubuntu-20.04-desktop-amd64.iso) as the base for our ISO image. We expect this ChargyDesktopApp git repository located at *../ChargyDesktopApp*.
 
 ```
 git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
-wget http://releases.ubuntu.com/19.04/ubuntu-19.04-desktop-amd64.iso
+wget http://releases.ubuntu.com/20.04/ubuntu-20.04-desktop-amd64.iso
 
 mkdir ChargyLive
 cd ChargyLive
@@ -41,7 +41,7 @@ sudo cp /etc/resolv.conf new/etc/
 sudo mount -t proc -o bind /proc new/proc
 sudo mount -o bind /dev/pts new/dev/pts
 
-sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_1.0.0_amd64.deb new/opt/
+sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_1.2.0_amd64.deb new/opt/
 ```
 
 ### Change root into the new Linux system and update all software packages
@@ -77,7 +77,7 @@ echo "yes" >> /etc/skel/.config/gnome-initial-setup-done
 ### Install Chargy Transparency Software
 Install Chargy and make it easily accessible from the Desktop and via AutoStart.
 ```
-apt install -y /opt/chargytransparenzsoftware_1.0.0_amd64.deb
+apt install -y /opt/chargytransparenzsoftware_1.2.0_amd64.deb
 
 # If the Chargy application icon is broken, try the following work-around
 sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\/build\/chargy_icon.png/g' /usr/share/applications/chargytransparenzsoftware.desktop 
@@ -128,7 +128,7 @@ sed -i 's/#ReserveVT=6/ReserveVT=0/g' /etc/systemd/logind.conf
 The following applications are not required for runnung Chargy and therefore can safely be removed.
 ```
 apt purge -y libreoffice-common thunderbird aisleriot gnome-mahjongg gnome-mines gnome-sudoku libgnome-games-support-common
-apt purge -y ubuntu-web-launchers gdb gdbserver gparted simple-scan sane-utils bolt bluez bluez-cups bluez-obexd transmission-common deja-dup cheese remmina remmina-common totem totem-common rhythmbox rhythmbox-data shotwell shotwell-common gnome-todo gnome-todo-common libgnome-todo
+apt purge -y gdb gdbserver gparted simple-scan sane-utils bolt bluez bluez-cups bluez-obexd transmission-common deja-dup cheese remmina remmina-common totem totem-common rhythmbox rhythmbox-data shotwell shotwell-common gnome-todo gnome-todo-common libgnome-todo
 # Remove Ubuntu Installer
 apt purge -y ubiquity ubiquity-casper ubiquity-slideshow-ubuntu ubiquity-ubuntu-artwork
 
@@ -172,7 +172,7 @@ rmdir new
 ### Create ISO image
 ```
 sudo genisoimage \
-    -o "Chargy Transparenzsoftware Live v1.0.0.iso" \
+    -o "Chargy Transparenzsoftware Live v1.2.0.iso" \
     -b isolinux/isolinux.bin \
     -c isolinux/boot.cat \
     -no-emul-boot \
