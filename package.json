@@ -72,11 +72,11 @@
       "target": [
         "nsis"
       ],
-      "icon": "src/icons/chargepoint2.ico"
+      "icon": "src/icons/chargepoint.ico"
     },
     "nsis": {
       "perMachine": true,
-      "installerIcon": "src/icons/chargepoint2.ico",
+      "installerIcon": "src/icons/chargepoint.ico",
       "deleteAppDataOnUninstall": true,
       "runAfterFinish": true
     },
@@ -84,10 +84,11 @@
       "target": [
         "deb"
       ],
-      "icon": "src/icons/chargepoint2.png"
+      "icon": "src/icons/chargepoint.png"
     },
     "mac": {
-      "category": "public.app-category.business",
+      "icon": "./src/icons/chargepoint.icns",
+      "category": "public.app-category.utilities",
       "type": "distribution"
     }
   }
