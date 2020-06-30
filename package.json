@@ -1,5 +1,6 @@
 {
   "name": "chargytransparenzsoftware",
+  "productName": "Chargy Tranzparenz Software",
   "version": "1.2.0",
   "description": "Chargy ist eine Transparenzsoftware für das Eichrecht in der Elektromobilität. Hiermit können Endkunden und E-Mobilitäts-Anbieter die Plausibilitäts und Validität von Ladevorgängen überprüfen.",
   "main": "src/main.js",
