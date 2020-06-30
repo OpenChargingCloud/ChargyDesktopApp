@@ -18,7 +18,7 @@ cd ChargyLive
 sudo modprobe loop
 sudo modprobe iso9660
 mkdir source
-sudo mount -t iso9660 ../ubuntu-19.04-desktop-amd64.iso source -o ro,loop
+sudo mount -t iso9660 ../ubuntu-20.04-desktop-amd64.iso source -o ro,loop
 mkdir ubuntu-livecd
 cp -a source/. ubuntu-livecd
 sudo chmod -R u+w ubuntu-livecd 
