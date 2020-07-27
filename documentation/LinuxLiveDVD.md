@@ -156,7 +156,11 @@ apt autoremove
 ```
 exit
 sudo umount new/proc
+sudo umount new/dev 
 sudo umount new/dev/pts
+sudo umount new/run 
+sudo umount new/sys 
+sudo umount new/tmp
 sudo rm new/etc/resolv.conf
 
 sudo chroot new dpkg-query -W --showformat='${Package} ${Version}\n' > ubuntu-livecd/casper/filesystem.manifest
