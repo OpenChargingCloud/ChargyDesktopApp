@@ -87,8 +87,11 @@ Install Chargy and make it easily accessible from the Desktop and via AutoStart.
 ```
 apt install -y /opt/chargytransparenzsoftware_1.2.0_amd64.deb
 
-# If the Chargy application icon is broken, try the following work-around
-sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\/build\/chargy_icon.png/g' /usr/share/applications/chargytransparenzsoftware.desktop 
+# If the Chargy application icon is broken, try the following work-around for chargeIT
+sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\ chargeIT\ Edition\/appIcons\/chargepoint.png/g'  /usr/share/applications/chargytransparenzsoftware.desktop
+
+# ...or the following work-around for chargepoint
+sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\ ChargePoint\ Edition\/appIcons\/chargepoint.png/g'  /usr/share/applications/chargytransparenzsoftware.desktop
 
 mkdir /etc/skel/Dokumente
 cp /opt/Chargy\ Transparenzsoftware/documentation/chargeIT-Testdatensatz-01.chargy /etc/skel/Dokumente/
