@@ -22,7 +22,8 @@ Please note, that you have to reinstall this software for every update.
 On Linux you can install Node.js via...
 ```
 sudo apt install git curl
-sudo curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+sudo curl -sL https://deb.nodesource.com/setup_14.x -o nodesource_setup.sh
+sudo bash nodesource_setup.sh
 sudo apt install -y nodejs
 ```
 
