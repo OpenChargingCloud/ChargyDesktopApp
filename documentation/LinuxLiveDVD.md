@@ -45,7 +45,7 @@ sudo mount --bind /sys new/sys
 sudo mount --bind /run new/run
 sudo mount -t proc -o bind /proc new/proc
 
- // strange requirement since 20.04! Otherwise disc full is reported!
+ // strange requirements since 20.04! Otherwise "No space left on device" might be reported during 'apt upgrade' or 'apt install'
 sudo mount --bind /var/lib/apt new/var/lib/apt
 sudo mount --bind /var/cache new/var/cache
 sudo mount --bind /var/tmp new/var/tmp
