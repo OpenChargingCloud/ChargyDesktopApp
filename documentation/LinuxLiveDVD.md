@@ -38,8 +38,17 @@ sudo umount old
 rmdir old
 
 sudo cp /etc/resolv.conf new/etc/
+sudo mount --bind /tmp new/tmp
+sudo mount --bind /dev new/dev
+sudo mount --bind /dev/pts new/dev/pts
+sudo mount --bind /sys new/sys
+sudo mount --bind /run new/run
 sudo mount -t proc -o bind /proc new/proc
-sudo mount -o bind /dev/pts new/dev/pts
+
+ // strange requirement since 20.04! Otherwise disc full is reported!
+sudo mount --bind /var/lib/apt new/var/lib/apt
+sudo mount --bind /var/cache new/var/cache
+sudo mount --bind /var/tmp new/var/tmp
 
 sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_1.2.0_amd64.deb new/opt/
 ```
