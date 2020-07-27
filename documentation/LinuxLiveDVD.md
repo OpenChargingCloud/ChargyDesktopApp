@@ -28,7 +28,7 @@ rmdir source
 mkdir old
 sudo mount -t squashfs -o loop,ro ubuntu-livecd/casper/filesystem.squashfs old 
 
-sudo dd if=/dev/zero of=ubuntu-fs.ext2 bs=1M count=7000
+sudo dd if=/dev/zero of=ubuntu-fs.ext2 bs=1M count=9000
 sudo mke2fs ubuntu-fs.ext2
 
 mkdir new
@@ -38,17 +38,16 @@ sudo umount old
 rmdir old
 
 sudo cp /etc/resolv.conf new/etc/
-sudo mount --bind /tmp new/tmp
 sudo mount --bind /dev new/dev
 sudo mount --bind /dev/pts new/dev/pts
-sudo mount --bind /sys new/sys
 sudo mount --bind /run new/run
-sudo mount -t proc -o bind /proc new/proc
+sudo mount -t sysfs -o bind /sys new/sys
+sudo mount -t proc  -o bind /proc new/proc
 
- // strange requirements since 20.04! Otherwise "No space left on device" might be reported during 'apt upgrade' or 'apt install'
-sudo mount --bind /var/lib/apt new/var/lib/apt
-sudo mount --bind /var/cache new/var/cache
+// the following _might_ be useful if errors occur...
+sudo mount --bind /tmp new/tmp
 sudo mount --bind /var/tmp new/var/tmp
+sudo mount --bind /var/cache new/var/cache
 
 sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_1.2.0_amd64.deb new/opt/
 ```
