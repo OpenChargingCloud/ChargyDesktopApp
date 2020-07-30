@@ -46,7 +46,7 @@
     "decompress-bzip2": "^4.0.0",
     "decompress-gz": "0.0.1",
     "electron-localshortcut": "^3.2.1",
-    "elliptic": "^6.5.2",
+    "elliptic": "^6.5.3",
     "file-type": "^14.6.0",
     "leaflet": "^1.6.0",
     "leaflet.awesome-markers": "^2.0.5",
