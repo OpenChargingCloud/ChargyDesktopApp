@@ -1,5 +1,7 @@
 # Security Policy
 
+The following document gives you an overview on the security policy of the Chargy Transparency Software.
+
 ## Supported Versions
 
 The following versions are actively supported for security updates
