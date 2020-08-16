@@ -178,7 +178,8 @@ class ChargeIT {
 
             //#endregion
 
-            if (signedMeterValues[0].signedMeterValue)
+            if (signedMeterValues[0].timestamp &&
+                signedMeterValues[0].meterInfo)
             {
 
                 let CTRArray = [];

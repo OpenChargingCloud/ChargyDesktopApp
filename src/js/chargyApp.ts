@@ -61,6 +61,7 @@ class ChargyApp {
     private ipcRenderer                                        = require('electron').ipcRenderer;
     private commandLineArguments:          Array<string>       = [];
     public  packageJson:                   any                 = {};
+    private httpPort:                      number              = 0;
 
     private currentAppInfos:               any                 = null;
     private currentVersionInfos:           any                 = null;
@@ -170,6 +171,7 @@ class ChargyApp {
         this.feedbackHotline           = feedbackHotline != undefined ? feedbackHotline : ["+491728930852",               "+49 172 8930852"];
         this.commandLineArguments      = this.ipcRenderer.sendSync('getCommandLineArguments');
         this.packageJson               = this.ipcRenderer.sendSync('getPackageJson');
+        this.httpPort                  = this.ipcRenderer.sendSync('getHTTPPort');
 
         this.elliptic                  = require('elliptic');
         this.moment                    = require('moment');
@@ -886,29 +888,117 @@ class ChargyApp {
 
         //#region Start HTTP API
 
-        const portTxt = this.commandLineArguments.find(argument => argument.startsWith("--http"))?.replace("--http=", "");
-
-        if (portTxt != undefined)
+        if (this.httpPort !== 0)
         {
-
-            let port = 8080;
-
-            try
-            {
-                port = parseInt(portTxt);
-            }
-            catch
-            { }
-
-            console.log("Starting Chargy HTTP API on port " + port);
 
             var http       = require('http');
             var chargyHTTP = new Chargy(require('elliptic'), require('moment'));
 
-            http.createServer(function (req:any, res:any ) {
-                res.write('Hello World!');
-                res.end();
-            }).listen(port);
+            try
+            {
+
+                http.createServer(function (req:any, res:any ) {
+
+                    let binaryData:Array<Buffer> = [];
+
+                    req.on('data', (binaryDataChunk: any) => {
+                        binaryData.push(binaryDataChunk)
+                    })
+
+                    req.on('end', async () => {
+
+                        let result = await chargyHTTP.detectAndConvertContentFormat([{
+                            name: "http request",
+                            data: Buffer.concat(binaryData)
+                        }]);
+
+                        if (IsAChargeTransparencyRecord(result))
+                        {
+
+                            res.writeHead(200, {'Content-Type': 'application/json'});
+
+                            let results = result.chargingSessions?.map(session => session.verificationResult);
+
+                            if (results != undefined)
+                            {
+
+                                let status = new Array<string>();
+
+                                for (let singleResult of results)
+                                {
+
+                                    //#region Convert status enum to text
+
+                                    switch (singleResult?.status)
+                                    {
+
+                                        case 0:
+                                            status.push("Unknown session format");
+                                            break;
+
+                                        case 1:
+                                            status.push("Invalid session format");
+                                            break;
+
+                                        case 2:
+                                            status.push("Public key not found");
+                                            break;
+
+                                        case 3:
+                                            status.push("Invalid public key");
+                                            break;
+
+                                        case 4:
+                                            status.push("Invalid signature");
+                                            break;
+
+                                        case 5:
+                                            status.push("Valid signature");
+                                            break;
+
+                                        case 6:
+                                            status.push("Inconsistent timestamps");
+                                            break;
+
+                                        case 7:
+                                            status.push("At least two measurements required");
+                                            break;
+
+                                        default:
+                                            status.push("Unknown session format");
+                                            break;
+
+                                    }
+
+                                    //#endregion
+
+                                }
+
+                                res.write(JSON.stringify(status.length > 1 ? status : status[0]));
+
+                            }
+
+                            else
+                                res.write(JSON.stringify({ "message": "Invalid transparency format!" }));
+
+                        }
+                        else
+                        {
+                            res.writeHead(400, {'Content-Type': 'application/json'});
+                            res.write(JSON.stringify({ "message": "Invalid transparency format!" }));
+                        }
+
+                        res.end();
+
+                    })
+
+                }).listen(this.httpPort);
+
+            }
+            catch (Exception)
+            {
+                console.log("Could not start HTTP API: " + Exception);
+            }
 
         }
 

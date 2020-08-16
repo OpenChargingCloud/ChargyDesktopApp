@@ -17,7 +17,8 @@
                 "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
             },
             "program": "${workspaceRoot}/main.js",
-            "outputCapture": "std"
+            "outputCapture": "std",
+            "preLaunchTask": "TypeScript and SASS compile"
         },
         {
             "type": "node",
@@ -54,7 +55,8 @@
                 "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
             },
             "program": "${workspaceRoot}/main.js",
-            "outputCapture": "std"
+            "outputCapture": "std",
+            "preLaunchTask": "TypeScript and SASS compile"
         },
         {
             "name": "Electron: Renderer",

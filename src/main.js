@@ -11,6 +11,7 @@ let applicationFileName   = "";
 let appAsarFileName       = "";
 let commandLineArguments  = [];
 let fileToOpen            = "";
+let httpPort              = 0;
 
 
 // Run in development mode via run.sh
@@ -190,6 +191,33 @@ app.whenReady().then(() => {
         app.quit();
     }
 
+    if (app.commandLine.hasSwitch('http'))
+    {
+
+        let port = app.commandLine.getSwitchValue("http");
+
+        if (port !== "")
+        {
+
+            let parsedPort = parseInt(port);
+
+            if (isNaN(parsedPort))
+            {
+                console.log("Invalid TCP port for chargy HTTP API: " + port);
+                app.exit(1); // Will not exit at once!
+            }
+
+            httpPort = parsedPort;
+
+        }
+        else
+            httpPort = 8080;
+
+        if (!isNaN(httpPort))
+            console.log("Starting Chargy HTTP API on port " + httpPort);
+
+    }
+
     createWindow();
 
 });
@@ -228,6 +256,10 @@ app.on('open-file', (event, path) => {
 
 ipcMain.on('isDebug', (event) => {
   event.returnValue = app.commandLine.hasSwitch('debug');
+});
+
+ipcMain.on('getHTTPPort', (event) => {
+  event.returnValue = httpPort;
 });
 
 ipcMain.on('noGUI', (event) => {
@@ -294,6 +326,7 @@ ipcMain.on('setVerificationResult', (event, result) => {
 
                 case 0:
                     status = "Unknown session format";
+                    break;
 
                 case 1:
                     status = "Invalid session format";
