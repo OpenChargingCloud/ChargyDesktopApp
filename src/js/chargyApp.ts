@@ -892,34 +892,37 @@ class ChargyApp {
         {
 
             const http            = require('http');
+            const url             = require('url');
             const chargyHTTP      = new Chargy(require('elliptic'), require('moment'));
             const maxContentSize  = 20*1024*1024;
 
             try
             {
 
-                http.createServer(function (req:any, res:any ) {
+                http.createServer(function (request:any, response:any ) {
 
-                    if (req.url === "/verify")
+                    const requestData = url.parse(request.url, true);
+
+                    if (requestData.pathname === "/verify" || requestData.pathname === "/convert")
                     {
 
-                        if (req.headers["content-length"] != undefined)
+                        if (request.headers["content-length"] != undefined)
                         {
 
-                            const contentLength = parseInt(req.headers["content-length"]);
+                            const contentLength = parseInt(request.headers["content-length"]);
 
                             if (isNaN(contentLength))
                             {
-                                res.writeHead(400);
-                                res.write("The size of the transmitted transparency record is invalid!");
-                                res.end();
+                                response.writeHead(400);
+                                response.write("The size of the transmitted transparency record is invalid!");
+                                response.end();
                             }
 
                             else if (contentLength > maxContentSize)
                             {
-                                res.writeHead(400);
-                                res.write("The size of the transmitted transparency record is too large!");
-                                res.end();
+                                response.writeHead(400);
+                                response.write("The size of the transmitted transparency record is too large!");
+                                response.end();
                             }
 
                             else
@@ -928,15 +931,15 @@ class ChargyApp {
                                 let binaryData:Array<Buffer>  = [];
                                 let contentSize               = 0;
 
-                                req.on('data', (binaryDataChunk: any) => {
+                                request.on('data', (binaryDataChunk: any) => {
 
                                     contentSize += binaryDataChunk.length;
 
                                     if (contentSize > maxContentSize)
                                     {
-                                        res.writeHead(400, {'Content-Type': 'text/plain'});
-                                        res.write("The size of the transmitted transparency record is too large!");
-                                        res.end();
+                                        response.writeHead(400, {'Content-Type': 'text/plain'});
+                                        response.write("The size of the transmitted transparency record is too large!");
+                                        response.end();
                                     }
 
                                     else
@@ -944,7 +947,7 @@ class ChargyApp {
 
                                 })
 
-                                req.on('end', async () => {
+                                request.on('end', async () => {
 
                                     let result = await chargyHTTP.detectAndConvertContentFormat([{
                                         name: "http request",
@@ -954,7 +957,7 @@ class ChargyApp {
                                     if (IsAChargeTransparencyRecord(result))
                                     {
 
-                                        res.writeHead(200, {'Content-Type': 'application/json'});
+                                        response.writeHead(200, {'Content-Type': 'application/json'});
 
                                         let results = result.chargingSessions?.map(session => session.verificationResult);
 
@@ -963,7 +966,7 @@ class ChargyApp {
 
                                             let status = new Array<string>();
 
-                                            for (let singleResult of results)
+                                            for (const singleResult of results)
                                             {
 
                                                 //#region Convert status enum to text
@@ -1013,21 +1016,33 @@ class ChargyApp {
 
                                             }
 
-                                            res.write(JSON.stringify(status.length > 1 ? status : status[0]));
+                                            if (requestData.pathname === "/verify")
+                                                response.write(JSON.stringify(status.length > 1 ? status : status[0]));
+
+                                            else if (requestData.pathname === "/convert")
+                                            {
+
+                                                const stringify = require('safe-stable-stringify');
+                                                
+                                                response.write(stringify(chargyHTTP.currentCTR,
+                                                                         null,
+                                                                         requestData.query.pretty !== undefined ? 2 : 0));
+
+                                            }
 
                                         }
 
                                         else
-                                            res.write(JSON.stringify({ "message": "Invalid transparency format!" }));
+                                            response.write(JSON.stringify({ "message": "Invalid transparency format!" }));
 
                                     }
                                     else
                                     {
-                                        res.writeHead(400, {'Content-Type': 'application/json'});
-                                        res.write(JSON.stringify({ "message": "Invalid transparency format!" }));
+                                        response.writeHead(400, {'Content-Type': 'application/json'});
+                                        response.write(JSON.stringify({ "message": "Invalid transparency format!" }));
                                     }
 
-                                    res.end();
+                                    response.end();
 
                                 })
 
@@ -1036,18 +1051,18 @@ class ChargyApp {
                         }
                         else
                         {
-                            res.writeHead(400, {'Content-Type': 'text/plain'});
-                            res.write("Please upload any kind of transparency record(s) for verification.");
-                            res.end();
+                            response.writeHead(400, {'Content-Type': 'text/plain'});
+                            response.write("Please upload any kind of transparency record(s) for verification.");
+                            response.end();
                         }
 
                     }
 
                     else
                     {
-                        res.writeHead(400, {'Content-Type': 'text/plain'});
-                        res.write("Please use POST /verify for the verification of transparency records.");
-                        res.end();
+                        response.writeHead(400, {'Content-Type': 'text/plain'});
+                        response.write("Please use POST /verify for the verification of transparency records.");
+                        response.end();
                     }
 
                 }).listen(this.httpPort);
