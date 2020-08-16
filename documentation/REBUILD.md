@@ -16,34 +16,34 @@ $ npm install electron-builder@latest --save-dev
 + electron-builder@20.44.4
 
 $ npm install typescript@latest --save-dev
-+ typescript@3.7.2
++ typescript@3.9.7
 
 $ npm install sass@latest --save-dev
-+ sass@1.23.6
++ sass@1.26.10
 
 $ npm install @types/node@latest --save-dev
-+ @types/node@12.12.8
++ @types/node@14.0.27
 
 $ npm install elliptic@latest
-+ elliptic@6.5.1
++ elliptic@6.5.3
 
 $ npm install @types/elliptic@latest --save-dev
-+ @types/elliptic@6.4.10
++ @types/elliptic@6.4.12
 
 $ npm install asn1.js@latest
-+ asn1.js@5.2.0
++ asn1.js@5.4.1
 
 $ npm install moment@latest
-+ moment@2.24.0
++ moment@2.27.0
 
 $ npm install base32-decode
 + base32-decode@1.0.0
 
 $ npm install file-type@latest
-+ file-type@12.4.0
++ file-type@14.7.1
 
 $ npm install decompress@latest
-+ decompress@4.2.0
++ decompress@4.2.1
 
 $ npm install @types/decompress --save-dev
 + @types/decompress@4.2.3
@@ -61,7 +61,7 @@ $ npm install chart.js@latest
 + chart.js@2.9.3
 
 $ npm install @types/chart.js@latest --save-dev
-+ @types/chart.js@2.9.0
++ @types/chart.js@2.9.23
 
 $ npm install electron-localshortcut --save
 + electron-localshortcut@3.2.1
@@ -70,7 +70,7 @@ $ npm install leaflet@latest --save
 + leaflet@1.6.0
 
 $ npm install @types/leaflet@latest --save-dev
-+ @types/leaflet@1.5.12
++ @types/leaflet@1.5.17
 
 $ npm install leaflet.awesome-markers@latest --save
 + leaflet.awesome-markers@2.0.5

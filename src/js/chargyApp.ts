@@ -62,6 +62,7 @@ class ChargyApp {
     private commandLineArguments:          Array<string>       = [];
     public  packageJson:                   any                 = {};
     private httpPort:                      number              = 0;
+    private httpHost:                      string              = "localhost";
 
     private currentAppInfos:               any                 = null;
     private currentVersionInfos:           any                 = null;
@@ -171,7 +172,8 @@ class ChargyApp {
         this.feedbackHotline           = feedbackHotline != undefined ? feedbackHotline : ["+491728930852",               "+49 172 8930852"];
         this.commandLineArguments      = this.ipcRenderer.sendSync('getCommandLineArguments');
         this.packageJson               = this.ipcRenderer.sendSync('getPackageJson');
-        this.httpPort                  = this.ipcRenderer.sendSync('getHTTPPort');
+        this.httpHost                  = this.ipcRenderer.sendSync('getHTTPConfig')[0];
+        this.httpPort                  = this.ipcRenderer.sendSync('getHTTPConfig')[1];
 
         this.elliptic                  = require('elliptic');
         this.moment                    = require('moment');
@@ -1017,13 +1019,15 @@ class ChargyApp {
                                             }
 
                                             if (requestData.pathname === "/verify")
-                                                response.write(JSON.stringify(status.length > 1 ? status : status[0]));
+                                                response.write(JSON.stringify(status.length > 1 ? status : status[0],
+                                                                              null,
+                                                                              requestData.query.pretty !== undefined ? 2 : 0));
 
                                             else if (requestData.pathname === "/convert")
                                             {
 
                                                 const stringify = require('safe-stable-stringify');
-                                                
+
                                                 response.write(stringify(chargyHTTP.currentCTR,
                                                                          null,
                                                                          requestData.query.pretty !== undefined ? 2 : 0));
@@ -1065,7 +1069,8 @@ class ChargyApp {
                         response.end();
                     }
 
-                }).listen(this.httpPort);
+                }).listen(this.httpPort,
+                          this.httpHost);
 
             }
             catch (Exception)

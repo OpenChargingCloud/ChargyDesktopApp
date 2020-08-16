@@ -1,6 +1,6 @@
 # Chargy Transparency HTTP API
 
-Chargy comes with an optional HTTP API to simplify the interaction with other software on your own computer or within a computer network.
+Since version 1.3.1 the Chargy transparency software comes with an optional HTTP API. The intention of the HTTP API is to simplify the interaction betweem Chargy and other third-party software on your own computer or within your (local) computer network.
 
 ## Starting the HTTP API
 
@@ -9,10 +9,31 @@ The HTTP API can be started by adding the "--http" command line parameter when s
 ./run.sh --http
 ```
 
-Chargy will start the HTTP API on port 8080. If you want to attach it to another TCP/IP port then you can use the following command line parameter.
+Chargy will start the HTTP API on localhost (IPv4 and IPv6) port 8080. If you want to attach it to another TCP/IP port then you can use the following command line parameter.
 ```
 ./run.sh --http=8081
 ```
+
+If you want to listen on a **specified IPv4 address** you can use the following command line parameter values:
+```
+./run.sh --http=10.0.0.1:8081
+```
+
+If you want to listen on a **specified IPv6 address** (here IPv6 localhost) you can use the following command line parameter values:
+```
+./run.sh --http=[::1]:8081
+```
+
+If you want Chargy to listen on **any IPv4 address** you can use the following command line parameter values:
+```
+./run.sh --http=0.0.0.0:8081
+```
+
+If you want Chargy to listen on **any IPv4 and IPv6 address** you can use the following command line parameter values:
+```
+./run.sh --http=:8081
+```
+
 
 ## Verification of transparency records
 

@@ -30,7 +30,7 @@
             "runtimeArgs": [
                 "--remote-debugging-port=9223",
                 ".",
-                "--http=3443",
+                "--http=[::]:3443",
                 "--debug"
             ],
             "windows": {

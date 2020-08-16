@@ -194,27 +194,39 @@ app.whenReady().then(() => {
     if (app.commandLine.hasSwitch('http'))
     {
 
-        let port = app.commandLine.getSwitchValue("http");
+        let httpConfig = app.commandLine.getSwitchValue("http");
 
-        if (port !== "")
+        if (httpConfig !== "")
         {
 
-            let parsedPort = parseInt(port);
+            const lastIndex = httpConfig.lastIndexOf(":");
 
-            if (isNaN(parsedPort))
+            if (lastIndex > -1)
             {
-                console.log("Invalid TCP port for chargy HTTP API: " + port);
+                httpHost =          httpConfig.substring(0, lastIndex);
+                httpPort = parseInt(httpConfig.substring(lastIndex + 1));
+            }
+            else
+            {
+                httpHost = "localhost";
+                httpPort = parseInt(httpConfig);
+            }
+
+            if (isNaN(httpPort))
+            {
+                console.log("Invalid TCP port for chargy HTTP API: " + httpConfig);
                 app.exit(1); // Will not exit at once!
             }
 
-            httpPort = parsedPort;
-
         }
         else
+        {
+            httpHost = "localhost";
             httpPort = 8080;
+        }
 
         if (!isNaN(httpPort))
-            console.log("Starting Chargy HTTP API on port " + httpPort);
+            console.log("Starting Chargy HTTP API on " + httpHost + " port " + httpPort);
 
     }
 
@@ -258,8 +270,8 @@ ipcMain.on('isDebug', (event) => {
   event.returnValue = app.commandLine.hasSwitch('debug');
 });
 
-ipcMain.on('getHTTPPort', (event) => {
-  event.returnValue = httpPort;
+ipcMain.on('getHTTPConfig', (event) => {
+  event.returnValue = [ httpHost, httpPort ];
 });
 
 ipcMain.on('noGUI', (event) => {
