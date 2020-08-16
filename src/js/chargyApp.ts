@@ -884,6 +884,36 @@ class ChargyApp {
 
         //#endregion
 
+        //#region Start HTTP API
+
+        const portTxt = this.commandLineArguments.find(argument => argument.startsWith("--http"))?.replace("--http=", "");
+
+        if (portTxt != undefined)
+        {
+
+            let port = 8080;
+
+            try
+            {
+                port = parseInt(portTxt);
+            }
+            catch
+            { }
+
+            console.log("Starting Chargy HTTP API on port " + port);
+
+            var http       = require('http');
+            var chargyHTTP = new Chargy(require('elliptic'), require('moment'));
+
+            http.createServer(function (req:any, res:any ) {
+                res.write('Hello World!');
+                res.end();
+            }).listen(port);
+
+        }
+
+        //#endregion
+
     }
 
 
