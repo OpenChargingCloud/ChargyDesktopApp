@@ -891,106 +891,164 @@ class ChargyApp {
         if (this.httpPort !== 0)
         {
 
-            var http       = require('http');
-            var chargyHTTP = new Chargy(require('elliptic'), require('moment'));
+            const http            = require('http');
+            const chargyHTTP      = new Chargy(require('elliptic'), require('moment'));
+            const maxContentSize  = 20*1024*1024;
 
             try
             {
 
                 http.createServer(function (req:any, res:any ) {
 
-                    let binaryData:Array<Buffer> = [];
+                    if (req.url === "/verify")
+                    {
 
-                    req.on('data', (binaryDataChunk: any) => {
-                        binaryData.push(binaryDataChunk)
-                    })
-
-                    req.on('end', async () => {
-
-                        let result = await chargyHTTP.detectAndConvertContentFormat([{
-                            name: "http request",
-                            data: Buffer.concat(binaryData)
-                        }]);
-
-                        if (IsAChargeTransparencyRecord(result))
+                        if (req.headers["content-length"] != undefined)
                         {
 
-                            res.writeHead(200, {'Content-Type': 'application/json'});
+                            const contentLength = parseInt(req.headers["content-length"]);
 
-                            let results = result.chargingSessions?.map(session => session.verificationResult);
-
-                            if (results != undefined)
+                            if (isNaN(contentLength))
                             {
+                                res.writeHead(400);
+                                res.write("The size of the transmitted transparency record is invalid!");
+                                res.end();
+                            }
 
-                                let status = new Array<string>();
-
-                                for (let singleResult of results)
-                                {
-
-                                    //#region Convert status enum to text
-
-                                    switch (singleResult?.status)
-                                    {
-
-                                        case 0:
-                                            status.push("Unknown session format");
-                                            break;
-
-                                        case 1:
-                                            status.push("Invalid session format");
-                                            break;
-
-                                        case 2:
-                                            status.push("Public key not found");
-                                            break;
-
-                                        case 3:
-                                            status.push("Invalid public key");
-                                            break;
-
-                                        case 4:
-                                            status.push("Invalid signature");
-                                            break;
-
-                                        case 5:
-                                            status.push("Valid signature");
-                                            break;
-
-                                        case 6:
-                                            status.push("Inconsistent timestamps");
-                                            break;
-
-                                        case 7:
-                                            status.push("At least two measurements required");
-                                            break;
-
-                                        default:
-                                            status.push("Unknown session format");
-                                            break;
-
-                                    }
-
-                                    //#endregion
-
-                                }
-
-                                res.write(JSON.stringify(status.length > 1 ? status : status[0]));
-
+                            else if (contentLength > maxContentSize)
+                            {
+                                res.writeHead(400);
+                                res.write("The size of the transmitted transparency record is too large!");
+                                res.end();
                             }
 
                             else
-                                res.write(JSON.stringify({ "message": "Invalid transparency format!" }));
+                            {
+
+                                let binaryData:Array<Buffer>  = [];
+                                let contentSize               = 0;
+
+                                req.on('data', (binaryDataChunk: any) => {
+
+                                    contentSize += binaryDataChunk.length;
+
+                                    if (contentSize > maxContentSize)
+                                    {
+                                        res.writeHead(400, {'Content-Type': 'text/plain'});
+                                        res.write("The size of the transmitted transparency record is too large!");
+                                        res.end();
+                                    }
+
+                                    else
+                                        binaryData.push(binaryDataChunk);
+
+                                })
+
+                                req.on('end', async () => {
+
+                                    let result = await chargyHTTP.detectAndConvertContentFormat([{
+                                        name: "http request",
+                                        data: Buffer.concat(binaryData)
+                                    }]);
+
+                                    if (IsAChargeTransparencyRecord(result))
+                                    {
+
+                                        res.writeHead(200, {'Content-Type': 'application/json'});
+
+                                        let results = result.chargingSessions?.map(session => session.verificationResult);
+
+                                        if (results != undefined)
+                                        {
+
+                                            let status = new Array<string>();
+
+                                            for (let singleResult of results)
+                                            {
+
+                                                //#region Convert status enum to text
+
+                                                switch (singleResult?.status)
+                                                {
+
+                                                    case 0:
+                                                        status.push("Unknown session format");
+                                                        break;
+
+                                                    case 1:
+                                                        status.push("Invalid session format");
+                                                        break;
+
+                                                    case 2:
+                                                        status.push("Public key not found");
+                                                        break;
+
+                                                    case 3:
+                                                        status.push("Invalid public key");
+                                                        break;
+
+                                                    case 4:
+                                                        status.push("Invalid signature");
+                                                        break;
+
+                                                    case 5:
+                                                        status.push("Valid signature");
+                                                        break;
+
+                                                    case 6:
+                                                        status.push("Inconsistent timestamps");
+                                                        break;
+
+                                                    case 7:
+                                                        status.push("At least two measurements required");
+                                                        break;
+
+                                                    default:
+                                                        status.push("Unknown session format");
+                                                        break;
+
+                                                }
+
+                                                //#endregion
+
+                                            }
+
+                                            res.write(JSON.stringify(status.length > 1 ? status : status[0]));
+
+                                        }
+
+                                        else
+                                            res.write(JSON.stringify({ "message": "Invalid transparency format!" }));
+
+                                    }
+                                    else
+                                    {
+                                        res.writeHead(400, {'Content-Type': 'application/json'});
+                                        res.write(JSON.stringify({ "message": "Invalid transparency format!" }));
+                                    }
+
+                                    res.end();
+
+                                })
+
+                            }
 
                         }
                         else
                         {
-                            res.writeHead(400, {'Content-Type': 'application/json'});
-                            res.write(JSON.stringify({ "message": "Invalid transparency format!" }));
+                            res.writeHead(400, {'Content-Type': 'text/plain'});
+                            res.write("Please upload any kind of transparency record(s) for verification.");
+                            res.end();
                         }
 
-                        res.end();
+                    }
 
-                    })
+                    else
+                    {
+                        res.writeHead(400, {'Content-Type': 'text/plain'});
+                        res.write("Please use POST /verify for the verification of transparency records.");
+                        res.end();
+                    }
 
                 }).listen(this.httpPort);
 
