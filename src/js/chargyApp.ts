@@ -1065,7 +1065,7 @@ class ChargyApp {
                     else
                     {
                         response.writeHead(400, {'Content-Type': 'text/plain'});
-                        response.write("Please use POST /verify for the verification of transparency records.");
+                        response.write("Please use POST /verify or /convert for the verification or conversion of transparency records.");
                         response.end();
                     }
 
