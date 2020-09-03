@@ -11,6 +11,7 @@ let applicationFileName   = "";
 let appAsarFileName       = "";
 let commandLineArguments  = [];
 let fileToOpen            = "";
+let httpHost              = "";
 let httpPort              = 0;
 
 
