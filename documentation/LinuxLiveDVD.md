@@ -6,11 +6,11 @@ This documentation is based on the following HowTo ["How to customize the Ubuntu
 
 ### Preparing the Linux Live ISO Image
 
-We use [Ubuntu 19.04 (amd64)](http://releases.ubuntu.com/19.04/ubuntu-19.04-desktop-amd64.iso) as the base for our ISO image. We expect this ChargyDesktopApp git repository located at *../ChargyDesktopApp*.
+We use [Ubuntu 20.04 (amd64)](https://releases.ubuntu.com/20.04/ubuntu-20.04-desktop-amd64.iso) as the base for our ISO image. We expect this ChargyDesktopApp git repository located at *../ChargyDesktopApp*.
 
 ```
 git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
-wget http://releases.ubuntu.com/19.04/ubuntu-19.04-desktop-amd64.iso
+wget http://releases.ubuntu.com/20.04/ubuntu-20.04-desktop-amd64.iso
 
 mkdir ChargyLive
 cd ChargyLive
@@ -18,7 +18,7 @@ cd ChargyLive
 sudo modprobe loop
 sudo modprobe iso9660
 mkdir source
-sudo mount -t iso9660 ../ubuntu-19.04-desktop-amd64.iso source -o ro,loop
+sudo mount -t iso9660 ../ubuntu-20.04-desktop-amd64.iso source -o ro,loop
 mkdir ubuntu-livecd
 cp -a source/. ubuntu-livecd
 sudo chmod -R u+w ubuntu-livecd 
@@ -28,7 +28,7 @@ rmdir source
 mkdir old
 sudo mount -t squashfs -o loop,ro ubuntu-livecd/casper/filesystem.squashfs old 
 
-sudo dd if=/dev/zero of=ubuntu-fs.ext2 bs=1M count=7000
+sudo dd if=/dev/zero of=ubuntu-fs.ext2 bs=1M count=9000
 sudo mke2fs ubuntu-fs.ext2
 
 mkdir new
@@ -38,10 +38,18 @@ sudo umount old
 rmdir old
 
 sudo cp /etc/resolv.conf new/etc/
-sudo mount -t proc -o bind /proc new/proc
-sudo mount -o bind /dev/pts new/dev/pts
+sudo mount --bind /dev new/dev
+sudo mount --bind /dev/pts new/dev/pts
+sudo mount --bind /run new/run
+sudo mount -t sysfs -o bind /sys new/sys
+sudo mount -t proc  -o bind /proc new/proc
 
-sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_1.0.0_amd64.deb new/opt/
+// the following _might_ be useful if errors occur...
+sudo mount --bind /tmp new/tmp
+sudo mount --bind /var/tmp new/var/tmp
+sudo mount --bind /var/cache new/var/cache
+
+sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_1.2.0_amd64.deb new/opt/
 ```
 
 ### Change root into the new Linux system and update all software packages
@@ -77,10 +85,13 @@ echo "yes" >> /etc/skel/.config/gnome-initial-setup-done
 ### Install Chargy Transparency Software
 Install Chargy and make it easily accessible from the Desktop and via AutoStart.
 ```
-apt install -y /opt/chargytransparenzsoftware_1.0.0_amd64.deb
+apt install -y /opt/chargytransparenzsoftware_1.2.0_amd64.deb
 
-# If the Chargy application icon is broken, try the following work-around
-sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\/build\/chargy_icon.png/g' /usr/share/applications/chargytransparenzsoftware.desktop 
+# If the Chargy application icon is broken, try the following work-around for chargeIT
+sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\ chargeIT\ Edition\/appIcons\/chargepoint.png/g'  /usr/share/applications/chargytransparenzsoftware.desktop
+
+# ...or the following work-around for chargepoint
+sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\ ChargePoint\ Edition\/appIcons\/chargepoint.png/g'  /usr/share/applications/chargytransparenzsoftware.desktop
 
 mkdir /etc/skel/Dokumente
 cp /opt/Chargy\ Transparenzsoftware/documentation/chargeIT-Testdatensatz-01.chargy /etc/skel/Dokumente/
@@ -128,7 +139,7 @@ sed -i 's/#ReserveVT=6/ReserveVT=0/g' /etc/systemd/logind.conf
 The following applications are not required for runnung Chargy and therefore can safely be removed.
 ```
 apt purge -y libreoffice-common thunderbird aisleriot gnome-mahjongg gnome-mines gnome-sudoku libgnome-games-support-common
-apt purge -y ubuntu-web-launchers gdb gdbserver gparted simple-scan sane-utils bolt bluez bluez-cups bluez-obexd transmission-common deja-dup cheese remmina remmina-common totem totem-common rhythmbox rhythmbox-data shotwell shotwell-common gnome-todo gnome-todo-common libgnome-todo
+apt purge -y gdb gdbserver gparted simple-scan sane-utils bolt bluez bluez-cups bluez-obexd transmission-common deja-dup cheese remmina remmina-common totem totem-common rhythmbox rhythmbox-data shotwell shotwell-common gnome-todo gnome-todo-common libgnome-todo
 # Remove Ubuntu Installer
 apt purge -y ubiquity ubiquity-casper ubiquity-slideshow-ubuntu ubiquity-ubuntu-artwork
 
@@ -145,7 +156,11 @@ apt autoremove
 ```
 exit
 sudo umount new/proc
+sudo umount new/dev 
 sudo umount new/dev/pts
+sudo umount new/run 
+sudo umount new/sys 
+sudo umount new/tmp
 sudo rm new/etc/resolv.conf
 
 sudo chroot new dpkg-query -W --showformat='${Package} ${Version}\n' > ubuntu-livecd/casper/filesystem.manifest
@@ -172,7 +187,7 @@ rmdir new
 ### Create ISO image
 ```
 sudo genisoimage \
-    -o "Chargy Transparenzsoftware Live v1.0.0.iso" \
+    -o "Chargy Transparenzsoftware Live v1.2.0.iso" \
     -b isolinux/isolinux.bin \
     -c isolinux/boot.cat \
     -no-emul-boot \
