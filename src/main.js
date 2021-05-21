@@ -43,7 +43,9 @@ function createWindow () {
         icon:               `${app.getAppPath()}/src/icons/chargy_icon.png`,
 
         webPreferences: {
-            nodeIntegration:  true
+            nodeIntegration:          true,
+            nodeIntegrationInWorker:  true,
+            contextIsolation:         false
        //     preload:          path.join(__dirname, 'preload.js')
         },
 
