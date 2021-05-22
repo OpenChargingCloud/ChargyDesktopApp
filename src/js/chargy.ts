@@ -594,6 +594,10 @@ class Chargy {
                             processedFile.result = JSONContent as IPublicKeyInfo;
                             break;
 
+                        case "https://www.chargeit-mobility.com/contexts/charging-station-json-v0":
+                            processedFile.result = await new ChargeIT().tryToParseChargeITJSON(JSONContent);
+                            break;
+
                         default:
                             // The current chargeIT mobility format does not provide any context or format identifiers
                             processedFile.result = await new ChargeIT().tryToParseChargeITJSON(JSONContent);
