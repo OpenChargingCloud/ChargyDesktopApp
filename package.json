@@ -56,7 +56,7 @@
   "build": {
     "appId": "cloud.charging.chargepoint.chargy.desktop",
     "productName": "Chargy Transparenzsoftware ChargePoint Edition",
-    "copyright": "Copyright © 2018-2020 GraphDefined GmbH",
+    "copyright": "Copyright © 2018-2021 GraphDefined GmbH",
     "extraFiles": [
       "documentation",
       "versions"

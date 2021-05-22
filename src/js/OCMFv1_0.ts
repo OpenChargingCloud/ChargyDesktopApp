@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2021 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
