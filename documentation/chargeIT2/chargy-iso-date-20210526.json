@@ -27,7 +27,7 @@
       },
       "operatorInfo": "See https://www.chargeit-mobility.com/wp-content/uploads/chargeIT-Baumusterpr%C3%BCfbescheinigung-Lades%C3%A4ule-Online.pdf for type examination certificate",
       "contract": {
-        "id": null
+        "id": "chargeIT up 12*4, id: 12345678abcdef"
       },
       "measurementId": 3163,
       "value": {
@@ -255,7 +255,7 @@
       },
       "operatorInfo": "See https://www.chargeit-mobility.com/wp-content/uploads/chargeIT-Baumusterpr%C3%BCfbescheinigung-Lades%C3%A4ule-Online.pdf for type examination certificate",
       "contract": {
-        "id": null
+        "id": "chargeIT up 12*4, id: 12345678abcdef"
       },
       "measurementId": 3164,
       "value": {
@@ -267,7 +267,7 @@
           "scale": 0,
           "unit": "WATT_HOUR",
           "unitEncoded": 30,
-          "value": 0,
+          "value": 150,
           "valueType": "UnsignedInteger32"
         }
       },

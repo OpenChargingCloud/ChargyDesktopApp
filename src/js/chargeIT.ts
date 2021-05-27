@@ -58,11 +58,7 @@ class ChargeIT {
         // {
         //     "@context":    "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0",
         //     "@id":         "001BZR1521070003-18899",
-        //     "timestamp":   1602145359,
-        //     "timestampLocal": {
-        //         "timestamp":     1602152559,
-        //         "localOffset":   120
-        //     },
+        //     "time":        "2021-05-26T15:55:56+02:00",
         //     "meterInfo": {
         //         "firmwareVersion":  "1.8:33C4:DB63, 08d1aa3",
         //         "publicKey":        "3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254",
@@ -416,7 +412,7 @@ class ChargeIT {
                     //@ts-ignore
                     //"SecondIndex":        SecondIndex,
                     //@ts-ignore
-                    "timestamp":          currentMeasurement.timestamp,
+                    "time":               currentMeasurement.time,
                     //@ts-ignore
                     "value":              currentMeasurement.value?.measuredValue?.value,
                     //@ts-ignore
@@ -439,8 +435,8 @@ class ChargeIT {
                  "@id":              Content["@id"],
                  "@context":         "https://open.charging.cloud/contexts/CTR+json",
 
-                 "begin":            new Date(common.dataSets[0]["timestamp"] * 1000).toISOString(),
-                 "end":              new Date(common.dataSets[n]["timestamp"] * 1000).toISOString(),
+                 "begin":            common.dataSets[0].time,
+                 "end":              common.dataSets[n].time,
 
                  "description": {
                      "de":           "Alle Ladevorgänge"
@@ -455,19 +451,23 @@ class ChargeIT {
 
                  "chargingPools": [
                      {
-                         "@id":                      "DE*GEF*POOL*1",
+            //             "@id":                      "DE*GEF*POOL*1",
             //             "description":              { "de": "GraphDefined Virtual Charging Pool - CI-Tests Pool 1" },
                          "chargingStations": [
                              {
             //                     "@id":                      "DE*GEF*STATION*1*A",
             //                     "description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A" },
             //                     "firmwareVersion":          CTRArray[0]["Alfen"]["softwareVersion"],
-            //                     "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
-            //                     "address": {
-            //                         "street":               address_street,
-            //                         "postalCode":           address_zipCode,
-            //                         "city":                 address_town
-            //                     },
+                                 "geoLocation": {
+                                     "lat":                  Content.placeInfo?.geoLocation?.lat,
+                                     "lng":                  Content.placeInfo?.geoLocation?.lon
+                                 },
+                                 "address": {
+                                     "street":               Content.placeInfo?.address?.street,
+                                     "postalCode":           Content.placeInfo?.address?.zipCode,
+                                     "city":                 Content.placeInfo?.address?.town
+                                 },
+
                                  "EVSEs": [
                                      {
                                          "@id":                      Content.placeInfo.evseId,
@@ -476,18 +476,18 @@ class ChargeIT {
                                          "meters": [
                                              {
                                                  "@id":                      common.MeterId,
-            //                                     "vendor":                   CTRArray[0]["meterInfo"]["manufacturer"],
+                                                 "vendor":                   common.MeterManufacturer,
             //                                     "vendorURL":                "http://www.emh-metering.de",
-            //                                     "model":                    CTRArray[0]["meterInfo"]["type"],
+                                                 "model":                    common.MeterType,
             //                                     "hardwareVersion":          "1.0",
-            //                                     "firmwareVersion":          CTRArray[0]["meterInfo"]["firmwareVersion"],
-            //                                     "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+                                                 "firmwareVersion":          common.MeterFirmwareVersion,
+                                                 "signatureFormat":          common.Context,
                                                  "publicKeys": [
                                                      {
-                                                         "value":            common.MeterPublicKey
-                                                         //"algorithm":        common.PublicKeyFormat,
-                                                         //"format":           "DER",
-                                                         //"encoding":         "base32"
+                                                         "value":            common.MeterPublicKey,
+                                                         "algorithm":        "secp256r1",
+                                                         "format":           "DER",
+                                                         "encoding":         "HEX"
                                                          //"signatures":       CTRArray[0]["meterInfo"]["publicKeySignatures"]
                                                      }
                                                  ]
@@ -501,14 +501,13 @@ class ChargeIT {
                  ],
 
                  "chargingSessions": [
-
                      {
 
                          "@id":                          Content["@id"],
                          "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/bsm-ws36a-v0+json",
-                         "begin":                        new Date(common.dataSets[0]["timestamp"] * 1000).toISOString(),
-                         "end":                          new Date(common.dataSets[n]["timestamp"] * 1000).toISOString(),
-            //             "EVSEId":                       evseId,
+                         "begin":                        common.dataSets[0].time,
+                         "end":                          common.dataSets[n].time,
+                         "EVSEId":                       Content.placeInfo.evseId,
 
                          "authorizationStart": {
                              "@id":                      common.ContractId,
@@ -519,7 +518,6 @@ class ChargeIT {
                          },
 
                          "measurements": [
-
                              {
 
                                  "energyMeterId":        common.MeterId,
@@ -530,15 +528,17 @@ class ChargeIT {
                                  "unitEncoded":          common.MeasuredValueUnitEncoded,
             //                     "valueType":            CTRArray[0]["measuredValue"]["valueType"],
                                  "scale":                common.MeasuredValueScale,
+                                 "operatorInfo":         common.OperatorInfo,
 
                                 //  "adapterId":            common.AdapterId,
-                                //  "adapterFWVersion":     common.AdapterFWVersion,
+                                 "adapterFWVersion":     common.MeterFirmwareVersion,
                                 //  "adapterFWChecksum":    common.AdapterFWChecksum,
 
+                                //ToDo: Move me to EVSEs/.../meters/...
                                  "signatureInfos": {
                                      "hash":                 "SHA256",
                                      "algorithm":            "ECC",
-                                    //  "curve":                common.PublicKeyFormat,
+                                     "curve":                "secp256r1",
                                      "format":               "rs",
                                      "encoding":             "base32"
                                  },
@@ -546,11 +546,9 @@ class ChargeIT {
                                  "values": [ ]
 
                              }
-
                          ]
 
                      }
-
                  ]
 
             };
@@ -559,16 +557,16 @@ class ChargeIT {
             {
                  _CTR["chargingSessions"][0]["measurements"][0]["values"].push(
                                          {
-                                             "timestamp":      new Date(dataSet["timestamp"] * 1000).toISOString(),
-                                             "value":          dataSet["value"],
+                                             "timestamp":      dataSet.time,
+                                             "value":          dataSet.value,
                                             //  "statusMeter":    dataSet["StatusMeter"],
                                             //  "statusAdapter":  dataSet["StatusAdapter"],
                                             //  "secondsIndex":   dataSet["SecondIndex"],
                                             //  "paginationId":   dataSet["Paging"],
                                              "signatures": [
                                                  {
-                                                     "r":          dataSet["signature"].substring(0, 48),
-                                                     "s":          dataSet["signature"].substring(48)
+                                                     "r":          dataSet.signature.substring(0, 48),
+                                                     "s":          dataSet.signature.substring(48)
                                                  }
                                              ]
                                          }
