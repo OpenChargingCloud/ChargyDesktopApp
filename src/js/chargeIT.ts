@@ -297,111 +297,175 @@ class ChargeIT {
         try
         {
 
-            var common = {
-                    Context:                   Content.signedMeterValues[0]["@context"],
-                    MeterFirmwareVersion:      Content.signedMeterValues[0].meterInfo?.firmwareVersion,
-                    MeterPublicKey:            Content.signedMeterValues[0].meterInfo?.publicKey,
-                    MeterId:                   Content.signedMeterValues[0].meterInfo?.meterId,
-                    MeterManufacturer:         Content.signedMeterValues[0].meterInfo?.manufacturer,
-                    MeterType:                 Content.signedMeterValues[0].meterInfo?.type,
-                    OperatorInfo:              Content.signedMeterValues[0].operatorInfo,
-                    ContractId:                Content.signedMeterValues[0].contract?.id,
-                    ValueMeasurandId:          Content.signedMeterValues[0].value?.measurand?.id, // OBIS Id
-                    ValueMeasurandName:        Content.signedMeterValues[0].value?.measurand?.name,
-                    MeasuredValueScale:        Content.signedMeterValues[0].value?.measuredValue?.scale,
-                    MeasuredValueUnit:         Content.signedMeterValues[0].value?.measuredValue?.unit,
-                    MeasuredValueUnitEncoded:  Content.signedMeterValues[0].value?.measuredValue?.unitEncoded,
-                    MeasuredValueValueType:    Content.signedMeterValues[0].value?.measuredValue?.valueType,
+            let common = {
+                    Context:                     Content.signedMeterValues[0]["@context"],
+                    MeterFirmwareVersion:        Content.meterInfo?.firmwareVersion        ?? Content.signedMeterValues[0].meterInfo?.firmwareVersion,
+                    MeterPublicKey:              Content.meterInfo?.publicKey              ?? Content.signedMeterValues[0].meterInfo?.publicKey,
+                    MeterId:                     Content.meterInfo?.meterId                ?? Content.signedMeterValues[0].meterInfo?.meterId,
+                    MeterManufacturer:           Content.meterInfo?.manufacturer           ?? Content.signedMeterValues[0].meterInfo?.manufacturer,
+                    MeterType:                   Content.meterInfo?.type                   ?? Content.signedMeterValues[0].meterInfo?.type,
+                    OperatorInfo:                Content.operatorInfo                      ?? Content.signedMeterValues[0].operatorInfo,
+                    ContractId:                  Content.contract?.id                      ?? Content.signedMeterValues[0].contract?.id,
+                    ValueMeasurandId:            Content.value?.measurand?.id              ?? Content.signedMeterValues[0].value?.measurand?.id, // OBIS Id
+                    ValueMeasurandName:          Content.value?.measurand?.name            ?? Content.signedMeterValues[0].value?.measurand?.name,
+                    MeasuredValueScale:          Content.value?.measuredValue?.scale       ?? Content.signedMeterValues[0].value?.measuredValue?.scale,
+                    MeasuredValueUnit:           Content.value?.measuredValue?.unit        ?? Content.signedMeterValues[0].value?.measuredValue?.unit,
+                    MeasuredValueUnitEncoded:    Content.value?.measuredValue?.unitEncoded ?? Content.signedMeterValues[0].value?.measuredValue?.unitEncoded,
+                    MeasuredValueValueType:      Content.value?.measuredValue?.valueType   ?? Content.signedMeterValues[0].value?.measuredValue?.valueType,
+                    ChargePointSoftwareVersion:  Content.chargePoint?.softwareVersion      ?? Content.signedMeterValues[0].chargePoint?.softwareVersion,
                     dataSets:                  [] as any[]
                 };
 
-            const base32Decode = require('base32-decode');
-
-            let previousTimestamp = "";
+            let previousId     = "";
+            let previousTime   = "";
+            let previousValue  = "";
 
             for (let i=0; i<Content.signedMeterValues.length; i++)
             {
 
                 const currentMeasurement = Content.signedMeterValues[i];
 
-                if (currentMeasurement["@context"]                !== common.Context)
+                if (currentMeasurement["@context"] !== common.Context)
                     return {
                         status:   SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent @context!"
                     };
 
-                if (currentMeasurement.meterInfo?.firmwareVersion !== common.MeterFirmwareVersion)
+
+                if (previousId !== "" && currentMeasurement["@id"] <= previousId)
                     return {
                         status:   SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent meterInfo.firmwareVersion!"
+                        message:  "Inconsistent measurement identifications!"
                     };
+                previousId   = currentMeasurement["@id"];
 
-                if (currentMeasurement.meterInfo?.publicKey       !== common.MeterPublicKey)
+
+                if (previousTime !== "" && currentMeasurement.time <= previousTime)
                     return {
                         status:   SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent meterInfo.publicKey!"
+                        message:  "Inconsistent measurement timestamps!"
                     };
+                previousTime = currentMeasurement.time;
 
-                if (currentMeasurement.meterInfo?.meterId         !== common.MeterId)
+
+                if (previousValue !== "" && currentMeasurement.value?.measuredValue?.value < previousValue)
                     return {
                         status:   SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent meterInfo.meterId!"
+                        message:  "Inconsistent measurement values!"
                     };
-
-                if (currentMeasurement.meterInfo?.manufacturer    !== common.MeterManufacturer)
-                    return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent meterInfo.manufacturer!"
-                    };
-
-                if (currentMeasurement.meterInfo?.type            !== common.MeterType)
-                    return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent meterInfo.type!"
-                    };
-
-                if (currentMeasurement.operatorInfo               !== common.OperatorInfo)
-                    return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent operatorInfo!"
-                    };
-
-                if (currentMeasurement.contract?.id               !== common.ContractId)
-                    return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent contract.id!"
-                    };
+                previousValue = currentMeasurement.value?.measuredValue?.value;
 
 
+                if (currentMeasurement.meterInfo)
+                {
 
-                // Everything is Little Endian
-                // let AdapterId            = this.bufferToHex(DataSet.slice( 0, 10));                                        // 0a 54 65 73 74 44 65 76 00 09
-                // let AdapterFWVersion     = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(10, 14)) as any);  // ASCII: 76 30 31 34 (v014)
-                // let AdapterFWChecksum    = this.bufferToHex(DataSet.slice(14, 16));                                        // B9 79
-                // let MeterId              = this.bufferToHex(DataSet.slice(16, 26));                                        // 0A 01 44 5A 47 00 33 00 25 02
-                // let MeterStatus          = this.bufferToHex(DataSet.slice(26, 28), true);                                  // 00 00
-                // let AdapterStatus        = this.bufferToHex(DataSet.slice(28, 30), true);                                  // 00 10
-                // let SecondIndex          = new DataView(DataSet.slice(30, 34), 0).getInt32(0, true);                       // 28 71 9A 02 => 43675944 dec
-                // let Timestamp            = new Date(new DataView(DataSet.slice(34, 38), 0).getInt32(0, true) * 1000).      // UNIX timestamp: 91 91 3D 5C => 1547538833 => 2019-01-15T07:53:53Z
-                //                                   toISOString();
-                // let ObisId               = this.bufferToHex(DataSet.slice(38, 44));                                        // 01 00 01 08 00 ff
-                // let UnitEncoded          = this.bufferToNumber(DataSet.slice(44, 45));                                     // 1e => 30 => Wh
-                // let Scalar               = this.bufferToHex(DataSet.slice(45, 46));                                        // 00
-                // let Value                = new Number(new DataView(DataSet.slice(46, 54), 0).getBigInt64(0, true));        // 73 29 00 00 00 00 00 00 => 10611 Wh so 10,611 KWh
-                // let UID                  = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(54, 74)) as any).  // ASCII: 30 35 38 39 38 41 42 42 00 00 00 00 00 00 00 00 00 00 00 00 => UID: 05 89 8A BB
-                //                                   replace(/\0.*$/g, '');
-                // let SessionId            = new DataView(DataSet.slice(74, 78), 0).getInt32(0, true)                        // 81 01 00 00 => 385(dec)
-                // let Paging               = new DataView(DataSet.slice(78, 82), 0).getInt32(0, true);                       // 47 02 00 00 => 583(dec)
+                    if (currentMeasurement.meterInfo?.firmwareVersion    !== common.MeterFirmwareVersion)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.firmwareVersion!"
+                        };
+
+                    if (currentMeasurement.meterInfo?.publicKey          !== common.MeterPublicKey)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.publicKey!"
+                        };
+
+                    if (currentMeasurement.meterInfo?.meterId            !== common.MeterId)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.meterId!"
+                        };
+
+                    if (currentMeasurement.meterInfo?.manufacturer       !== common.MeterManufacturer)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.manufacturer!"
+                        };
+
+                    if (currentMeasurement.meterInfo?.type               !== common.MeterType)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.type!"
+                        };
+
+                }
+
+                if (currentMeasurement.operatorInfo)
+                {
+                    if (currentMeasurement.operatorInfo                  !== common.OperatorInfo)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent operatorInfo!"
+                        };
+                }
+
+                if (currentMeasurement.contract)
+                {
+                    if (currentMeasurement.contract?.id                  !== common.ContractId)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent contract.id!"
+                        };
+                }
+
+                if (currentMeasurement.measurand)
+                {
+
+                    if (currentMeasurement.measurand?.firmwareVersion    !== common.ValueMeasurandId)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measurand.id!"
+                        };
+
+                    if (currentMeasurement.measurand?.name               !== common.ValueMeasurandName)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measurand.name!"
+                        };
+
+                }
+
+                if (currentMeasurement.measuredValue)
+                {
+
+                    if (currentMeasurement.measuredValue?.scale          !== common.MeasuredValueScale)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measuredValue.scale!"
+                        };
+
+                    if (currentMeasurement.measuredValue?.unit           !== common.MeasuredValueUnit)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measuredValue.unit!"
+                        };
+
+                    if (currentMeasurement.measuredValue?.unitEncoded    !== common.MeasuredValueUnitEncoded)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measuredValue.unitEncoded!"
+                        };
+
+                    if (currentMeasurement.measuredValue?.valueType      !== common.MeasuredValueValueType)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measuredValue.valueType!"
+                        };
+
+                }
+
+                if (currentMeasurement.chargePoint)
+                {
+                    if (currentMeasurement.chargePoint?.softwareVersion  !== common.ChargePointSoftwareVersion)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent chargePoint.softwareVersion!"
+                        };
+                }
 
 
-
-                // if (previousTimestamp !== "" && previousTimestamp > Timestamp)
-                //     return {
-                //         status:   SessionVerificationResult.InconsistentTimestamps,
-                //         message:  "Inconsistent timestamps!"
-                //     };
-                // else
-                //     previousTimestamp = Timestamp;
+                // ToDo: Check additional values!
 
 
                 common.dataSets.push({
@@ -451,13 +515,13 @@ class ChargeIT {
 
                  "chargingPools": [
                      {
-            //             "@id":                      "DE*GEF*POOL*1",
-            //             "description":              { "de": "GraphDefined Virtual Charging Pool - CI-Tests Pool 1" },
+                         //"@id":                      "DE*GEF*POOL*1",
+                         //"description":              { "de": "GraphDefined Virtual Charging Pool - CI-Tests Pool 1" },
                          "chargingStations": [
                              {
-            //                     "@id":                      "DE*GEF*STATION*1*A",
-            //                     "description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A" },
-            //                     "firmwareVersion":          CTRArray[0]["Alfen"]["softwareVersion"],
+                                 //"@id":                      "DE*GEF*STATION*1*A",
+                                 //"description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A" },
+                                 "firmwareVersion":          common.ChargePointSoftwareVersion,
                                  "geoLocation": {
                                      "lat":                  Content.placeInfo?.geoLocation?.lat,
                                      "lng":                  Content.placeInfo?.geoLocation?.lon
@@ -467,21 +531,41 @@ class ChargeIT {
                                      "postalCode":           Content.placeInfo?.address?.zipCode,
                                      "city":                 Content.placeInfo?.address?.town
                                  },
+                                 "manufacturer": {
+                                     //"hardwareVersion":      "",
+                                     //"firmwareVersion":      "",
+                                     "calibrationLaw":       common.OperatorInfo,
+                                 },
 
                                  "EVSEs": [
                                      {
                                          "@id":                      Content.placeInfo.evseId,
-            //                             "description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A / EVSE 1" },
-                                         "sockets":                  [ { } ],
+                                         //"description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A / EVSE 1" },
+                                         //"sockets": [
+                                         //    {
+                                         //        "type":             "type2",
+                                         //        "cableAttached":    false
+                                         //    }
+                                         //],
                                          "meters": [
                                              {
                                                  "@id":                      common.MeterId,
-                                                 "vendor":                   common.MeterManufacturer,
-            //                                     "vendorURL":                "http://www.emh-metering.de",
+                                                 "vendor":                   common.MeterManufacturer,  //ToDo: Change me to "manufacturer", but check other implementations!
+                                                 //"vendorURL":                "http://www.emh-metering.de",
                                                  "model":                    common.MeterType,
-            //                                     "hardwareVersion":          "1.0",
+                                                 //"hardwareVersion":          "1.0",
                                                  "firmwareVersion":          common.MeterFirmwareVersion,
-                                                 "signatureFormat":          common.Context,
+                                                 //"adapterId":                common.AdapterId,
+                                                 //"adapterFWVersion":         common.MeterFirmwareVersion,
+                                                 //"adapterFWChecksum":        common.AdapterFWChecksum,
+                                                 "signatureFormat":          common.Context,            //ToDo: Move me into "signatureInfos"!
+                                                 "signatureInfos": {
+                                                    "hash":                  "SHA256",
+                                                    "algorithm":             "ECC",
+                                                    "curve":                 "secp256r1",
+                                                    "format":                "rs",
+                                                    "encoding":              "hex"
+                                                 },                                                 
                                                  "publicKeys": [
                                                      {
                                                          "value":            common.MeterPublicKey,
@@ -519,32 +603,15 @@ class ChargeIT {
 
                          "measurements": [
                              {
-
                                  "energyMeterId":        common.MeterId,
-                                 "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/bsm-ws36a-v0+json",
+                                 //"@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/bsm-ws36a-v0+json",
                                  "name":                 OBIS2MeasurementName(common.ValueMeasurandId),
                                  "obis":                 common.ValueMeasurandId,
-            //                     "unit":                 CTRArray[0]["measuredValue"]["unit"],
+                                 "unit":                 common.MeasuredValueUnit,
                                  "unitEncoded":          common.MeasuredValueUnitEncoded,
-            //                     "valueType":            CTRArray[0]["measuredValue"]["valueType"],
+                                 "valueType":            common.MeasuredValueValueType,
                                  "scale":                common.MeasuredValueScale,
-                                 "operatorInfo":         common.OperatorInfo,
-
-                                //  "adapterId":            common.AdapterId,
-                                 "adapterFWVersion":     common.MeterFirmwareVersion,
-                                //  "adapterFWChecksum":    common.AdapterFWChecksum,
-
-                                //ToDo: Move me to EVSEs/.../meters/...
-                                 "signatureInfos": {
-                                     "hash":                 "SHA256",
-                                     "algorithm":            "ECC",
-                                     "curve":                "secp256r1",
-                                     "format":               "rs",
-                                     "encoding":             "base32"
-                                 },
-
                                  "values": [ ]
-
                              }
                          ]
 
@@ -553,24 +620,40 @@ class ChargeIT {
 
             };
 
-            for (var dataSet of common.dataSets)
+
+            const ASN1                  = require('asn1.js');
+            const ASN1_SignatureSchema  = ASN1.define('Signature', function() {
+                //@ts-ignore
+                this.seq().obj(
+                    //@ts-ignore
+                    this.key('r').int(),
+                    //@ts-ignore
+                    this.key('s').int()
+                );
+            });
+
+            for (let dataSet of common.dataSets)
             {
+
+                let ASN1Signature = ASN1_SignatureSchema.decode(Buffer.from(dataSet.signature, 'hex'), 'der');
+
                  _CTR["chargingSessions"][0]["measurements"][0]["values"].push(
                                          {
-                                             "timestamp":      dataSet.time,
-                                             "value":          dataSet.value,
+                                             "timestamp":          dataSet.time,
+                                             "value":              dataSet.value,
                                             //  "statusMeter":    dataSet["StatusMeter"],
                                             //  "statusAdapter":  dataSet["StatusAdapter"],
                                             //  "secondsIndex":   dataSet["SecondIndex"],
                                             //  "paginationId":   dataSet["Paging"],
                                              "signatures": [
                                                  {
-                                                     "r":          dataSet.signature.substring(0, 48),
-                                                     "s":          dataSet.signature.substring(48)
+                                                     "r":          ASN1Signature.r.toString(16),
+                                                     "s":          ASN1Signature.s.toString(16)
                                                  }
                                              ]
                                          }
                  );
+
             }
 
             //await this.processChargeTransparencyRecord(_CTR);

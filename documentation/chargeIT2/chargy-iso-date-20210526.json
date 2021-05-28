@@ -240,6 +240,9 @@
           }
         }
       ],
+      "chargePoint": {
+        "softwareVersion": "3.0.25.2089"
+      },
       "signature": "3046022100f73147fe07e5c3be394b63ebd10fd88ff81b05baf8c14a8e12a76d46d80bc1be022100dbf640116afa7c664a3268fd642044078b9eb2f9c97898956287441f78f22dbf"
     },
     {
@@ -468,6 +471,9 @@
           }
         }
       ],
+      "chargePoint": {
+        "softwareVersion": "3.0.25.2089"
+      },
       "signature": "304402203806d3fdac014e5c7fe7856a77bf10a6ecc12b30f508abd849d70526add3f232022055b4e4ef265760fd6a3844107962030821081d31461ede894eba693432c43970"
     }
   ]
