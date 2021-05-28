@@ -466,7 +466,7 @@
           "measuredValue": {
             "scale": 0,
             "unitEncoded": 255,
-            "value": 0,
+            "value": 16,
             "valueType": "UnsignedInteger32"
           }
         }

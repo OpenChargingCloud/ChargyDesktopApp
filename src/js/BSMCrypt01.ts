@@ -22,10 +22,23 @@
 
 interface IBSMMeasurementValue extends IMeasurementValue
 {
-    infoStatus:                 string,
-    secondsIndex:               number,
-    paginationId:               string,
-    logBookIndex:               string
+    Typ:                        number,
+    RCR:                        number,
+    TotWhImp:                   number,
+    W:                          number,
+    MA1:                        string,
+    RCnt:                       number,
+    OS:                         number,
+    Epoch:                      number,
+    TZO:                        number,
+    EpochSetCnt:                number,
+    EpochSetOS:                 number,
+    DI:                         number,
+    DO:                         number,
+    Meta1:                      string,
+    Meta2:                      string,
+    Meta3:                      string,
+    Evt:                        number
 }
 
 interface IBSMCrypt01Result extends ICryptoResult
@@ -34,6 +47,7 @@ interface IBSMCrypt01Result extends ICryptoResult
     meterId?:                      string,
     meter?:                        IMeter,
     timestamp?:                    string,
+
     infoStatus?:                   string,
     secondsIndex?:                 string,
     paginationId?:                 string,
@@ -392,35 +406,39 @@ class BSMCrypt01 extends ACrypt {
                     MeasuredValueUnitEncoded:    Content.value?.measuredValue?.unitEncoded ?? Content.signedMeterValues[0].value?.measuredValue?.unitEncoded,
                     MeasuredValueValueType:      Content.value?.measuredValue?.valueType   ?? Content.signedMeterValues[0].value?.measuredValue?.valueType,
                     ChargePointSoftwareVersion:  Content.chargePoint?.softwareVersion      ?? Content.signedMeterValues[0].chargePoint?.softwareVersion,
-                    dataSets:                  [] as any[]
+                    MA1:                         null as string|null,
+                    EpochSetCnt:                 -1,
+                    EpochSetOS:                  -1,
+                    dataSets:                    [] as any[]
                 };
 
-            let Typ             = 0;    // Snapshot Type   // Welchen Typ für Zwischenwerte?!?
-            let RCR:      any[] = [];   // !!! Real energy imported since the last execution of the turn-on sequence
-            let TotWhImp: any[] = [];   // !!! Total Real Energy Imported
-            let W:        any[] = [];   // !!! Total Real Power
-            let MA1             = 0;    // Meter Address 1(???)
-            let RCnt            = 0;    // A counter incremented with each snapshot
-            let OS              = 0;    // Operation-Seconds Counter
-            let Epoch           = 0;    // Current local time in seconds since 1970
-            let TZO             = 0;    // Timezone offset of local epoch time time to UTC (minutes)
-            let EpochSetCnt     = 0;    // How many time epoch time and timezone offset have been set
-            let EpochSetOS      = 0;    // Operation-seconds when the time has been set the last time
-            let DI              = 0;    // Status of the digital inputs
-            let DO              = 0;    // Status of the digital outputs
-            let Meta1           = "";   // User metadata 1 => Check text encoding: https://www.npmjs.com/package/iconv
-            let Meta2           = "";   // User metadata 2 => Check text encoding: https://www.npmjs.com/package/iconv
-            let Meta3           = "";   // User metadata 3 => Check text encoding: https://www.npmjs.com/package/iconv
-            let Evt             = 0;    // Meter Event Flags
+            let Typ                 = 0;      // Snapshot Type   // Welchen Typ für Zwischenwerte?!?
+            let RCR:          any[] = [];     // !!! Real energy imported since the last execution of the turn-on sequence
+            let TotWhImp:     any[] = [];     // !!! Total Real Energy Imported
+            let W:            any[] = [];     // !!! Total Real Power
+            let MA1:    string|null = null;   // Meter Address 1
+            let RCnt                = 0;      // A counter incremented with each snapshot
+            let OS                  = 0;      // Operation-Seconds Counter
+            let Epoch               = 0;      // Current local time in seconds since 1970
+            let TZO                 = 0;      // Timezone offset of local epoch time time to UTC (minutes)
+            let EpochSetCnt         = 0;      // How many time epoch time and timezone offset have been set
+            let EpochSetOS          = 0;      // Operation-seconds when the time has been set the last time
+            let DI                  = 0;      // Status of the digital inputs
+            let DO                  = 0;      // Status of the digital outputs
+            let Meta1:  string|null = null;   // User metadata 1 => Check text encoding: https://www.npmjs.com/package/iconv
+            let Meta2:  string|null = null;   // User metadata 2 => Check text encoding: https://www.npmjs.com/package/iconv
+            let Meta3:  string|null = null;   // User metadata 3 => Check text encoding: https://www.npmjs.com/package/iconv
+            let Evt                 = 0;      // Meter Event Flags
 
 
-            let previousId      = "";
-            let previousTime    = "";
-            let previousValue   = "";
+            let previousId          = "";
+            let previousTime        = "";
+            let previousValue       = "";
 
-            let previousRCnt    = -1;
-            let previousOS      = -1;
-            let previousEpoch   = -1;
+            let previousRCR         = -1;
+            let previousRCnt        = -1;
+            let previousOS          = -1;
+            let previousEpoch       = -1;
 
             //#endregion
 
@@ -577,7 +595,7 @@ class BSMCrypt01 extends ACrypt {
                 {
                     switch (additionalValue.measurand?.name)
                     {
-                        case "Typ":          Typ          =   additionalValue.measuredValue?.value; break;
+                        case "Typ":          Typ          =   additionalValue.measuredValue?.value;       break;
                         case "RCR":          RCR          = [ additionalValue.measurand?.id,
                                                               additionalValue.measuredValue?.scale,
                                                               additionalValue.measuredValue?.unit,
@@ -596,24 +614,32 @@ class BSMCrypt01 extends ACrypt {
                                                               additionalValue.measuredValue?.unitEncoded,
                                                               additionalValue.measuredValue?.value,
                                                               additionalValue.measuredValue?.valueType ]; break;
-                        case "MA1":          MA1          =   additionalValue.measuredValue?.value; break;
-                        case "RCnt":         RCnt         =   additionalValue.measuredValue?.value; break;
-                        case "OS":           OS           =   additionalValue.measuredValue?.value; break;
-                        case "Epoch":        Epoch        =   additionalValue.measuredValue?.value; break;
-                        case "TZO":          TZO          =   additionalValue.measuredValue?.value; break;
-                        case "EpochSetCnt":  EpochSetCnt  =   additionalValue.measuredValue?.value; break;
-                        case "EpochSetOS":   EpochSetOS   =   additionalValue.measuredValue?.value; break;
-                        case "DI":           DI           =   additionalValue.measuredValue?.value; break;
-                        case "DO":           DO           =   additionalValue.measuredValue?.value; break;
-                        case "Meta1":        Meta1        =   additionalValue.measuredValue?.value; break;
-                        case "Meta2":        Meta2        =   additionalValue.measuredValue?.value; break;
-                        case "Meta3":        Meta3        =   additionalValue.measuredValue?.value; break;
-                        case "Evt":          Evt          =   additionalValue.measuredValue?.value; break;
+                        case "MA1":          MA1          =   additionalValue.measuredValue?.value;       break;
+                        case "RCnt":         RCnt         =   additionalValue.measuredValue?.value;       break;
+                        case "OS":           OS           =   additionalValue.measuredValue?.value;       break;
+                        case "Epoch":        Epoch        =   additionalValue.measuredValue?.value;       break;
+                        case "TZO":          TZO          =   additionalValue.measuredValue?.value;       break;
+                        case "EpochSetCnt":  EpochSetCnt  =   additionalValue.measuredValue?.value;       break;
+                        case "EpochSetOS":   EpochSetOS   =   additionalValue.measuredValue?.value;       break;
+                        case "DI":           DI           =   additionalValue.measuredValue?.value;       break;
+                        case "DO":           DO           =   additionalValue.measuredValue?.value;       break;
+                        case "Meta1":        Meta1        =   additionalValue.measuredValue?.value ?? ""; break;
+                        case "Meta2":        Meta2        =   additionalValue.measuredValue?.value ?? ""; break;
+                        case "Meta3":        Meta3        =   additionalValue.measuredValue?.value ?? ""; break;
+                        case "Evt":          Evt          =   additionalValue.measuredValue?.value;       break;
                     }
                 }
 
 
-                if (previousRCnt !== -1 && RCnt <= previousRCnt)
+                if (previousRCR !== -1 && RCR[4] < previousRCR)
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Inconsistent measurement value!"
+                };
+                previousRCR = RCR[4];
+
+
+                if (previousRCnt !== -1 && RCnt != previousRCnt + 1)
                 return {
                     status:   SessionVerificationResult.InvalidSessionFormat,
                     message:  "Inconsistent measurement snapshot counter!"
@@ -636,6 +662,31 @@ class BSMCrypt01 extends ACrypt {
                 };
                 previousEpoch = Epoch;
 
+
+
+                if (common.MA1 !== null && MA1 !== common.MA1)
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Inconsistent measurement meter address 1!"
+                };
+                common.MA1 = MA1;
+
+
+                if (common.EpochSetCnt !== -1 && EpochSetCnt !== common.EpochSetCnt)
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Inconsistent measurement epoch set counter!"
+                };
+                common.EpochSetCnt = EpochSetCnt;
+
+
+                if (common.EpochSetOS !== -1 && EpochSetOS !== common.EpochSetOS)
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Inconsistent measurement epoch set operation-seconds!"
+                };
+                common.EpochSetOS = EpochSetOS;
+
                 //#endregion
 
                 common.dataSets.push({
@@ -647,9 +698,9 @@ class BSMCrypt01 extends ACrypt {
                     RCnt:            RCnt,
                     OS:              OS,
                     Epoch:           Epoch,
-                    TZO:             TZO,          // must be common? Charging during Zeitumstellung?!
-                    EpochSetCnt:     EpochSetCnt,  // must be common!
-                    EpochSetOS:      EpochSetOS,   // must be common!
+                    TZO:             TZO,          // Must be common? Or may it change e.g. during summer/winter time change?!
+                    EpochSetCnt:     EpochSetCnt,
+                    EpochSetOS:      EpochSetOS,
                     DI:              DI,
                     DO:              DO,
                     Meta1:           Meta1,
@@ -716,6 +767,7 @@ class BSMCrypt01 extends ACrypt {
                          //"description":              { "de": "GraphDefined Virtual Charging Pool - CI-Tests Pool 1" },
                          "chargingStations": [
                              {
+
                                  //"@id":                      "DE*GEF*STATION*1*A",
                                  //"description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A" },
                                  "firmwareVersion":          common.ChargePointSoftwareVersion,
@@ -999,14 +1051,14 @@ class BSMCrypt01 extends ACrypt {
             status:                       VerificationResult.InvalidSignature,
             meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
             timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
-            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
-            paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
+            //infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
+            //secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
+            //paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
             obis:                         SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
             unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
             scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
             value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
-            logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
+            //logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
             authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
             authorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
         };
@@ -1054,6 +1106,8 @@ class BSMCrypt01 extends ACrypt {
         cryptoResult.status = VerificationResult.ValidSignature;
         return cryptoResult;
 
+
+
     }
 
     async VerifyMeasurement(measurementValue:  IBSMMeasurementValue): Promise<IBSMCrypt01Result>
@@ -1066,6 +1120,8 @@ class BSMCrypt01 extends ACrypt {
             return cryptoResult;
         }
 
+        // https://github.com/chargeITmobility/bsm-python-private/blob/30abc7ba958c936fdb952ed1f121e45d0818419c/doc/examples/snapshots.md#verifying-a-snapshot-with-the-bsm-tool
+
         measurementValue.method = this;
 
         var buffer        = new ArrayBuffer(320);
@@ -1073,16 +1129,19 @@ class BSMCrypt01 extends ACrypt {
 
         var cryptoResult:IBSMCrypt01Result = {
             status:                       VerificationResult.InvalidSignature,
+
+
+
             meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
             timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
-            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
-            paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
+            //infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
+            //secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
+            //paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
             obis:                         SetHex        (cryptoBuffer, OBIS2Hex(measurementValue.measurement.obis),                                23, false),
             unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
             scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
             value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
-            logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
+            //logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
             authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
             authorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
         };
@@ -1101,8 +1160,7 @@ class BSMCrypt01 extends ACrypt {
                     s:          signatureExpected.s
                 };
 
-                // Only the first 24 bytes/192 bits are used!
-                cryptoResult.sha256value = (await sha256(cryptoBuffer)).substring(0, 48);
+                cryptoResult.sha256value = (await sha256(cryptoBuffer));
 
 
                 const meter = this.chargy.GetMeter(measurementValue.measurement.energyMeterId);
@@ -1195,17 +1253,20 @@ class BSMCrypt01 extends ACrypt {
             PlainTextDiv.style.maxHeight   = "";
             PlainTextDiv.style.overflowY   = "";
 
-            this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                           result.meterId                               || "",  infoDiv, PlainTextDiv);
+
+            // https://github.com/chargeITmobility/bsm-python-private/blob/30abc7ba958c936fdb952ed1f121e45d0818419c/doc/examples/snapshots.md#verifying-a-snapshot-with-the-bsm-tool
+
+            this.CreateLine("Typ",                      measurementValue.measurement.energyMeterId,                                           result.meterId                               || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Zeitstempel",              UTC2human(measurementValue.timestamp),                                                result.timestamp                             || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Status",                   hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
-                                                        this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",            result.infoStatus                            || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                        result.secondsIndex                          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                          result.paginationId                          || "",  infoDiv, PlainTextDiv);
+            //this.CreateLine("Status",                   hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
+            //                                            this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",            result.infoStatus                            || "",  infoDiv, PlainTextDiv);
+            //this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                        result.secondsIndex                          || "",  infoDiv, PlainTextDiv);
+            //this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                          result.paginationId                          || "",  infoDiv, PlainTextDiv);
             this.CreateLine("OBIS-Kennzahl",            measurementValue.measurement.obis,                                                    result.obis                                  || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                             result.unitEncoded                           || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                   result.scale                                 || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                       result.value                                 || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                               result.logBookIndex                          || "",  infoDiv, PlainTextDiv);
+            //this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                               result.logBookIndex                          || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",      pad(result.authorizationStart,          128) || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Autorisierungszeitpunkt",  UTC2human(measurementValue.measurement.chargingSession.authorizationStart.timestamp), pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, PlainTextDiv);
 
