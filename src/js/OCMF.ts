@@ -24,6 +24,12 @@
 
 class OCMF {
 
+    private readonly chargy: Chargy;
+
+    constructor(chargy:  Chargy) {
+        this.chargy  = chargy;
+    }
+
     //#region tryToParseOCMFv0_1(OCMFData, PublicKey?)
 
     private async tryToParseOCMFv0_1(OCMFData:    IOCMFData_v0_1,

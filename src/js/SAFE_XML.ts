@@ -21,12 +21,16 @@
 
 class SAFEXML  {
 
+    private readonly chargy: Chargy;
+
+    constructor(chargy:  Chargy) {
+        this.chargy  = chargy;
+    }
+
     //#region tryToParseSAFEXML(XMLDocument)
 
     public async tryToParseSAFEXML(XMLDocument: Document) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
     {
-
-        const base32Decode = require('base32-decode');
 
         // The SAFE transparency software v1.0 does not understand its own
         // XML namespace. Therefore we have to guess the format.
@@ -72,7 +76,7 @@ class SAFEXML  {
                                     break;
 
                                 case "base32":
-                                    signedDataValue = Buffer.from(base32Decode(signedDataValue, 'RFC4648')).toString().trim();
+                                    signedDataValue = Buffer.from(this.chargy.base32Decode(signedDataValue, 'RFC4648')).toString().trim();
                                     break;
 
                                 case "base64":
@@ -158,7 +162,7 @@ class SAFEXML  {
                                     break;
 
                                 case "base32":
-                                    publicKeyValue = Buffer.from(base32Decode(publicKeyValue, 'RFC4648')).toString().trim();
+                                    publicKeyValue = Buffer.from(this.chargy.base32Decode(publicKeyValue, 'RFC4648')).toString().trim();
                                     break;
 
                                 case "base64":
@@ -204,10 +208,10 @@ class SAFEXML  {
             {
 
                 case "alfen":
-                    return await new Alfen01().tryToParseALFENFormat(signedValues);
+                    return await new Alfen01(this.chargy).tryToParseALFENFormat(signedValues);
 
                 case "ocmf":
-                    return await new OCMF().tryToParseOCMF2(signedValues, commonPublicKey);
+                    return await new OCMF(this.chargy).tryToParseOCMF2(signedValues, commonPublicKey);
 
             }
 

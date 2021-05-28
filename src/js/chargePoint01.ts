@@ -23,10 +23,10 @@
 
 class Chargepoint01 {
 
-    private moment:   any;
+    private readonly chargy: Chargy;
 
-    constructor() {
-        this.moment  = require('moment');
+    constructor(chargy:  Chargy) {
+        this.chargy  = chargy;
     }
 
     //#region tryToParseChargepointJSON(SomeJSON)
@@ -210,8 +210,8 @@ class Chargepoint01 {
                                                          SomeJSON.additional_info.session_id,
                     "@context":         "https://open.charging.cloud/contexts/CTR+json",
 
-                    "begin":            this.moment.unix(sessionStart).utc().format(),
-                    "end":              this.moment.unix(sessionEnd).utc().format(),
+                    "begin":            this.chargy.moment.unix(sessionStart).utc().format(),
+                    "end":              this.chargy.moment.unix(sessionEnd).utc().format(),
 
                     "description": {
                         "de":           "Alle Ladevorgänge"
@@ -359,8 +359,8 @@ class Chargepoint01 {
                                                             SomeJSON.additional_info.outlet      + "-" +
                                                             SomeJSON.additional_info.session_id,
                             "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json",
-                            "begin":                        this.moment.unix(sessionStart).utc().format(),
-                            "end":                          this.moment.unix(sessionEnd).utc().format(),
+                            "begin":                        this.chargy.moment.unix(sessionStart).utc().format(),
+                            "end":                          this.chargy.moment.unix(sessionEnd).utc().format(),
                             "EVSEId":                       SomeJSON.EVSEId ?? SomeJSON.additional_info.station_mac + "-" + SomeJSON.additional_info.outlet,
 
                             "authorizationStart": {
@@ -406,11 +406,11 @@ class Chargepoint01 {
 
                                     "values": [
                                         {
-                                            "timestamp":        this.moment.unix(chargingStart).utc().format(),
+                                            "timestamp":        this.chargy.moment.unix(chargingStart).utc().format(),
                                             "value":            SomeJSON.additional_info.meter_startreading
                                         },
                                         {
-                                            "timestamp":        this.moment.unix(chargingEnd).utc().format(),
+                                            "timestamp":        this.chargy.moment.unix(chargingEnd).utc().format(),
                                             "value":            SomeJSON.additional_info.meter_endreading
                                         }
                                     ]
@@ -436,8 +436,8 @@ class Chargepoint01 {
                         if (parking.seq_num != "SUBTOTAL")
                         {
                             _CTR.chargingSessions[0].parking.push({
-                                begin:     this.moment.unix(parking.start_time_utc).utc().format(),
-                                end:       this.moment.unix(parking.end_time_utc).utc().format(),
+                                begin:     this.chargy.moment.unix(parking.start_time_utc).utc().format(),
+                                end:       this.chargy.moment.unix(parking.end_time_utc).utc().format(),
                                 overstay:  parking.overstay == 1,
                             });
                         }
@@ -509,8 +509,8 @@ class Chargepoint01 {
                                                          SomeJSON.session_id,
                     "@context":         "https://open.charging.cloud/contexts/CTR+json",
 
-                    "begin":            this.moment.unix(SomeJSON.start_time).utc().format(),
-                    "end":              this.moment.unix(SomeJSON.end_time).utc().format(),
+                    "begin":            this.chargy.moment.unix(SomeJSON.start_time).utc().format(),
+                    "end":              this.chargy.moment.unix(SomeJSON.end_time).utc().format(),
 
                     "description": {
                         "de":           "Alle Ladevorgänge"
@@ -636,8 +636,8 @@ class Chargepoint01 {
                                                             SomeJSON.outlet      + "-" +
                                                             SomeJSON.session_id,
                             "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json",
-                            "begin":                        this.moment.unix(SomeJSON.start_time).utc().format(),
-                            "end":                          this.moment.unix(SomeJSON.end_time).utc().format(),
+                            "begin":                        this.chargy.moment.unix(SomeJSON.start_time).utc().format(),
+                            "end":                          this.chargy.moment.unix(SomeJSON.end_time).utc().format(),
                             "EVSEId":                       SomeJSON.EVSEId ?? SomeJSON.station_mac + "-" + SomeJSON.outlet,
 
                             "authorizationStart": {
@@ -683,11 +683,11 @@ class Chargepoint01 {
 
                                     "values": [
                                         {
-                                            "timestamp":        this.moment.unix(SomeJSON.start_time).utc().format(),
+                                            "timestamp":        this.chargy.moment.unix(SomeJSON.start_time).utc().format(),
                                             "value":            SomeJSON.meter_startreading
                                         },
                                         {
-                                            "timestamp":        this.moment.unix(SomeJSON.end_time).utc().format(),
+                                            "timestamp":        this.chargy.moment.unix(SomeJSON.end_time).utc().format(),
                                             "value":            SomeJSON.meter_endreading
                                         }
                                     ]
@@ -814,8 +814,7 @@ class ChargePointCrypt01 extends ACrypt {
                 typeof(chargingSession.signature) === 'string')
             {
 
-                const ASN1                  = require('asn1.js');
-                const ASN1_SignatureSchema  = ASN1.define('Signature', function() {
+                const ASN1_SignatureSchema  = this.chargy.asn1.define('Signature', function() {
                     //@ts-ignore
                     this.seq().obj(
                         //@ts-ignore

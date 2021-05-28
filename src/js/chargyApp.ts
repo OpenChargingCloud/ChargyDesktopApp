@@ -48,9 +48,11 @@ class ChargyApp {
 
     //#region Data
 
-    private elliptic:                      any;
-    private moment:                        any;
-    private chargy:                        Chargy;
+    private readonly elliptic:             any;
+    private readonly moment:               any;
+    private readonly chargy:               Chargy;
+    private readonly asn1:                 any;
+    private readonly base32Decode:         any;
 
     public  appEdition:                    string              = "";
     public  copyright:                     string              = "";
@@ -174,9 +176,13 @@ class ChargyApp {
 
         this.elliptic                  = require('elliptic');
         this.moment                    = require('moment');
+        this.asn1                      = require('asn1.js');
+        this.base32Decode              = require('base32-decode')
 
         this.chargy                    = new Chargy(this.elliptic,
-                                                    this.moment);
+                                                    this.moment,
+                                                    this.asn1,
+                                                    this.base32Decode);
 
 
         //#region OnWindowResize

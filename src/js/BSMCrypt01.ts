@@ -64,6 +64,647 @@ class BSMCrypt01 extends ACrypt {
     }
 
 
+    //#region tryToParseBSM_WS36aFormat(Content)
+
+    public async tryToParseBSM_WS36aFormat(Content: any) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+    {
+
+        if (Array.isArray(Content) || !Array.isArray(Content.signedMeterValues))
+            return {
+                status: SessionVerificationResult.InvalidSessionFormat
+            }
+
+        //#region Documentation
+
+        // {
+        //     "@context":    "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0",
+        //     "@id":         "001BZR1521070003-18899",
+        //     "time":        "2021-05-26T15:55:56+02:00",
+        //     "meterInfo": {
+        //         "firmwareVersion":  "1.8:33C4:DB63, 08d1aa3",
+        //         "publicKey":        "3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254",
+        //         "meterId":          "001BZR1521070003",
+        //         "manufacturer":     "BAUER Electronic",
+        //         "type":             "BSM-WS36A-H01-1311-0000"
+        //     },
+        //     "operatorInfo": "See https://www.chargeit-mobility.com/wp-content/uploads/chargeIT-Baumusterpr%C3%BCfbescheinigung-Lades%C3%A4ule-Online.pdf for type examination certificate",
+        //     "contract": {
+        //         "id":                "chargeIT up 12*4, id: 12345678abcdef"
+        //     },
+        //     "measurementId":         18899,
+        //     "value": {
+        //         "measurand": {
+        //             "id":            "1-0:1.8.0*198",
+        //             "name":          "RCR"
+        //         },
+        //         "measuredValue": {
+        //             "scale":         0,
+        //             "unit":          "WATT_HOUR",
+        //             "unitEncoded":   30,
+        //             "value":         0,
+        //             "valueType":     "UnsignedInteger32"
+        //         }
+        //     },
+
+        //#region Additional values
+
+        //   "additionalValues": [
+        //     {
+        //       "measurand": {
+        //         "name": "Typ"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unitEncoded": 255,
+        //         "value": 1,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "id": "1-0:1.8.0*198",
+        //         "name": "RCR"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unit": "WATT_HOUR",
+        //         "unitEncoded": 30,
+        //         "value": 0,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "id": "1-0:1.8.0*255",
+        //         "name": "TotWhImp"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unit": "WATT_HOUR",
+        //         "unitEncoded": 30,
+        //         "value": 77890,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "id": "1-0:1.7.0*255",
+        //         "name": "W"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 1,
+        //         "unit": "WATT",
+        //         "unitEncoded": 27,
+        //         "value": 0,
+        //         "valueType": "Integer32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "id": "1-0:0.0.0*255",
+        //         "name": "MA1"
+        //       },
+        //       "measuredValue": {
+        //         "unitEncoded": 255,
+        //         "value": "001BZR1521070003",
+        //         "valueType": "String",
+        //         "valueEncoding": "ISO-8859-1"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "RCnt"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unitEncoded": 255,
+        //         "value": 18899,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "OS"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unit": "SECOND",
+        //         "unitEncoded": 7,
+        //         "value": 1266738,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "Epoch"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unit": "SECOND",
+        //         "unitEncoded": 7,
+        //         "value": 1602145359,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "TZO"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unit": "MINUTE",
+        //         "unitEncoded": 6,
+        //         "value": 120,
+        //         "valueType": "Integer32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "EpochSetCnt"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unitEncoded": 255,
+        //         "value": 10189,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "EpochSetOS"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unit": "SECOND",
+        //         "unitEncoded": 7,
+        //         "value": 1266706,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "DI"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unitEncoded": 255,
+        //         "value": 1,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "DO"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unitEncoded": 255,
+        //         "value": 0,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "Meta1"
+        //       },
+        //       "measuredValue": {
+        //         "unitEncoded": 255,
+        //         "value": "chargeIT up 12*4, id: 12345678abcdef",
+        //         "valueType": "String",
+        //         "valueEncoding": "ISO-8859-1"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "Meta2"
+        //       },
+        //       "measuredValue": {
+        //         "unitEncoded": 255,
+        //         "value": "demo data 2",
+        //         "valueType": "String",
+        //         "valueEncoding": "ISO-8859-1"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "Meta3"
+        //       },
+        //       "measuredValue": {
+        //         "unitEncoded": 255,
+        //         "valueType": "String",
+        //         "valueEncoding": "ISO-8859-1"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "Evt"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unitEncoded": 255,
+        //         "value": 0,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     }
+        //   ],
+
+        //#endregion
+
+        //     "signature": "30460221009ada646742da37b27485b4887c2bd7262e2fc56e4dceb864221cddb2d31b19420221008d78ac0b205f18746c0c6d9c8f6fb53154082f167193685159e9af44ca4d9b59"
+        // }
+
+        //#endregion
+
+        try
+        {
+
+            let common = {
+                    Context:                     Content.signedMeterValues[0]["@context"],
+                    MeterFirmwareVersion:        Content.meterInfo?.firmwareVersion        ?? Content.signedMeterValues[0].meterInfo?.firmwareVersion,
+                    MeterPublicKey:              Content.meterInfo?.publicKey              ?? Content.signedMeterValues[0].meterInfo?.publicKey,
+                    MeterId:                     Content.meterInfo?.meterId                ?? Content.signedMeterValues[0].meterInfo?.meterId,
+                    MeterManufacturer:           Content.meterInfo?.manufacturer           ?? Content.signedMeterValues[0].meterInfo?.manufacturer,
+                    MeterType:                   Content.meterInfo?.type                   ?? Content.signedMeterValues[0].meterInfo?.type,
+                    OperatorInfo:                Content.operatorInfo                      ?? Content.signedMeterValues[0].operatorInfo,
+                    ContractId:                  Content.contract?.id                      ?? Content.signedMeterValues[0].contract?.id,
+                    ValueMeasurandId:            Content.value?.measurand?.id              ?? Content.signedMeterValues[0].value?.measurand?.id, // OBIS Id
+                    ValueMeasurandName:          Content.value?.measurand?.name            ?? Content.signedMeterValues[0].value?.measurand?.name,
+                    MeasuredValueScale:          Content.value?.measuredValue?.scale       ?? Content.signedMeterValues[0].value?.measuredValue?.scale,
+                    MeasuredValueUnit:           Content.value?.measuredValue?.unit        ?? Content.signedMeterValues[0].value?.measuredValue?.unit,
+                    MeasuredValueUnitEncoded:    Content.value?.measuredValue?.unitEncoded ?? Content.signedMeterValues[0].value?.measuredValue?.unitEncoded,
+                    MeasuredValueValueType:      Content.value?.measuredValue?.valueType   ?? Content.signedMeterValues[0].value?.measuredValue?.valueType,
+                    ChargePointSoftwareVersion:  Content.chargePoint?.softwareVersion      ?? Content.signedMeterValues[0].chargePoint?.softwareVersion,
+                    dataSets:                  [] as any[]
+                };
+
+            let previousId     = "";
+            let previousTime   = "";
+            let previousValue  = "";
+
+            for (let i=0; i<Content.signedMeterValues.length; i++)
+            {
+
+                const currentMeasurement = Content.signedMeterValues[i];
+
+                if (currentMeasurement["@context"] !== common.Context)
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent @context!"
+                    };
+
+
+                if (previousId !== "" && currentMeasurement["@id"] <= previousId)
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement identifications!"
+                    };
+                previousId   = currentMeasurement["@id"];
+
+
+                if (previousTime !== "" && currentMeasurement.time <= previousTime)
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement timestamps!"
+                    };
+                previousTime = currentMeasurement.time;
+
+
+                if (previousValue !== "" && currentMeasurement.value?.measuredValue?.value < previousValue)
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement values!"
+                    };
+                previousValue = currentMeasurement.value?.measuredValue?.value;
+
+
+                if (currentMeasurement.meterInfo)
+                {
+
+                    if (currentMeasurement.meterInfo?.firmwareVersion    !== common.MeterFirmwareVersion)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.firmwareVersion!"
+                        };
+
+                    if (currentMeasurement.meterInfo?.publicKey          !== common.MeterPublicKey)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.publicKey!"
+                        };
+
+                    if (currentMeasurement.meterInfo?.meterId            !== common.MeterId)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.meterId!"
+                        };
+
+                    if (currentMeasurement.meterInfo?.manufacturer       !== common.MeterManufacturer)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.manufacturer!"
+                        };
+
+                    if (currentMeasurement.meterInfo?.type               !== common.MeterType)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.type!"
+                        };
+
+                }
+
+                if (currentMeasurement.operatorInfo)
+                {
+                    if (currentMeasurement.operatorInfo                  !== common.OperatorInfo)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent operatorInfo!"
+                        };
+                }
+
+                if (currentMeasurement.contract)
+                {
+                    if (currentMeasurement.contract?.id                  !== common.ContractId)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent contract.id!"
+                        };
+                }
+
+                if (currentMeasurement.measurand)
+                {
+
+                    if (currentMeasurement.measurand?.firmwareVersion    !== common.ValueMeasurandId)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measurand.id!"
+                        };
+
+                    if (currentMeasurement.measurand?.name               !== common.ValueMeasurandName)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measurand.name!"
+                        };
+
+                }
+
+                if (currentMeasurement.measuredValue)
+                {
+
+                    if (currentMeasurement.measuredValue?.scale          !== common.MeasuredValueScale)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measuredValue.scale!"
+                        };
+
+                    if (currentMeasurement.measuredValue?.unit           !== common.MeasuredValueUnit)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measuredValue.unit!"
+                        };
+
+                    if (currentMeasurement.measuredValue?.unitEncoded    !== common.MeasuredValueUnitEncoded)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measuredValue.unitEncoded!"
+                        };
+
+                    if (currentMeasurement.measuredValue?.valueType      !== common.MeasuredValueValueType)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measuredValue.valueType!"
+                        };
+
+                }
+
+                if (currentMeasurement.chargePoint)
+                {
+                    if (currentMeasurement.chargePoint?.softwareVersion  !== common.ChargePointSoftwareVersion)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent chargePoint.softwareVersion!"
+                        };
+                }
+
+
+                // ToDo: Check additional values!
+
+
+                common.dataSets.push({
+                    //@ts-ignore
+                    //"StatusMeter":        MeterStatus,
+                    //@ts-ignore
+                    //"StatusAdapter":      AdapterStatus,
+                    //@ts-ignore
+                    //"SecondIndex":        SecondIndex,
+                    //@ts-ignore
+                    "time":               currentMeasurement.time,
+                    //@ts-ignore
+                    "value":              currentMeasurement.value?.measuredValue?.value,
+                    //@ts-ignore
+                    "measurementId":      currentMeasurement.measurementId,
+                    //@ts-ignore
+                    //"Paging":             Paging,
+                    //@ts-ignore
+                    "signature":          currentMeasurement.signature
+                });
+
+            }
+
+
+
+
+
+            var n = common.dataSets.length-1;
+            var _CTR: any = { //IChargeTransparencyRecord = {
+
+                 "@id":              Content["@id"],
+                 "@context":         "https://open.charging.cloud/contexts/CTR+json",
+
+                 "begin":            common.dataSets[0].time,
+                 "end":              common.dataSets[n].time,
+
+                 "description": {
+                     "de":           "Alle Ladevorgänge"
+                 },
+
+                 "contract": {
+                     "@id":          common.ContractId
+                     //"type":         CTRArray[0]["contract"]["type"],
+                     //"username":     "",
+                     //"email":        ""
+                 },
+
+                 "chargingPools": [
+                     {
+                         //"@id":                      "DE*GEF*POOL*1",
+                         //"description":              { "de": "GraphDefined Virtual Charging Pool - CI-Tests Pool 1" },
+                         "chargingStations": [
+                             {
+                                 //"@id":                      "DE*GEF*STATION*1*A",
+                                 //"description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A" },
+                                 "firmwareVersion":          common.ChargePointSoftwareVersion,
+                                 "geoLocation": {
+                                     "lat":                  Content.placeInfo?.geoLocation?.lat,
+                                     "lng":                  Content.placeInfo?.geoLocation?.lon
+                                 },
+                                 "address": {
+                                     "street":               Content.placeInfo?.address?.street,
+                                     "postalCode":           Content.placeInfo?.address?.zipCode,
+                                     "city":                 Content.placeInfo?.address?.town
+                                 },
+                                 "manufacturer": {
+                                     //"hardwareVersion":      "",
+                                     //"firmwareVersion":      "",
+                                     "calibrationLaw":       common.OperatorInfo,
+                                 },
+
+                                 "EVSEs": [
+                                     {
+                                         "@id":                      Content.placeInfo.evseId,
+                                         //"description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A / EVSE 1" },
+                                         //"sockets": [
+                                         //    {
+                                         //        "type":             "type2",
+                                         //        "cableAttached":    false
+                                         //    }
+                                         //],
+                                         "meters": [
+                                             {
+                                                 "@id":                      common.MeterId,
+                                                 "vendor":                   common.MeterManufacturer,  //ToDo: Change me to "manufacturer", but check other implementations!
+                                                 //"vendorURL":                "http://www.emh-metering.de",
+                                                 "model":                    common.MeterType,
+                                                 //"hardwareVersion":          "1.0",
+                                                 "firmwareVersion":          common.MeterFirmwareVersion,
+                                                 //"adapterId":                common.AdapterId,
+                                                 //"adapterFWVersion":         common.MeterFirmwareVersion,
+                                                 //"adapterFWChecksum":        common.AdapterFWChecksum,
+                                                 "signatureFormat":          common.Context,            //ToDo: Move me into "signatureInfos"!
+                                                 "signatureInfos": {
+                                                    "hash":                  "SHA256",
+                                                    "algorithm":             "ECC",
+                                                    "curve":                 "secp256r1",
+                                                    "format":                "rs",
+                                                    "encoding":              "hex"
+                                                 },                                                 
+                                                 "publicKeys": [
+                                                     {
+                                                         "value":            common.MeterPublicKey,
+                                                         "algorithm":        "secp256r1",
+                                                         "format":           "DER",
+                                                         "encoding":         "HEX"
+                                                         //"signatures":       CTRArray[0]["meterInfo"]["publicKeySignatures"]
+                                                     }
+                                                 ]
+                                             }
+                                         ]
+                                     }
+                                 ]
+                             }
+                         ],
+                     }
+                 ],
+
+                 "chargingSessions": [
+                     {
+
+                         "@id":                          Content["@id"],
+                         "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/bsm-ws36a-v0+json",
+                         "begin":                        common.dataSets[0].time,
+                         "end":                          common.dataSets[n].time,
+                         "EVSEId":                       Content.placeInfo.evseId,
+
+                         "authorizationStart": {
+                             "@id":                      common.ContractId,
+                            //  "type":                     CTRArray[0]["contract"]["type"],
+                            //  "timestamp":                this.moment.unix(CTRArray[0]["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
+                            //                                               CTRArray[0]["contract"]["timestampLocal"]["localOffset"] +
+                            //                                               CTRArray[0]["contract"]["timestampLocal"]["seasonOffset"]).format(),
+                         },
+
+                         "measurements": [
+                             {
+                                 "energyMeterId":        common.MeterId,
+                                 //"@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/bsm-ws36a-v0+json",
+                                 "name":                 OBIS2MeasurementName(common.ValueMeasurandId),
+                                 "obis":                 common.ValueMeasurandId,
+                                 "unit":                 common.MeasuredValueUnit,
+                                 "unitEncoded":          common.MeasuredValueUnitEncoded,
+                                 "valueType":            common.MeasuredValueValueType,
+                                 "scale":                common.MeasuredValueScale,
+                                 "values": [ ]
+                             }
+                         ]
+
+                     }
+                 ]
+
+            };
+
+
+            const ASN1_SignatureSchema = this.chargy.asn1.define('Signature', function() {
+                //@ts-ignore
+                this.seq().obj(
+                    //@ts-ignore
+                    this.key('r').int(),
+                    //@ts-ignore
+                    this.key('s').int()
+                );
+            });
+
+            for (let dataSet of common.dataSets)
+            {
+
+                let ASN1Signature = ASN1_SignatureSchema.decode(Buffer.from(dataSet.signature, 'hex'), 'der');
+
+                 _CTR["chargingSessions"][0]["measurements"][0]["values"].push(
+                                         {
+                                             "timestamp":          dataSet.time,
+                                             "value":              dataSet.value,
+                                            //  "statusMeter":    dataSet["StatusMeter"],
+                                            //  "statusAdapter":  dataSet["StatusAdapter"],
+                                            //  "secondsIndex":   dataSet["SecondIndex"],
+                                            //  "paginationId":   dataSet["Paging"],
+                                             "signatures": [
+                                                 {
+                                                     "r":          ASN1Signature.r.toString(16),
+                                                     "s":          ASN1Signature.s.toString(16)
+                                                 }
+                                             ]
+                                         }
+                 );
+
+            }
+
+            //await this.processChargeTransparencyRecord(_CTR);
+            return _CTR as IChargeTransparencyRecord;
+
+        }
+        catch (exception)
+        {
+            return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Exception occured: " + exception.message
+            }
+        }
+
+    }
+
+    //#endregion
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     GenerateKeyPair()//options?: elliptic.ec.GenKeyPairOptions)
     {
         return this.curve.genKeyPair();

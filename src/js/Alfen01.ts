@@ -22,6 +22,12 @@
 
 class Alfen01  {
 
+    private readonly chargy: Chargy;
+
+    constructor(chargy:  Chargy) {
+        this.chargy  = chargy;
+    }
+
     private bufferToHex(buffer: ArrayBuffer, Reverse?: Boolean) : string {
         return (Reverse
                     ? Array.from(new Uint8Array(buffer)).reverse()
@@ -40,8 +46,6 @@ class Alfen01  {
 
     public async tryToParseALFENFormat(Content: string|string[]) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
     {
-
-        const base32Decode = require('base32-decode');
 
         // AP;
         // 0;
@@ -94,12 +98,12 @@ class Alfen01  {
                         message:  "Invalid number of array elements!"
                     };
 
-                let FormatId               = elements[0];                           //  2 bytes
-                let Type                   = elements[1];                           //  1 byte; "0": start meter value | "1": stop meter value | "2": intermediate value
-                let BlobVersion            = elements[2];                           //  1 byte; "3" (current version)
-                let PublicKey:ArrayBuffer  = base32Decode(elements[3], 'RFC4648');  // 25 bytes; base32 encoded; secp192r1
-                let DataSet:  ArrayBuffer  = base32Decode(elements[4], 'RFC4648');  // 82 bytes; base32 encoded
-                let Signature:ArrayBuffer  = base32Decode(elements[5], 'RFC4648');  // 48 bytes; base32 encoded; secp192r1
+                let FormatId               = elements[0];                                  //  2 bytes
+                let Type                   = elements[1];                                  //  1 byte; "0": start meter value | "1": stop meter value | "2": intermediate value
+                let BlobVersion            = elements[2];                                  //  1 byte; "3" (current version)
+                let PublicKey:ArrayBuffer  = this.chargy.base32Decode(elements[3], 'RFC4648');  // 25 bytes; base32 encoded; secp192r1
+                let DataSet:  ArrayBuffer  = this.chargy.base32Decode(elements[4], 'RFC4648');  // 82 bytes; base32 encoded
+                let Signature:ArrayBuffer  = this.chargy.base32Decode(elements[5], 'RFC4648');  // 48 bytes; base32 encoded; secp192r1
 
                 // Verify common public key
                 if (common.PublicKey === "")
@@ -672,9 +676,8 @@ class AlfenCrypt01 extends ACrypt {
                             try
                             {
 
-                                const base32Decode  = require('base32-decode');
-                                const publicKey     = buf2hex(base32Decode(cryptoResult.publicKey.toUpperCase(), 'RFC4648'));
-                                let   result        = false;
+                                const publicKey  = buf2hex(this.chargy.base32Decode(cryptoResult.publicKey.toUpperCase(), 'RFC4648'));
+                                let   result     = false;
 
                                 switch (meter.publicKeys[0].algorithm)
                                 {
