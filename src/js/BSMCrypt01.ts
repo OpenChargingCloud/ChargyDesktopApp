@@ -64,12 +64,68 @@ class BSMCrypt01 extends ACrypt {
     }
 
 
+    public ParseTyp(value: number) : string
+    {
+        switch (value)
+        {
+            case 0: return "CURRENT";       // Signed snapshot of the current meter data at the time of its creation.
+            case 1: return "TURN ON";       // Signed snapshot created during executing the turn-on sequence for an external contactor.
+            case 2: return "TURN OFF";      // Signed snapshot created during the execution of the turn-off sequence for an external contactor.
+            case 3: return "START";         // Signed snapshot marking the start of a charging process without executing the turn-on sequence for an external contactor.
+            case 4: return "END";           // Signed snapshot marking the end of a charging process without executing the turn-off sequence for an external contactor.
+            default: return "<unknown>";
+        }
+    }
+
+    public ParseEvents(value: number) : string[]
+    {
+
+        let events = [];
+
+        if ((value & (1 <<  1)) != 0) events.push("Power Failure");
+        if ((value & (1 <<  2)) != 0) events.push("Under Voltage");
+        if ((value & (1 <<  3)) != 0) events.push("Low PF");
+        if ((value & (1 <<  4)) != 0) events.push("Over Current");
+        if ((value & (1 <<  5)) != 0) events.push("Over Voltage");
+        if ((value & (1 <<  6)) != 0) events.push("Missing Sensor");
+
+        if ((value & (1 <<  7)) != 0) events.push("Reserved 1");
+        if ((value & (1 <<  8)) != 0) events.push("Reserved 2");
+        if ((value & (1 <<  9)) != 0) events.push("Reserved 3");
+        if ((value & (1 << 10)) != 0) events.push("Reserved 4");
+        if ((value & (1 << 11)) != 0) events.push("Reserved 5");
+        if ((value & (1 << 12)) != 0) events.push("Reserved 6");
+        if ((value & (1 << 13)) != 0) events.push("Reserved 7");
+        if ((value & (1 << 14)) != 0) events.push("Reserved 8");
+
+        if ((value & (1 << 15)) != 0) events.push("Meter Fatal Error");
+        if ((value & (1 << 16)) != 0) events.push("CM Init Failed");
+        if ((value & (1 << 17)) != 0) events.push("CM Firmware Hash Mismatch");
+        if ((value & (1 << 18)) != 0) events.push("CM Development Mode");
+
+        if ((value & (1 << 19)) != 0) events.push("OEM 05");
+        if ((value & (1 << 20)) != 0) events.push("OEM 06");
+        if ((value & (1 << 21)) != 0) events.push("OEM 07");
+        if ((value & (1 << 22)) != 0) events.push("OEM 08");
+        if ((value & (1 << 23)) != 0) events.push("OEM 09");
+        if ((value & (1 << 24)) != 0) events.push("OEM 10");
+        if ((value & (1 << 25)) != 0) events.push("OEM 11");
+        if ((value & (1 << 26)) != 0) events.push("OEM 12");
+        if ((value & (1 << 27)) != 0) events.push("OEM 13");
+        if ((value & (1 << 28)) != 0) events.push("OEM 14");
+        if ((value & (1 << 29)) != 0) events.push("OEM 15");
+
+        return events;
+
+    }
+
+
     //#region tryToParseBSM_WS36aFormat(Content)
 
     public async tryToParseBSM_WS36aFormat(Content: any) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
     {
 
-        if (Array.isArray(Content) || !Array.isArray(Content.signedMeterValues))
+        if (Array.isArray(Content) || !Array.isArray(Content.signedMeterValues) || Content.signedMeterValues.length < 2)
             return {
                 status: SessionVerificationResult.InvalidSessionFormat
             }
@@ -341,6 +397,10 @@ class BSMCrypt01 extends ACrypt {
             let previousTime   = "";
             let previousValue  = "";
 
+            let previousRCnt   = -1;
+            let previousOS     = -1;
+            let previousEpoch  = -1;
+
             for (let i=0; i<Content.signedMeterValues.length; i++)
             {
 
@@ -352,6 +412,7 @@ class BSMCrypt01 extends ACrypt {
                         message:  "Inconsistent @context!"
                     };
 
+                //#region Validate common values
 
                 if (previousId !== "" && currentMeasurement["@id"] <= previousId)
                     return {
@@ -485,36 +546,131 @@ class BSMCrypt01 extends ACrypt {
                         };
                 }
 
+                //#endregion
 
-                // ToDo: Check additional values!
+                //#region Check additional values
 
+                let Typ          = 0;    // Snapshot Type   // Welchen Typ für Zwischenwerte?!?
+                let RCR          = 0;    // !!! Real energy imported since the last execution of the turn-on sequence
+                let TotWhImp     = 0;    // !!! Total Real Energy Imported
+                let W            = 0;    // !!! Total Real Power
+                let MA1          = 0;    // Meter Address 1(???)
+                let RCnt         = 0;    // A counter incremented with each snapshot
+                let OS           = 0;    // Operation-Seconds Counter
+                let Epoch        = 0;    // Current local time in seconds since 1970
+                let TZO          = 0;    // Timezone offset of local epoch time time to UTC (minutes)
+                let EpochSetCnt  = 0;    // How many time epoch time and timezone offset have been set
+                let EpochSetOS   = 0;    // Operation-seconds when the time has been set the last time
+                let DI           = 0;    // Status of the digital inputs
+                let DO           = 0;    // Status of the digital outputs
+                let Meta1        = "";   // User metadata 1 => Check text encoding: https://www.npmjs.com/package/iconv
+                let Meta2        = "";   // User metadata 2 => Check text encoding: https://www.npmjs.com/package/iconv
+                let Meta3        = "";   // User metadata 3 => Check text encoding: https://www.npmjs.com/package/iconv
+                let Evt          = 0;    // Meter Event Flags
+
+                for(const additionalValue of currentMeasurement.additionalValues)
+                {
+                    switch (additionalValue.measurand?.name)
+                    {
+                        case "Typ":          Typ          = additionalValue.measuredValue?.value; break;
+                        case "RCR":          RCR          = additionalValue.measuredValue?.value; break;
+                        case "TotWhImp":     TotWhImp     = additionalValue.measuredValue?.value; break;
+                        case "W":            W            = additionalValue.measuredValue?.value; break;
+                        case "MA1":          MA1          = additionalValue.measuredValue?.value; break;
+                        case "RCnt":         RCnt         = additionalValue.measuredValue?.value; break;
+                        case "OS":           OS           = additionalValue.measuredValue?.value; break;
+                        case "Epoch":        Epoch        = additionalValue.measuredValue?.value; break;
+                        case "TZO":          TZO          = additionalValue.measuredValue?.value; break;
+                        case "EpochSetCnt":  EpochSetCnt  = additionalValue.measuredValue?.value; break;
+                        case "EpochSetOS":   EpochSetOS   = additionalValue.measuredValue?.value; break;
+                        case "DI":           DI           = additionalValue.measuredValue?.value; break;
+                        case "DO":           DO           = additionalValue.measuredValue?.value; break;
+                        case "Meta1":        Meta1        = additionalValue.measuredValue?.value; break;
+                        case "Meta2":        Meta2        = additionalValue.measuredValue?.value; break;
+                        case "Meta3":        Meta3        = additionalValue.measuredValue?.value; break;
+                        case "Evt":          Evt          = additionalValue.measuredValue?.value; break;
+                    }
+                }
+
+
+                if (previousRCnt !== -1 && RCnt <= previousRCnt)
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Inconsistent measurement snapshot counter!"
+                };
+                previousRCnt = RCnt;
+
+
+                if (previousOS !== -1 && OS <= previousOS)
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Inconsistent measurement operation-seconds counter!"
+                };
+                previousOS = OS;
+
+
+                if (previousEpoch !== -1 && Epoch <= previousEpoch)
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Inconsistent measurement epochs!"
+                };
+                previousEpoch = Epoch;
+
+                //#endregion
 
                 common.dataSets.push({
-                    //@ts-ignore
-                    //"StatusMeter":        MeterStatus,
-                    //@ts-ignore
-                    //"StatusAdapter":      AdapterStatus,
-                    //@ts-ignore
-                    //"SecondIndex":        SecondIndex,
-                    //@ts-ignore
-                    "time":               currentMeasurement.time,
-                    //@ts-ignore
-                    "value":              currentMeasurement.value?.measuredValue?.value,
-                    //@ts-ignore
-                    "measurementId":      currentMeasurement.measurementId,
-                    //@ts-ignore
-                    //"Paging":             Paging,
-                    //@ts-ignore
-                    "signature":          currentMeasurement.signature
+                    Typ:             this.ParseTyp(Typ),
+                    RCR:             RCR,
+                    TotWhImp:        TotWhImp,
+                    W:               W,
+                    MA1:             MA1,
+                    RCnt:            RCnt,
+                    OS:              OS,
+                    Epoch:           Epoch,
+                    TZO:             TZO,          // must be common? Charging during Zeitumstellung?!
+                    EpochSetCnt:     EpochSetCnt,  // must be common!
+                    EpochSetOS:      EpochSetOS,   // must be common!
+                    DI:              DI,
+                    DO:              DO,
+                    Meta1:           Meta1,
+                    Meta2:           Meta2,
+                    Meta3:           Meta3,
+                    Evt:             this.ParseEvents(Evt),
+                    time:            currentMeasurement.time,
+                    value:           currentMeasurement.value?.measuredValue?.value,
+                    measurementId:   currentMeasurement.measurementId,
+                    signature:       currentMeasurement.signature
                 });
 
             }
 
-
-
-
+            //#region Check snapshot types
 
             var n = common.dataSets.length-1;
+
+            if (common.dataSets[0].Typ !== "START" && common.dataSets[0].Typ !== "TURN ON")
+            return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Invalid start snapshot!"
+            };
+
+            for (let i=1; i<Content.signedMeterValues.length-1; i++)
+            {
+                if (common.dataSets[i].Typ !== "CURRENT")
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Invalid intermediate snapshot!"
+                };
+            }
+
+            if (common.dataSets[n].Typ !== "END"   && common.dataSets[n].Typ !== "TURN OFF")
+            return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Invalid end snapshot!"
+            };
+
+            //#endregion
+
             var _CTR: any = { //IChargeTransparencyRecord = {
 
                  "@id":              Content["@id"],
@@ -586,7 +742,7 @@ class BSMCrypt01 extends ACrypt {
                                                     "curve":                 "secp256r1",
                                                     "format":                "rs",
                                                     "encoding":              "hex"
-                                                 },                                                 
+                                                 },
                                                  "publicKeys": [
                                                      {
                                                          "value":            common.MeterPublicKey,
@@ -659,16 +815,29 @@ class BSMCrypt01 extends ACrypt {
 
                  _CTR["chargingSessions"][0]["measurements"][0]["values"].push(
                                          {
-                                             "timestamp":          dataSet.time,
-                                             "value":              dataSet.value,
-                                            //  "statusMeter":    dataSet["StatusMeter"],
-                                            //  "statusAdapter":  dataSet["StatusAdapter"],
-                                            //  "secondsIndex":   dataSet["SecondIndex"],
-                                            //  "paginationId":   dataSet["Paging"],
-                                             "signatures": [
+                                             timestamp:     dataSet.time,
+                                             type:          dataSet.Typ,
+                                             value:         dataSet.value,
+                                             RCR:           dataSet.RCR,
+                                             TotWhImp:      dataSet.TotWhImp,
+                                             W:             dataSet.W,
+                                             MA1:           dataSet.MA1,
+                                             RCnt:          dataSet.RCnt,
+                                             OS:            dataSet.OS,
+                                             epoch:         dataSet.Epoch,
+                                             TZO:           dataSet.TZO,
+                                             epochSetCnt:   dataSet.EpochSetCnt,
+                                             epochSetOS:    dataSet.EpochSetOS,
+                                             DI:            dataSet.DI,
+                                             DO:            dataSet.DO,
+                                             meta1:         dataSet.Meta1,
+                                             meta2:         dataSet.Meta2,
+                                             meta3:         dataSet.Meta3,
+                                             events:        dataSet.Evt,
+                                             signatures: [
                                                  {
-                                                     "r":          ASN1Signature.r.toString(16),
-                                                     "s":          ASN1Signature.s.toString(16)
+                                                     r:  ASN1Signature.r.toString(16),
+                                                     s:  ASN1Signature.s.toString(16)
                                                  }
                                              ]
                                          }
