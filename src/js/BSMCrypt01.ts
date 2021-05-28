@@ -374,6 +374,8 @@ class BSMCrypt01 extends ACrypt {
         try
         {
 
+            //#region Define values
+
             let common = {
                     Context:                     Content.signedMeterValues[0]["@context"],
                     MeterFirmwareVersion:        Content.meterInfo?.firmwareVersion        ?? Content.signedMeterValues[0].meterInfo?.firmwareVersion,
@@ -393,13 +395,34 @@ class BSMCrypt01 extends ACrypt {
                     dataSets:                  [] as any[]
                 };
 
-            let previousId     = "";
-            let previousTime   = "";
-            let previousValue  = "";
+            let Typ             = 0;    // Snapshot Type   // Welchen Typ für Zwischenwerte?!?
+            let RCR:      any[] = [];   // !!! Real energy imported since the last execution of the turn-on sequence
+            let TotWhImp: any[] = [];   // !!! Total Real Energy Imported
+            let W:        any[] = [];   // !!! Total Real Power
+            let MA1             = 0;    // Meter Address 1(???)
+            let RCnt            = 0;    // A counter incremented with each snapshot
+            let OS              = 0;    // Operation-Seconds Counter
+            let Epoch           = 0;    // Current local time in seconds since 1970
+            let TZO             = 0;    // Timezone offset of local epoch time time to UTC (minutes)
+            let EpochSetCnt     = 0;    // How many time epoch time and timezone offset have been set
+            let EpochSetOS      = 0;    // Operation-seconds when the time has been set the last time
+            let DI              = 0;    // Status of the digital inputs
+            let DO              = 0;    // Status of the digital outputs
+            let Meta1           = "";   // User metadata 1 => Check text encoding: https://www.npmjs.com/package/iconv
+            let Meta2           = "";   // User metadata 2 => Check text encoding: https://www.npmjs.com/package/iconv
+            let Meta3           = "";   // User metadata 3 => Check text encoding: https://www.npmjs.com/package/iconv
+            let Evt             = 0;    // Meter Event Flags
 
-            let previousRCnt   = -1;
-            let previousOS     = -1;
-            let previousEpoch  = -1;
+
+            let previousId      = "";
+            let previousTime    = "";
+            let previousValue   = "";
+
+            let previousRCnt    = -1;
+            let previousOS      = -1;
+            let previousEpoch   = -1;
+
+            //#endregion
 
             for (let i=0; i<Content.signedMeterValues.length; i++)
             {
@@ -550,45 +573,42 @@ class BSMCrypt01 extends ACrypt {
 
                 //#region Check additional values
 
-                let Typ          = 0;    // Snapshot Type   // Welchen Typ für Zwischenwerte?!?
-                let RCR          = 0;    // !!! Real energy imported since the last execution of the turn-on sequence
-                let TotWhImp     = 0;    // !!! Total Real Energy Imported
-                let W            = 0;    // !!! Total Real Power
-                let MA1          = 0;    // Meter Address 1(???)
-                let RCnt         = 0;    // A counter incremented with each snapshot
-                let OS           = 0;    // Operation-Seconds Counter
-                let Epoch        = 0;    // Current local time in seconds since 1970
-                let TZO          = 0;    // Timezone offset of local epoch time time to UTC (minutes)
-                let EpochSetCnt  = 0;    // How many time epoch time and timezone offset have been set
-                let EpochSetOS   = 0;    // Operation-seconds when the time has been set the last time
-                let DI           = 0;    // Status of the digital inputs
-                let DO           = 0;    // Status of the digital outputs
-                let Meta1        = "";   // User metadata 1 => Check text encoding: https://www.npmjs.com/package/iconv
-                let Meta2        = "";   // User metadata 2 => Check text encoding: https://www.npmjs.com/package/iconv
-                let Meta3        = "";   // User metadata 3 => Check text encoding: https://www.npmjs.com/package/iconv
-                let Evt          = 0;    // Meter Event Flags
-
                 for(const additionalValue of currentMeasurement.additionalValues)
                 {
                     switch (additionalValue.measurand?.name)
                     {
-                        case "Typ":          Typ          = additionalValue.measuredValue?.value; break;
-                        case "RCR":          RCR          = additionalValue.measuredValue?.value; break;
-                        case "TotWhImp":     TotWhImp     = additionalValue.measuredValue?.value; break;
-                        case "W":            W            = additionalValue.measuredValue?.value; break;
-                        case "MA1":          MA1          = additionalValue.measuredValue?.value; break;
-                        case "RCnt":         RCnt         = additionalValue.measuredValue?.value; break;
-                        case "OS":           OS           = additionalValue.measuredValue?.value; break;
-                        case "Epoch":        Epoch        = additionalValue.measuredValue?.value; break;
-                        case "TZO":          TZO          = additionalValue.measuredValue?.value; break;
-                        case "EpochSetCnt":  EpochSetCnt  = additionalValue.measuredValue?.value; break;
-                        case "EpochSetOS":   EpochSetOS   = additionalValue.measuredValue?.value; break;
-                        case "DI":           DI           = additionalValue.measuredValue?.value; break;
-                        case "DO":           DO           = additionalValue.measuredValue?.value; break;
-                        case "Meta1":        Meta1        = additionalValue.measuredValue?.value; break;
-                        case "Meta2":        Meta2        = additionalValue.measuredValue?.value; break;
-                        case "Meta3":        Meta3        = additionalValue.measuredValue?.value; break;
-                        case "Evt":          Evt          = additionalValue.measuredValue?.value; break;
+                        case "Typ":          Typ          =   additionalValue.measuredValue?.value; break;
+                        case "RCR":          RCR          = [ additionalValue.measurand?.id,
+                                                              additionalValue.measuredValue?.scale,
+                                                              additionalValue.measuredValue?.unit,
+                                                              additionalValue.measuredValue?.unitEncoded,
+                                                              additionalValue.measuredValue?.value,
+                                                              additionalValue.measuredValue?.valueType ]; break;
+                        case "TotWhImp":     TotWhImp     = [ additionalValue.measurand?.id,
+                                                              additionalValue.measuredValue?.scale,
+                                                              additionalValue.measuredValue?.unit,
+                                                              additionalValue.measuredValue?.unitEncoded,
+                                                              additionalValue.measuredValue?.value,
+                                                              additionalValue.measuredValue?.valueType ]; break;
+                        case "W":            W            = [ additionalValue.measurand?.id,
+                                                              additionalValue.measuredValue?.scale,
+                                                              additionalValue.measuredValue?.unit,
+                                                              additionalValue.measuredValue?.unitEncoded,
+                                                              additionalValue.measuredValue?.value,
+                                                              additionalValue.measuredValue?.valueType ]; break;
+                        case "MA1":          MA1          =   additionalValue.measuredValue?.value; break;
+                        case "RCnt":         RCnt         =   additionalValue.measuredValue?.value; break;
+                        case "OS":           OS           =   additionalValue.measuredValue?.value; break;
+                        case "Epoch":        Epoch        =   additionalValue.measuredValue?.value; break;
+                        case "TZO":          TZO          =   additionalValue.measuredValue?.value; break;
+                        case "EpochSetCnt":  EpochSetCnt  =   additionalValue.measuredValue?.value; break;
+                        case "EpochSetOS":   EpochSetOS   =   additionalValue.measuredValue?.value; break;
+                        case "DI":           DI           =   additionalValue.measuredValue?.value; break;
+                        case "DO":           DO           =   additionalValue.measuredValue?.value; break;
+                        case "Meta1":        Meta1        =   additionalValue.measuredValue?.value; break;
+                        case "Meta2":        Meta2        =   additionalValue.measuredValue?.value; break;
+                        case "Meta3":        Meta3        =   additionalValue.measuredValue?.value; break;
+                        case "Evt":          Evt          =   additionalValue.measuredValue?.value; break;
                     }
                 }
 
@@ -782,12 +802,35 @@ class BSMCrypt01 extends ACrypt {
                              {
                                  "energyMeterId":        common.MeterId,
                                  //"@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/bsm-ws36a-v0+json",
-                                 "name":                 OBIS2MeasurementName(common.ValueMeasurandId),
-                                 "obis":                 common.ValueMeasurandId,
-                                 "unit":                 common.MeasuredValueUnit,
-                                 "unitEncoded":          common.MeasuredValueUnitEncoded,
-                                 "valueType":            common.MeasuredValueValueType,
-                                 "scale":                common.MeasuredValueScale,
+                                 "phenomena": [
+                                     {
+                                        "name":              "Real Energy Imported",
+                                        "obis":              common.ValueMeasurandId,
+                                        "unit":              common.MeasuredValueUnit,
+                                        "unitEncoded":       common.MeasuredValueUnitEncoded,
+                                        "valueType":         common.MeasuredValueValueType,
+                                        "value":             "value",
+                                        "scale":             common.MeasuredValueScale
+                                     },
+                                     {
+                                        "name":              "Total Watt-hours Imported",
+                                        "obis":              TotWhImp[0],
+                                        "unit":              TotWhImp[2],
+                                        "unitEncoded":       TotWhImp[3],
+                                        "valueType":         TotWhImp[5],
+                                        "value":             "TotWhImp",
+                                        "scale":             TotWhImp[1]
+                                     },
+                                     {
+                                        "name":              "Total Real Power",
+                                        "obis":              W[0],
+                                        "unit":              W[2],
+                                        "unitEncoded":       W[3],
+                                        "valueType":         W[5],
+                                        "value":             "W",
+                                        "scale":             W[1]
+                                     }
+                                 ],
                                  "values": [ ]
                              }
                          ]
@@ -818,9 +861,9 @@ class BSMCrypt01 extends ACrypt {
                                              timestamp:     dataSet.time,
                                              type:          dataSet.Typ,
                                              value:         dataSet.value,
-                                             RCR:           dataSet.RCR,
-                                             TotWhImp:      dataSet.TotWhImp,
-                                             W:             dataSet.W,
+                                             //RCR:           dataSet.RCR,
+                                             TotWhImp:      dataSet.TotWhImp[4],
+                                             W:             dataSet.W[4],
                                              MA1:           dataSet.MA1,
                                              RCnt:          dataSet.RCnt,
                                              OS:            dataSet.OS,

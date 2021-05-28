@@ -1358,8 +1358,20 @@ class ChargyApp {
                             if (measurement.values && measurement.values.length > 0)
                             {
 
-                                if (measurement.scale == null)
-                                    measurement.scale = 0;
+                                if (measurement.phenomena && measurement.phenomena.length > 0)
+                                {
+
+                                    measurement.name         = measurement.phenomena[0].name;
+                                    measurement.obis         = measurement.phenomena[0].obis;
+                                    measurement.unit         = measurement.phenomena[0].unit;
+                                    measurement.unitEncoded  = measurement.phenomena[0].unitEncoded;
+                                    measurement.valueType    = measurement.phenomena[0].valueType;
+                                    measurement.scale        = measurement.phenomena[0].scale;
+
+                                    if (measurement.scale == undefined || measurement.scale == null)
+                                        measurement.scale = 0;
+
+                                }
 
                                 let first  = measurement.values[0].value;
                                 let last   = measurement.values[measurement.values.length-1].value;
@@ -1976,10 +1988,10 @@ class ChargyApp {
                     //#region Show measurement infos
 
                     CreateDiv2(meterDiv,              "measurement",
-                               "Messung",             measurement.name);
+                               "Messung",             measurement.phenomena?.[0]?.name ?? measurement.name);
 
                     CreateDiv2(meterDiv,              "OBIS",
-                               "OBIS-Kennzahl",       measurement.obis);
+                               "OBIS-Kennzahl",       measurement.phenomena?.[0]?.obis ?? measurement.obis);
 
                     //#endregion
 

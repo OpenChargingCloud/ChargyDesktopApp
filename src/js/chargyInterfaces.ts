@@ -337,6 +337,7 @@ interface IMeasurement
     "@context":                 string;
     chargingSession:            IChargingSession;
     energyMeterId:              string;
+    phenomena:                  any[];
     name:                       string;
     obis:                       string;
     unit:                       string;

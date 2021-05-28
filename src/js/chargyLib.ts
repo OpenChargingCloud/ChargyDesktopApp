@@ -116,14 +116,17 @@ function OBIS2MeasurementName(In: string) : string
     switch (In)
     {
 
-        case "1-0:1.8.0*255":
-            return "ENERGY_TOTAL";      // Sum Li Active Power+ (Q1+QIV), Time integral 1 [kWh]
+        case "1-0:1.7.0*255":
+            return "Total Real Power";
 
         case "1-0:1.8.0*198":
-            return "ENERGY_TOTAL";      // Explizit rücksetzbare Referenzzählwerk!
+            return "ENERGY_TOTAL";
+
+        case "1-0:1.8.0*255":
+            return "ENERGY_TOTAL";
 
         case "1-0:1.17.0*255":
-            return "ENERGY_TOTAL";      // Sum Li Active Power+ (Q1+QIV), Time integral 7 [kWh]
+            return "ENERGY_TOTAL";
 
         default:
             return In;
