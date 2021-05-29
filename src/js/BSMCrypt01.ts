@@ -1394,40 +1394,25 @@ class BSMCrypt01 extends ACrypt {
             PlainTextDiv.style.maxHeight   = "";
             PlainTextDiv.style.overflowY   = "";
 
-
             // https://github.com/chargeITmobility/bsm-python-private/blob/30abc7ba958c936fdb952ed1f121e45d0818419c/doc/examples/snapshots.md#verifying-a-snapshot-with-the-bsm-tool
 
-            this.CreateLine("Snapshot-Typ", measurementValue.Typ,         result.Typ          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("RCR",          measurementValue.RCR,         result.RCR          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("TotWhImp",     measurementValue.TotWhImp,    result.TotWhImp     || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("W",            measurementValue.W,           result.W            || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("MA1",          measurementValue.MA1,         result.MA1          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("RCnt",         measurementValue.RCnt,        result.RCnt         || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("OS",           measurementValue.OS,          result.OS           || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Epoch",        measurementValue.Epoch,       result.Epoch        || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("TZO",          measurementValue.TZO,         result.TZO          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("EpochSetCnt",  measurementValue.EpochSetCnt, result.EpochSetCnt  || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("EpochSetOS",   measurementValue.EpochSetOS,  result.EpochSetOS   || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("DI",           measurementValue.DI,          result.DI           || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("DO",           measurementValue.DO,          result.DO           || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Meta1",        measurementValue.Meta1,       result.Meta1        || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Meta2",        measurementValue.Meta2,       result.Meta2        || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Meta3",        measurementValue.Meta3,       result.Meta3        || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Evt",          measurementValue.Evt,         result.Evt          || "",  infoDiv, PlainTextDiv);
-
-            //this.CreateLine("Typ",                      measurementValue.measurement.energyMeterId,                                           result.meterId                               || "",  infoDiv, PlainTextDiv);
-            //this.CreateLine("Zeitstempel",              UTC2human(measurementValue.timestamp),                                                result.timestamp                             || "",  infoDiv, PlainTextDiv);
-            //this.CreateLine("Status",                   hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
-            //                                            this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",            result.infoStatus                            || "",  infoDiv, PlainTextDiv);
-            //this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                        result.secondsIndex                          || "",  infoDiv, PlainTextDiv);
-            //this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                          result.paginationId                          || "",  infoDiv, PlainTextDiv);
-            //this.CreateLine("OBIS-Kennzahl",            measurementValue.measurement.obis,                                                    result.obis                                  || "",  infoDiv, PlainTextDiv);
-            //this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                             result.unitEncoded                           || "",  infoDiv, PlainTextDiv);
-            //this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                   result.scale                                 || "",  infoDiv, PlainTextDiv);
-            //this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                       result.value                                 || "",  infoDiv, PlainTextDiv);
-            //this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                               result.logBookIndex                          || "",  infoDiv, PlainTextDiv);
-            //this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",      pad(result.authorizationStart,          128) || "",  infoDiv, PlainTextDiv);
-            //this.CreateLine("Autorisierungszeitpunkt",  UTC2human(measurementValue.measurement.chargingSession.authorizationStart.timestamp), pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Snapshot-Typ", this.ParseTyp(measurementValue.Typ),                 result.Typ         || "", infoDiv, PlainTextDiv);
+            this.CreateLine("RCR",          measurementValue.RCR + " Wh",                        result.RCR         || "", infoDiv, PlainTextDiv);
+            this.CreateLine("TotWhImp",     measurementValue.TotWhImp + " Wh",                   result.TotWhImp    || "", infoDiv, PlainTextDiv);
+            this.CreateLine("W",            measurementValue.W + " Watt",                        result.W           || "", infoDiv, PlainTextDiv);
+            this.CreateLine("MA1",          measurementValue.MA1,                                result.MA1         || "", infoDiv, PlainTextDiv);
+            this.CreateLine("RCnt",         measurementValue.RCnt,                               result.RCnt        || "", infoDiv, PlainTextDiv);
+            this.CreateLine("OS",           measurementValue.OS,                                 result.OS          || "", infoDiv, PlainTextDiv);
+            this.CreateLine("Zeitstempel",  UTC2human(measurementValue.Epoch),                   result.Epoch       || "", infoDiv, PlainTextDiv);
+            this.CreateLine("TZO",          measurementValue.TZO + " Minuten",                   result.TZO         || "", infoDiv, PlainTextDiv);
+            this.CreateLine("EpochSetCnt",  measurementValue.EpochSetCnt,                        result.EpochSetCnt || "", infoDiv, PlainTextDiv);
+            this.CreateLine("EpochSetOS",   measurementValue.EpochSetOS,                         result.EpochSetOS  || "", infoDiv, PlainTextDiv);
+            this.CreateLine("DI",           measurementValue.DI,                                 result.DI          || "", infoDiv, PlainTextDiv);
+            this.CreateLine("DO",           measurementValue.DO,                                 result.DO          || "", infoDiv, PlainTextDiv);
+            this.CreateLine("Meta1",        measurementValue.Meta1,                              result.Meta1       || "", infoDiv, PlainTextDiv);
+            this.CreateLine("Meta2",        measurementValue.Meta2,                              result.Meta2       || "", infoDiv, PlainTextDiv);
+            this.CreateLine("Meta3",        measurementValue.Meta3,                              result.Meta3       || "", infoDiv, PlainTextDiv);
+            this.CreateLine("Evt",          this.ParseEvents(measurementValue.Evt).join("<br>"), result.Evt         || "", infoDiv, PlainTextDiv);
 
         }
 
