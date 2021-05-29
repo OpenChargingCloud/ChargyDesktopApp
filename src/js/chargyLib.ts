@@ -242,6 +242,34 @@ function intFromBytes(x: number[]){
     return val;
 }
 
+function getInt8Bytes(x: number) : number[] {
+
+    var bytes:number[] = [];
+    var i              = 1;
+
+    do {
+        bytes[--i] = x & (255);
+        x = x>>8;
+    } while (i)
+
+    return bytes;
+
+}
+
+function getInt16Bytes(x: number) : number[] {
+
+    var bytes:number[] = [];
+    var i              = 2;
+
+    do {
+        bytes[--i] = x & (255);
+        x = x>>8;
+    } while (i)
+
+    return bytes;
+
+}
+
 function getInt32Bytes(x: number) : number[] {
 
     var bytes:number[] = [];
@@ -394,6 +422,52 @@ function SetText(dv: DataView, text: string, offset: number): string
     }
 
     return buf2hex(buffer);
+
+}
+
+
+function SetUInt32_withCode(dv: DataView, value: number, scale: number, obis: number, offset: number, reverse?: boolean): string
+{
+
+    var valueBytes   = getInt32Bytes(value);
+    var scaleBytes   = getInt8Bytes(scale);
+    var obisBytes    = getInt8Bytes(obis);
+    var buffer       = new ArrayBuffer(valueBytes.length + 2);
+    var tv           = new DataView(buffer);
+
+    if (reverse)
+        valueBytes.reverse();
+
+    for (var i = 0; i < valueBytes.length; i++) {
+        dv.setUint8(offset + i, valueBytes[i]);
+        tv.setUint8(i,          valueBytes[i]);
+    }
+
+    tv.setInt8(valueBytes.length,   scaleBytes[0]);
+    tv.setInt8(valueBytes.length+1, obisBytes[0]);
+
+    const result = buf2hex(buffer);
+    return result.substr(0, 8) + "·" + result.substr(8, 2) + "·" + result.substr(10, 2);
+
+}
+
+function SetText_withLength(dv: DataView, text: string, offset: number): string
+{
+
+    //var bytes = new TextEncoder("utf-8").encode(text);
+    var bytes   = new TextEncoder().encode(text);
+    var buffer  = new ArrayBuffer(4 + bytes.length);
+    var tv      = new DataView(buffer);
+
+    tv.setInt32(0, bytes.length);
+
+    for (var i = 0; i < bytes.length; i++) {
+        dv.setUint8(offset + i, bytes[i]);
+        tv.setUint8(4      + i, bytes[i]);
+    }
+
+    const result = buf2hex(buffer);
+    return result.substr(0, 8) + "·" + result.substr(8);
 
 }
 

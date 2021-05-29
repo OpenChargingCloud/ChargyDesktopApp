@@ -4,7 +4,7 @@ https://github.com/chargeITmobility/bsm-python-private/blob/30abc7ba958c936fdb95
 
 ```
 Typ         (0)                 => 00000000 00 ff
-RCR 	    (150 Wh)            => 00000096 00 1e
+RCR         (150 Wh)            => 00000096 00 1e
 TotWhImp    (88350 Wh)          => 0001591e 00 1e
 W           (0.0 W)             => 00000000 01 1b
 MA1         (001BZR1521070003)  => 00000010 303031425a5231353231303730303033
@@ -17,8 +17,8 @@ EpochSetOS  (1829734 s)         => 001beb66 00 07
 DI          (1)                 => 00000001 00 ff
 DO          (0)                 => 00000000 00 ff
 Meta1       (demo data 1)       => 0000000b 64656d6f20646174612031
-Meta2       () 			        => 00000000
-Meta3       () 			        => 00000000
+Meta2       ()                  => 00000000
+Meta3       ()                  => 00000000
 Evt         (0)                 => 00000000 00 ff
 ```
 
@@ -27,7 +27,7 @@ Evt         (0)                 => 00000000 00 ff
 `vvvvvvvv ss uu` means:
 - A 32 bit representation of the numerical value `vvvvvvvv`
 - A signed 8 bit scale factor exponent `ss`
-- The unsigned 8 bit representation `uu` of the DLMS code for its unit
+- The unsigned 8 bit representation `uu` of the DLMS code for its unit (OBIS)
 
 For example...
 - In its base unit Wh: 36.6 kWh = 36600 Wh = 0x8ef8 Wh
@@ -39,12 +39,11 @@ For example...
 ## String Values
 
 String values are represented by:
-
 - Its length as an unsigned 32 bit value
 - Catenated with its actual data bytes
 
 For example...
-- The string `ABC` will be represented as `00000003 414243`.
+- The string `ABC` will be represented as `00000003 414243`
 
 
 # Byte arry to be hashed

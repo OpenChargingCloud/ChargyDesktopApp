@@ -1158,6 +1158,10 @@ class Chargy {
                 chargingSession.method = new AlfenCrypt01(this);
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
+            case "https://open.charging.cloud/contexts/SessionSignatureFormats/bsm-ws36a-v0+json":
+                chargingSession.method = new BSMCrypt01(this);
+                return await chargingSession.method.VerifyChargingSession(chargingSession);
+
             default:
                 return {
                     status: SessionVerificationResult.UnknownSessionFormat
