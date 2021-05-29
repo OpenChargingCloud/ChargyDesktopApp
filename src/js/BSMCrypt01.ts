@@ -48,6 +48,7 @@ interface IBSMCrypt01Result extends ICryptoResult
     meter?:                        IMeter,
     timestamp?:                    string,
 
+    ArraySize:                     number,
     Typ:                           string,
     RCR:                           string,
     TotWhImp:                      string,
@@ -1073,6 +1074,7 @@ class BSMCrypt01 extends ACrypt {
 
         var cryptoResult:IBSMCrypt01Result = {
             status:        VerificationResult.InvalidSignature,
+            ArraySize:     requiredSize,
             Typ:           SetUInt32_withCode(cryptoBuffer, measurementValue.Typ,          0, 255,   0),
             RCR:           SetUInt32_withCode(cryptoBuffer, measurementValue.RCR,          0,  30,   6),
             TotWhImp:      SetUInt32_withCode(cryptoBuffer, measurementValue.TotWhImp,     0,  30,  12),
@@ -1182,6 +1184,11 @@ class BSMCrypt01 extends ACrypt {
         // Meta3       ()                  => 00000000
         // Evt         (0)                 => 00000000 00 ff
 
+        // Byte array to be hashed: 0000000000ff00000096001e0001591e001e00000000011b00000010303031425a52313532313037303030330000565f00ff001c155000075f7ef619000700000078000600002f8e00ff001beb6600070000000100ff0000000000ff0000000b64656d6f2064617461203100000000000000000000000000ff
+        // SHA256 value:            cfbc3ac362fe24e1913ec5651f69dd4744ba256de990fa767a9c58279b47353b
+        // Public Key:              3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254
+        // Signature:               3045022100895b68a977654fc052988310dc92aad5f7191ec936acbb7bfa322130171ff06002205de10b55b48e2e08c59e03108d67e5f3e72ed62b10b77b705cae6d3e73ce73b9
+
         measurementValue.Typ           = 0;
         measurementValue.RCR           = 150;
         measurementValue.TotWhImp      = 88350;
@@ -1234,6 +1241,7 @@ class BSMCrypt01 extends ACrypt {
 
         let cryptoResult:IBSMCrypt01Result = {
             status:        VerificationResult.InvalidSignature,
+            ArraySize:     requiredSize,
             Typ:           SetUInt32_withCode(cryptoBuffer, measurementValue.Typ,          0, 255,   0),
             RCR:           SetUInt32_withCode(cryptoBuffer, measurementValue.RCR,          0,  30,   6),
             TotWhImp:      SetUInt32_withCode(cryptoBuffer, measurementValue.TotWhImp,     0,  30,  12),
@@ -1272,17 +1280,17 @@ class BSMCrypt01 extends ACrypt {
             try
             {
 
+                cryptoResult.sha256value = (await sha256(cryptoBuffer));
+
+                const meter = this.chargy.GetMeter(measurementValue.measurement.energyMeterId);
+
                 cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
+                    algorithm:  (measurementValue.measurement.signatureInfos ?? meter?.signatureInfos)?.algorithm,
+                    format:     (measurementValue.measurement.signatureInfos ?? meter?.signatureInfos)?.format,
                     r:          signatureExpected.r,
                     s:          signatureExpected.s
                 };
 
-                cryptoResult.sha256value = (await sha256(cryptoBuffer));
-
-
-                const meter = this.chargy.GetMeter(measurementValue.measurement.energyMeterId);
                 if (meter != null)
                 {
 
@@ -1294,12 +1302,45 @@ class BSMCrypt01 extends ACrypt {
                         try
                         {
 
-                            cryptoResult.publicKey            = meter.publicKeys[0].value.toLowerCase();
-                            cryptoResult.publicKeyFormat      = meter.publicKeys[0].format;
+                            cryptoResult.publicKeyFormat = meter.publicKeys[0].format;
+
+                            if (cryptoResult.publicKeyFormat == "DER")
+                            {
+
+                                // https://lapo.it/asn1js/ for a visual check...
+                                // https://github.com/indutny/asn1.js
+                                const ASN1_OIDs      = this.chargy.asn1.define('OIDs', function() {
+                                    //@ts-ignore
+                                    this.key('oid').objid()
+                                });
+
+                                const ASN1_PublicKey = this.chargy.asn1.define('PublicKey', function() {
+                                    //@ts-ignore
+                                    this.seq().obj(
+                                        //@ts-ignore
+                                        this.key('oids').seqof(ASN1_OIDs),
+                                        //@ts-ignore
+                                        this.key('publicKey').bitstr()
+                                    );
+                                });
+
+                                meter.publicKeys[0].value = "3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254";
+                                const publicKeyDER = ASN1_PublicKey.decode(Buffer.from(meter.publicKeys[0].value, 'hex'), 'der');
+                                cryptoResult.publicKey = buf2hex(publicKeyDER.publicKey.data);
+
+                            }
+                            else
+                            {
+                                cryptoResult.publicKey = meter.publicKeys[0].value.toLowerCase();
+                            }
+
+                            //cryptoResult.publicKey            = "03420004542E97133B371094018A52880C9BE7C051F8E13D6FBE736C9869020B5739777E3145223BCAC76C41391DC617330F72FDCE3ADFB8C050A1CEB61B251A727F1171"
                             cryptoResult.publicKeySignatures  = meter.publicKeys[0].signatures;
 
                             try
                             {
+
+                                cryptoResult.signature.value = "3045022100895b68a977654fc052988310dc92aad5f7191ec936acbb7bfa322130171ff06002205de10b55b48e2e08c59e03108d67e5f3e72ed62b10b77b705cae6d3e73ce73b9";
 
                                 if (this.curve.keyFromPublic(cryptoResult.publicKey, 'hex').
                                                verify       (cryptoResult.sha256value,
@@ -1365,7 +1406,7 @@ class BSMCrypt01 extends ACrypt {
         {
 
             if (PlainTextDiv.parentElement != null)
-                PlainTextDiv.parentElement.children[0].innerHTML = "Plain text (204 Bytes, hex)";
+                PlainTextDiv.parentElement.children[0].innerHTML = "Plain text (" + (measurementValue.result as IBSMCrypt01Result)?.ArraySize + " Bytes, hex)";
 
             PlainTextDiv.style.fontFamily  = "";
             PlainTextDiv.style.whiteSpace  = "";
@@ -1417,7 +1458,7 @@ class BSMCrypt01 extends ACrypt {
         {
 
             if (HashedPlainTextDiv.parentElement != null)
-                HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text (SHA256, 24 bytes, hex)";
+                HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text (SHA256, hex)";
 
             HashedPlainTextDiv.innerHTML                                 = result.sha256value.match(/.{1,8}/g).join(" ");
 

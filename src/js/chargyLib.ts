@@ -443,8 +443,10 @@ function SetUInt32_withCode(dv: DataView, value: number, scale: number, obis: nu
         tv.setUint8(i,          valueBytes[i]);
     }
 
-    tv.setInt8(valueBytes.length,   scaleBytes[0]);
-    tv.setInt8(valueBytes.length+1, obisBytes[0]);
+    dv.setUint8(offset + valueBytes.length,     scaleBytes[0]);
+    tv.setInt8 (         valueBytes.length,     scaleBytes[0]);
+    dv.setUint8(offset + valueBytes.length + 1, obisBytes[0]);
+    tv.setInt8 (         valueBytes.length + 1, obisBytes[0]);
 
     const result = buf2hex(buffer);
     return result.substr(0, 8) + "·" + result.substr(8, 2) + "·" + result.substr(10, 2);
@@ -459,11 +461,12 @@ function SetText_withLength(dv: DataView, text: string, offset: number): string
     var buffer  = new ArrayBuffer(4 + bytes.length);
     var tv      = new DataView(buffer);
 
-    tv.setInt32(0, bytes.length);
+    dv.setInt32(offset, bytes.length);
+    tv.setInt32(0,      bytes.length);
 
     for (var i = 0; i < bytes.length; i++) {
-        dv.setUint8(offset + i, bytes[i]);
-        tv.setUint8(4      + i, bytes[i]);
+        dv.setUint8(offset + 4 + i, bytes[i]);
+        tv.setUint8(         4 + i, bytes[i]);
     }
 
     const result = buf2hex(buffer);

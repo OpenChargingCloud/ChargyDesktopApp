@@ -240,6 +240,7 @@ interface IMeter
     chargingStationId:          string;
     EVSE:                       IEVSE;
     EVSEId:                     string;
+    signatureInfos:             ISignatureInfos;
     publicKeys?:                Array<IPublicKey>;
 }
 
