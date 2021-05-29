@@ -1259,18 +1259,6 @@ class BSMCrypt01 extends ACrypt {
             Meta2:         SetText_withLength(cryptoBuffer, measurementValue.Meta2,                 72 + MA1_length + Meta1_length),
             Meta3:         SetText_withLength(cryptoBuffer, measurementValue.Meta3,                 72 + MA1_length + Meta1_length + Meta2_length),
             Evt:           SetUInt32_withCode(cryptoBuffer, measurementValue.Evt,          0, 255,  72 + MA1_length + Meta1_length + Meta2_length + Meta3_length),
-            //meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
-            //timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            //infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
-            //secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
-            //paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
-            //obis:                         SetHex        (cryptoBuffer, OBIS2Hex(measurementValue.measurement.obis),                                23, false),
-            //unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-            //scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
-            //value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
-            //logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
-            //authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
-            //authorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
         };
 
         var signatureExpected = measurementValue.signatures[0] as IECCSignature;
@@ -1302,7 +1290,7 @@ class BSMCrypt01 extends ACrypt {
                         try
                         {
 
-                            cryptoResult.publicKey            = meter.publicKeys[0].value.toLowerCase();
+                            cryptoResult.publicKey            = meter.publicKeys[0].value;
                             cryptoResult.publicKeyFormat      = meter.publicKeys[0].format;
                             cryptoResult.publicKeySignatures  = meter.publicKeys[0].signatures;
                             let publicKey                     = cryptoResult.publicKey;

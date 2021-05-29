@@ -18,7 +18,7 @@
 function ParseJSON_LD<T>(Text:     string,
                          Context:  string = ""): T {
 
-    var JObject = JSON.parse(Text);
+    let JObject = JSON.parse(Text);
 
     JObject["id"] = JObject["@id"];
 
@@ -27,18 +27,18 @@ function ParseJSON_LD<T>(Text:     string,
 }
 
 function firstKey(obj: any) {
-    for (var a in obj)
+    for (let a in obj)
         return a;
 }
 
 function firstValue(obj: any) {
-    for (var a in obj)
+    for (let a in obj)
         return obj[a];
 }
 
 function parseUTC(UTCTime: string|number): any {
 
-    var moment = require('moment');
+    const moment = require('moment');
 
     moment.locale(window.navigator.language);
 
@@ -50,7 +50,7 @@ function parseUTC(UTCTime: string|number): any {
 
 function UTC2human(UTCTime: string|number): any {
 
-    var moment = require('moment');
+    const moment = require('moment');
 
     moment.locale(window.navigator.language);
 
@@ -80,12 +80,12 @@ function parseOBIS(OBIS: string): string
     // format: "A-B:C.D.E[*&]F"
     // A, B, E, F are optional
     // C & D are mandatory
-    var media       = parseInt(OBIS.substring( 0,  2), 16); // A =>  1: Energie
-    var channel     = parseInt(OBIS.substring( 2,  4), 16); // B =>  0: No channels available
-    var indicator   = parseInt(OBIS.substring( 4,  6), 16); // C =>  1: Wirkenergie Bezug P+, kWh
-    var mode        = parseInt(OBIS.substring( 6,  8), 16); // D => 17: Signierter Momentanwert (vgl. 7)
-    var quantities  = parseInt(OBIS.substring( 8, 10), 16); // E =>  0: Total
-    var storage     = parseInt(OBIS.substring(10, 12), 16); // F
+    const media       = parseInt(OBIS.substring( 0,  2), 16); // A =>  1: Energie
+    const channel     = parseInt(OBIS.substring( 2,  4), 16); // B =>  0: No channels available
+    const indicator   = parseInt(OBIS.substring( 4,  6), 16); // C =>  1: Wirkenergie Bezug P+, kWh
+    const mode        = parseInt(OBIS.substring( 6,  8), 16); // D => 17: Signierter Momentanwert (vgl. 7)
+    const quantities  = parseInt(OBIS.substring( 8, 10), 16); // E =>  0: Total
+    const storage     = parseInt(OBIS.substring(10, 12), 16); // F
 
     return media + "-" + channel + ":" + indicator + "." + mode + "." + quantities + "*" + storage;
 
@@ -168,7 +168,7 @@ function hex2bin(hex: string, Reverse?: Boolean) : string {
 
         let reversed = [];
 
-        for (var i = 0; i < hex.length; i += 2)
+        for (let i = 0; i < hex.length; i += 2)
             reversed.push(hex.substring(i, i + 2));
 
         return ("00000000" + (parseInt(reversed.reverse().join(""), 16)).toString(2)).substr(-8);
@@ -181,13 +181,13 @@ function hex2bin(hex: string, Reverse?: Boolean) : string {
 
 function hex32(val: number) {
     val &= 0xFFFFFFFF;
-    var hex = val.toString(16).toUpperCase();
+    let hex = val.toString(16).toUpperCase();
     return ("00000000" + hex).slice(-8);
 }
 
 function parseHexString(str: string): number[] {
 
-    var result:number[] = [];
+    let result:number[] = [];
 
     while (str.length >= 2) {
         result.push(parseInt(str.substring(0, 2), 16));
@@ -199,16 +199,20 @@ function parseHexString(str: string): number[] {
 }
 
 function createHexString(arr: Iterable<number>) {
-    var result = "";
-    for (var i in arr) {
-        var str = arr[i].toString(16);
+
+    let result = "";
+
+    for (let i in arr) {
+        let str = arr[i].toString(16);
         str = str.length == 0 ? "00" :
               str.length == 1 ? "0" + str : 
               str.length == 2 ? str :
               str.substring(str.length-2, str.length);
         result += str;
     }
+
     return result;
+
 }
 
 function buf2hex(buffer: ArrayBuffer) {
@@ -221,9 +225,9 @@ function hexToArrayBuffer(hex: string): ArrayBuffer {
         throw new RangeError('Expected string to be an even number of characters')
     }
 
-    var view = new Uint8Array(hex.length / 2)
+    let view = new Uint8Array(hex.length / 2)
 
-    for (var i = 0; i < hex.length; i += 2) {
+    for (let i = 0; i < hex.length; i += 2) {
         view[i / 2] = parseInt(hex.substring(i, i + 2), 16)
     }
 
@@ -232,20 +236,24 @@ function hexToArrayBuffer(hex: string): ArrayBuffer {
 }
 
 function intFromBytes(x: number[]){
-    var val = 0;
-    for (var i = 0; i < x.length; ++i) {
+
+    let val = 0;
+
+    for (let i = 0; i < x.length; ++i) {
         val += x[i];
         if (i < x.length-1) {
             val = val << 8;
         }
     }
+
     return val;
+
 }
 
 function getInt8Bytes(x: number) : number[] {
 
-    var bytes:number[] = [];
-    var i              = 1;
+    let bytes:number[] = [];
+    let i              = 1;
 
     do {
         bytes[--i] = x & (255);
@@ -258,8 +266,8 @@ function getInt8Bytes(x: number) : number[] {
 
 function getInt16Bytes(x: number) : number[] {
 
-    var bytes:number[] = [];
-    var i              = 2;
+    let bytes:number[] = [];
+    let i              = 2;
 
     do {
         bytes[--i] = x & (255);
@@ -272,8 +280,8 @@ function getInt16Bytes(x: number) : number[] {
 
 function getInt32Bytes(x: number) : number[] {
 
-    var bytes:number[] = [];
-    var i              = 4;
+    let bytes:number[]  = [];
+    let i               = 4;
 
     do {
         bytes[--i] = x & (255);
@@ -286,8 +294,8 @@ function getInt32Bytes(x: number) : number[] {
 
 function getInt64Bytes(x: number) : number[] {
 
-    var bytes:number[] = [];
-    var i              = 8;
+    let bytes:number[]  = [];
+    let i               = 8;
 
     do {
         bytes[--i] = x & (255);
@@ -301,14 +309,14 @@ function getInt64Bytes(x: number) : number[] {
 function SetHex(dv: DataView, hex: string, offset: number, reverse?: boolean): string
 {
 
-    var bytes   = parseHexString(hex);
-    var buffer  = new ArrayBuffer(bytes.length);
-    var tv      = new DataView(buffer);
-    
+    const bytes   = parseHexString(hex);
+    const buffer  = new ArrayBuffer(bytes.length);
+    const tv      = new DataView(buffer);
+
     if (reverse)
         bytes.reverse();
 
-    for (var i = 0; i < bytes.length; i++) {
+    for (let i = 0; i < bytes.length; i++) {
         dv.setUint8(offset + i, bytes[i]);
         tv.setUint8(i,          bytes[i]);
     }
@@ -323,12 +331,12 @@ function SetTimestamp(dv: DataView, timestamp: any, offset: number, addLocalOffs
     if (typeof timestamp === 'string')
         timestamp = parseUTC(timestamp);
 
-    var unixtime  = timestamp.unix() + (addLocalOffset ? 60 * timestamp.utcOffset() : 0); // Usage of utcOffset() is afaik EMH specific!
-    var bytes     = getInt64Bytes(unixtime);
-    var buffer    = new ArrayBuffer(8);
-    var tv        = new DataView(buffer);
+    const unixtime  = timestamp.unix() + (addLocalOffset ? 60 * timestamp.utcOffset() : 0); // Usage of utcOffset() is afaik EMH specific!
+    const bytes     = getInt64Bytes(unixtime);
+    const buffer    = new ArrayBuffer(8);
+    const tv        = new DataView(buffer);
 
-    for (var i = 4; i < bytes.length; i++) {
+    for (let i = 4; i < bytes.length; i++) {
         dv.setUint8(offset + (bytes.length - i - 1), bytes[i]);
         tv.setUint8(bytes.length - i - 1,            bytes[i]);
     }
@@ -343,12 +351,12 @@ function SetTimestamp32(dv: DataView, timestamp: any, offset: number, addLocalOf
     if (typeof timestamp === 'string')
         timestamp = parseUTC(timestamp);
 
-    var unixtime  = timestamp.unix() + (addLocalOffset ? 60 * timestamp.utcOffset() : 0); // Usage of utcOffset() is afaik EMH specific!
-    var bytes     = getInt64Bytes(unixtime);
-    var buffer    = new ArrayBuffer(4);
-    var tv        = new DataView(buffer);
+    const unixtime  = timestamp.unix() + (addLocalOffset ? 60 * timestamp.utcOffset() : 0); // Usage of utcOffset() is afaik EMH specific!
+    const bytes     = getInt64Bytes(unixtime);
+    const buffer    = new ArrayBuffer(4);
+    const tv        = new DataView(buffer);
 
-    for (var i = 4; i < bytes.length; i++) {
+    for (let i = 4; i < bytes.length; i++) {
         dv.setUint8(offset + (bytes.length - i - 1), bytes[i]);
         tv.setUint8(bytes.length - i - 1,            bytes[i]);
     }
@@ -360,8 +368,8 @@ function SetTimestamp32(dv: DataView, timestamp: any, offset: number, addLocalOf
 function SetInt8(dv: DataView, value: number, offset: number): string
 {
 
-    var buffer  = new ArrayBuffer(1);
-    var tv      = new DataView(buffer);
+    const buffer  = new ArrayBuffer(1);
+    const tv      = new DataView(buffer);
 
     dv.setInt8(offset, value);
     tv.setInt8(0,      value);
@@ -373,14 +381,14 @@ function SetInt8(dv: DataView, value: number, offset: number): string
 function SetUInt32(dv: DataView, value: number, offset: number, reverse?: boolean): string
 {
 
-    var bytes   = getInt32Bytes(value);
-    var buffer  = new ArrayBuffer(bytes.length);
-    var tv      = new DataView(buffer);
+    const bytes   = getInt32Bytes(value);
+    const buffer  = new ArrayBuffer(bytes.length);
+    const tv      = new DataView(buffer);
 
     if (reverse)
         bytes.reverse();
 
-    for (var i = 0; i < bytes.length; i++) {
+    for (let i = 0; i < bytes.length; i++) {
         dv.setUint8(offset + i, bytes[i]);
         tv.setUint8(i,          bytes[i]);
     }
@@ -392,14 +400,14 @@ function SetUInt32(dv: DataView, value: number, offset: number, reverse?: boolea
 function SetUInt64(dv: DataView, value: number, offset: number, reverse?: boolean): string
 {
 
-    var bytes   = getInt64Bytes(value);
-    var buffer  = new ArrayBuffer(bytes.length);
-    var tv      = new DataView(buffer);
+    const bytes   = getInt64Bytes(value);
+    const buffer  = new ArrayBuffer(bytes.length);
+    const tv      = new DataView(buffer);
 
     if (reverse)
         bytes.reverse();
 
-    for (var i = 0; i < bytes.length; i++) {
+    for (let i = 0; i < bytes.length; i++) {
         dv.setUint8(offset + i, bytes[i]);
         tv.setUint8(i,          bytes[i]);
     }
@@ -412,11 +420,11 @@ function SetText(dv: DataView, text: string, offset: number): string
 {
 
     //var bytes = new TextEncoder("utf-8").encode(text);
-    var bytes   = new TextEncoder().encode(text);
-    var buffer  = new ArrayBuffer(bytes.length);
-    var tv      = new DataView(buffer);
+    const bytes   = new TextEncoder().encode(text);
+    const buffer  = new ArrayBuffer(bytes.length);
+    const tv      = new DataView(buffer);
 
-    for (var i = 0; i < bytes.length; i++) {
+    for (let i = 0; i < bytes.length; i++) {
         dv.setUint8(offset + i, bytes[i]);
         tv.setUint8(i,          bytes[i]);
     }
@@ -429,16 +437,16 @@ function SetText(dv: DataView, text: string, offset: number): string
 function SetUInt32_withCode(dv: DataView, value: number, scale: number, obis: number, offset: number, reverse?: boolean): string
 {
 
-    var valueBytes   = getInt32Bytes(value);
-    var scaleBytes   = getInt8Bytes(scale);
-    var obisBytes    = getInt8Bytes(obis);
-    var buffer       = new ArrayBuffer(valueBytes.length + 2);
-    var tv           = new DataView(buffer);
+    const valueBytes  = getInt32Bytes(value);
+    const scaleBytes  = getInt8Bytes(scale);
+    const obisBytes   = getInt8Bytes(obis);
+    const buffer      = new ArrayBuffer(valueBytes.length + 2);
+    const tv          = new DataView(buffer);
 
     if (reverse)
         valueBytes.reverse();
 
-    for (var i = 0; i < valueBytes.length; i++) {
+    for (let i = 0; i < valueBytes.length; i++) {
         dv.setUint8(offset + i, valueBytes[i]);
         tv.setUint8(i,          valueBytes[i]);
     }
@@ -449,6 +457,7 @@ function SetUInt32_withCode(dv: DataView, value: number, scale: number, obis: nu
     tv.setInt8 (         valueBytes.length + 1, obisBytes[0]);
 
     const result = buf2hex(buffer);
+
     return result.substr(0, 8) + "·" + result.substr(8, 2) + "·" + result.substr(10, 2);
 
 }
@@ -457,27 +466,30 @@ function SetText_withLength(dv: DataView, text: string, offset: number): string
 {
 
     //var bytes = new TextEncoder("utf-8").encode(text);
-    var bytes   = new TextEncoder().encode(text);
-    var buffer  = new ArrayBuffer(4 + bytes.length);
-    var tv      = new DataView(buffer);
+    const bytes   = new TextEncoder().encode(text);
+    const buffer  = new ArrayBuffer(4 + bytes.length);
+    const tv      = new DataView(buffer);
 
     dv.setInt32(offset, bytes.length);
     tv.setInt32(0,      bytes.length);
 
-    for (var i = 0; i < bytes.length; i++) {
+    for (let i = 0; i < bytes.length; i++) {
         dv.setUint8(offset + 4 + i, bytes[i]);
         tv.setUint8(         4 + i, bytes[i]);
     }
 
     const result = buf2hex(buffer);
-    return result.substr(0, 8) + "·" + result.substr(8);
+
+    return bytes.length > 0
+               ? result.substr(0, 8) + "·" + result.substr(8)
+               : result;
 
 }
 
 
 function Clone(obj: any) {
 
-    if(obj == null || typeof(obj) != 'object')
+    if (obj == null || typeof(obj) != 'object')
         return obj;
 
     var temp = new obj.constructor();
