@@ -1302,7 +1302,10 @@ class BSMCrypt01 extends ACrypt {
                         try
                         {
 
-                            cryptoResult.publicKeyFormat = meter.publicKeys[0].format;
+                            cryptoResult.publicKey            = meter.publicKeys[0].value.toLowerCase();
+                            cryptoResult.publicKeyFormat      = meter.publicKeys[0].format;
+                            cryptoResult.publicKeySignatures  = meter.publicKeys[0].signatures;
+                            let publicKey                     = cryptoResult.publicKey;
 
                             if (cryptoResult.publicKeyFormat == "DER")
                             {
@@ -1324,25 +1327,15 @@ class BSMCrypt01 extends ACrypt {
                                     );
                                 });
 
-                                meter.publicKeys[0].value = "3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254";
                                 const publicKeyDER = ASN1_PublicKey.decode(Buffer.from(meter.publicKeys[0].value, 'hex'), 'der');
-                                cryptoResult.publicKey = buf2hex(publicKeyDER.publicKey.data);
+                                publicKey = buf2hex(publicKeyDER.publicKey.data).toLowerCase();
 
                             }
-                            else
-                            {
-                                cryptoResult.publicKey = meter.publicKeys[0].value.toLowerCase();
-                            }
-
-                            //cryptoResult.publicKey            = "03420004542E97133B371094018A52880C9BE7C051F8E13D6FBE736C9869020B5739777E3145223BCAC76C41391DC617330F72FDCE3ADFB8C050A1CEB61B251A727F1171"
-                            cryptoResult.publicKeySignatures  = meter.publicKeys[0].signatures;
 
                             try
                             {
 
-                                cryptoResult.signature.value = "3045022100895b68a977654fc052988310dc92aad5f7191ec936acbb7bfa322130171ff06002205de10b55b48e2e08c59e03108d67e5f3e72ed62b10b77b705cae6d3e73ce73b9";
-
-                                if (this.curve.keyFromPublic(cryptoResult.publicKey, 'hex').
+                                if (this.curve.keyFromPublic(publicKey, 'hex').
                                                verify       (cryptoResult.sha256value,
                                                              cryptoResult.signature))
                                 {
