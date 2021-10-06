@@ -713,7 +713,7 @@ class Chargepoint01 {
         {
             return {
                 status:   SessionVerificationResult.InvalidSessionFormat,
-                message:  "Exception occured: " + exception.message
+                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }
 
@@ -1098,7 +1098,7 @@ class ChargePointCrypt01 extends ACrypt {
         {
             return {
                 status:  SessionVerificationResult.InvalidSignature,
-                message: exception.message
+                message: "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }
 

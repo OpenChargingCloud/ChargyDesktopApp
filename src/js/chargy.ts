@@ -599,6 +599,7 @@ class Chargy {
                             break;
 
                         case "https://www.chargeit-mobility.com/contexts/charging-station-json-v0":
+                        case "https://www.chargeit-mobility.com/contexts/charging-station-json-v1":
                             processedFile.result = await new ChargeIT(this).tryToParseChargeITJSON(JSONContent);
                             break;
 
@@ -1103,7 +1104,7 @@ class Chargy {
         {
             return {
                 status:   SessionVerificationResult.InvalidSessionFormat,
-                message:  "Exception occured: " + exception.message
+                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }
 

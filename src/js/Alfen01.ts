@@ -406,7 +406,7 @@ class Alfen01  {
         {
             return {
                 status:   SessionVerificationResult.InvalidSessionFormat,
-                message:  "Exception occured: " + exception.message
+                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }
 
