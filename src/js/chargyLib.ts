@@ -678,3 +678,24 @@ async function sha512(message: string|DataView) {
     return hashHex;
 
 }
+
+
+function isMandatoryString(x: any): x is string {
+    return x !== undefined && x !== null && typeof x === "string";
+}
+
+function isOptionalString(x: any): x is string {
+    return x !== undefined && x !== null
+               ? typeof x === "string"
+               : true;
+}
+
+function isMandatoryNumber(x: any): x is number {
+    return x !== undefined && x !== null && typeof x === "number";
+}
+
+function isOptionalNumber(x: any): x is number {
+    return x !== undefined && x !== null
+               ? typeof x === "number"
+               : true;
+}

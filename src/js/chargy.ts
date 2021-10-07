@@ -585,33 +585,27 @@ class Chargy {
                 try
                 {
 
-                    let JSONContent = JSON.parse(textContent);
+                    const JSONContent = JSON.parse(textContent);
+                    const JSONContext = (JSONContent["@context"] as string)?.trim();
 
-                    switch (JSONContent["@context"])
+                    if      (JSONContext.startsWith("https://open.charging.cloud/contexts/CTR+json"))
+                        processedFile.result = JSONContent as IChargeTransparencyRecord;
+
+                    else if (JSONContext.startsWith("https://open.charging.cloud/contexts/publicKey+json"))
+                        processedFile.result = JSONContent as IPublicKeyInfo;
+
+                    else if (JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
+                        processedFile.result = await new ChargeIT(this).tryToParseChargeITJSON(JSONContent);
+
+                    else
                     {
 
-                        case "https://open.charging.cloud/contexts/CTR+json":
-                            processedFile.result = JSONContent as IChargeTransparencyRecord;
-                            break;
+                        // The older chargeIT mobility format does not provide any context or format identifiers
+                        processedFile.result = await new ChargeIT(this).tryToParseChargeITJSON(JSONContent);
 
-                        case "https://open.charging.cloud/contexts/publicKey+json":
-                            processedFile.result = JSONContent as IPublicKeyInfo;
-                            break;
-
-                        case "https://www.chargeit-mobility.com/contexts/charging-station-json-v0":
-                        case "https://www.chargeit-mobility.com/contexts/charging-station-json-v1":
-                            processedFile.result = await new ChargeIT(this).tryToParseChargeITJSON(JSONContent);
-                            break;
-
-                        default:
-                            // The current chargeIT mobility format does not provide any context or format identifiers
-                            processedFile.result = await new ChargeIT(this).tryToParseChargeITJSON(JSONContent);
-
-                            // The current chargepoint format does not provide any context or format identifiers
-                            if (isISessionCryptoResult(processedFile.result))
-                                processedFile.result = await new Chargepoint01(this).tryToParseChargepointJSON(JSONContent);
-
-                            break;
+                        // The current chargepoint format does not provide any context or format identifiers
+                        if (isISessionCryptoResult(processedFile.result))
+                            processedFile.result = await new Chargepoint01(this).tryToParseChargepointJSON(JSONContent);
 
                     }
 
