@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2018-2020 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2021 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -24,8 +24,10 @@ class Chargy {
 
     //#region Data
 
-    public  elliptic: any;
-    public  moment:   any;
+    public  readonly elliptic:      any;
+    public  readonly moment:        any;
+    public  readonly asn1:          any;
+    public  readonly base32Decode:  any;
 
     private chargingStationOperators  = new Array<IChargingStationOperator>();
     private chargingPools             = new Array<IChargingPool>();
@@ -42,11 +44,15 @@ class Chargy {
 
     //#endregion
 
-    constructor(elliptic: any,
-                moment:   any) {
+    constructor(elliptic:      any,
+                moment:        any,
+                asn1:          any,
+                base32Decode:  any) {
 
-        this.elliptic  = elliptic;
-        this.moment    = moment;
+        this.elliptic      = elliptic;
+        this.moment        = moment;
+        this.asn1          = asn1;
+        this.base32Decode  = base32Decode;
 
     }
 
@@ -420,13 +426,13 @@ class Chargy {
                                 break;
 
                             case "http://transparenz.software/schema/2018/07":
-                                processedFile.result = await new SAFEXML().tryToParseSAFEXML(XMLDocument);
+                                processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
                                 break;
 
                             // The SAFE transparency software v1.0 does not understand its own
                             // XML namespace. Therefore we have to guess the format.
                             case "":
-                                processedFile.result = await new SAFEXML().tryToParseSAFEXML(XMLDocument);
+                                processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
                                 break;
 
                         }
@@ -442,7 +448,7 @@ class Chargy {
 
                         // The SAFE transparency software v1.0 does not understand its own
                         // XML namespace. Therefore we have to guess the format.
-                        processedFile.result = await new SAFEXML().tryToParseSAFEXML(XMLDocument);
+                        processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
                     }
 
@@ -460,11 +466,11 @@ class Chargy {
 
             // OCMF processing
             else if (textContent?.startsWith("OCMF|{"))
-                processedFile.result = await new OCMF().tryToParseOCMF2(textContent);
+                processedFile.result = await new OCMF(this).tryToParseOCMF2(textContent);
 
             // ALFEN processing
             else if (textContent?.startsWith("AP;"))
-                processedFile.result = await new Alfen01().tryToParseALFENFormat(textContent);
+                processedFile.result = await new Alfen01(this).tryToParseALFENFormat(textContent);
 
             // Public key processing (PEM format)
             else if (textContent?.startsWith("-----BEGIN PUBLIC KEY-----") &&
@@ -487,14 +493,12 @@ class Chargy {
 
                     // https://lapo.it/asn1js/ for a visual check...
                     // https://github.com/indutny/asn1.js
-                    const ASN1           = require('asn1.js');
-
-                    const ASN1_OIDs      = ASN1.define('OIDs', function() {
+                    const ASN1_OIDs      = this.asn1.define('OIDs', function() {
                         //@ts-ignore
                         this.key('oid').objid()
                     });
 
-                    const ASN1_PublicKey = ASN1.define('PublicKey', function() {
+                    const ASN1_PublicKey = this.asn1.define('PublicKey', function() {
                         //@ts-ignore
                         this.seq().obj(
                             //@ts-ignore
@@ -581,28 +585,27 @@ class Chargy {
                 try
                 {
 
-                    let JSONContent = JSON.parse(textContent);
+                    const JSONContent = JSON.parse(textContent);
+                    const JSONContext = (JSONContent["@context"] as string)?.trim();
 
-                    switch (JSONContent["@context"])
+                    if      (JSONContext.startsWith("https://open.charging.cloud/contexts/CTR+json"))
+                        processedFile.result = JSONContent as IChargeTransparencyRecord;
+
+                    else if (JSONContext.startsWith("https://open.charging.cloud/contexts/publicKey+json"))
+                        processedFile.result = JSONContent as IPublicKeyInfo;
+
+                    else if (JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
+                        processedFile.result = await new ChargeIT(this).tryToParseChargeITJSON(JSONContent);
+
+                    else
                     {
 
-                        case "https://open.charging.cloud/contexts/CTR+json":
-                            processedFile.result = JSONContent as IChargeTransparencyRecord;
-                            break;
+                        // The older chargeIT mobility format does not provide any context or format identifiers
+                        processedFile.result = await new ChargeIT(this).tryToParseChargeITJSON(JSONContent);
 
-                        case "https://open.charging.cloud/contexts/publicKey+json":
-                            processedFile.result = JSONContent as IPublicKeyInfo;
-                            break;
-
-                        default:
-                            // The current chargeIT mobility format does not provide any context or format identifiers
-                            processedFile.result = await new ChargeIT().tryToParseChargeITJSON(JSONContent);
-
-                            // The current chargepoint format does not provide any context or format identifiers
-                            if (isISessionCryptoResult(processedFile.result))
-                                processedFile.result = await new Chargepoint01().tryToParseChargepointJSON(JSONContent);
-
-                            break;
+                        // The current chargepoint format does not provide any context or format identifiers
+                        if (isISessionCryptoResult(processedFile.result))
+                            processedFile.result = await new Chargepoint01(this).tryToParseChargepointJSON(JSONContent);
 
                     }
 
@@ -1095,7 +1098,7 @@ class Chargy {
         {
             return {
                 status:   SessionVerificationResult.InvalidSessionFormat,
-                message:  "Exception occured: " + exception.message
+                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }
 
@@ -1148,6 +1151,10 @@ class Chargy {
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/AlfenCrypt01+json":
                 chargingSession.method = new AlfenCrypt01(this);
+                return await chargingSession.method.VerifyChargingSession(chargingSession);
+
+            case "https://open.charging.cloud/contexts/SessionSignatureFormats/bsm-ws36a-v0+json":
+                chargingSession.method = new BSMCrypt01(this);
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             default:

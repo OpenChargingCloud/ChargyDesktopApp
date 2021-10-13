@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2018-2020 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2021 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -240,6 +240,7 @@ interface IMeter
     chargingStationId:          string;
     EVSE:                       IEVSE;
     EVSEId:                     string;
+    signatureInfos:             ISignatureInfos;
     publicKeys?:                Array<IPublicKey>;
 }
 
@@ -337,6 +338,7 @@ interface IMeasurement
     "@context":                 string;
     chargingSession:            IChargingSession;
     energyMeterId:              string;
+    phenomena:                  any[];
     name:                       string;
     obis:                       string;
     unit:                       string;
@@ -346,6 +348,13 @@ interface IMeasurement
     verifyChain:                boolean;
     signatureInfos:             ISignatureInfos;
     values:                     Array<IMeasurementValue>;
+    verificationResult?:        ICryptoResult;
+}
+
+interface IMeasurements
+{
+    "@context":                 string;
+    values:                     Array<IMeasurement>;
     verificationResult?:        ICryptoResult;
 }
 

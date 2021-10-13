@@ -6,7 +6,7 @@ const path                                    = require('path');
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 let applicationEdition    = "ChargePoint Edition";
-let copyright             = "&copy; 2018-2020 GraphDefined GmbH";
+let copyright             = "&copy; 2018-2021 GraphDefined GmbH";
 let applicationFileName   = "";
 let appAsarFileName       = "";
 let commandLineArguments  = [];
@@ -45,7 +45,9 @@ function createWindow () {
         icon:               `${app.getAppPath()}/src/icons/chargy_icon.png`,
 
         webPreferences: {
-            nodeIntegration:  true
+            nodeIntegration:          true,
+            nodeIntegrationInWorker:  true,
+            contextIsolation:         false
        //     preload:          path.join(__dirname, 'preload.js')
         },
 

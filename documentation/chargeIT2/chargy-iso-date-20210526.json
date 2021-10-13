@@ -1,0 +1,484 @@
+{
+  "@context": "https://www.chargeit-mobility.com/contexts/charging-station-json-v0",
+  "@id": "69e8b824-2be7-44c8-a704-670b3de9c3dd",
+  "placeInfo": {
+    "geoLocation": {
+      "lat": 48.03552,
+      "lon": 10.50669
+    },
+    "address": {
+      "street": "Breitenbergstr. 2",
+      "town": "Mindelheim",
+      "zipCode": "87719"
+    },
+    "evseId": "DE*BDO*E8025334492*2"
+  },
+  "signedMeterValues": [
+    {
+      "@context": "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0",
+      "@id": "001BZR1520120407-3163",
+      "time": "2021-05-26T15:55:56+02:00",
+      "meterInfo": {
+        "firmwareVersion": "1.8:33C4:DB63, 08d1aa3",
+        "publicKey2": "3059301306072a8648ce3d020106082a8648ce3d03010703420004542e97133b371094018a52880c9be7c051f8e13d6fbe736c9869020b5739777e3145223bcac76c41391dc617330f72fdce3adfb8c050a1ceb61b251a727f1171",
+        "publicKey": "3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254",
+        "meterId": "001BZR1520120407",
+        "manufacturer": "BAUER Electronic",
+        "type": "BSM-WS36A-H01-1311-0000"
+      },
+      "operatorInfo": "See https://www.chargeit-mobility.com/wp-content/uploads/chargeIT-Baumusterpr%C3%BCfbescheinigung-Lades%C3%A4ule-Online.pdf for type examination certificate",
+      "contract": {
+        "id": "chargeIT up 12*4, id: 12345678abcdef"
+      },
+      "measurementId": 3163,
+      "value": {
+        "measurand": {
+          "id": "1-0:1.8.0*198",
+          "name": "RCR"
+        },
+        "measuredValue": {
+          "scale": 0,
+          "unit": "WATT_HOUR",
+          "unitEncoded": 30,
+          "value": 0,
+          "valueType": "UnsignedInteger32"
+        }
+      },
+      "additionalValues": [
+        {
+          "measurand": {
+            "name": "Typ"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 3,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:1.8.0*198",
+            "name": "RCR"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "WATT_HOUR",
+            "unitEncoded": 30,
+            "value": 0,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:1.8.0*255",
+            "name": "TotWhImp"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "WATT_HOUR",
+            "unitEncoded": 30,
+            "value": 0,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:1.7.0*255",
+            "name": "W"
+          },
+          "measuredValue": {
+            "scale": 1,
+            "unit": "WATT",
+            "unitEncoded": 27,
+            "value": 0,
+            "valueType": "Integer32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:0.0.0*255",
+            "name": "MA1"
+          },
+          "measuredValue": {
+            "unitEncoded": 255,
+            "value": "001BZR1520120407",
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "RCnt"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 3163,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "OS"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "SECOND",
+            "unitEncoded": 7,
+            "value": 456291,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Epoch"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "SECOND",
+            "unitEncoded": 7,
+            "value": 1622037356,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "TZO"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "MINUTE",
+            "unitEncoded": 6,
+            "value": 120,
+            "valueType": "Integer32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "EpochSetCnt"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 6306,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "EpochSetOS"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "SECOND",
+            "unitEncoded": 7,
+            "value": 456240,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "DI"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 0,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "DO"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 0,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Meta1"
+          },
+          "measuredValue": {
+            "unitEncoded": 255,
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Meta2"
+          },
+          "measuredValue": {
+            "unitEncoded": 255,
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Meta3"
+          },
+          "measuredValue": {
+            "unitEncoded": 255,
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Evt"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 0,
+            "valueType": "UnsignedInteger32"
+          }
+        }
+      ],
+      "chargePoint": {
+        "softwareVersion": "3.0.25.2089"
+      },
+      "signature2": "3046022100f73147fe07e5c3be394b63ebd10fd88ff81b05baf8c14a8e12a76d46d80bc1be022100dbf640116afa7c664a3268fd642044078b9eb2f9c97898956287441f78f22dbf",
+      "signature": "3045022100895b68a977654fc052988310dc92aad5f7191ec936acbb7bfa322130171ff06002205de10b55b48e2e08c59e03108d67e5f3e72ed62b10b77b705cae6d3e73ce73b9"
+    },
+    {
+      "@context": "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0",
+      "@id": "001BZR1520120407-3164",
+      "time": "2021-05-26T15:56:24+02:00",
+      "meterInfo": {
+        "firmwareVersion": "1.8:33C4:DB63, 08d1aa3",
+        "publicKey2": "3059301306072a8648ce3d020106082a8648ce3d03010703420004542e97133b371094018a52880c9be7c051f8e13d6fbe736c9869020b5739777e3145223bcac76c41391dc617330f72fdce3adfb8c050a1ceb61b251a727f1171",
+        "publicKey": "3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254",
+        "meterId": "001BZR1520120407",
+        "manufacturer": "BAUER Electronic",
+        "type": "BSM-WS36A-H01-1311-0000"
+      },
+      "operatorInfo": "See https://www.chargeit-mobility.com/wp-content/uploads/chargeIT-Baumusterpr%C3%BCfbescheinigung-Lades%C3%A4ule-Online.pdf for type examination certificate",
+      "contract": {
+        "id": "chargeIT up 12*4, id: 12345678abcdef"
+      },
+      "measurementId": 3164,
+      "value": {
+        "measurand": {
+          "id": "1-0:1.8.0*198",
+          "name": "RCR"
+        },
+        "measuredValue": {
+          "scale": 0,
+          "unit": "WATT_HOUR",
+          "unitEncoded": 30,
+          "value": 150,
+          "valueType": "UnsignedInteger32"
+        }
+      },
+      "additionalValues": [
+        {
+          "measurand": {
+            "name": "Typ"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 4,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:1.8.0*198",
+            "name": "RCR"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "WATT_HOUR",
+            "unitEncoded": 30,
+            "value": 0,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:1.8.0*255",
+            "name": "TotWhImp"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "WATT_HOUR",
+            "unitEncoded": 30,
+            "value": 0,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:1.7.0*255",
+            "name": "W"
+          },
+          "measuredValue": {
+            "scale": 1,
+            "unit": "WATT",
+            "unitEncoded": 27,
+            "value": 0,
+            "valueType": "Integer32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:0.0.0*255",
+            "name": "MA1"
+          },
+          "measuredValue": {
+            "unitEncoded": 255,
+            "value": "001BZR1520120407",
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "RCnt"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 3164,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "OS"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "SECOND",
+            "unitEncoded": 7,
+            "value": 456319,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Epoch"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "SECOND",
+            "unitEncoded": 7,
+            "value": 1622037384,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "TZO"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "MINUTE",
+            "unitEncoded": 6,
+            "value": 120,
+            "valueType": "Integer32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "EpochSetCnt"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 6306,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "EpochSetOS"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "SECOND",
+            "unitEncoded": 7,
+            "value": 456240,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "DI"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 0,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "DO"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 0,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Meta1"
+          },
+          "measuredValue": {
+            "unitEncoded": 255,
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Meta2"
+          },
+          "measuredValue": {
+            "unitEncoded": 255,
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Meta3"
+          },
+          "measuredValue": {
+            "unitEncoded": 255,
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Evt"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 16,
+            "valueType": "UnsignedInteger32"
+          }
+        }
+      ],
+      "chargePoint": {
+        "softwareVersion": "3.0.25.2089"
+      },
+      "signature2": "304402203806d3fdac014e5c7fe7856a77bf10a6ecc12b30f508abd849d70526add3f232022055b4e4ef265760fd6a3844107962030821081d31461ede894eba693432c43970",
+      "signature": "3045022100895b68a977654fc052988310dc92aad5f7191ec936acbb7bfa322130171ff06002205de10b55b48e2e08c59e03108d67e5f3e72ed62b10b77b705cae6d3e73ce73b9"
+    }
+  ]
+}

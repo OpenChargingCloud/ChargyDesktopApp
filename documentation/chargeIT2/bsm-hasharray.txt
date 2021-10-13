@@ -1,0 +1,76 @@
+# Data to be hashed
+
+https://github.com/chargeITmobility/bsm-python-private/blob/30abc7ba958c936fdb952ed1f121e45d0818419c/doc/examples/snapshots.md#snapshot-creation
+
+```
+Typ         (0)                 => 00000000 00 ff
+RCR         (150 Wh)            => 00000096 00 1e
+TotWhImp    (88350 Wh)          => 0001591e 00 1e
+W           (0.0 W)             => 00000000 01 1b
+MA1         (001BZR1521070003)  => 00000010 303031425a5231353231303730303033
+RCnt        (22111)             => 0000565f 00 ff
+OS          (1840464 s)         => 001c1550 00 07
+Epoch       (1602156057 s)      => 5f7ef619 00 07
+TZO         (120 min)           => 00000078 00 06
+EpochSetCnt (12174)             => 00002f8e 00 ff
+EpochSetOS  (1829734 s)         => 001beb66 00 07
+DI          (1)                 => 00000001 00 ff
+DO          (0)                 => 00000000 00 ff
+Meta1       (demo data 1)       => 0000000b 64656d6f20646174612031
+Meta2       ()                  => 00000000
+Meta3       ()                  => 00000000
+Evt         (0)                 => 00000000 00 ff
+```
+
+## Numerical Values
+
+`vvvvvvvv ss uu` means:
+- A 32 bit representation of the numerical value `vvvvvvvv`
+- A signed 8 bit scale factor exponent `ss`
+- The unsigned 8 bit representation `uu` of the DLMS code for its unit (OBIS)
+
+For example...
+- In its base unit Wh: 36.6 kWh = 36600 Wh = 0x8ef8 Wh
+- This would require a scale factor of 1 = 10^0, thus the scale factor exponent 0
+- The DLMS unit code for Wh 30 = 0x1e
+- Which results in 00008ef8 00 1e
+
+
+## String Values
+
+String values are represented by:
+- Its length as an unsigned 32 bit value
+- Catenated with its actual data bytes
+
+For example...
+- The string `ABC` will be represented as `00000003 414243`
+
+
+# Byte arry to be hashed
+
+```
+0000000000ff00000096001e0001591e001e00000000011b00000010303031425a52313532313037303030330000565f00ff001c155000075f7ef619000700000078000600002f8e00ff001beb6600070000000100ff0000000000ff0000000b64656d6f2064617461203100000000000000000000000000ff
+```
+
+See also: `bsm-hasharray.bin`
+
+
+# SHA256 hash value
+
+```
+cfbc3ac362fe24e1913ec5651f69dd4744ba256de990fa767a9c58279b47353b
+```
+
+
+# Public Key
+
+```
+3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254
+```
+
+
+# Signature
+
+```
+3045022100895b68a977654fc052988310dc92aad5f7191ec936acbb7bfa322130171ff06002205de10b55b48e2e08c59e03108d67e5f3e72ed62b10b77b705cae6d3e73ce73b9
+```

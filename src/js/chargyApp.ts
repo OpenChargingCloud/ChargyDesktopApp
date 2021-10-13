@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2018-2020 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2021 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -21,6 +21,7 @@
 ///<reference path="chargy.ts" />
 ///<reference path="GDFCrypt01.ts" />
 ///<reference path="EMHCrypt01.ts" />
+///<reference path="BSMCrypt01.ts" />
 ///<reference path="chargePoint01.ts" />
 ///<reference path="chargeIT.ts" />
 ///<reference path="SAFE_XML.ts" />
@@ -47,9 +48,11 @@ class ChargyApp {
 
     //#region Data
 
-    private elliptic:                      any;
-    private moment:                        any;
-    private chargy:                        Chargy;
+    private readonly elliptic:             any;
+    private readonly moment:               any;
+    private readonly chargy:               Chargy;
+    private readonly asn1:                 any;
+    private readonly base32Decode:         any;
 
     public  appEdition:                    string              = "";
     public  copyright:                     string              = "";
@@ -165,7 +168,7 @@ class ChargyApp {
 
         this.appVersion                = this.ipcRenderer.sendSync('getAppVersion')     ?? "";
         this.appEdition                = this.ipcRenderer.sendSync('getAppEdition')     ?? "";
-        this.copyright                 = this.ipcRenderer.sendSync('getCopyright')      ?? "&copy; 2018-2020 GraphDefined GmbH";
+        this.copyright                 = this.ipcRenderer.sendSync('getCopyright')      ?? "&copy; 2018-2021 GraphDefined GmbH";
         this.versionsURL               = versionsURL                                    ?? "https://open.charging.cloud/chargy/versions";
         this.issueURL                  = issueURL                                       ?? "https://open.charging.cloud/chargy/issues";
         this.feedbackEMail             = feedbackEMail   != undefined ? feedbackEMail   : ["support@open.charging.cloud", "?subject=Chargy%20Supportanfrage"];
@@ -177,9 +180,13 @@ class ChargyApp {
 
         this.elliptic                  = require('elliptic');
         this.moment                    = require('moment');
+        this.asn1                      = require('asn1.js');
+        this.base32Decode              = require('base32-decode')
 
         this.chargy                    = new Chargy(this.elliptic,
-                                                    this.moment);
+                                                    this.moment,
+                                                    this.asn1,
+                                                    this.base32Decode);
 
 
         //#region OnWindowResize
@@ -1511,11 +1518,11 @@ class ChargyApp {
                         let duration = this.moment.duration(parseUTC(chargingSession.end) - parseUTC(chargingSession.begin));
 
                         productDiv.innerHTML += "Ladedauer ";
-                        if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days()    + " Tage " + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                        else if (Math.floor(duration.asDays())    > 0) productDiv.innerHTML += duration.days()    + " Tag "  + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                        else if (Math.floor(duration.asHours())   > 0) productDiv.innerHTML += duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                        else if (Math.floor(duration.asMinutes()) > 0) productDiv.innerHTML += duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                        else if (Math.floor(duration.asSeconds()) > 0) productDiv.innerHTML += duration.seconds();
+                        if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days()    + " Tage "    + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
+                        else if (Math.floor(duration.asDays())    > 0) productDiv.innerHTML += duration.days()    + " Tag "     + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
+                        else if (Math.floor(duration.asHours())   > 0) productDiv.innerHTML += duration.hours()   + " Std. "    + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
+                        else if (Math.floor(duration.asMinutes()) > 0) productDiv.innerHTML += duration.minutes() + " Minuten " + duration.seconds() + " Sekunden";
+                        else if (Math.floor(duration.asSeconds()) > 0) productDiv.innerHTML += duration.seconds() + " Sekunden";
 
 
                         if (chargingSession.chargingProductRelevance != undefined && chargingSession.chargingProductRelevance.time != undefined)
@@ -1549,8 +1556,20 @@ class ChargyApp {
                             if (measurement.values && measurement.values.length > 0)
                             {
 
-                                if (measurement.scale == null)
-                                    measurement.scale = 0;
+                                if (measurement.phenomena && measurement.phenomena.length > 0)
+                                {
+
+                                    measurement.name         = measurement.phenomena[0].name;
+                                    measurement.obis         = measurement.phenomena[0].obis;
+                                    measurement.unit         = measurement.phenomena[0].unit;
+                                    measurement.unitEncoded  = measurement.phenomena[0].unitEncoded;
+                                    measurement.valueType    = measurement.phenomena[0].valueType;
+                                    measurement.scale        = measurement.phenomena[0].scale;
+
+                                    if (measurement.scale == undefined || measurement.scale == null)
+                                        measurement.scale = 0;
+
+                                }
 
                                 let first  = measurement.values[0].value;
                                 let last   = measurement.values[measurement.values.length-1].value;
@@ -2167,10 +2186,10 @@ class ChargyApp {
                     //#region Show measurement infos
 
                     CreateDiv2(meterDiv,              "measurement",
-                               "Messung",             measurement.name);
+                               "Messung",             measurement.phenomena?.[0]?.name ?? measurement.name);
 
                     CreateDiv2(meterDiv,              "OBIS",
-                               "OBIS-Kennzahl",       measurement.obis);
+                               "OBIS-Kennzahl",       measurement.phenomena?.[0]?.obis ?? measurement.obis);
 
                     //#endregion
 
