@@ -1468,7 +1468,8 @@ class ChargyApp {
 
                         let dateDiv  = chargingSessionDiv.appendChild(document.createElement('div'));
                         dateDiv.className = "date";
-                        dateDiv.innerHTML = UTC2human(chargingSession.begin);
+                        //dateDiv.innerHTML = UTC2human(chargingSession.begin);
+                        dateDiv.innerHTML = time2human(chargingSession.begin);
 
                         if (chargingSession.end)
                         {

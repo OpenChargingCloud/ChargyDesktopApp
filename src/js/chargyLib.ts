@@ -48,6 +48,22 @@ function parseUTC(UTCTime: string|number): any {
 
 }
 
+function time2human(Time: string|number): any {
+
+    const moment = require('moment');
+
+    moment.locale(window.navigator.language);
+
+    return (typeof Time === 'string'
+                ? moment(Time)
+                : moment.unix(Time)).
+               format('dddd, D; MMM YYYY HH:mm:ss').
+                   replace(".", "").    // Nov. -> Nov
+                   replace(";", ".") +  // 14;  -> 14.
+                   " Uhr";
+
+}
+
 function UTC2human(UTCTime: string|number): any {
 
     const moment = require('moment');
