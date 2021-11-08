@@ -866,13 +866,14 @@ body {
                 display:            flex;
                 flex-direction:     column;
                 width:              50%;
+                margin:             0px 15px 15px 0px;
                 background-color:   #c7e1f3;
-                border-radius:      8px 0px 0px 0px;
+                border-radius:      8px 8px 8px 8px;
 
                 #map {
                     width:              100%;
                     min-height:         33%;
-                    border-radius:      8px 0px 0px 0px;
+                    border-radius:      8px 8px 0px 0px;
                 }
 
                 #evseTarifInfos {
