@@ -586,7 +586,7 @@ class Chargy {
                 {
 
                     const JSONContent = JSON.parse(textContent);
-                    const JSONContext = (JSONContent["@context"] as string)?.trim();
+                    const JSONContext = (JSONContent["@context"] as string)?.trim() ?? "";
 
                     if      (JSONContext.startsWith("https://open.charging.cloud/contexts/CTR+json"))
                         processedFile.result = JSONContent as IChargeTransparencyRecord;
@@ -595,13 +595,13 @@ class Chargy {
                         processedFile.result = JSONContent as IPublicKeyInfo;
 
                     else if (JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
-                        processedFile.result = await new ChargeIT(this).tryToParseChargeITJSON(JSONContent);
+                        processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormatJSON(JSONContent);
 
                     else
                     {
 
                         // The older chargeIT mobility format does not provide any context or format identifiers
-                        processedFile.result = await new ChargeIT(this).tryToParseChargeITJSON(JSONContent);
+                        processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormatJSON(JSONContent);
 
                         // The current chargepoint format does not provide any context or format identifiers
                         if (isISessionCryptoResult(processedFile.result))

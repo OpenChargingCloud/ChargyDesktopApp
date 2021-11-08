@@ -902,7 +902,7 @@ class ChargyApp {
 
             const http            = require('http');
             const url             = require('url');
-            const chargyHTTP      = new Chargy(require('elliptic'), require('moment'));
+            const chargyHTTP      = new Chargy(require('elliptic'), require('moment'), require('asn1'), require('base32decode'));
             const maxContentSize  = 20*1024*1024;
 
             try
@@ -1820,8 +1820,8 @@ class ChargyApp {
 
                         else if (chargingSession.chargingStationId || chargingSession.chargingStation) {
 
-                            if (chargingSession.chargingStation == null || typeof chargingSession.chargingStation !== 'object')
-                                chargingSession.chargingStation = this.chargy.GetChargingStation(chargingSession.chargingStationId);
+                            if (chargingSession.chargingStation == null || chargingSession.chargingStation == undefined || typeof chargingSession.chargingStation !== 'object')
+                                chargingSession.chargingStation = this.chargy.GetChargingStation(chargingSession.chargingStationId ?? "");
 
                             if (chargingSession.chargingStation != null)
                             {
@@ -1845,8 +1845,8 @@ class ChargyApp {
 
                         else if (chargingSession.chargingPoolId || chargingSession.chargingPool) {
 
-                            if (chargingSession.chargingPool == null || typeof chargingSession.chargingPool !== 'object')
-                                chargingSession.chargingPool = this.chargy.GetChargingPool(chargingSession.chargingPoolId);
+                            if (chargingSession.chargingPool == null || chargingSession.chargingPool == undefined || typeof chargingSession.chargingPool !== 'object')
+                                chargingSession.chargingPool = this.chargy.GetChargingPool(chargingSession.chargingPoolId ?? "");
 
                             if (chargingSession.chargingPool != null)
                             {
@@ -1879,7 +1879,7 @@ class ChargyApp {
                 try
                 {
 
-                    var address:IAddress|null = null;
+                    var address:IAddress|undefined = undefined;
 
                     if (chargingSession.chargingStation != null && chargingSession.chargingStation.address != null)
                         address = chargingSession.chargingStation.address;
@@ -2035,7 +2035,7 @@ class ChargyApp {
 
             // If there is at least one charging session show its details at once...
             if (CTR.chargingSessions.length >= 1)
-                CTR.chargingSessions[0].GUI.click();
+                CTR.chargingSessions[0].GUI!.click();
 
             map.fitBounds([[this.minlat, this.minlng], [this.maxlat, this.maxlng]],
                           { padding: [40, 40] });
@@ -2138,12 +2138,17 @@ class ChargyApp {
                                                                  "Ladestation");
 
                         if (measurement.chargingSession.chargingStation["@id"]?.length > 0)
+                        {
                             CreateDiv2(ChargingStationDiv,  "chargingStationId",
                                        "Identifikation",    measurement.chargingSession.chargingStation["@id"]);
+                        }
 
-                        if (measurement.chargingSession.chargingStation.firmwareVersion?.length > 0)
+                        if (measurement.chargingSession.chargingStation.firmwareVersion &&
+                            measurement.chargingSession.chargingStation.firmwareVersion.length > 0)
+                        {
                             CreateDiv2(ChargingStationDiv,  "firmwareVersion",
                                        "Firmware-Version",  measurement.chargingSession.chargingStation.firmwareVersion);
+                        }
 
                     }
 

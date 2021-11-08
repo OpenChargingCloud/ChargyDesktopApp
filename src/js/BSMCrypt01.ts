@@ -1865,7 +1865,987 @@ class BSMCrypt01 extends ACrypt {
 
 
 
-    
+    //#region tryToParseBSM_WS36aFormat(Measurements)
+
+    public async tryToParseBSM_WS36aMeasurementsNew(CTR: IChargeTransparencyRecord, Measurements: Array<any>) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+    {
+
+        if (!Array.isArray(Measurements) || Measurements.length < 2) return {
+            status:   SessionVerificationResult.InvalidSessionFormat,
+            message:  "Invalid signed meter values format!"
+        }
+
+        //#region Documentation
+
+        // {
+        //     "@context":    "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1",
+        //     "@id":         "001BZR1521070006-22979",
+        //     "time":        "2021-01-01T10:05:52+01:00",
+        //     "meterInfo": {
+        //         "firmwareVersion":  "1.9:32CA:AFF4, 6d1dd3c",
+        //         "publicKey":        "3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254",
+        //         "meterId":          "001BZR1521070006",
+        //         "manufacturer":     "BAUER Electronic",
+        //         "type":             "BSM-WS36A-H01-1311-0000"
+        //     },
+        //     "contract": {
+        //         "id":                "12345678abcdef",
+        //         "type":              "rfid",
+        //     },
+        //     "measurementId":         22979,
+        //     "value": {
+        //         "measurand": {
+        //             "id":            "1-0:1.8.0*198",
+        //             "name":          "RCR"
+        //         },
+        //         "measuredValue": {
+        //             "scale":         0,
+        //             "unit":          "WATT_HOUR",
+        //             "unitEncoded":   30,
+        //             "value":         160,
+        //             "valueType":     "UnsignedInteger32"
+        //         }
+        //     },
+
+        //#region Additional values
+
+        //   "additionalValues": [
+        //     {
+        //       "measurand": {
+        //         "name": "Typ"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unitEncoded": 255,
+        //         "value": 2,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "id": "1-0:1.8.0*198",
+        //         "name": "RCR"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unit": "WATT_HOUR",
+        //         "unitEncoded": 30,
+        //         "value": 160,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "id": "1-0:1.8.0*255",
+        //         "name": "TotWhImp"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unit": "WATT_HOUR",
+        //         "unitEncoded": 30,
+        //         "value": 52610,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "id": "1-0:1.7.0*255",
+        //         "name": "W"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 1,
+        //         "unit": "WATT",
+        //         "unitEncoded": 27,
+        //         "value": 0,
+        //         "valueType": "Integer32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "id": "1-0:0.0.0*255",
+        //         "name": "MA1"
+        //       },
+        //       "measuredValue": {
+        //         "unitEncoded": 255,
+        //         "value": "001BZR1521070006",
+        //         "valueType": "String",
+        //         "valueEncoding": "ISO-8859-1"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "RCnt"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unitEncoded": 255,
+        //         "value": 22979,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "OS"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unit": "SECOND",
+        //         "unitEncoded": 7,
+        //         "value": 1867722,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "Epoch"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unit": "SECOND",
+        //         "unitEncoded": 7,
+        //         "value": 1609491952,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "TZO"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unit": "MINUTE",
+        //         "unitEncoded": 6,
+        //         "value": 60,
+        //         "valueType": "Integer32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "EpochSetCnt"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unitEncoded": 255,
+        //         "value": 2814,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "EpochSetOS"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unit": "SECOND",
+        //         "unitEncoded": 7,
+        //         "value": 1867371,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "DI"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unitEncoded": 255,
+        //         "value": 1,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "DO"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unitEncoded": 255,
+        //         "value": 0,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "Meta1"
+        //       },
+        //       "measuredValue": {
+        //         "unitEncoded": 255,
+        //         "value": "contract-id: rfid:12345678abcdef",
+        //         "valueType": "String",
+        //         "valueEncoding": "ISO-8859-1"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "Meta2"
+        //       },
+        //       "measuredValue": {
+        //         "unitEncoded": 255,
+        //         "value": "evse-id: DE*BDO*E8025334492*2",
+        //         "valueType": "String",
+        //         "valueEncoding": "ISO-8859-1"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "Meta3"
+        //       },
+        //       "measuredValue": {
+        //         "unitEncoded": 255,
+        //         "value": "csc-sw-version: v1.2.34",
+        //         "valueType": "String",
+        //         "valueEncoding": "ISO-8859-1"
+        //       }
+        //     },
+        //     {
+        //       "measurand": {
+        //         "name": "Evt"
+        //       },
+        //       "measuredValue": {
+        //         "scale": 0,
+        //         "unitEncoded": 255,
+        //         "value": 0,
+        //         "valueType": "UnsignedInteger32"
+        //       }
+        //     }
+        //   ],
+
+        //#endregion
+
+        //     "signature": "3044022062f36e0583471d4f438da9da549be550cdbdfa4f9d77f3d4c53339f18c66850a02200e997ccb47cb33b1fb6c504b081b097cb65231b041c9f882122cc8298f575501"
+        // }
+
+        //#endregion
+
+        try
+        {
+
+            //#region Verify values
+
+            let common = {
+                context:                     Measurements[0]["@context"],
+                meterFirmwareVersion:        Measurements[0].meterInfo?.firmwareVersion,
+                meterPublicKey:              Measurements[0].meterInfo?.publicKey,
+                meterId:                     Measurements[0].meterInfo?.meterId,
+                meterManufacturer:           Measurements[0].meterInfo?.manufacturer,
+                meterType:                   Measurements[0].meterInfo?.type,
+                operatorInfo:                Measurements[0].operatorInfo,
+                contractId:                  Measurements[0].contract?.id,
+                contractType:                Measurements[0].contract?.type,
+                valueMeasurandId:            Measurements[0].value?.measurand?.id, // OBIS Id
+                valueMeasurandName:          Measurements[0].value?.measurand?.name,
+                measuredValueScale:          Measurements[0].value?.measuredValue?.scale,
+                measuredValueUnit:           Measurements[0].value?.measuredValue?.unit,
+                measuredValueUnitEncoded:    Measurements[0].value?.measuredValue?.unitEncoded,
+                measuredValueValueType:      Measurements[0].value?.measuredValue?.valueType,
+                chargePointSoftwareVersion:  Measurements[0].chargePoint?.softwareVersion,
+                MA1:                         null as string|null,
+                epochSetCnt:                 -1,
+                epochSetOS:                  -1,
+                dataSets:                    [] as any[]
+            };
+
+
+            if (!isMandatoryString(common.context)) return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Missing or invalid measurements format identification!"
+            }
+
+            if (!isMandatoryString(common.meterFirmwareVersion)) return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Invalid meter firmeware version!"
+            }
+
+            if (!isMandatoryString(common.meterPublicKey)) return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Invalid meter public key!"
+            }
+
+            if (!isMandatoryString(common.meterId)) return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Invalid meter identification!"
+            }
+
+            if (!isMandatoryString(common.meterManufacturer)) return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Invalid meter manufacturer!"
+            }
+
+            if (!isMandatoryString(common.meterType)) return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Invalid meter type!"
+            }
+
+
+            if (!isMandatoryString(common.contractId)) return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Invalid contract identification!"
+            }
+
+            if (!isMandatoryString(common.contractType)) return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Invalid contract type!"
+            }
+
+
+            if (!isMandatoryString(common.valueMeasurandId)) return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Invalid measurand identification!"
+            }
+
+            if (!isMandatoryString(common.valueMeasurandName)) return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Invalid measurand name!"
+            }
+
+
+            //    ValueMeasurandId:            Content.value?.measurand?.id              ?? Content.signedMeterValues[0].value?.measurand?.id, // OBIS Id
+            //    ValueMeasurandName:          Content.value?.measurand?.name            ?? Content.signedMeterValues[0].value?.measurand?.name,
+
+            //    MeasuredValueScale:          Content.value?.measuredValue?.scale       ?? Content.signedMeterValues[0].value?.measuredValue?.scale,
+            //    MeasuredValueUnit:           Content.value?.measuredValue?.unit        ?? Content.signedMeterValues[0].value?.measuredValue?.unit,
+            //    MeasuredValueUnitEncoded:    Content.value?.measuredValue?.unitEncoded ?? Content.signedMeterValues[0].value?.measuredValue?.unitEncoded,
+            //    MeasuredValueValueType:      Content.value?.measuredValue?.valueType   ?? Content.signedMeterValues[0].value?.measuredValue?.valueType,
+
+            //    MA1:                         null as string|null,
+            //    EpochSetCnt:                 -1,
+            //    EpochSetOS:                  -1,
+            //    dataSets:                    [] as any[]
+
+
+            let Typ                     = 0;      // Snapshot Type
+            let RCR:          any[]     = [];     // !!! Real energy imported since the last execution of the turn-on sequence
+            let TotWhImp:     any[]     = [];     // !!! Total Real Energy Imported
+            let W:            any[]     = [];     // !!! Total Real Power
+            let MA1:    string|null     = null;   // Meter Address 1
+            let RCnt                    = 0;      // A counter incremented with each snapshot
+            let OS                      = 0;      // Operation-Seconds Counter
+            let Epoch                   = 0;      // Current local time in seconds since 1970
+            let TZO                     = 0;      // Timezone offset of local epoch time time to UTC (minutes)
+            let EpochSetCnt             = 0;      // How many time epoch time and timezone offset have been set
+            let EpochSetOS              = 0;      // Operation-seconds when the time has been set the last time
+            let DI                      = 0;      // Status of the digital inputs
+            let DO                      = 0;      // Status of the digital outputs
+            let Meta1:  string|null     = null;   // User metadata 1 => Check text encoding: https://www.npmjs.com/package/iconv
+            let Meta2:  string|null     = null;   // User metadata 2 => Check text encoding: https://www.npmjs.com/package/iconv
+            let Meta3:  string|null     = null;   // User metadata 3 => Check text encoding: https://www.npmjs.com/package/iconv
+            let Evt                     = 0;      // Meter Event Flags
+
+
+            let previousId              = "";
+            let previousTime            = "";
+            let previousMeasurementId   = "";
+            let previousValue           = "";
+
+            let previousRCR             = -1;
+            let previousRCnt            = -1;
+            let previousOS              = -1;
+            let previousEpoch           = -1;
+
+            //#endregion
+
+            for (const currentMeasurement of Measurements)
+            {
+
+                //#region Validate common values
+
+                if (currentMeasurement["@context"] !== common.context)
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent @context!"
+                    };
+
+
+                if (previousId !== "" && currentMeasurement["@id"] <= previousId)
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement identifications!"
+                    };
+                previousId   = currentMeasurement["@id"];
+
+
+                if (previousTime !== "" && currentMeasurement.time <= previousTime)
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement timestamps!"
+                    };
+                previousTime = currentMeasurement.time;
+
+
+                if (previousValue !== "" && currentMeasurement.value?.measuredValue?.value < previousValue)
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement values!"
+                    };
+                previousValue = currentMeasurement.value?.measuredValue?.value;
+
+
+                if (currentMeasurement.meterInfo)
+                {
+
+                    if (currentMeasurement.meterInfo?.firmwareVersion    !== common.meterFirmwareVersion)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.firmwareVersion!"
+                        };
+
+                    if (currentMeasurement.meterInfo?.publicKey          !== common.meterPublicKey)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.publicKey!"
+                        };
+
+                    if (currentMeasurement.meterInfo?.meterId            !== common.meterId)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.meterId!"
+                        };
+
+                    if (currentMeasurement.meterInfo?.manufacturer       !== common.meterManufacturer)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.manufacturer!"
+                        };
+
+                    if (currentMeasurement.meterInfo?.type               !== common.meterType)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.type!"
+                        };
+
+                }
+
+                if (currentMeasurement.operatorInfo)
+                {
+                    if (currentMeasurement.operatorInfo                  !== common.operatorInfo)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent operatorInfo!"
+                        };
+                }
+
+                if (currentMeasurement.contract)
+                {
+                    if (currentMeasurement.contract?.id                  !== common.contractId)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent contract.id!"
+                        };
+                }
+
+                if (currentMeasurement.measurand)
+                {
+
+                    if (currentMeasurement.measurand?.firmwareVersion    !== common.valueMeasurandId)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measurand.id!"
+                        };
+
+                    if (currentMeasurement.measurand?.name               !== common.valueMeasurandName)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measurand.name!"
+                        };
+
+                }
+
+                if (currentMeasurement.measuredValue)
+                {
+
+                    if (currentMeasurement.measuredValue?.scale          !== common.measuredValueScale)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measuredValue.scale!"
+                        };
+
+                    if (currentMeasurement.measuredValue?.unit           !== common.measuredValueUnit)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measuredValue.unit!"
+                        };
+
+                    if (currentMeasurement.measuredValue?.unitEncoded    !== common.measuredValueUnitEncoded)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measuredValue.unitEncoded!"
+                        };
+
+                    if (currentMeasurement.measuredValue?.valueType      !== common.measuredValueValueType)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measuredValue.valueType!"
+                        };
+
+                }
+
+                if (currentMeasurement.chargePoint)
+                {
+                    if (currentMeasurement.chargePoint?.softwareVersion  !== common.chargePointSoftwareVersion)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent chargePoint.softwareVersion!"
+                        };
+                }
+
+                //#endregion
+
+                //#region Check additional values
+
+                for(const additionalValue of currentMeasurement.additionalValues)
+                {
+                    switch (additionalValue.measurand?.name)
+                    {
+                        case "Typ":          Typ          =   additionalValue.measuredValue?.value;       break;
+                        case "RCR":          RCR          = [ additionalValue.measurand?.id,
+                                                              additionalValue.measuredValue?.scale,
+                                                              additionalValue.measuredValue?.unit,
+                                                              additionalValue.measuredValue?.unitEncoded,
+                                                              additionalValue.measuredValue?.value,
+                                                              additionalValue.measuredValue?.valueType ]; break;
+                        case "TotWhImp":     TotWhImp     = [ additionalValue.measurand?.id,
+                                                              additionalValue.measuredValue?.scale,
+                                                              additionalValue.measuredValue?.unit,
+                                                              additionalValue.measuredValue?.unitEncoded,
+                                                              additionalValue.measuredValue?.value,
+                                                              additionalValue.measuredValue?.valueType ]; break;
+                        case "W":            W            = [ additionalValue.measurand?.id,
+                                                              additionalValue.measuredValue?.scale,
+                                                              additionalValue.measuredValue?.unit,
+                                                              additionalValue.measuredValue?.unitEncoded,
+                                                              additionalValue.measuredValue?.value,
+                                                              additionalValue.measuredValue?.valueType ]; break;
+                        case "MA1":          MA1          =   additionalValue.measuredValue?.value;       break;
+                        case "RCnt":         RCnt         =   additionalValue.measuredValue?.value;       break;
+                        case "OS":           OS           =   additionalValue.measuredValue?.value;       break;
+                        case "Epoch":        Epoch        =   additionalValue.measuredValue?.value;       break;
+                        case "TZO":          TZO          =   additionalValue.measuredValue?.value;       break;
+                        case "EpochSetCnt":  EpochSetCnt  =   additionalValue.measuredValue?.value;       break;
+                        case "EpochSetOS":   EpochSetOS   =   additionalValue.measuredValue?.value;       break;
+                        case "DI":           DI           =   additionalValue.measuredValue?.value;       break;
+                        case "DO":           DO           =   additionalValue.measuredValue?.value;       break;
+                        case "Meta1":        Meta1        =   additionalValue.measuredValue?.value ?? ""; break;
+                        case "Meta2":        Meta2        =   additionalValue.measuredValue?.value ?? ""; break;
+                        case "Meta3":        Meta3        =   additionalValue.measuredValue?.value ?? ""; break;
+                        case "Evt":          Evt          =   additionalValue.measuredValue?.value;       break;
+                    }
+                }
+
+
+                if (previousRCR !== -1 && RCR[4] < previousRCR)
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Inconsistent measurement value!"
+                };
+                previousRCR = RCR[4];
+
+
+                if (previousRCnt !== -1 && RCnt != previousRCnt + 1)
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Inconsistent measurement snapshot counter!"
+                };
+                previousRCnt = RCnt;
+
+
+                if (previousOS !== -1 && OS <= previousOS)
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Inconsistent measurement operation-seconds counter!"
+                };
+                previousOS = OS;
+
+
+                if (previousEpoch !== -1 && Epoch <= previousEpoch)
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Inconsistent measurement epochs!"
+                };
+                previousEpoch = Epoch;
+
+
+
+                if (common.MA1 !== null && MA1 !== common.MA1)
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Inconsistent measurement meter address 1!"
+                };
+                common.MA1 = MA1;
+
+
+                if (common.epochSetCnt !== -1 && EpochSetCnt !== common.epochSetCnt)
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Inconsistent measurement epoch set counter!"
+                };
+                common.epochSetCnt = EpochSetCnt;
+
+
+                if (common.epochSetOS !== -1 && EpochSetOS !== common.epochSetOS)
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Inconsistent measurement epoch set operation-seconds!"
+                };
+                common.epochSetOS = EpochSetOS;
+
+                //#endregion
+
+                common.dataSets.push({
+                    Typ:             this.ParseTyp(Typ),
+                    RCR:             RCR,
+                    TotWhImp:        TotWhImp,
+                    W:               W,
+                    MA1:             MA1,
+                    RCnt:            RCnt,
+                    OS:              OS,
+                    Epoch:           Epoch,
+                    TZO:             TZO,          // Must be common? Or may it change e.g. during summer/winter time change?!
+                    EpochSetCnt:     EpochSetCnt,
+                    EpochSetOS:      EpochSetOS,
+                    DI:              DI,
+                    DO:              DO,
+                    Meta1:           Meta1,
+                    Meta2:           Meta2,
+                    Meta3:           Meta3,
+                    Evt:             this.ParseEvents(Evt),
+                    time:            currentMeasurement.time,
+                    value:           currentMeasurement.value?.measuredValue?.value,
+                    measurementId:   currentMeasurement.measurementId,
+                    signature:       currentMeasurement.signature
+                });
+
+            }
+
+            //#region Check snapshot types
+
+            var n = common.dataSets.length-1;
+
+            if (common.dataSets[0].Typ !== "START" && common.dataSets[0].Typ !== "TURN ON")
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Invalid start snapshot!"
+                };
+
+            for (let i=1; i<common.dataSets.length-1; i++)
+            {
+                if (common.dataSets[i].Typ !== "CURRENT")
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Invalid intermediate snapshot!"
+                    };
+            }
+
+            if (common.dataSets[n].Typ !== "END"   && common.dataSets[n].Typ !== "TURN OFF")
+                return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Invalid end snapshot!"
+                };
+
+            //#endregion
+
+
+            const ASN1_SignatureSchema = this.chargy.asn1.define('Signature', function() {
+                //@ts-ignore
+                this.seq().obj(
+                    //@ts-ignore
+                    this.key('r').int(),
+                    //@ts-ignore
+                    this.key('s').int()
+                );
+            });
+
+            if (CTR.chargingSessions == undefined || CTR.chargingSessions == null)
+                CTR.chargingSessions = [];
+
+            let session = {
+
+                "@id":                          "XXX", //Content["@id"],
+                "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/bsm-ws36a-v0+json",
+                "begin":                        common.dataSets[0].time,
+                "end":                          common.dataSets[n].time,
+                "EVSEId":                       CTR.chargingStationOperators![0].chargingStations![0].EVSEs![0]["@id"],
+
+                "authorizationStart": {
+                    "@id":                      common.contractId,   //CTR.contract!["@id"],
+                    "@context":                 common.contractType, //CTRArray[0]["contract"]["type"],
+                   //  "timestamp":                this.moment.unix(CTRArray[0]["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
+                   //                                               CTRArray[0]["contract"]["timestampLocal"]["localOffset"] +
+                   //                                               CTRArray[0]["contract"]["timestampLocal"]["seasonOffset"]).format(),
+                },
+
+                "measurements": [
+                    {
+                         "energyMeterId":        common.meterId,
+                    //     //"@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/bsm-ws36a-v0+json",
+                         "phenomena": [
+                             {
+                                "name":              "Real Energy Imported",
+                                "obis":              common.valueMeasurandId,
+                                "unit":              common.measuredValueUnit,
+                                "unitEncoded":       common.measuredValueUnitEncoded,
+                                "valueType":         common.measuredValueValueType,
+                                "value":             "value",
+                                "scale":             common.measuredValueScale
+                             },
+                             {
+                                "name":              "Total Watt-hours Imported",
+                                "obis":              TotWhImp[0],
+                                "unit":              TotWhImp[2],
+                                "unitEncoded":       TotWhImp[3],
+                                "valueType":         TotWhImp[5],
+                                "value":             "TotWhImp",
+                                "scale":             TotWhImp[1]
+                             },
+                             {
+                                "name":              "Total Real Power",
+                                "obis":              W[0],
+                                "unit":              W[2],
+                                "unitEncoded":       W[3],
+                                "valueType":         W[5],
+                                "value":             "W",
+                                "scale":             W[1]
+                             }
+                         ],
+                         "values": [ ]
+                    }
+                ]
+
+            };
+
+            for (let dataSet of common.dataSets)
+            {
+
+                let ASN1Signature = ASN1_SignatureSchema.decode(Buffer.from(dataSet.signature, 'hex'), 'der');
+
+                (session.measurements[0].values as any[]).push(
+                                         {
+                                             timestamp:     dataSet.time,
+                                             type:          dataSet.Typ,
+                                             value:         dataSet.value,
+                                             //RCR:           dataSet.RCR,
+                                             TotWhImp:      dataSet.TotWhImp[4],
+                                             W:             dataSet.W[4],
+                                             MA1:           dataSet.MA1,
+                                             RCnt:          dataSet.RCnt,
+                                             OS:            dataSet.OS,
+                                             epoch:         dataSet.Epoch,
+                                             TZO:           dataSet.TZO,
+                                             epochSetCnt:   dataSet.EpochSetCnt,
+                                             epochSetOS:    dataSet.EpochSetOS,
+                                             DI:            dataSet.DI,
+                                             DO:            dataSet.DO,
+                                             meta1:         dataSet.Meta1,
+                                             meta2:         dataSet.Meta2,
+                                             meta3:         dataSet.Meta3,
+                                             events:        dataSet.Evt,
+                                             signatures: [
+                                                 {
+                                                     r:  ASN1Signature.r.toString(16),
+                                                     s:  ASN1Signature.s.toString(16)
+                                                 }
+                                             ]
+                                         } as IMeasurementValue
+                 );
+
+            }
+
+            CTR.chargingSessions.push(session as any as IChargingSession);
+
+
+
+            CTR["@id"] = common.dataSets[0]
+
+            if (CTR.chargingSessions)
+            {
+
+                if (CTR.begin == undefined || CTR.begin === "" || CTR.begin > CTR.chargingSessions[0].begin)
+                    CTR.begin =   CTR.chargingSessions[0].begin;
+
+                var end = CTR.chargingSessions[CTR.chargingSessions.length - 1].end;
+                if (end !== undefined)
+                {
+                    if (CTR.end == undefined || CTR.end === "" || CTR.end < end)
+                        CTR.end = CTR.chargingSessions[CTR.chargingSessions.length - 1].end;
+                }
+
+            }
+
+            if (CTR.contract == null || CTR.contract == undefined)
+                CTR.contract = {
+                    "@id":       common.contractId,
+                    "@context":  common.contractType,
+                };
+            else
+            {
+                //ToDo: What to do when there are different values?!
+                CTR.contract["@id"]      = common.contractId;
+                CTR.contract["@context"] = common.contractType;
+            }
+
+
+
+            // var _CTR: any = { //IChargeTransparencyRecord = {
+
+            //      "@id":              Content["@id"],
+            //      "@context":         "https://open.charging.cloud/contexts/CTR+json",
+
+            //      "chargingPools": [
+            //          {
+            //              //"@id":                      "DE*GEF*POOL*1",
+            //              //"description":              { "de": "GraphDefined Virtual Charging Pool - CI-Tests Pool 1" },
+            //              "chargingStations": [
+            //                  {
+
+            //                      //"@id":                      "DE*GEF*STATION*1*A",
+            //                      //"description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A" },
+            //                      "firmwareVersion":          common.ChargePointSoftwareVersion,
+            //                      "geoLocation": {
+            //                          "lat":                  Content.placeInfo?.geoLocation?.lat,
+            //                          "lng":                  Content.placeInfo?.geoLocation?.lon
+            //                      },
+            //                      "address": {
+            //                          "street":               Content.placeInfo?.address?.street,
+            //                          "postalCode":           Content.placeInfo?.address?.zipCode,
+            //                          "city":                 Content.placeInfo?.address?.town
+            //                      },
+            //                      "manufacturer": {
+            //                          //"hardwareVersion":      "",
+            //                          //"firmwareVersion":      "",
+            //                          "calibrationLaw":       common.OperatorInfo,
+            //                      },
+
+            //                      "EVSEs": [
+            //                          {
+            //                              "@id":                      Content.placeInfo.evseId,
+            //                              //"description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A / EVSE 1" },
+            //                              //"sockets": [
+            //                              //    {
+            //                              //        "type":             "type2",
+            //                              //        "cableAttached":    false
+            //                              //    }
+            //                              //],
+            //                              "meters": [
+            //                                  {
+            //                                      "@id":                      common.MeterId,
+            //                                      "vendor":                   common.MeterManufacturer,  //ToDo: Change me to "manufacturer", but check other implementations!
+            //                                      //"vendorURL":                "http://www.emh-metering.de",
+            //                                      "model":                    common.MeterType,
+            //                                      //"hardwareVersion":          "1.0",
+            //                                      "firmwareVersion":          common.MeterFirmwareVersion,
+            //                                      //"adapterId":                common.AdapterId,
+            //                                      //"adapterFWVersion":         common.MeterFirmwareVersion,
+            //                                      //"adapterFWChecksum":        common.AdapterFWChecksum,
+            //                                      "signatureFormat":          common.Context,            //ToDo: Move me into "signatureInfos"!
+            //                                      "signatureInfos": {
+            //                                         "hash":                  "SHA256",
+            //                                         "algorithm":             "ECC",
+            //                                         "curve":                 "secp256r1",
+            //                                         "format":                "rs",
+            //                                         "encoding":              "hex"
+            //                                      },
+            //                                      "publicKeys": [
+            //                                          {
+            //                                              "value":            common.MeterPublicKey,
+            //                                              "algorithm":        "secp256r1",
+            //                                              "format":           "DER",
+            //                                              "encoding":         "HEX"
+            //                                              //"signatures":       CTRArray[0]["meterInfo"]["publicKeySignatures"]
+            //                                          }
+            //                                      ]
+            //                                  }
+            //                              ]
+            //                          }
+            //                      ]
+            //                  }
+            //              ],
+            //          }
+            //      ],
+
+            //      "chargingSessions": [
+            //          {
+
+            //              "@id":                          Content["@id"],
+            //              "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/bsm-ws36a-v0+json",
+            //              "begin":                        common.dataSets[0].time,
+            //              "end":                          common.dataSets[n].time,
+            //              "EVSEId":                       Content.placeInfo.evseId,
+
+            //              "authorizationStart": {
+            //                  "@id":                      common.ContractId,
+            //                 //  "type":                     CTRArray[0]["contract"]["type"],
+            //                 //  "timestamp":                this.moment.unix(CTRArray[0]["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
+            //                 //                                               CTRArray[0]["contract"]["timestampLocal"]["localOffset"] +
+            //                 //                                               CTRArray[0]["contract"]["timestampLocal"]["seasonOffset"]).format(),
+            //              },
+
+            //              "measurements": [
+            //                  {
+            //                      "energyMeterId":        common.MeterId,
+            //                      //"@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/bsm-ws36a-v0+json",
+            //                      "phenomena": [
+            //                          {
+            //                             "name":              "Real Energy Imported",
+            //                             "obis":              common.ValueMeasurandId,
+            //                             "unit":              common.MeasuredValueUnit,
+            //                             "unitEncoded":       common.MeasuredValueUnitEncoded,
+            //                             "valueType":         common.MeasuredValueValueType,
+            //                             "value":             "value",
+            //                             "scale":             common.MeasuredValueScale
+            //                          },
+            //                          {
+            //                             "name":              "Total Watt-hours Imported",
+            //                             "obis":              TotWhImp[0],
+            //                             "unit":              TotWhImp[2],
+            //                             "unitEncoded":       TotWhImp[3],
+            //                             "valueType":         TotWhImp[5],
+            //                             "value":             "TotWhImp",
+            //                             "scale":             TotWhImp[1]
+            //                          },
+            //                          {
+            //                             "name":              "Total Real Power",
+            //                             "obis":              W[0],
+            //                             "unit":              W[2],
+            //                             "unitEncoded":       W[3],
+            //                             "valueType":         W[5],
+            //                             "value":             "W",
+            //                             "scale":             W[1]
+            //                          }
+            //                      ],
+            //                      "values": [ ]
+            //                  }
+            //              ]
+
+            //          }
+            //      ]
+
+            // };
+
+
+
+            return CTR;
+
+
+            //await this.processChargeTransparencyRecord(_CTR);
+
+            let _CTR = {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Invalid signed meter values format!"
+            };
+
+            return _CTR as ISessionCryptoResult;
+
+        }
+        catch (exception)
+        {
+            return {
+                status:   SessionVerificationResult.InvalidSessionFormat,
+                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
+            }
+        }
+
+    }
+
+    //#endregion
 
 
 
@@ -1926,8 +2906,8 @@ class BSMCrypt01 extends ACrypt {
 
                     for (var measurementValue of measurement.values)
                     {
-                        if (sessionResult                  == SessionVerificationResult.ValidSignature &&
-                            measurementValue.result.status != VerificationResult.ValidSignature)
+                        if (sessionResult                   == SessionVerificationResult.ValidSignature &&
+                            measurementValue.result!.status != VerificationResult.ValidSignature)
                         {
                             sessionResult = SessionVerificationResult.InvalidSignature;
                         }
@@ -2004,14 +2984,14 @@ class BSMCrypt01 extends ACrypt {
         const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
                                                sign(cryptoResult.sha256value);
 
-        switch (measurementValue.measurement.signatureInfos.format)
+        switch (measurementValue.measurement!.signatureInfos.format)
         {
 
             case SignatureFormats.DER:
 
                 cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
+                    algorithm:  measurementValue.measurement!.signatureInfos.algorithm,
+                    format:     measurementValue.measurement!.signatureInfos.format,
                     value:      signature.toDER('hex')
                 };
 
@@ -2021,8 +3001,8 @@ class BSMCrypt01 extends ACrypt {
             case SignatureFormats.rs:
 
                 cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
+                    algorithm:  measurementValue.measurement!.signatureInfos.algorithm,
+                    format:     measurementValue.measurement!.signatureInfos.format,
                     r:          signature.r,
                     s:          signature.s
                 };
@@ -2077,23 +3057,23 @@ class BSMCrypt01 extends ACrypt {
         // Public Key:              3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254
         // Signature:               3045022100895b68a977654fc052988310dc92aad5f7191ec936acbb7bfa322130171ff06002205de10b55b48e2e08c59e03108d67e5f3e72ed62b10b77b705cae6d3e73ce73b9
 
-        measurementValue.Typ           = 0;
-        measurementValue.RCR           = 150;
-        measurementValue.TotWhImp      = 88350;
-        measurementValue.W             = 0;
-        measurementValue.MA1           = "001BZR1521070003";
-        measurementValue.RCnt          = 22111;
-        measurementValue.OS            = 1840464;
-        measurementValue.Epoch         = 1602156057;
-        measurementValue.TZO           = 120;
-        measurementValue.EpochSetCnt   = 12174;
-        measurementValue.EpochSetOS    = 1829734;
-        measurementValue.DI            = 1;
-        measurementValue.DO            = 0;
-        measurementValue.Meta1         = "demo data 1";
-        measurementValue.Meta2         = "";
-        measurementValue.Meta3         = "";
-        measurementValue.Evt           = 0;
+        // measurementValue.Typ           = 0;
+        // measurementValue.RCR           = 150;
+        // measurementValue.TotWhImp      = 88350;
+        // measurementValue.W             = 0;
+        // measurementValue.MA1           = "001BZR1521070003";
+        // measurementValue.RCnt          = 22111;
+        // measurementValue.OS            = 1840464;
+        // measurementValue.Epoch         = 1602156057;
+        // measurementValue.TZO           = 120;
+        // measurementValue.EpochSetCnt   = 12174;
+        // measurementValue.EpochSetOS    = 1829734;
+        // measurementValue.DI            = 1;
+        // measurementValue.DO            = 0;
+        // measurementValue.Meta1         = "demo data 1";
+        // measurementValue.Meta2         = "";
+        // measurementValue.Meta3         = "";
+        // measurementValue.Evt           = 0;
 
         // # Numerical Values
         // 
@@ -2158,11 +3138,11 @@ class BSMCrypt01 extends ACrypt {
 
                 cryptoResult.sha256value = (await sha256(cryptoBuffer));
 
-                const meter = this.chargy.GetMeter(measurementValue.measurement.energyMeterId);
+                const meter = this.chargy.GetMeter(measurementValue.measurement!.energyMeterId);
 
                 cryptoResult.signature = {
-                    algorithm:  (measurementValue.measurement.signatureInfos ?? meter?.signatureInfos)?.algorithm,
-                    format:     (measurementValue.measurement.signatureInfos ?? meter?.signatureInfos)?.format,
+                    algorithm:  (measurementValue.measurement!.signatureInfos ?? meter?.signatureInfos)?.algorithm,
+                    format:     (measurementValue.measurement!.signatureInfos ?? meter?.signatureInfos)?.format,
                     r:          signatureExpected.r,
                     s:          signatureExpected.s
                 };
@@ -2355,8 +3335,8 @@ class BSMCrypt01 extends ACrypt {
                     {
 
                         let signatureDiv = PublicKeyDiv.parentElement!.children[3].appendChild(document.createElement('div'));
-                        signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
-                                                                                                measurementValue.measurement.chargingSession.EVSE,
+                        signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement!.chargingSession!.chargingStation,
+                                                                                                measurementValue.measurement!.chargingSession!.EVSE,
                                                                                                 //@ts-ignore
                                                                                                 measurementValue.measurement.chargingSession.EVSE.meters[0],
                                                                                                 //@ts-ignore

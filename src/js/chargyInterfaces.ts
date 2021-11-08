@@ -116,8 +116,9 @@ interface IChargeTransparencyRecord
 interface IContract
 {
     "@id":                      string;
-    username:                   string;
-    email:                      string;
+    "@context"?:                string;
+    username?:                  string;
+    email?:                     string;
 }
 
 interface IPublicKeyLookup
@@ -139,7 +140,7 @@ interface IPublicKeyInfo
 interface IPublicKeysignature
 {
     "@id":                      string;
-    "@context":                 string;
+    "@context"?:                string;
     timestamp:                  string;
     keyUsage:                   Array<string>;
 }
@@ -174,21 +175,46 @@ interface IKeyInfo
 interface IChargingStationOperator
 {
     "@id":                      string;
-    "@context":                 string;
-    description:                {};
-    address:                    IAddress;
+    "@context"?:                string;
+    description?:               {};
+    contact:                    IContact;
+    support:                    ISupport;
+    privacy:                    IPrivacy;
     geoLocation?:               IGeoLocation;
-    chargingPools:              Array<IChargingPool>;
-    chargingStations:           Array<IChargingStation>;
-    EVSEs:                      Array<IEVSE>;
-    tariffs:                    Array<ITariff>;
+    chargingPools?:             Array<IChargingPool>;
+    chargingStations?:          Array<IChargingStation>;
+    EVSEs?:                     Array<IEVSE>;
+    tariffs?:                   Array<ITariff>;
     publicKeys?:                Array<IPublicKey>;
+}
+
+interface IContact {
+    email:                      string;
+    web:                        string;
+    logoUrl?:                   string;
+    address?:                   IAddress;
+    publicKeys?:                Array<IPublicKey>
+}
+
+interface ISupport {
+    hotline:                    string;
+    email:                      string;
+    web?:                       string;
+    mediationServices?:         Array<string>;
+    publicKeys?:                Array<IPublicKey>
+}
+
+interface IPrivacy {
+    contact:                    string;
+    email:                      string;
+    web:                        string;
+    publicKeys?:                Array<IPublicKey>
 }
 
 interface IChargingPool
 {
     "@id":                      string;
-    "@context":                 string;
+    "@context"?:                string;
     description:                {};
     address:                    IAddress;
     geoLocation?:               IGeoLocation;
@@ -201,53 +227,61 @@ interface IChargingPool
 interface IChargingStation
 {
     "@id":                      string;
-    "@context":                 string;
-    description:                {};
-    firmwareVersion:            string;
-    address:                    IAddress;
+    "@context"?:                string;
+    description?:               {};
+    firmwareVersion?:           string;
+    address?:                   IAddress;
     geoLocation?:               IGeoLocation;
-    chargingStationOperator:    IChargingStationOperator;
-    chargingPoolId:             string;
-    chargingPool:               IChargingPool;
+    chargingStationOperator?:   IChargingStationOperator;
+    chargingPoolId?:            string;
+    chargingPool?:              IChargingPool;
     EVSEs:                      Array<IEVSE>;
-    EVSEIds:                    Array<string>;
-    meters:                     Array<IMeter>;
-    tariffs:                    Array<ITariff>;
+    EVSEIds?:                   Array<string>;
+    meters?:                    Array<IMeter>;
+    tariffs?:                   Array<ITariff>;
     publicKeys?:                Array<IPublicKey>;
 }
 
 interface IEVSE
 {
     "@id":                      string;
-    "@context":                 string;
-    description:                {};
-    chargingStation:            IChargingStation;
-    chargingStationId:          string;
+    "@context"?:                string;
+    description?:               {};
+    chargingStation?:           IChargingStation;
+    chargingStationId?:         string;
     meters:                     Array<IMeter>;
-    tariffs:                    Array<ITariff>;
+    tariffs?:                   Array<ITariff>;
     publicKeys?:                Array<IPublicKey>;
+    connectors?:                Array<IConnector>;
 }
 
 interface IMeter
 {
     "@id":                      string;
-    "@context":                 string;
-    description:                {};
+    "@context"?:                string;
+    description?:               {};
     model:                      string;
     vendor:                     string;
+    vendorURL:                  string;
     firmwareVersion:            string;
-    chargingStation:            IChargingStation;
-    chargingStationId:          string;
-    EVSE:                       IEVSE;
-    EVSEId:                     string;
-    signatureInfos:             ISignatureInfos;
+    hardwareVersion?:           string;
+    chargingStation?:           IChargingStation;
+    chargingStationId?:         string;
+    EVSE?:                      IEVSE;
+    EVSEId?:                    string;
+    signatureInfos?:            ISignatureInfos;
+    signatureFormat:            string;
     publicKeys?:                Array<IPublicKey>;
+}
+
+interface IConnector {
+    type:                       string;
 }
 
 interface IEMobilityProvider
 {
     "@id":                      string;
-    "@context":                 string;
+    "@context"?:                string;
     description:                {};
     tariffs:                    Array<ITariff>;
     publicKeys?:                Array<IPublicKey>;
@@ -256,14 +290,14 @@ interface IEMobilityProvider
 interface ITariff
 {
     "@id":                      string;
-    "@context":                 string;
+    "@context"?:                string;
     description:                {};
 }
 
 interface IMediationService
 {
     "@id":                      string;
-    "@context":                 string;
+    "@context"?:                string;
     description:                {};
     publicKeys?:                Array<IPublicKey>;
 }
@@ -271,32 +305,32 @@ interface IMediationService
 interface IChargingSession
 {
     "@id":                      string;
-    "@context":                 string;
-    ctr:                        IChargeTransparencyRecord;
-    GUI:                        HTMLDivElement;
+    "@context"?:                string;
+    ctr?:                       IChargeTransparencyRecord;
+    GUI?:                       HTMLDivElement;
     begin:                      string;
-    end?:                       string;
+    end?:                       string;     // to allow still running sessions!
     chargingProductRelevance?:  IChargingProductRelevance,
-    description:                {};
-    chargingStationOperatorId:  string;
+    description?:               {};
+    chargingStationOperatorId?: string;
     chargingStationOperator?:   IChargingStationOperator|null;
-    chargingPoolId:             string;
+    chargingPoolId?:            string;
     chargingPool?:              IChargingPool|null;
-    chargingStationId:          string;
+    chargingStationId?:         string;
     chargingStation?:           IChargingStation|null;
     EVSEId:                     string;
     EVSE?:                      IEVSE|null;
-    meterId:                    string;
+    meterId?:                   string;
     meter?:                     IMeter|null;
     publicKey?:                 IPublicKeyInfo;
     tariffId?:                  string;
     tariff?:                    ITariff|null;
     authorizationStart:         IAuthorization;
-    authorizationStop:          IAuthorization;
-    product:                    IChargingProduct;
+    authorizationStop?:         IAuthorization;
+    product?:                   IChargingProduct;
     measurements:               Array<IMeasurement>;
-    parking:                    Array<IParking>;
-    method:                     ACrypt;
+    parking?:                   Array<IParking>;
+    method?:                    ACrypt;
     original?:                  string;
     signature?:                 string|ISignatureRS;
     hashValue?:                 string;
@@ -311,13 +345,13 @@ interface ISignatureRS {
 interface IChargingProduct
 {
     "@id":                      string;
-    "@context":                 string;
+    "@context"?:                string;
 }
 
 interface IParking
 {
     "@id":                      string;
-    "@context":                 string;
+    "@context"?:                string;
     begin:                      string;
     end?:                       string;
 }
@@ -325,27 +359,27 @@ interface IParking
 interface IAuthorization
 {
     "@id":                      string;
-    "@context":                 string;
-    type:                       string;
-    timestamp:                  string;
-    chargingStationOperator:    string;
-    roamingNetwork:             string;
-    eMobilityProvider:          string;
+    "@context"?:                string;
+    type?:                      string;
+    timestamp?:                 string;
+    chargingStationOperator?:   string;
+    roamingNetwork?:            string;
+    eMobilityProvider?:         string;
 }
 
 interface IMeasurement
 {
-    "@context":                 string;
-    chargingSession:            IChargingSession;
+    "@context"?:                string;
+    chargingSession?:           IChargingSession;
     energyMeterId:              string;
-    phenomena:                  any[];
+    phenomena?:                 any[];
     name:                       string;
     obis:                       string;
     unit:                       string;
     unitEncoded:                number;
     valueType:                  string;
     scale:                      number;
-    verifyChain:                boolean;
+    verifyChain?:               boolean;
     signatureInfos:             ISignatureInfos;
     values:                     Array<IMeasurementValue>;
     verificationResult?:        ICryptoResult;
@@ -353,7 +387,7 @@ interface IMeasurement
 
 interface IMeasurements
 {
-    "@context":                 string;
+    "@context"?:                string;
     values:                     Array<IMeasurement>;
     verificationResult?:        ICryptoResult;
 }
@@ -373,14 +407,21 @@ enum SignatureFormats {
 
 interface IMeasurementValue
 {
-    measurement:                IMeasurement;
-    method:                     ACrypt;
-    previousValue:              IMeasurementValue;
-    result:                     ICryptoResult;
+
+    measurement?:               IMeasurement;
+    method?:                    ACrypt;
+    previousValue?:             IMeasurementValue;
 
     timestamp:                  string;
     value:                      number;
-    signatures:                 Array<ISignature>;
+    infoStatus?:                string;
+    secondsIndex?:              number;
+    paginationId?:              number|string;
+    logBookIndex?:              string;
+
+    signatures:                 Array<ISignature|ISignatureRS>;
+    result?:                    ICryptoResult;
+
 }
 
 interface ISessionCryptoResult
@@ -407,9 +448,9 @@ interface IPublicKey
 {
     algorithm:                  string;
     format:                     string;
-    previousValue:              string;
+    previousValue?:             string;
     value:                      string;
-    signatures:                 any;
+    signatures?:                any;
 }
 
 interface ISignature
@@ -431,7 +472,7 @@ interface IECCSignature extends ISignature
 }
 
 interface IAddress {
-    "@context":                 string;
+    "@context"?:                string;
     city:                       any;
     street?:                    string;
     houseNumber?:               string;

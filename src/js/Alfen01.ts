@@ -520,8 +520,8 @@ class AlfenCrypt01 extends ACrypt {
 
                     for (var measurementValue of measurement.values)
                     {
-                        if (sessionResult                  == SessionVerificationResult.ValidSignature &&
-                            measurementValue.result.status != VerificationResult.ValidSignature)
+                        if (sessionResult                   == SessionVerificationResult.ValidSignature &&
+                            measurementValue.result?.status != VerificationResult.ValidSignature)
                         {
                             sessionResult = SessionVerificationResult.InvalidSignature;
                         }
@@ -625,21 +625,21 @@ class AlfenCrypt01 extends ACrypt {
 
         var cryptoResult:IAlfenCrypt01Result = {
             status:                       VerificationResult.InvalidSignature,
-            adapterId:                    SetHex        (cryptoBuffer, measurementValue.measurement.adapterId,                                   0),
-            adapterFWVersion:             SetText       (cryptoBuffer, measurementValue.measurement.adapterFWVersion,                           10),
-            adapterFWChecksum:            SetHex        (cryptoBuffer, measurementValue.measurement.adapterFWChecksum,                          14),
-            meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                              16),
-            statusMeter:                  SetHex        (cryptoBuffer, measurementValue.statusMeter,                                            26, true),
-            statusAdapter:                SetHex        (cryptoBuffer, measurementValue.statusAdapter,                                          28, true),
-            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                           30, true),
-            timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                              34, false),
-            obisId:                       SetHex        (cryptoBuffer, OBIS2Hex(measurementValue.measurement.obis),                             38, false),
-            unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                44),
-            scalar:                       SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                      45),
-            value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                  46, true),
-            uid:                          SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],  54),
-            sessionId:                    SetUInt32     (cryptoBuffer, parseInt(measurementValue.measurement.chargingSession["@id"]),           74, true),
-            paging:                       SetUInt32     (cryptoBuffer, measurementValue.paginationId,                                           78, true)
+            adapterId:                    SetHex        (cryptoBuffer, measurementValue.measurement.adapterId,                                           0),
+            adapterFWVersion:             SetText       (cryptoBuffer, measurementValue.measurement.adapterFWVersion,                                    10),
+            adapterFWChecksum:            SetHex        (cryptoBuffer, measurementValue.measurement.adapterFWChecksum,                                   14),
+            meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                       16),
+            statusMeter:                  SetHex        (cryptoBuffer, measurementValue.statusMeter,                                                     26, true),
+            statusAdapter:                SetHex        (cryptoBuffer, measurementValue.statusAdapter,                                                   28, true),
+            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                                    30, true),
+            timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                       34, false),
+            obisId:                       SetHex        (cryptoBuffer, OBIS2Hex(measurementValue.measurement.obis),                                      38, false),
+            unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                         44),
+            scalar:                       SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                               45),
+            value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                           46, true),
+            uid:                          SetText       (cryptoBuffer, (measurementValue.measurement.chargingSession?.authorizationStart["@id"] ?? ""),  54),
+            sessionId:                    SetUInt32     (cryptoBuffer, parseInt(measurementValue.measurement.chargingSession!["@id"]),                   74, true),
+            paging:                       SetUInt32     (cryptoBuffer, measurementValue.paginationId,                                                    78, true)
         };
 
 
@@ -790,25 +790,25 @@ class AlfenCrypt01 extends ACrypt {
             PlainTextDiv.style.maxHeight   = "";
             PlainTextDiv.style.overflowY   = "";
 
-            this.CreateLine("Adapter Id",                  measurementValue.measurement.adapterId,                                           result.adapterId                             || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Adapter Firmware Version",    measurementValue.measurement.adapterFWVersion,                                    result.adapterFWVersion                      || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Adapter Firmware Prüfsumme",  measurementValue.measurement.adapterFWChecksum,                                   result.adapterFWChecksum                     || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Zählernummer",                measurementValue.measurement.energyMeterId,                                       result.meterId                               || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Adapter Id",                  measurementValue.measurement.adapterId,                                                   result.adapterId          || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Adapter Firmware Version",    measurementValue.measurement.adapterFWVersion,                                            result.adapterFWVersion   || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Adapter Firmware Prüfsumme",  measurementValue.measurement.adapterFWChecksum,                                           result.adapterFWChecksum  || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Zählernummer",                measurementValue.measurement.energyMeterId,                                               result.meterId            || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Meter status",                hex2bin(measurementValue.statusMeter, true) + " (" + measurementValue.statusMeter + " hex)<br /><span class=\"statusInfos\">" +
                                                            this.DecodeMeterStatus(measurementValue.statusMeter).join("<br />") + "</span>",
-                                                                                                                                             result.statusMeter                           || "",  infoDiv, PlainTextDiv);
+                                                                                                                                                     result.statusMeter        || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Adapter status",              hex2bin(measurementValue.statusAdapter, true) + " (" + measurementValue.statusAdapter + " hex)<br /><span class=\"statusInfos\">" +
                                                            this.DecodeAdapterStatus(measurementValue.statusAdapter).join("<br />") + "</span>",
-                                                                                                                                             result.statusAdapter                         || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Sekundenindex",               measurementValue.secondsIndex,                                                    result.secondsIndex                          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Zeitstempel",                 UTC2human(measurementValue.timestamp),                                            result.timestamp                             || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("OBIS-Kennzahl",               measurementValue.measurement.obis,                                                result.obisId                                || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Einheit (codiert)",           measurementValue.measurement.unitEncoded,                                         result.unitEncoded                           || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Skalierung",                  measurementValue.measurement.scale,                                               result.scalar                                || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Messwert",                    measurementValue.value + " Wh",                                                   result.value                                 || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Autorisierung",               measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",  pad(result.uid,                          20) || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("SessionId",                   measurementValue.measurement.chargingSession["@id"],                              result.sessionId                             || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Paginierungszähler",          measurementValue.paginationId,                                                    result.paging                                || "",  infoDiv, PlainTextDiv);
+                                                                                                                                                     result.statusAdapter      || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Sekundenindex",               measurementValue.secondsIndex,                                                            result.secondsIndex       || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Zeitstempel",                 UTC2human(measurementValue.timestamp),                                                    result.timestamp          || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("OBIS-Kennzahl",               measurementValue.measurement.obis,                                                        result.obisId             || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Einheit (codiert)",           measurementValue.measurement.unitEncoded,                                                 result.unitEncoded        || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Skalierung",                  measurementValue.measurement.scale,                                                       result.scalar             || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Messwert",                    measurementValue.value + " Wh",                                                           result.value              || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Autorisierung",              (measurementValue.measurement.chargingSession?.authorizationStart["@id"] ?? "") + " hex",  pad(result.uid, 20)       || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("SessionId",                  (measurementValue.measurement.chargingSession?.["@id"] ?? ""),                             result.sessionId          || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Paginierungszähler",          measurementValue.paginationId,                                                            result.paging             || "",  infoDiv, PlainTextDiv);
 
         }
 
@@ -860,8 +860,8 @@ class AlfenCrypt01 extends ACrypt {
                     {
 
                         let signatureDiv = PublicKeyDiv.parentElement!.children[3].appendChild(document.createElement('div'));
-                        signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
-                                                                                                measurementValue.measurement.chargingSession.EVSE,
+                        signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession?.chargingStation,
+                                                                                                measurementValue.measurement.chargingSession?.EVSE,
                                                                                                 //@ts-ignore
                                                                                                 measurementValue.measurement.chargingSession.EVSE.meters[0],
                                                                                                 //@ts-ignore
