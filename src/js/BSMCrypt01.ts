@@ -98,61 +98,6 @@ class BSMCrypt01 extends ACrypt {
     }
 
 
-    public ParseTyp(value: number) : string
-    {
-        switch (value)
-        {
-            case 0: return "CURRENT";       // Signed snapshot of the current meter data at the time of its creation.
-            case 1: return "TURN ON";       // Signed snapshot created during executing the turn-on sequence for an external contactor.
-            case 2: return "TURN OFF";      // Signed snapshot created during the execution of the turn-off sequence for an external contactor.
-            case 3: return "START";         // Signed snapshot marking the start of a charging process without executing the turn-on sequence for an external contactor.
-            case 4: return "END";           // Signed snapshot marking the end of a charging process without executing the turn-off sequence for an external contactor.
-            default: return "<unknown>";
-        }
-    }
-
-    public ParseEvents(value: number) : string[]
-    {
-
-        let events = [];
-
-        if ((value & (1 <<  1)) != 0) events.push("Power Failure");
-        if ((value & (1 <<  2)) != 0) events.push("Under Voltage");
-        if ((value & (1 <<  3)) != 0) events.push("Low PF");
-        if ((value & (1 <<  4)) != 0) events.push("Over Current");
-        if ((value & (1 <<  5)) != 0) events.push("Over Voltage");
-        if ((value & (1 <<  6)) != 0) events.push("Missing Sensor");
-
-        if ((value & (1 <<  7)) != 0) events.push("Reserved 1");
-        if ((value & (1 <<  8)) != 0) events.push("Reserved 2");
-        if ((value & (1 <<  9)) != 0) events.push("Reserved 3");
-        if ((value & (1 << 10)) != 0) events.push("Reserved 4");
-        if ((value & (1 << 11)) != 0) events.push("Reserved 5");
-        if ((value & (1 << 12)) != 0) events.push("Reserved 6");
-        if ((value & (1 << 13)) != 0) events.push("Reserved 7");
-        if ((value & (1 << 14)) != 0) events.push("Reserved 8");
-
-        if ((value & (1 << 15)) != 0) events.push("Meter Fatal Error");
-        if ((value & (1 << 16)) != 0) events.push("CM Init Failed");
-        if ((value & (1 << 17)) != 0) events.push("CM Firmware Hash Mismatch");
-        if ((value & (1 << 18)) != 0) events.push("CM Development Mode");
-
-        if ((value & (1 << 19)) != 0) events.push("OEM 05");
-        if ((value & (1 << 20)) != 0) events.push("OEM 06");
-        if ((value & (1 << 21)) != 0) events.push("OEM 07");
-        if ((value & (1 << 22)) != 0) events.push("OEM 08");
-        if ((value & (1 << 23)) != 0) events.push("OEM 09");
-        if ((value & (1 << 24)) != 0) events.push("OEM 10");
-        if ((value & (1 << 25)) != 0) events.push("OEM 11");
-        if ((value & (1 << 26)) != 0) events.push("OEM 12");
-        if ((value & (1 << 27)) != 0) events.push("OEM 13");
-        if ((value & (1 << 28)) != 0) events.push("OEM 14");
-        if ((value & (1 << 29)) != 0) events.push("OEM 15");
-
-        return events;
-
-    }
-
 
     //#region tryToParseBSM_WS36aFormat(Content)
 
@@ -2682,6 +2627,83 @@ class BSMCrypt01 extends ACrypt {
                 CTR.contract["@context"] = common.contractType;
             }
 
+            CTR.chargingStationOperators![0].chargingStations![0].EVSEs![0].meters.push({
+                "@id":                      common.meterId,
+                model:                      common.meterType,
+                vendor:                     common.meterManufacturer,
+                vendorURL:                  "https://www.bzr-bauer.de",
+                firmwareVersion:            common.meterFirmwareVersion,
+                //hardwareVersion?:           string;
+                signatureInfos:             {
+                                                hash:            CryptoHashAlgorithms.SHA256,
+                                                hashTruncation:  0,
+                                                algorithm:       CryptoAlgorithms.ECC,
+                                                curve:           "secp256r1",
+                                                format:          SignatureFormats.rs
+                                            },
+                signatureFormat:            "BSMCrypt01",
+                publicKeys:                 [{
+                                                algorithm:       "secp256r1",
+                                                format:          "DER",
+                                                value:           common.meterPublicKey
+                                            }]
+            });
+
+            // var EVSE = {};
+
+            // if (CTR.chargingStationOperators != undefined)
+            // {
+            //     for (const chargingStationOperator of CTR.chargingStationOperators)
+            //     {
+            //         if (chargingStationOperator.chargingStations != undefined)
+            //         {
+            //             for (const chargingStation of chargingStationOperator.chargingStations)
+            //             {
+            //                 if (chargingStation.EVSEs != undefined)
+            //                 {
+            //                     for (const EVSE of chargingStation.EVSEs)
+            //                     {
+            //                         if (EVSE["@id"] == common.e)
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+
+
+            // "meters": [
+            //     {
+            //         //"@context":                 "",
+            //         "@id":                      "", //CTRArray[0]["meterInfo"]["meterId"],
+            //         "vendor":                   "", //CTRArray[0]["meterInfo"]["manufacturer"],
+            //         "vendorURL":                "", //"http://www.emh-metering.de",
+            //         "model":                    "", //CTRArray[0]["meterInfo"]["type"],
+            //         "description":              { },
+            //         "hardwareVersion":          "", //"1.0",
+            //         "firmwareVersion":          "", //CTRArray[0]["meterInfo"]["firmwareVersion"],
+            //         "signatureInfos":           {
+            //             "hash":                     "",
+            //             "hashTruncation":           0,
+            //             "algorithm":                "",
+            //             "curve":                    "",
+            //             "format":                   SignatureFormats.DER
+            //         },
+            //         "signatureFormat":          "", //"https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+            //         "publicKeys": [
+            //             {
+            //                 //"@id":              "",
+            //                 "algorithm":        "", //"secp192r1",
+            //                 "format":           "", //"DER",
+            //                 "value":            "", //CTRArray[0]["meterInfo"]["publicKey"].startsWith("04")
+            //                                         //?        CTRArray[0]["meterInfo"]["publicKey"]
+            //                                         //: "04" + CTRArray[0]["meterInfo"]["publicKey"],
+            //                 "signatures":       "", //CTRArray[0]["meterInfo"]["publicKeySignatures"]
+            //                 "previousValue":    ""
+            //             }
+            //         ]
+            //     }
+            // ]
 
 
             // var _CTR: any = { //IChargeTransparencyRecord = {
@@ -2846,15 +2868,6 @@ class BSMCrypt01 extends ACrypt {
     }
 
     //#endregion
-
-
-
-
-
-
-
-
-
 
 
     GenerateKeyPair()//options?: elliptic.ec.GenKeyPairOptions)
@@ -3421,6 +3434,61 @@ class BSMCrypt01 extends ACrypt {
 
 
     //#region Helper methods
+
+    public ParseTyp(value: number) : string
+    {
+        switch (value)
+        {
+            case 0: return "CURRENT";       // Signed snapshot of the current meter data at the time of its creation.
+            case 1: return "TURN ON";       // Signed snapshot created during executing the turn-on sequence for an external contactor.
+            case 2: return "TURN OFF";      // Signed snapshot created during the execution of the turn-off sequence for an external contactor.
+            case 3: return "START";         // Signed snapshot marking the start of a charging process without executing the turn-on sequence for an external contactor.
+            case 4: return "END";           // Signed snapshot marking the end of a charging process without executing the turn-off sequence for an external contactor.
+            default: return "<unknown>";
+        }
+    }
+
+    public ParseEvents(value: number) : string[]
+    {
+
+        let events = [];
+
+        if ((value & (1 <<  1)) != 0) events.push("Power Failure");
+        if ((value & (1 <<  2)) != 0) events.push("Under Voltage");
+        if ((value & (1 <<  3)) != 0) events.push("Low PF");
+        if ((value & (1 <<  4)) != 0) events.push("Over Current");
+        if ((value & (1 <<  5)) != 0) events.push("Over Voltage");
+        if ((value & (1 <<  6)) != 0) events.push("Missing Sensor");
+
+        if ((value & (1 <<  7)) != 0) events.push("Reserved 1");
+        if ((value & (1 <<  8)) != 0) events.push("Reserved 2");
+        if ((value & (1 <<  9)) != 0) events.push("Reserved 3");
+        if ((value & (1 << 10)) != 0) events.push("Reserved 4");
+        if ((value & (1 << 11)) != 0) events.push("Reserved 5");
+        if ((value & (1 << 12)) != 0) events.push("Reserved 6");
+        if ((value & (1 << 13)) != 0) events.push("Reserved 7");
+        if ((value & (1 << 14)) != 0) events.push("Reserved 8");
+
+        if ((value & (1 << 15)) != 0) events.push("Meter Fatal Error");
+        if ((value & (1 << 16)) != 0) events.push("CM Init Failed");
+        if ((value & (1 << 17)) != 0) events.push("CM Firmware Hash Mismatch");
+        if ((value & (1 << 18)) != 0) events.push("CM Development Mode");
+
+        if ((value & (1 << 19)) != 0) events.push("OEM 05");
+        if ((value & (1 << 20)) != 0) events.push("OEM 06");
+        if ((value & (1 << 21)) != 0) events.push("OEM 07");
+        if ((value & (1 << 22)) != 0) events.push("OEM 08");
+        if ((value & (1 << 23)) != 0) events.push("OEM 09");
+        if ((value & (1 << 24)) != 0) events.push("OEM 10");
+        if ((value & (1 << 25)) != 0) events.push("OEM 11");
+        if ((value & (1 << 26)) != 0) events.push("OEM 12");
+        if ((value & (1 << 27)) != 0) events.push("OEM 13");
+        if ((value & (1 << 28)) != 0) events.push("OEM 14");
+        if ((value & (1 << 29)) != 0) events.push("OEM 15");
+
+        return events;
+
+    }
 
     private DecodeStatus(statusValue: string) : Array<string>
     {

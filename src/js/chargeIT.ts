@@ -191,18 +191,8 @@ class ChargeIT {
                     "@id":              "",
                     "@context":         "https://open.charging.cloud/contexts/CTR+json",
 
-                    "begin":            "",
-                    "end":              "",
-
                     "description": {
                         "de":           "Alle Ladevorgänge"
-                    },
-
-                    "contract": {
-                        "@id":          "",
-                        "@context":     "",
-                        "username":     "",
-                        "email":        ""
                     },
 
                     "chargingStationOperators": [
@@ -276,7 +266,7 @@ class ChargeIT {
                                     "@id":                      evseId.substring(0, evseId.lastIndexOf("*")),
                                     //"@context":                 "",
                                     //"description":              { },
-                                    "firmwareVersion":          "", //CTRArray[0]["chargePoint"]["softwareVersion"],
+                                    //"firmwareVersion":          "", //CTRArray[0]["chargePoint"]["softwareVersion"],
                                     "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
                                     "address": {
                                         //"@context":             "",
@@ -293,38 +283,7 @@ class ChargeIT {
                                             //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
                                             // },
                                             //"connectors":               [  ],
-                                            "meters": [
-                                                {
-                                                    //"@context":                 "",
-                                                    "@id":                      "", //CTRArray[0]["meterInfo"]["meterId"],
-                                                    "vendor":                   "", //CTRArray[0]["meterInfo"]["manufacturer"],
-                                                    "vendorURL":                "", //"http://www.emh-metering.de",
-                                                    "model":                    "", //CTRArray[0]["meterInfo"]["type"],
-                                                    "description":              { },
-                                                    "hardwareVersion":          "", //"1.0",
-                                                    "firmwareVersion":          "", //CTRArray[0]["meterInfo"]["firmwareVersion"],
-                                                    "signatureInfos":           {
-                                                        "hash":                     "",
-                                                        "hashTruncation":           0,
-                                                        "algorithm":                "",
-                                                        "curve":                    "",
-                                                        "format":                   SignatureFormats.DER
-                                                    },
-                                                    "signatureFormat":          "", //"https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
-                                                    "publicKeys": [
-                                                        {
-                                                            //"@id":              "",
-                                                            "algorithm":        "", //"secp192r1",
-                                                            "format":           "", //"DER",
-                                                            "value":            "", //CTRArray[0]["meterInfo"]["publicKey"].startsWith("04")
-                                                                                    //?        CTRArray[0]["meterInfo"]["publicKey"]
-                                                                                    //: "04" + CTRArray[0]["meterInfo"]["publicKey"],
-                                                            "signatures":       "", //CTRArray[0]["meterInfo"]["publicKeySignatures"]
-                                                            "previousValue":    ""
-                                                        }
-                                                    ]
-                                                }
-                                            ]
+                                            "meters":                   [ ]
                                         }
                                     ]
                                 }
@@ -729,7 +688,7 @@ class ChargeIT {
                             },
 
                             // "signatureInfos": {
-                            //     "hash":                     "SHA512",
+                            //     "hash":                     CryptoHashAlgorithms.SHA256,
                             //     "hashTruncation":           "24",
                             //     "algorithm":                "ECC",
                             //     "curve":                    "secp192r1",
@@ -748,9 +707,9 @@ class ChargeIT {
                                 "scale":                CTRArray[0]["measuredValue"]["scale"],
 
                                 "signatureInfos": {
-                                    "hash":                 "SHA512",
+                                    "hash":                 CryptoHashAlgorithms.SHA256,
                                     "hashTruncation":       24,
-                                    "algorithm":            "ECC",
+                                    "algorithm":            CryptoAlgorithms.ECC,
                                     "curve":                "secp192r1",
                                     "format":               SignatureFormats.rs
                                 },

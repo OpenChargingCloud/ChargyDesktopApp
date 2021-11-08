@@ -2171,11 +2171,23 @@ class ChargyApp {
 
                         if (meter.vendor?.length > 0)
                             CreateDiv2(meterDiv,            "meterVendor",
-                                       "Zählerhersteller",  meter.vendor);
+                                       "Zählerhersteller",  meter.vendorURL != undefined && meter.vendorURL?.length > 0
+                                                                ? "<a href=\"javascript:OpenLink('" + meter.vendorURL + "')\">" + meter.vendor + "</a>"
+                                                                : meter.vendor);
 
                         if (meter.model?.length > 0)
                             CreateDiv2(meterDiv,            "meterModel",
-                                       "Model",             meter.model);
+                                       "Model",             meter.modelURL != undefined && meter.modelURL?.length > 0
+                                                                ? "<a href=\"javascript:OpenLink('" + meter.modelURL + "')\">" + meter.model + "</a>"
+                                                                : meter.model);
+
+                        if (meter.hardwareVersion && meter.hardwareVersion?.length > 0)
+                            CreateDiv2(meterDiv,            "meterHardwareVersion",
+                                       "Hardware Version",  meter.hardwareVersion);
+
+                        if (meter.firmwareVersion?.length > 0)
+                            CreateDiv2(meterDiv,            "meterFirmwareVersion",
+                                       "Firmware Version",  meter.firmwareVersion);
 
                     }
 

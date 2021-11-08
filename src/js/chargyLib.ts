@@ -590,7 +590,7 @@ function CreateDiv2(ParentDiv:        HTMLDivElement,
     childADiv.innerHTML     = ChildAInnerHTML;
 
     let childBDiv           = childDiv.appendChild(document.createElement('div'));
-    childBDiv.className     = ChildClassName + "IdValue";
+    childBDiv.className     = ChildClassName + "Value";
     childBDiv.innerHTML     = ChildBInnerHTML;
 
     return childDiv;

@@ -260,9 +260,10 @@ interface IMeter
     "@id":                      string;
     "@context"?:                string;
     description?:               {};
-    model:                      string;
     vendor:                     string;
-    vendorURL:                  string;
+    vendorURL?:                 string;
+    model:                      string;
+    modelURL?:                  string;
     firmwareVersion:            string;
     hardwareVersion?:           string;
     chargingStation?:           IChargingStation;
@@ -393,9 +394,9 @@ interface IMeasurements
 }
 
 interface ISignatureInfos {
-    hash:                       string;
+    hash:                       CryptoHashAlgorithms;
     hashTruncation:             number;
-    algorithm:                  string;
+    algorithm:                  CryptoAlgorithms;
     curve:                      string;
     format:                     SignatureFormats;
 }
@@ -404,6 +405,17 @@ enum SignatureFormats {
     DER,
     rs
 }
+
+enum CryptoAlgorithms {
+    RSA,
+    ECC
+}
+
+enum CryptoHashAlgorithms {
+    SHA256,
+    SHA512
+}
+
 
 interface IMeasurementValue
 {
@@ -455,7 +467,7 @@ interface IPublicKey
 
 interface ISignature
 {
-    algorithm:                  string;
+    algorithm:                  CryptoAlgorithms;
     format:                     SignatureFormats;
     previousValue?:             string;
     value?:                     string;
@@ -463,7 +475,7 @@ interface ISignature
 
 interface IECCSignature extends ISignature
 {
-    algorithm:                  string;
+    algorithm:                  CryptoAlgorithms;
     format:                     SignatureFormats;
     previousValue?:             string;
     value?:                     string;

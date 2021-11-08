@@ -980,6 +980,10 @@ body {
 
                                 .meterVendorValue {
                                     display:            table-cell;
+                                    a {
+                                        text-decoration: none;
+                                        color:           #2e71a2;
+                                    }
                                 }
 
                             }
@@ -997,6 +1001,44 @@ body {
 
                                 .meterModelValue {
                                     display:            table-cell;
+                                    a {
+                                        text-decoration: none;
+                                        color:           #2e71a2;
+                                    }
+                                }
+
+                            }
+
+                            .meterHardwareVersion {
+
+                                display:            table-row;
+
+                                .meterHardwareVersionId {
+                                    display:            table-cell;
+                                    padding-left:       12px;
+                                    padding-right:      2vw;
+                                    white-space:        nowrap;
+                                }
+
+                                .meterHardwareVersionValue {
+                                    display:            table-cell;
+                                }
+
+                            }
+
+                            .meterFirmwareVersion {
+
+                                display:            table-row;
+
+                                .meterFirmwareVersionId {
+                                    display:            table-cell;
+                                    padding-left:       12px;
+                                    padding-right:      2vw;
+                                    white-space:        nowrap;
+                                }
+
+                                .meterFirmwareVersionValue {
+                                    display:            table-cell;
                                 }
 
                             }
@@ -1012,7 +1054,7 @@ body {
                                     white-space:        nowrap;
                                 }
 
-                                .measurementIdValue {
+                                .measurementValue {
                                     display:            table-cell;
                                 }
 
