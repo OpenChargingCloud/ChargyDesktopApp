@@ -855,7 +855,7 @@ class BSMCrypt01 extends ACrypt {
                     timestamp:     dataSet.time,
                     Typ:           dataSet.Typ,
                     value:         dataSet.value,
-                    RCR:           dataSet.RCR,
+                    RCR:           dataSet.RCR[4],
                     TotWhImp:      dataSet.TotWhImp[4],
                     W:             dataSet.W[4],
                     MA1:           dataSet.MA1,
