@@ -332,6 +332,13 @@ class ChargeIT {
                         return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
                     }
 
+                    else if (ctrContext === "oldChargeITContainerFormat") {
+
+                        if (SomeJSON.signedMeterValues[0].format == "ALFEN")
+                            return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
+
+                    }
+
                     else if (signedMeterValueContext === "oldChargeITMeterValueFormat")
                     {
 
