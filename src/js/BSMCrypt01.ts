@@ -415,7 +415,7 @@ class BSMCrypt01 extends ACrypt {
                 message:  "Invalid contract identification!"
             }
 
-            if (!isMandatoryString(common.contractType)) return {
+            if (!isOptionalString(common.contractType)) return {
                 status:   SessionVerificationResult.InvalidSessionFormat,
                 message:  "Invalid contract type!"
             }

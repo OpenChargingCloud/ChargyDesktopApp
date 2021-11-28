@@ -69,7 +69,7 @@ class ChargeIT {
             //#region Old container format
 
             if (ctrContext === "oldChargeITContainerFormat" &&
-                SomeJSON.placeInfo &&
+                SomeJSON.placeInfo         &&
                 SomeJSON.signedMeterValues &&
                 Array.isArray(SomeJSON.signedMeterValues))
             {
@@ -323,7 +323,8 @@ class ChargeIT {
                     //#endregion
 
 
-                    if (signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1") {
+                    if (signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0" ||
+                        signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1") {
                         return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, signedMeterValues);
                     }
 
@@ -758,7 +759,8 @@ class ChargeIT {
 
             //#region Second format
 
-            else if (ctrContext == "https://www.chargeit-mobility.com/contexts/charging-station-json-v1")
+            else if (ctrContext == "https://www.chargeit-mobility.com/contexts/charging-station-json-v0" ||
+                     ctrContext == "https://www.chargeit-mobility.com/contexts/charging-station-json-v1")
             {
 
                 //#region documentation
@@ -802,6 +804,7 @@ class ChargeIT {
                     message:  "Missing or invalid charge transparency record identification!"
                 }
 
+                //#region chargePointInfo
 
                 const evseId                                   = SomeJSON?.chargePointInfo?.evseId;
                 if (!isMandatoryString(evseId)) return {
@@ -841,6 +844,15 @@ class ChargeIT {
                     message:  "Invalid address town!"
                 }
 
+                const address_country                          = SomeJSON.chargePointInfo?.placeInfo?.address?.country;
+                if (!isOptionalString(address_country)) return {
+                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    message:  "Invalid address country!"
+                }
+
+                //#endregion
+
+                //#region chargingStationInfo
 
                 var chargingStation_manufacturer               = SomeJSON.chargingStationInfo?.manufacturer;
                 if (!isOptionalString(chargingStation_manufacturer)) return {
@@ -872,6 +884,7 @@ class ChargeIT {
                     message:  "Invalid charging station compliance!"
                 }
 
+                //#endregion
 
                 const signedMeterValues     = SomeJSON?.signedMeterValues as Array<any>;
                 if (signedMeterValues == undefined || signedMeterValues == null || !Array.isArray(signedMeterValues)) return {

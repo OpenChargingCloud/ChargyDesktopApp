@@ -1,6 +1,6 @@
 {
-  "@context": "https://www.chargeit-mobility.com/contexts/charging-station-json-v0",
-  "@id": "93b552f2-9a29-406c-8f81-59726c044e13",
+  "@con-text": "https://www.chargeit-mobility.com/contexts/charging-station-json-v0",
+  "@id": "69e8b824-2be7-44c8-a704-670b3de9c3dd",
   "placeInfo": {
     "geoLocation": {
       "lat": 48.03552,
@@ -16,24 +16,22 @@
   "signedMeterValues": [
     {
       "@context": "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0",
-      "@id": "001BZR1521070003-18899",
-      "timestamp": 1602145359,
-      "timestampLocal": {
-        "timestamp": 1602152559,
-        "localOffset": 120
-      },
+      "@id": "001BZR1520120407-3163",
+      "time": "2021-05-26T15:55:56+02:00",
       "meterInfo": {
         "firmwareVersion": "1.8:33C4:DB63, 08d1aa3",
+        "publicKey2": "3059301306072a8648ce3d020106082a8648ce3d03010703420004542e97133b371094018a52880c9be7c051f8e13d6fbe736c9869020b5739777e3145223bcac76c41391dc617330f72fdce3adfb8c050a1ceb61b251a727f1171",
         "publicKey": "3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254",
-        "meterId": "001BZR1521070003",
+        "meterId": "001BZR1520120407",
         "manufacturer": "BAUER Electronic",
         "type": "BSM-WS36A-H01-1311-0000"
       },
       "operatorInfo": "See https://www.chargeit-mobility.com/wp-content/uploads/chargeIT-Baumusterpr%C3%BCfbescheinigung-Lades%C3%A4ule-Online.pdf for type examination certificate",
       "contract": {
-        "id": "chargeIT up 12*4, id: 12345678abcdef"
+        "id": "chargeIT up 12*4, id: 12345678abcdef",
+        "type": "rfid"
       },
-      "measurementId": 18899,
+      "measurementId": 3163,
       "value": {
         "measurand": {
           "id": "1-0:1.8.0*198",
@@ -55,7 +53,7 @@
           "measuredValue": {
             "scale": 0,
             "unitEncoded": 255,
-            "value": 1,
+            "value": 3,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -81,7 +79,7 @@
             "scale": 0,
             "unit": "WATT_HOUR",
             "unitEncoded": 30,
-            "value": 77890,
+            "value": 0,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -105,7 +103,7 @@
           },
           "measuredValue": {
             "unitEncoded": 255,
-            "value": "001BZR1521070003",
+            "value": "001BZR1520120407",
             "valueType": "String",
             "valueEncoding": "ISO-8859-1"
           }
@@ -117,7 +115,7 @@
           "measuredValue": {
             "scale": 0,
             "unitEncoded": 255,
-            "value": 18899,
+            "value": 3163,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -129,7 +127,7 @@
             "scale": 0,
             "unit": "SECOND",
             "unitEncoded": 7,
-            "value": 1266738,
+            "value": 456291,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -141,7 +139,7 @@
             "scale": 0,
             "unit": "SECOND",
             "unitEncoded": 7,
-            "value": 1602145359,
+            "value": 1622037356,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -164,7 +162,7 @@
           "measuredValue": {
             "scale": 0,
             "unitEncoded": 255,
-            "value": 10189,
+            "value": 6306,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -176,7 +174,7 @@
             "scale": 0,
             "unit": "SECOND",
             "unitEncoded": 7,
-            "value": 1266706,
+            "value": 456240,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -187,7 +185,7 @@
           "measuredValue": {
             "scale": 0,
             "unitEncoded": 255,
-            "value": 1,
+            "value": 0,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -208,7 +206,6 @@
           },
           "measuredValue": {
             "unitEncoded": 255,
-            "value": "chargeIT up 12*4, id: 12345678abcdef",
             "valueType": "String",
             "valueEncoding": "ISO-8859-1"
           }
@@ -219,7 +216,6 @@
           },
           "measuredValue": {
             "unitEncoded": 255,
-            "value": "demo data 2",
             "valueType": "String",
             "valueEncoding": "ISO-8859-1"
           }
@@ -246,20 +242,21 @@
           }
         }
       ],
-      "signature": "30460221009ada646742da37b27485b4887c2bd7262e2fc56e4dceb864221cddb2d31b19420221008d78ac0b205f18746c0c6d9c8f6fb53154082f167193685159e9af44ca4d9b59"
+      "chargePoint": {
+        "softwareVersion": "3.0.25.2089"
+      },
+      "signature2": "3046022100f73147fe07e5c3be394b63ebd10fd88ff81b05baf8c14a8e12a76d46d80bc1be022100dbf640116afa7c664a3268fd642044078b9eb2f9c97898956287441f78f22dbf",
+      "signature": "3045022100895b68a977654fc052988310dc92aad5f7191ec936acbb7bfa322130171ff06002205de10b55b48e2e08c59e03108d67e5f3e72ed62b10b77b705cae6d3e73ce73b9"
     },
     {
       "@context": "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0",
-      "@id": "001BZR1521070003-18900",
-      "timestamp": 1602145658,
-      "timestampLocal": {
-        "timestamp": 1602152858,
-        "localOffset": 120
-      },
+      "@id": "001BZR1520120407-3164",
+      "time": "2021-05-26T15:56:24+02:00",
       "meterInfo": {
         "firmwareVersion": "1.8:33C4:DB63, 08d1aa3",
+        "publicKey2": "3059301306072a8648ce3d020106082a8648ce3d03010703420004542e97133b371094018a52880c9be7c051f8e13d6fbe736c9869020b5739777e3145223bcac76c41391dc617330f72fdce3adfb8c050a1ceb61b251a727f1171",
         "publicKey": "3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254",
-        "meterId": "001BZR1521070003",
+        "meterId": "001BZR1520120407",
         "manufacturer": "BAUER Electronic",
         "type": "BSM-WS36A-H01-1311-0000"
       },
@@ -267,7 +264,7 @@
       "contract": {
         "id": "chargeIT up 12*4, id: 12345678abcdef"
       },
-      "measurementId": 18900,
+      "measurementId": 3164,
       "value": {
         "measurand": {
           "id": "1-0:1.8.0*198",
@@ -289,7 +286,7 @@
           "measuredValue": {
             "scale": 0,
             "unitEncoded": 255,
-            "value": 2,
+            "value": 4,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -302,7 +299,7 @@
             "scale": 0,
             "unit": "WATT_HOUR",
             "unitEncoded": 30,
-            "value": 150,
+            "value": 0,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -315,7 +312,7 @@
             "scale": 0,
             "unit": "WATT_HOUR",
             "unitEncoded": 30,
-            "value": 78040,
+            "value": 0,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -339,7 +336,7 @@
           },
           "measuredValue": {
             "unitEncoded": 255,
-            "value": "001BZR1521070003",
+            "value": "001BZR1520120407",
             "valueType": "String",
             "valueEncoding": "ISO-8859-1"
           }
@@ -351,7 +348,7 @@
           "measuredValue": {
             "scale": 0,
             "unitEncoded": 255,
-            "value": 18900,
+            "value": 3164,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -363,7 +360,7 @@
             "scale": 0,
             "unit": "SECOND",
             "unitEncoded": 7,
-            "value": 1267037,
+            "value": 456319,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -375,7 +372,7 @@
             "scale": 0,
             "unit": "SECOND",
             "unitEncoded": 7,
-            "value": 1602145658,
+            "value": 1622037384,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -398,7 +395,7 @@
           "measuredValue": {
             "scale": 0,
             "unitEncoded": 255,
-            "value": 10189,
+            "value": 6306,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -410,7 +407,7 @@
             "scale": 0,
             "unit": "SECOND",
             "unitEncoded": 7,
-            "value": 1266706,
+            "value": 456240,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -421,7 +418,7 @@
           "measuredValue": {
             "scale": 0,
             "unitEncoded": 255,
-            "value": 1,
+            "value": 0,
             "valueType": "UnsignedInteger32"
           }
         },
@@ -442,7 +439,6 @@
           },
           "measuredValue": {
             "unitEncoded": 255,
-            "value": "chargeIT up 12*4, id: 12345678abcdef",
             "valueType": "String",
             "valueEncoding": "ISO-8859-1"
           }
@@ -453,7 +449,6 @@
           },
           "measuredValue": {
             "unitEncoded": 255,
-            "value": "demo data 2",
             "valueType": "String",
             "valueEncoding": "ISO-8859-1"
           }
@@ -475,12 +470,16 @@
           "measuredValue": {
             "scale": 0,
             "unitEncoded": 255,
-            "value": 0,
+            "value": 16,
             "valueType": "UnsignedInteger32"
           }
         }
       ],
-      "signature": "3045022040fc12d93ded5d9730c8255345993d09899ec69f39ed74d4890d4bcbef45fcf2022100c4a4c8826d0c74d9c467f4bf274fbf7878462beeb95d29086ea9dc8a0541a64b"
+      "chargePoint": {
+        "softwareVersion": "3.0.25.2089"
+      },
+      "signature2": "304402203806d3fdac014e5c7fe7856a77bf10a6ecc12b30f508abd849d70526add3f232022055b4e4ef265760fd6a3844107962030821081d31461ede894eba693432c43970",
+      "signature": "3045022100895b68a977654fc052988310dc92aad5f7191ec936acbb7bfa322130171ff06002205de10b55b48e2e08c59e03108d67e5f3e72ed62b10b77b705cae6d3e73ce73b9"
     }
   ]
 }
