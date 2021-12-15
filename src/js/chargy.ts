@@ -604,7 +604,7 @@ class Chargy {
                         processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormatJSON(JSONContent);
 
                         // The current chargepoint format does not provide any context or format identifiers
-                        if (isISessionCryptoResult(processedFile.result))
+                        if (!isISessionCryptoResult(processedFile.result))
                             processedFile.result = await new Chargepoint01(this).tryToParseChargepointJSON(JSONContent);
 
                     }

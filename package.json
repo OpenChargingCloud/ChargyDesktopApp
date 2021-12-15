@@ -1,6 +1,6 @@
 {
   "name": "chargytransparenzsoftware",
-  "version": "1.3.2",
+  "version": "1.3.4",
   "description": "Chargy ist eine Transparenzsoftware für das Eichrecht in der Elektromobilität. Hiermit können Endkunden und E-Mobilitäts-Anbieter die Plausibilitäts und Validität von Ladevorgängen überprüfen.",
   "main": "src/main.js",
   "scripts": {
@@ -53,8 +53,8 @@
     "safe-stable-stringify": "^1.1.1"
   },
   "build": {
-    "appId": "cloud.charging.chargepoint.chargy.desktop",
-    "productName": "Chargy Transparenzsoftware ChargePoint Edition",
+    "appId": "cloud.charging.chargeit.chargy.desktop",
+    "productName": "Chargy Transparenzsoftware chargeIT mobility Edition",
     "copyright": "Copyright © 2018-2021 GraphDefined GmbH",
     "extraFiles": [
       "documentation",
@@ -72,11 +72,11 @@
       "target": [
         "nsis"
       ],
-      "icon": "src/icons/chargepoint.ico"
+      "icon": "src/icons/chargeITmobility.ico"
     },
     "nsis": {
       "perMachine": true,
-      "installerIcon": "src/icons/chargepoint.ico",
+      "installerIcon": "src/icons/chargeITmobility.ico",
       "deleteAppDataOnUninstall": true,
       "runAfterFinish": true
     },
@@ -84,10 +84,10 @@
       "target": [
         "deb"
       ],
-      "icon": "src/icons/chargepoint.png"
+      "icon": "src/icons/chargeITmobility.png"
     },
     "mac": {
-      "icon": "./src/icons/chargepoint.icns",
+      "icon": "./src/icons/chargeITmobility.icns",
       "category": "public.app-category.utilities",
       "type": "distribution"
     }

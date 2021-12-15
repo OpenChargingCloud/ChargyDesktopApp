@@ -534,6 +534,12 @@ class BSMCrypt01 extends ACrypt {
                             message:  "Inconsistent meterInfo.meterId!"
                         };
 
+                    if (currentMeasurement.meterInfo?.meterId            !== currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name === "MA1")[0]?.measuredValue?.value)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent meterInfo.meterId!"
+                        };
+
                     if (currentMeasurement.meterInfo?.manufacturer       !== common.meterManufacturer)
                         return {
                             status:   SessionVerificationResult.InvalidSessionFormat,
@@ -559,11 +565,44 @@ class BSMCrypt01 extends ACrypt {
 
                 if (currentMeasurement.contract)
                 {
-                    if (currentMeasurement.contract?.id                  !== common.contractId)
+
+                    if (currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('contract-id:')).length == 0)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent contract information!"
+                        };
+
+                    if (currentMeasurement.contract.id                   !== common.contractId)
                         return {
                             status:   SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent contract.id!"
                         };
+
+                    if (currentMeasurement.contract.type                 !== common.contractType)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent contract.type!"
+                        };
+
+                    let contractInfo = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('contract-id:'))[0]?.measuredValue?.value;
+
+                    if (contractInfo != null)
+                    {
+
+                        if ( currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contractType + ":" + common.contractId)
+                            return {
+                                status:   SessionVerificationResult.InvalidSessionFormat,
+                                message:  "Inconsistent contract information!"
+                            };
+
+                        if (!currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contractId)
+                            return {
+                                status:   SessionVerificationResult.InvalidSessionFormat,
+                                message:  "Inconsistent contract information!"
+                            };
+
+                    }
+
                 }
 
                 if (currentMeasurement.measurand)
@@ -666,59 +705,76 @@ class BSMCrypt01 extends ACrypt {
 
 
                 if (previousRCR !== -1 && RCR[4] < previousRCR)
-                return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
-                    message:  "Inconsistent measurement value!"
-                };
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement value!"
+                    };
                 previousRCR = RCR[4];
 
 
+                if (RCnt !== currentMeasurement.measurementId)
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement identification!"
+                    };
+
+
                 if (previousRCnt !== -1 && RCnt != previousRCnt + 1)
-                return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
-                    message:  "Inconsistent measurement snapshot counter!"
-                };
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement snapshot counter!"
+                    };
                 previousRCnt = RCnt;
 
 
                 if (previousOS !== -1 && OS <= previousOS)
-                return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
-                    message:  "Inconsistent measurement operation-seconds counter!"
-                };
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement operation-seconds counter!"
+                    };
                 previousOS = OS;
 
 
                 if (previousEpoch !== -1 && Epoch <= previousEpoch)
-                return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
-                    message:  "Inconsistent measurement epochs!"
-                };
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement epochs!"
+                    };
                 previousEpoch = Epoch;
 
 
+                let measurementTimestamp1 = new Date(Epoch * 1000 + TZO * 60000).toISOString();
+                let measurementTimestamp2 = measurementTimestamp1.substring(0, measurementTimestamp1.indexOf('.'));
+                let measurementTimestamp3 = measurementTimestamp2 + (TZO > 0 ? "+" : "-") + (Math.abs(TZO) / 60).toString().padStart(2, '0') + ":" + (Math.abs(TZO) % 60).toString().padStart(2, '0');
+
+                if (currentMeasurement.time !== measurementTimestamp3)
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement timestamp!"
+                    };
+
 
                 if (common.MA1 !== null && MA1 !== common.MA1)
-                return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
-                    message:  "Inconsistent measurement meter address 1!"
-                };
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement meter address 1!"
+                    };
                 common.MA1 = MA1;
 
 
                 if (common.epochSetCnt !== -1 && EpochSetCnt !== common.epochSetCnt)
-                return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
-                    message:  "Inconsistent measurement epoch set counter!"
-                };
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement epoch set counter!"
+                    };
                 common.epochSetCnt = EpochSetCnt;
 
 
                 if (common.epochSetOS !== -1 && EpochSetOS !== common.epochSetOS)
-                return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
-                    message:  "Inconsistent measurement epoch set operation-seconds!"
-                };
+                    return {
+                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        message:  "Inconsistent measurement epoch set operation-seconds!"
+                    };
                 common.epochSetOS = EpochSetOS;
 
                 //#endregion
@@ -1131,19 +1187,9 @@ class BSMCrypt01 extends ACrypt {
 
             // };
 
-
+            CTR["status"] = SessionVerificationResult.ValidSignature;
 
             return CTR;
-
-
-            //await this.processChargeTransparencyRecord(_CTR);
-
-            let _CTR = {
-                status:   SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid signed meter values format!"
-            };
-
-            return _CTR as ISessionCryptoResult;
 
         }
         catch (exception)
