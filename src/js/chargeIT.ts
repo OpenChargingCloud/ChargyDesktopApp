@@ -325,7 +325,7 @@ class ChargeIT {
 
                     if (signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0" ||
                         signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1") {
-                        return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, signedMeterValues);
+                        return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, "", signedMeterValues);
                     }
 
                     else if (signedMeterValueContext.startsWith("ALFEN")) {
@@ -805,7 +805,7 @@ class ChargeIT {
 
                 //#endregion
 
-                const id                                       = SomeJSON["@id"];
+                const id                                         = SomeJSON["@id"];
                 if (!isMandatoryString(id)) return {
                     status:   SessionVerificationResult.InvalidSessionFormat,
                     message:  "Missing or invalid charge transparency record identification!"
@@ -820,13 +820,13 @@ class ChargeIT {
                 }
 
 
-                let geoLocation_lat                            = SomeJSON.chargePointInfo?.placeInfo?.geoLocation?.lat;
+                const geoLocation_lat                          = SomeJSON.chargePointInfo?.placeInfo?.geoLocation?.lat;
                 if (!isOptionalNumber(geoLocation_lat)) return {
                     status:   SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid geo location latitude!"
                 }
 
-                let geoLocation_lon                            = SomeJSON.chargePointInfo?.placeInfo?.geoLocation?.lon;
+                const geoLocation_lon                          = SomeJSON.chargePointInfo?.placeInfo?.geoLocation?.lon;
                 if (!isOptionalNumber(geoLocation_lon)) return {
                     status:   SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid geo location longitude!"
@@ -861,31 +861,31 @@ class ChargeIT {
 
                 //#region chargingStationInfo
 
-                var chargingStation_manufacturer               = SomeJSON.chargingStationInfo?.manufacturer;
+                const chargingStation_manufacturer               = SomeJSON.chargingStationInfo?.manufacturer;
                 if (!isOptionalString(chargingStation_manufacturer)) return {
                     status:   SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid charging station manufacturer!"
                 }
 
-                var chargingStation_type                       = SomeJSON.chargingStationInfo?.type;
+                const chargingStation_type                       = SomeJSON.chargingStationInfo?.type;
                 if (!isOptionalString(chargingStation_type)) return {
                     status:   SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid charging station type!"
                 }
 
-                var chargingStation_serialNumber               = SomeJSON.chargingStationInfo?.serialNumber;
+                const chargingStation_serialNumber               = SomeJSON.chargingStationInfo?.serialNumber;
                 if (!isOptionalString(chargingStation_serialNumber)) return {
                     status:   SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid charging station serial number!"
                 }
 
-                var chargingStation_controllerSoftwareVersion  = SomeJSON.chargingStationInfo?.controllerSoftwareVersion;
+                const chargingStation_controllerSoftwareVersion  = SomeJSON.chargingStationInfo?.controllerSoftwareVersion;
                 if (!isOptionalString(chargingStation_controllerSoftwareVersion)) return {
                     status:   SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid charging station controller software version!"
                 }
 
-                var chargingStation_compliance                 = SomeJSON.chargingStationInfo?.compliance;
+                const chargingStation_compliance                 = SomeJSON.chargingStationInfo?.compliance;
                 if (!isOptionalString(chargingStation_compliance)) return {
                     status:   SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid charging station compliance!"
@@ -893,7 +893,7 @@ class ChargeIT {
 
                 //#endregion
 
-                const signedMeterValues     = SomeJSON?.signedMeterValues as Array<any>;
+                const signedMeterValues                          = SomeJSON?.signedMeterValues as Array<any>;
                 if (signedMeterValues == undefined || signedMeterValues == null || !Array.isArray(signedMeterValues)) return {
                     status:   SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid signed meter values!"
@@ -1035,7 +1035,7 @@ class ChargeIT {
                 //#endregion
 
                 if      (smvContext?.startsWith("https://www.chargeit-mobility.com/contexts/bsm-ws36a-json"))
-                    return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, signedMeterValues);
+                    return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, chargingStation_controllerSoftwareVersion, signedMeterValues);
 
                 else if (smvContext?.startsWith("ALFEN"))
                     return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));

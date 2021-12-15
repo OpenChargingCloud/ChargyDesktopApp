@@ -100,7 +100,7 @@ class BSMCrypt01 extends ACrypt {
 
     //#region tryToParseBSM_WS36aMeasurements(Measurements)
 
-    public async tryToParseBSM_WS36aMeasurements(CTR: IChargeTransparencyRecord, Measurements: Array<any>) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+    public async tryToParseBSM_WS36aMeasurements(CTR: IChargeTransparencyRecord, EVSEId: String, CSCSWVersion: String, Measurements: Array<any>) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
     {
 
         if (!Array.isArray(Measurements) || Measurements.length < 2) return {
@@ -660,6 +660,38 @@ class BSMCrypt01 extends ACrypt {
                         };
                 }
 
+
+                let signedEVSEId       = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('evse-id:'));
+
+                if (signedEVSEId.length == 1)
+                {
+
+                    const evse__id = (signedEVSEId[0].measuredValue.value as String).replace('evse-id:', '').trim();
+
+                    if (evse__id !== 'unknown' && EVSEId !== evse__id)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent EVSE identification!"
+                        };
+
+                }
+
+
+                let signedCSCSWVersion = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('csc-sw-version:'));
+
+                if (signedCSCSWVersion.length == 1)
+                {
+
+                    const csc_sw_version = (signedCSCSWVersion[0].measuredValue.value as String).replace('csc-sw-version:', '').trim();
+
+                    if (csc_sw_version !== 'unknown' && CSCSWVersion !== csc_sw_version)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent charging station controller software version!"
+                        };
+
+                }
+
                 //#endregion
 
                 //#region Check additional values
@@ -743,9 +775,9 @@ class BSMCrypt01 extends ACrypt {
                 previousEpoch = Epoch;
 
 
-                let measurementTimestamp1 = new Date(Epoch * 1000 + TZO * 60000).toISOString();
-                let measurementTimestamp2 = measurementTimestamp1.substring(0, measurementTimestamp1.indexOf('.'));
-                let measurementTimestamp3 = measurementTimestamp2 + (TZO > 0 ? "+" : "-") + (Math.abs(TZO) / 60).toString().padStart(2, '0') + ":" + (Math.abs(TZO) % 60).toString().padStart(2, '0');
+                const measurementTimestamp1 = new Date(Epoch * 1000 + TZO * 60000).toISOString();
+                const measurementTimestamp2 = measurementTimestamp1.substring(0, measurementTimestamp1.indexOf('.'));
+                const measurementTimestamp3 = measurementTimestamp2 + (TZO > 0 ? "+" : "-") + (Math.abs(TZO) / 60).toString().padStart(2, '0') + ":" + (Math.abs(TZO) % 60).toString().padStart(2, '0');
 
                 if (currentMeasurement.time !== measurementTimestamp3)
                     return {
