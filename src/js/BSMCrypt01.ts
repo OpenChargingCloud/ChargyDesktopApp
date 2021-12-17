@@ -605,16 +605,25 @@ class BSMCrypt01 extends ACrypt {
 
                 }
 
-                if (currentMeasurement.measurand)
+
+                // Cross-check that value matches the common value (besides
+                // measuredValue.value) and is identical to the signed RCR from
+                // the additional values array.
+
+                const rcrInAdditional = currentMeasurement.additionalValues?.find((element: any) => element.measurand.name == 'RCR')
+
+                if (currentMeasurement.value.measurand)
                 {
 
-                    if (currentMeasurement.measurand?.firmwareVersion    !== common.valueMeasurandId)
+                    const measurand = currentMeasurement.value.measurand
+
+                    if (measurand.id !== common.valueMeasurandId || measurand.id !== rcrInAdditional.measurand.id)
                         return {
                             status:   SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measurand.id!"
                         };
 
-                    if (currentMeasurement.measurand?.name               !== common.valueMeasurandName)
+                    if (measurand.name !== common.valueMeasurandName || measurand.name !== rcrInAdditional.measurand.name)
                         return {
                             status:   SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measurand.name!"
@@ -622,34 +631,43 @@ class BSMCrypt01 extends ACrypt {
 
                 }
 
-                if (currentMeasurement.measuredValue)
+                if (currentMeasurement.value.measuredValue)
                 {
 
-                    if (currentMeasurement.measuredValue?.scale          !== common.measuredValueScale)
+                    const measuredValue = currentMeasurement.value.measuredValue
+
+                    if (measuredValue.value !== rcrInAdditional.measuredValue.value)
+                        return {
+                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Inconsistent measuredValue.value!"
+                        };
+
+                    if (measuredValue.scale !== common.measuredValueScale || measuredValue.scale !== rcrInAdditional.measuredValue.scale)
                         return {
                             status:   SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.scale!"
                         };
 
-                    if (currentMeasurement.measuredValue?.unit           !== common.measuredValueUnit)
+                    if (measuredValue.unit !== common.measuredValueUnit || measuredValue.unit !== rcrInAdditional.measuredValue.unit)
                         return {
                             status:   SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.unit!"
                         };
 
-                    if (currentMeasurement.measuredValue?.unitEncoded    !== common.measuredValueUnitEncoded)
+                    if (measuredValue.unitEncoded !== common.measuredValueUnitEncoded || measuredValue.unitEncoded !== rcrInAdditional.measuredValue.unitEncoded)
                         return {
                             status:   SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.unitEncoded!"
                         };
 
-                    if (currentMeasurement.measuredValue?.valueType      !== common.measuredValueValueType)
+                    if (measuredValue.valueType !== common.measuredValueValueType || measuredValue.valueType !== rcrInAdditional.measuredValue.valueType)
                         return {
                             status:   SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.valueType!"
                         };
 
                 }
+
 
                 if (currentMeasurement.chargePoint)
                 {
