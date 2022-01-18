@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2018-2021 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2022 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -168,7 +168,7 @@ class ChargyApp {
 
         this.appVersion                = this.ipcRenderer.sendSync('getAppVersion')     ?? "";
         this.appEdition                = this.ipcRenderer.sendSync('getAppEdition')     ?? "";
-        this.copyright                 = this.ipcRenderer.sendSync('getCopyright')      ?? "&copy; 2018-2021 GraphDefined GmbH";
+        this.copyright                 = this.ipcRenderer.sendSync('getCopyright')      ?? "&copy; 2018-2022 GraphDefined GmbH";
         this.versionsURL               = versionsURL                                    ?? "https://open.charging.cloud/chargy/versions";
         this.issueURL                  = issueURL                                       ?? "https://open.charging.cloud/chargy/issues";
         this.feedbackEMail             = feedbackEMail   != undefined ? feedbackEMail   : ["support@open.charging.cloud", "?subject=Chargy%20Supportanfrage"];

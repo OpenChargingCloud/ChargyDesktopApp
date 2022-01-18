@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2021 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2022 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -113,8 +113,8 @@ class EMHCrypt01 extends ACrypt {
 
                     for (var measurementValue of measurement.values)
                     {
-                        if (sessionResult                  == SessionVerificationResult.ValidSignature &&
-                            measurementValue.result.status != VerificationResult.ValidSignature)
+                        if (sessionResult                   === SessionVerificationResult.ValidSignature &&
+                            measurementValue.result?.status !== VerificationResult.ValidSignature)
                         {
                             sessionResult = SessionVerificationResult.InvalidSignature;
                         }
@@ -139,6 +139,14 @@ class EMHCrypt01 extends ACrypt {
                             privateKey:        any): Promise<IEMHCrypt01Result>
     {
 
+        if (measurementValue.measurement                 === undefined ||
+            measurementValue.measurement.chargingSession === undefined)
+        {
+            return {
+                status: VerificationResult.InvalidMeasurement
+            }
+        }
+
         var buffer                       = new ArrayBuffer(320);
         var cryptoBuffer                 = new DataView(buffer);
 
@@ -161,11 +169,8 @@ class EMHCrypt01 extends ACrypt {
         // Only the first 24 bytes/192 bits are used!
         cryptoResult.sha256value  = (await sha256(cryptoBuffer)).substring(0, 48);
 
-        // cryptoResult.publicKey    = publicKey.encode('hex').
-        //                                       toLowerCase();
-
         const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
-                                               sign(cryptoResult.sha256value);
+                                               sign          (cryptoResult.sha256value);
 
         switch (measurementValue.measurement.signatureInfos.format)
         {
@@ -192,14 +197,7 @@ class EMHCrypt01 extends ACrypt {
 
                 return cryptoResult;
 
-
-            //default:
-
-
         }
-
-        cryptoResult.status = VerificationResult.ValidSignature;
-        return cryptoResult;
 
     }
 
@@ -211,6 +209,14 @@ class EMHCrypt01 extends ACrypt {
             cryptoResult.status     = verificationResult;
             measurementValue.result = cryptoResult;
             return cryptoResult;
+        }
+
+        if (measurementValue.measurement                 === undefined ||
+            measurementValue.measurement.chargingSession === undefined)
+        {
+            return {
+                status: VerificationResult.InvalidMeasurement
+            }
         }
 
         measurementValue.method = this;
@@ -323,6 +329,16 @@ class EMHCrypt01 extends ACrypt {
                           SignatureExpectedDiv:  HTMLDivElement,
                           SignatureCheckDiv:     HTMLDivElement)
     {
+
+        if (measurementValue.measurement                                              === undefined ||
+            measurementValue.measurement.chargingSession                              === undefined ||
+            measurementValue.measurement.chargingSession.authorizationStart           === undefined ||
+            measurementValue.measurement.chargingSession.authorizationStart.timestamp === undefined)
+        {
+            return {
+                status: VerificationResult.InvalidMeasurement
+            }
+        }
 
         const result     = measurementValue.result as IEMHCrypt01Result;
 

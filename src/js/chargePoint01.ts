@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2021 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2022 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -801,6 +801,14 @@ class ChargePointCrypt01 extends ACrypt {
     async VerifyChargingSession(chargingSession: IChargingSession): Promise<ISessionCryptoResult>
     {
 
+        if (chargingSession     === undefined ||
+            chargingSession.ctr === undefined)
+        {
+            return {
+                status:  SessionVerificationResult.InvalidSignature
+            }
+        }
+
         try
         {
 
@@ -990,10 +998,12 @@ class ChargePointCrypt01 extends ACrypt {
 
                         for (let measurementValue of measurement.values)
                         {
-                            if (measurementValue.result.status != VerificationResult.ValidSignature &&
-                                measurementValue.result.status != VerificationResult.NoOperation)
+                            if (measurementValue.result?.status !== VerificationResult.ValidSignature &&
+                                measurementValue.result?.status !== VerificationResult.NoOperation)
                             {
-                                sessionResult = SessionVerificationResult.InvalidSignature;
+                                return {
+                                    status: SessionVerificationResult.InvalidSignature
+                                }
                             }
                         }
 
@@ -1002,79 +1012,84 @@ class ChargePointCrypt01 extends ACrypt {
                         for (let i = 0; i < measurement.values.length; i++)
                         {
 
-                            //#region Adapt start value
+                            const currentResult = measurement.values[i].result;
 
-                            if (i == 0)
-                            {
-                                switch (measurement.values[i].result.status)
+                            if (currentResult !== undefined) {
+
+                                //#region Adapt start value
+
+                                if (i == 0)
                                 {
+                                    switch (currentResult.status)
+                                    {
 
-                                    case VerificationResult.ValidSignature:
-                                        measurement.values[i].result.status = VerificationResult.ValidStartValue;
-                                        break;
+                                        case VerificationResult.ValidSignature:
+                                            currentResult.status = VerificationResult.ValidStartValue;
+                                            break;
 
-                                    case VerificationResult.NoOperation:
-                                        measurement.values[i].result.status = VerificationResult.StartValue;
-                                        break;
+                                        case VerificationResult.NoOperation:
+                                            currentResult.status = VerificationResult.StartValue;
+                                            break;
 
-                                    case VerificationResult.InvalidSignature:
-                                        measurement.values[i].result.status = VerificationResult.InvalidStartValue;
-                                        break;
+                                        case VerificationResult.InvalidSignature:
+                                            currentResult.status = VerificationResult.InvalidStartValue;
+                                            break;
 
-                                }
-                            }
-
-                            //#endregion
-
-                            //#region Adapt stop value
-
-                            else if (i = measurement.values.length-1)
-                            {
-                                switch (measurement.values[i].result.status)
-                                {
-
-                                    case VerificationResult.ValidSignature:
-                                        measurement.values[i].result.status = VerificationResult.ValidStopValue;
-                                        break;
-
-                                    case VerificationResult.NoOperation:
-                                        measurement.values[i].result.status = VerificationResult.StopValue;
-                                        break;
-
-                                    case VerificationResult.InvalidSignature:
-                                        measurement.values[i].result.status = VerificationResult.InvalidStopValue;
-                                        break;
-
+                                    }
                                 }
 
-                            }
+                                //#endregion
 
-                            //#endregion
+                                //#region Adapt stop value
 
-                            //#region Adapt intermediate values
-
-                            else
-                            {
-                                switch (measurement.values[i].result.status)
+                                else if (i = measurement.values.length-1)
                                 {
+                                    switch (currentResult.status)
+                                    {
 
-                                    case VerificationResult.ValidSignature:
-                                        measurement.values[i].result.status = VerificationResult.ValidIntermediateValue;
-                                        break;
+                                        case VerificationResult.ValidSignature:
+                                            currentResult.status = VerificationResult.ValidStopValue;
+                                            break;
 
-                                    case VerificationResult.NoOperation:
-                                        measurement.values[i].result.status = VerificationResult.IntermediateValue;
-                                        break;
+                                        case VerificationResult.NoOperation:
+                                            currentResult.status = VerificationResult.StopValue;
+                                            break;
 
-                                    case VerificationResult.InvalidSignature:
-                                        measurement.values[i].result.status = VerificationResult.InvalidStopValue;
-                                        break;
+                                        case VerificationResult.InvalidSignature:
+                                            currentResult.status = VerificationResult.InvalidStopValue;
+                                            break;
+
+                                    }
+                                }
+
+                                //#endregion
+
+                                //#region Adapt intermediate values
+
+                                else
+                                {
+                                    switch (currentResult.status)
+                                    {
+
+                                        case VerificationResult.ValidSignature:
+                                            currentResult.status = VerificationResult.ValidIntermediateValue;
+                                            break;
+
+                                        case VerificationResult.NoOperation:
+                                            currentResult.status = VerificationResult.IntermediateValue;
+                                            break;
+
+                                        case VerificationResult.InvalidSignature:
+                                            currentResult.status = VerificationResult.InvalidStopValue;
+                                            break;
+
+                                    }
 
                                 }
 
-                            }
+                                //#endregion
 
-                            //#endregion
+                            }
 
                         }
 
@@ -1108,6 +1123,14 @@ class ChargePointCrypt01 extends ACrypt {
     async SignMeasurement  (measurementValue:  IChargepointMeasurementValue,
                             privateKey:        any): Promise<IChargePointCrypt01Result>
     {
+
+        if (measurementValue.measurement                 === undefined ||
+            measurementValue.measurement.chargingSession === undefined)
+        {
+            return {
+                status: VerificationResult.InvalidMeasurement
+            }
+        }
 
         var buffer                       = new ArrayBuffer(320);
         var cryptoBuffer                 = new DataView(buffer);
@@ -1206,16 +1229,27 @@ class ChargePointCrypt01 extends ACrypt {
 
     {
 
-        let chargingSession    = measurementValue?.measurement?.chargingSession;
-        let result             = measurementValue.result as IChargePointCrypt01Result;
-        let algorithmName      = (typeof chargingSession?.publicKey?.algorithm === "object")
+        if (measurementValue.measurement                                              === undefined ||
+            measurementValue.measurement.chargingSession                              === undefined ||
+            measurementValue.measurement.chargingSession.authorizationStart           === undefined ||
+            measurementValue.measurement.chargingSession.authorizationStart.timestamp === undefined)
+        {
+            return {
+                status: VerificationResult.InvalidMeasurement
+            }
+        }
+
+
+        const chargingSession    = measurementValue?.measurement?.chargingSession;
+        const result             = measurementValue.result as IChargePointCrypt01Result;
+        const algorithmName      = (typeof chargingSession?.publicKey?.algorithm === "object")
                                         ? chargingSession?.publicKey?.algorithm.name
                                         : chargingSession?.publicKey?.algorithm;
-        let algorithmType      = (typeof chargingSession?.publicKey?.type      === "object")
+        const algorithmType      = (typeof chargingSession?.publicKey?.type      === "object")
                                         ? chargingSession?.publicKey?.type.name
                                         : chargingSession?.publicKey?.type;
 
-        let cryptoSpan         = introDiv?.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
+        const cryptoSpan         = introDiv?.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
         cryptoSpan.innerHTML   = "ChargePointCrypt01 (" + algorithmName + ")";
 
         //#region Plain text
@@ -1308,11 +1342,11 @@ class ChargePointCrypt01 extends ACrypt {
                     {
 
                         let signatureDiv2 = PublicKeyDiv.parentElement;
-                        
+
                         if (signatureDiv2 != null)
                         {
                             let signatureDiv = signatureDiv2.children[3].appendChild(document.createElement('div'));
-                            //signatureDiv.innerHTML = "!!!!!";
+
                             signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
                                                                                                     measurementValue.measurement.chargingSession.EVSE,
                                                                                                     //@ts-ignore

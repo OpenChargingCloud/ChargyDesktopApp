@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2021 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2022 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -114,8 +114,8 @@ class OCMFv1_0 extends ACrypt {
 
                     for (var measurementValue of measurement.values)
                     {
-                        if (sessionResult                  == SessionVerificationResult.ValidSignature &&
-                            measurementValue.result.status != VerificationResult.ValidSignature)
+                        if (sessionResult                   === SessionVerificationResult.ValidSignature &&
+                            measurementValue.result?.status !== VerificationResult.ValidSignature)
                         {
                             sessionResult = SessionVerificationResult.InvalidSignature;
                         }
@@ -139,6 +139,14 @@ class OCMFv1_0 extends ACrypt {
     async SignMeasurement(measurementValue:  IOCMFv1_0MeasurementValue,
                           privateKey:        any): Promise<IOCMFv1_0Result>
     {
+
+        if (measurementValue.measurement                 === undefined ||
+            measurementValue.measurement.chargingSession === undefined)
+        {
+            return {
+                status: VerificationResult.InvalidMeasurement
+            }
+        }
 
         var buffer                       = new ArrayBuffer(320);
         var cryptoBuffer                 = new DataView(buffer);
@@ -400,6 +408,16 @@ class OCMFv1_0 extends ACrypt {
                           signatureExpectedValue:  HTMLDivElement,
                           signatureCheckValue:     HTMLDivElement)
     {
+
+        if (measurementValue.measurement                                              === undefined ||
+            measurementValue.measurement.chargingSession                              === undefined ||
+            measurementValue.measurement.chargingSession.authorizationStart           === undefined ||
+            measurementValue.measurement.chargingSession.authorizationStart.timestamp === undefined)
+        {
+            return {
+                status: VerificationResult.InvalidMeasurement
+            }
+        }
 
         const result     = measurementValue.result as IOCMFv1_0Result;
 
