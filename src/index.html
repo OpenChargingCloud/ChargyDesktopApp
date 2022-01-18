@@ -470,18 +470,17 @@
       // You can also require other files to run in this process
       require('./renderer.js')
 
-      var ACCESS_TOKEN = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
-
       leaflet = L;
       map     = L.map('map').setView([49.7325504, 10.1424442], 10);
 
-      L.tileLayer('https://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + ACCESS_TOKEN, {
-          maxZoom: 18,
-          attribution: '<a href="http://openstreetmap.org">OSM</a> contr., ' +
-          '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-          'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-          id: 'ahzf.nc811hb2'
-      }).addTo(map);
+      L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+                      attribution:   '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
+                      tileSize:       512,
+                      maxZoom:        18,
+                      zoomOffset:     -1,
+                      id:            'mapbox/light-v10',
+                      accessToken:   'pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w'
+                  }).addTo(map);
 
       // Remember to set the application file name for generating the application hash!
       // Remember to set Content-Security-Policy for customer support URLs!
