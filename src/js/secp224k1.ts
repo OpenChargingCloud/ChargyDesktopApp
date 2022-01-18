@@ -28,7 +28,7 @@
  * Actual curve: y^2 = x^3 + Acurve * x + Bcurve
   */
 
-class secp224k1 {
+export class secp224k1 {
 
     // Pcurve = 2**224 - 2**32 - 2**12 - 2**11 - 2**9 - 2**7 - 2**4 - 2**1 - 1 or
     //          FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE FFFFE56D

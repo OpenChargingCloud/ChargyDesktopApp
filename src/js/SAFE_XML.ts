@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-///<reference path="certificates.ts" />
-///<reference path="chargyInterfaces.ts" />
-///<reference path="chargyLib.ts" />
+import { Chargy }             from './chargy.js'
+import { Alfen01 }            from './Alfen01.js'
+import { OCMF }               from './OCMF.js'
+import * as chargyInterfaces  from './chargyInterfaces.js'
+import * as chargyLib         from './chargyLib.js'
 
-class SAFEXML  {
+export class SAFEXML  {
 
     private readonly chargy: Chargy;
 
@@ -29,7 +31,7 @@ class SAFEXML  {
 
     //#region tryToParseSAFEXML(XMLDocument)
 
-    public async tryToParseSAFEXML(XMLDocument: Document) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+    public async tryToParseSAFEXML(XMLDocument: Document) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         // The SAFE transparency software v1.0 does not understand its own
@@ -89,7 +91,7 @@ class SAFEXML  {
 
                                 default:
                                     return {
-                                        status:   SessionVerificationResult.InvalidSessionFormat,
+                                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                         message:  "Unkown signed data encoding within the given SAFE XML!"
                                     }
 
@@ -103,7 +105,7 @@ class SAFEXML  {
                                         commonFormat = "alfen";
                                     else if (commonFormat != "alfen")
                                         return {
-                                            status:   SessionVerificationResult.InvalidSessionFormat,
+                                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                             message:  "Invalid mixture of different signed data formats within the given SAFE XML!"
                                         }
                                     break;
@@ -113,22 +115,22 @@ class SAFEXML  {
                                         commonFormat = "ocmf";
                                     else if (commonFormat != "ocmf")
                                         return {
-                                            status:   SessionVerificationResult.InvalidSessionFormat,
+                                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                             message:  "Invalid mixture of different signed data formats within the given SAFE XML!"
                                         }
                                     break;
 
                                 default:
                                     return {
-                                        status:   SessionVerificationResult.InvalidSessionFormat,
+                                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                         message:  "Unkown signed data formats within the given SAFE XML!"
                                     }
 
                             }
 
-                            if (signedDataValue.isNullOrEmpty())
+                            if (chargyLib.IsNullOrEmpty(signedDataValue))
                                 return {
-                                    status:   SessionVerificationResult.InvalidSessionFormat,
+                                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                     message:  "The signed data value within the given SAFE XML must not be empty!"
                                 }
 
@@ -137,7 +139,7 @@ class SAFEXML  {
                         }
                         else
                             return {
-                                status:   SessionVerificationResult.InvalidSessionFormat,
+                                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                 message:  "The signed data tag within the given SAFE XML must not be empty!"
                             }
 
@@ -175,15 +177,15 @@ class SAFEXML  {
 
                                 default:
                                     return {
-                                        status:   SessionVerificationResult.InvalidSessionFormat,
+                                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                         message:  "Unkown public key encoding within the given SAFE XML!"
                                     }
 
                             }
 
-                            if (publicKeyValue.isNullOrEmpty())
+                            if (chargyLib.IsNullOrEmpty(publicKeyValue))
                                 return {
-                                    status:   SessionVerificationResult.InvalidSessionFormat,
+                                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                     message:  "The public key within the given SAFE XML must not be empty!"
                                 }
 
@@ -192,7 +194,7 @@ class SAFEXML  {
 
                             else if (publicKeyValue != commonPublicKey)
                                 return {
-                                    status:   SessionVerificationResult.InvalidSessionFormat,
+                                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                     message:  "Invalid mixture of different public keys within the given SAFE XML!"
                                 }
 
@@ -216,14 +218,14 @@ class SAFEXML  {
             }
 
             return {
-                status:   SessionVerificationResult.InvalidSessionFormat
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
             }
 
         }
         catch (exception)
         {
             return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }

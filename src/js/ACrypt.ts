@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-///<reference path="chargyInterfaces.ts" />
-///<reference path="chargyLib.ts" />
 
-abstract class ACrypt {
+import { Chargy }             from './chargy.js'
+import { secp224k1 }          from './secp224k1.js'
+import * as chargyInterfaces  from './chargyInterfaces.js'
+import * as chargyLib         from './chargyLib.js'
+
+export abstract class ACrypt {
 
     //#region Data
 
@@ -70,9 +72,9 @@ abstract class ACrypt {
                          bufferDiv:  HTMLDivElement)
     {
 
-        var lineDiv = CreateDiv(infoDiv, "row");
-                      CreateDiv(lineDiv, "id",    id);
-                      CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value?.toString()));
+        var lineDiv = chargyLib.CreateDiv(infoDiv, "row");
+                      chargyLib.CreateDiv(lineDiv, "id",    id);
+                      chargyLib.CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value?.toString()));
 
         this.AddToVisualBuffer(valueHEX, bufferDiv, lineDiv);
 
@@ -83,7 +85,7 @@ abstract class ACrypt {
                                 lineDiv:    HTMLDivElement)
     {
 
-        let newText = CreateDiv(bufferDiv, "entry", valueHEX);
+        let newText = chargyLib.CreateDiv(bufferDiv, "entry", valueHEX);
 
         newText.onmouseenter = function(this: GlobalEventHandlers, ev: MouseEvent) {
             lineDiv.children[0].classList.add("overEntry");
@@ -112,19 +114,19 @@ abstract class ACrypt {
 
 
 
-    abstract SignChargingSession  (chargingSession:         IChargingSession,
-                                   privateKey:              any):              Promise<ISessionCryptoResult>;
+    abstract SignChargingSession  (chargingSession:         chargyInterfaces.IChargingSession,
+                                   privateKey:              any):              Promise<chargyInterfaces.ISessionCryptoResult>;
 
-    abstract VerifyChargingSession(chargingSession:         IChargingSession): Promise<ISessionCryptoResult>;
+    abstract VerifyChargingSession(chargingSession:         chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>;
 
 
 
-    abstract SignMeasurement      (measurementValue:        IMeasurementValue,
-                                   privateKey:              any):               Promise<ICryptoResult>;
+    abstract SignMeasurement      (measurementValue:        chargyInterfaces.IMeasurementValue,
+                                   privateKey:              any):               Promise<chargyInterfaces.ICryptoResult>;
 
-    abstract VerifyMeasurement    (measurementValue:        IMeasurementValue): Promise<ICryptoResult>;
+    abstract VerifyMeasurement    (measurementValue:        chargyInterfaces.IMeasurementValue): Promise<chargyInterfaces.ICryptoResult>;
 
-    abstract ViewMeasurement      (measurementValue:        IMeasurementValue,
+    abstract ViewMeasurement      (measurementValue:        chargyInterfaces.IMeasurementValue,
                                    introDiv:                HTMLDivElement,
                                    infoDiv:                 HTMLDivElement,
                                    bufferValue:             HTMLDivElement,

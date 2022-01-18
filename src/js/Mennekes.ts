@@ -15,29 +15,27 @@
  * limitations under the License.
  */
 
-///<reference path="certificates.ts" />
-///<reference path="chargyInterfaces.ts" />
-///<reference path="chargyLib.ts" />
+import * as chargyInterfaces  from './chargyInterfaces.js'
 
-class Mennekes {
+export class Mennekes {
 
     //#region tryToParseMennekesXML(XMLDocument)
 
-    public async tryToParseMennekesXML(XMLDocument: Document) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+    public async tryToParseMennekesXML(XMLDocument: Document) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         try
         {
 
             return {
-                status: SessionVerificationResult.InvalidSessionFormat
+                status: chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
             }
 
         }
         catch (exception)
         {
             return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }

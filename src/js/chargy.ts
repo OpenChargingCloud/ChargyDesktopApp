@@ -15,12 +15,19 @@
  * limitations under the License.
  */
 
-///<reference path="certificates.ts" />
-///<reference path="chargyInterfaces.ts" />
-///<reference path="chargyLib.ts" />
-///<reference path="ACrypt.ts" />
-
-//import fileType from 'file-type';
+//import { fileTypeFromBuffer }                 from 'node:file-type'
+import { Alfen01, AlfenCrypt01 }              from './Alfen01.js'
+import { BSMCrypt01 }                         from './BSMCrypt01.js'
+import { ChargeIT }                           from './chargeIT.js'
+import { Chargepoint01, ChargePointCrypt01 }  from './chargePoint01.js'
+import { EMHCrypt01 }                         from './EMHCrypt01.js'
+import { GDFCrypt01 }                         from './GDFCrypt01.js'
+import { Mennekes }                           from './Mennekes.js'
+import { OCMF }                               from './OCMF.js'
+import { OCMFv1_0 }                           from './OCMFv1_0.js'
+import { SAFEXML }                            from './SAFE_XML.js'
+import * as chargyInterfaces                  from './chargyInterfaces.js'
+import * as chargyLib                         from './chargyLib.js'
 
 class Chargy {
 
@@ -31,18 +38,18 @@ class Chargy {
     public  readonly asn1:          any;
     public  readonly base32Decode:  any;
 
-    private chargingStationOperators  = new Array<IChargingStationOperator>();
-    private chargingPools             = new Array<IChargingPool>();
-    private chargingStations          = new Array<IChargingStation>();
-    private EVSEs                     = new Array<IEVSE>();
-    private meters                    = new Array<IMeter>();
-    private chargingSessions          = new Array<IChargingSession>();
+    private chargingStationOperators  = new Array<chargyInterfaces.IChargingStationOperator>();
+    private chargingPools             = new Array<chargyInterfaces.IChargingPool>();
+    private chargingStations          = new Array<chargyInterfaces.IChargingStation>();
+    private EVSEs                     = new Array<chargyInterfaces.IEVSE>();
+    private meters                    = new Array<chargyInterfaces.IMeter>();
+    private chargingSessions          = new Array<chargyInterfaces.IChargingSession>();
 
-    private eMobilityProviders        = new Array<IEMobilityProvider>();
-    private mediationServices         = new Array<IMediationService>();
+    private eMobilityProviders        = new Array<chargyInterfaces.IEMobilityProvider>();
+    private mediationServices         = new Array<chargyInterfaces.IMediationService>();
 
-    public  currentCTR                = {} as IChargeTransparencyRecord;
-    public  internalCTR               = {} as IChargeTransparencyRecord;
+    public  currentCTR                = {} as chargyInterfaces.IChargeTransparencyRecord;
+    public  internalCTR               = {} as chargyInterfaces.IChargeTransparencyRecord;
 
     //#endregion
 
@@ -60,7 +67,7 @@ class Chargy {
 
     //#region GetMethods...
 
-    public GetChargingPool: GetChargingPoolFunc = (Id: string) => {
+    public GetChargingPool: chargyInterfaces.GetChargingPoolFunc = (Id: string) => {
 
         for (var chargingPool of this.chargingPools)
         {
@@ -72,7 +79,7 @@ class Chargy {
 
     }
 
-    public GetChargingStation: GetChargingStationFunc = (Id: string) => {
+    public GetChargingStation: chargyInterfaces.GetChargingStationFunc = (Id: string) => {
 
         for (var chargingStation of this.chargingStations)
         {
@@ -84,7 +91,7 @@ class Chargy {
 
     }
 
-    public GetEVSE: GetEVSEFunc = (Id: string) => {
+    public GetEVSE: chargyInterfaces.GetEVSEFunc = (Id: string) => {
 
         for (var evse of this.EVSEs)
         {
@@ -96,7 +103,7 @@ class Chargy {
 
     }
 
-    public GetMeter: GetMeterFunc = (Id: string) => {
+    public GetMeter: chargyInterfaces.GetMeterFunc = (Id: string) => {
 
         for (var meter of this.meters)
         {
@@ -170,7 +177,7 @@ class Chargy {
 
             //ToDo: Checking the timestamp might be usefull!
 
-            var sha256value = await sha256(JSON.stringify(toCheck));
+            var sha256value = await chargyLib.sha256(JSON.stringify(toCheck));
                               //this.crypt.createHash('sha256').
                               //           update(Input, 'utf8').
                               //           digest('hex');
@@ -198,7 +205,7 @@ class Chargy {
 
     //#region decompressFiles(FileInfos)
 
-    public async decompressFiles(FileInfos: Array<IFileInfo>): Promise<Array<IFileInfo>> {
+    public async decompressFiles(FileInfos: Array<chargyInterfaces.IFileInfo>): Promise<Array<chargyInterfaces.IFileInfo>> {
 
         //#region Initial checks
 
@@ -206,7 +213,6 @@ class Chargy {
             return FileInfos;
 
         //const fileType         = require('file-type');
-        const fileType         = import('file-type');
         const decompress       = require('decompress');
         const decompressTar    = require('decompress-tar');
         const decompressTargz  = require('decompress-targz');
@@ -219,12 +225,12 @@ class Chargy {
         //#endregion
 
         let archiveFound      = false;
-        let expandedFileInfos = new Array<IFileInfo>();
+        let expandedFileInfos = new Array<chargyInterfaces.IFileInfo>();
 
         do {
 
             archiveFound      = false;
-            expandedFileInfos = new Array<IFileInfo>();
+            expandedFileInfos = new Array<chargyInterfaces.IFileInfo>();
 
             for (let FileInfo of FileInfos)
             {
@@ -235,7 +241,9 @@ class Chargy {
                     try
                     {
 
-                        const filetype = await (await fileType).fileTypeFromBuffer(FileInfo.data);    //.fileTypeFromBuffer(FileInfo.data);
+                        var ft = require('file-type');
+
+                        const filetype = await ft. fileTypeFromBuffer(FileInfo.data);
 
                         if (filetype?.mime == undefined)
                             expandedFileInfos.push({
@@ -250,15 +258,15 @@ class Chargy {
                               filetype.mime.toString() != "application/json")
                         {
 
-                            let compressedFiles:Array<TarInfo> = await decompress(Buffer.from(FileInfo.data),
-                                                                                  { plugins: [ decompressTar(),
-                                                                                               decompressTargz(),
-                                                                                               decompressTarbz2(),
-                                                                                               //decompressTarxz(),
-                                                                                               decompressUnzip(),
-                                                                                               decompressGz(),
-                                                                                               decompressBzip2()
-                                                                                             ] });
+                            let compressedFiles:Array<chargyInterfaces.TarInfo> = await decompress(Buffer.from(FileInfo.data),
+                                                                                                   { plugins: [ decompressTar(),
+                                                                                                                decompressTargz(),
+                                                                                                                decompressTarbz2(),
+                                                                                                                //decompressTarxz(),
+                                                                                                                decompressUnzip(),
+                                                                                                                decompressGz(),
+                                                                                                                decompressBzip2()
+                                                                                                              ] });
 
                             if (compressedFiles.length == 0)
                                 continue;
@@ -304,7 +312,7 @@ class Chargy {
                                     {
                                         try
                                         {
-                                            singatureFile = buf2hex(file.data);
+                                            singatureFile = chargyLib.buf2hex(file.data);
                                         }
                                         catch (Exception)
                                         {
@@ -382,13 +390,13 @@ class Chargy {
 
     //#region detectAndConvertContentFormat(FileInfos)
 
-    public async detectAndConvertContentFormat(FileInfos: Array<IFileInfo>): Promise<IChargeTransparencyRecord|ISessionCryptoResult> {
+    public async detectAndConvertContentFormat(FileInfos: Array<chargyInterfaces.IFileInfo>): Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult> {
 
         //#region Initial checks
 
         if (FileInfos == null || FileInfos.length == 0)
             return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Keine Transparenzdatensätze gefunden!",
             }
 
@@ -398,12 +406,12 @@ class Chargy {
 
         //#region Process JSON/XML/text files
 
-        let processedFiles = new Array<IExtendedFileInfo>();
+        let processedFiles = new Array<chargyInterfaces.IExtendedFileInfo>();
 
         for (let expandedFile of expandedFiles)
         {
 
-            let processedFile  = expandedFile as IExtendedFileInfo;
+            let processedFile  = expandedFile as chargyInterfaces.IExtendedFileInfo;
             let textContent    = new TextDecoder('utf-8').decode(expandedFile.data)?.trim();
 
             // Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
@@ -464,7 +472,7 @@ class Chargy {
                 } catch (exception)
                 {
                     processedFile.result = {
-                        status:     SessionVerificationResult.InvalidSessionFormat,
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:    "Unbekanntes oder ungültiges XML-Transparenzdatensatzformat!",
                         exception:  exception
                     }
@@ -569,7 +577,7 @@ class Chargy {
                                     oid:          Curve_OID,
                                     name:         Curve
                                 },
-                                value:  buf2hex(publicKeyDER.publicKey.data)
+                                value:  chargyLib.buf2hex(publicKeyDER.publicKey.data)
                             }
                         ]
                     };
@@ -578,7 +586,7 @@ class Chargy {
                 catch (exception)
                 {
                     processedFile.result = {
-                        status:     SessionVerificationResult.InvalidSessionFormat,
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:    "Unbekanntes oder ungültiges Public-Key-Datenformat!",
                         exception:  exception
                     }
@@ -596,10 +604,10 @@ class Chargy {
                     const JSONContext = (JSONContent["@context"] as string)?.trim() ?? "";
 
                     if      (JSONContext.startsWith("https://open.charging.cloud/contexts/CTR+json"))
-                        processedFile.result = JSONContent as IChargeTransparencyRecord;
+                        processedFile.result = JSONContent as chargyInterfaces.IChargeTransparencyRecord;
 
                     else if (JSONContext.startsWith("https://open.charging.cloud/contexts/publicKey+json"))
-                        processedFile.result = JSONContent as IPublicKeyInfo;
+                        processedFile.result = JSONContent as chargyInterfaces.IPublicKeyInfo;
 
                     else if (JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
                         processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormatJSON(JSONContent);
@@ -611,7 +619,7 @@ class Chargy {
                         processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormatJSON(JSONContent);
 
                         // The current chargepoint format does not provide any context or format identifiers
-                        if (!isISessionCryptoResult(processedFile.result))
+                        if (!chargyInterfaces.isISessionCryptoResult(processedFile.result))
                             processedFile.result = await new Chargepoint01(this).tryToParseChargepointJSON(JSONContent);
 
                     }
@@ -620,7 +628,7 @@ class Chargy {
                 } catch (exception)
                 {
                     processedFile.result = {
-                        status:     SessionVerificationResult.InvalidSessionFormat,
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:    "Unbekanntes oder ungültiges JSON-Transparenzdatensatzformat!",
                         exception:  exception
                     }
@@ -630,7 +638,7 @@ class Chargy {
             if (processedFile.result == undefined)
             {
                 processedFile.result = {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Unbekanntes oder ungültiges Transparenzdatensatzformat!",
                 }
             }
@@ -647,12 +655,12 @@ class Chargy {
         if (processedFiles.length == 1)
         {
 
-            if (IsAChargeTransparencyRecord(processedFiles[0].result))
+            if (chargyInterfaces.IsAChargeTransparencyRecord(processedFiles[0].result))
                 return this.processChargeTransparencyRecord(processedFiles[0].result);
 
-            if (IsAPublicKeyLookup(processedFiles[0].result))
+            if (chargyInterfaces.IsAPublicKeyLookup(processedFiles[0].result))
                 return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Unbekanntes oder ungültiges Transparenzdatensatzformat!",
                 };
 
@@ -667,7 +675,7 @@ class Chargy {
         else if (processedFiles.length > 1)
         {
 
-            let mergedCTR:IChargeTransparencyRecord = {
+            let mergedCTR:chargyInterfaces.IChargeTransparencyRecord = {
                 "@id":      "",
                 "@context": ""
             };
@@ -677,7 +685,7 @@ class Chargy {
 
                 const processedFileResult = processedFile?.result;
 
-                if (IsAChargeTransparencyRecord(processedFileResult))
+                if (chargyInterfaces.IsAChargeTransparencyRecord(processedFileResult))
                 {
 
                     if (mergedCTR["@id"] === "")
@@ -740,21 +748,21 @@ class Chargy {
 
                 }
 
-                else if (IsAPublicKeyInfo(processedFileResult))
+                else if (chargyInterfaces.IsAPublicKeyInfo(processedFileResult))
                 {
 
                     if (!mergedCTR.publicKeys)
-                        mergedCTR.publicKeys = new Array<IPublicKeyInfo>();
+                        mergedCTR.publicKeys = new Array<chargyInterfaces.IPublicKeyInfo>();
 
                     mergedCTR.publicKeys.push(processedFileResult);
 
                 }
 
-                else if (IsAPublicKeyLookup(processedFileResult))
+                else if (chargyInterfaces.IsAPublicKeyLookup(processedFileResult))
                 {
 
                     if (!mergedCTR.publicKeys)
-                        mergedCTR.publicKeys = new Array<IPublicKeyInfo>();
+                        mergedCTR.publicKeys = new Array<chargyInterfaces.IPublicKeyInfo>();
 
                     for (const publicKey of processedFileResult.publicKeys)
                         mergedCTR.publicKeys.push(publicKey);
@@ -765,7 +773,7 @@ class Chargy {
                 {
 
                     if (mergedCTR.invalidDataSets === undefined)
-                        mergedCTR.invalidDataSets = new Array<IExtendedFileInfo>();
+                        mergedCTR.invalidDataSets = new Array<chargyInterfaces.IExtendedFileInfo>();
 
                     mergedCTR.invalidDataSets.push(processedFile);
 
@@ -773,7 +781,7 @@ class Chargy {
 
             }
 
-            if (IsAChargeTransparencyRecord(mergedCTR))
+            if (chargyInterfaces.IsAChargeTransparencyRecord(mergedCTR))
                 return this.processChargeTransparencyRecord(mergedCTR);
 
         }
@@ -781,7 +789,7 @@ class Chargy {
         //#endregion
 
         return {
-            status:   SessionVerificationResult.InvalidSessionFormat,
+            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
             message:  "Keine Transparenzdatensätze gefunden!"
         }
 
@@ -791,14 +799,14 @@ class Chargy {
 
     //#region processChargeTransparencyRecord(CTR)
 
-    public async processChargeTransparencyRecord(CTR: IChargeTransparencyRecord): Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+    public async processChargeTransparencyRecord(CTR: chargyInterfaces.IChargeTransparencyRecord): Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         //#region Initial checks
 
-        if (!IsAChargeTransparencyRecord(CTR))
+        if (!chargyInterfaces.IsAChargeTransparencyRecord(CTR))
             return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Unbekanntes Transparenzdatensatzformat!"
             }
 
@@ -1104,7 +1112,7 @@ class Chargy {
         catch (exception)
         {
             return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }
@@ -1115,7 +1123,7 @@ class Chargy {
 
     //#region processChargingSession(chargingSession)
 
-    public async processChargingSession(chargingSession: IChargingSession) : Promise<ISessionCryptoResult>
+    public async processChargingSession(chargingSession: chargyInterfaces.IChargingSession) : Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         //ToDo: Verify @id exists
@@ -1133,7 +1141,7 @@ class Chargy {
             chargingSession.measurements == null)
         {
             return {
-                status: SessionVerificationResult.InvalidSessionFormat
+                status: chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
             }
         }
 
@@ -1166,7 +1174,7 @@ class Chargy {
 
             default:
                 return {
-                    status: SessionVerificationResult.UnknownSessionFormat
+                    status: chargyInterfaces.SessionVerificationResult.UnknownSessionFormat
                 }
 
         }
@@ -1176,3 +1184,5 @@ class Chargy {
     //#endregion
 
 }
+
+export {Chargy}

@@ -15,21 +15,10 @@
  * limitations under the License.
  */
 
-///<reference path="certificates.ts" />
-///<reference path="chargyInterfaces.ts" />
-///<reference path="chargyLib.ts" />
-///<reference path="chargy.ts" />
-///<reference path="GDFCrypt01.ts" />
-///<reference path="EMHCrypt01.ts" />
-///<reference path="BSMCrypt01.ts" />
-///<reference path="chargePoint01.ts" />
-///<reference path="chargeIT.ts" />
-///<reference path="SAFE_XML.ts" />
-///<reference path="OCMF.ts" />
-///<reference path="Alfen01.ts" />
-///<reference path="Mennekes.ts" />
-
 // ToDo: Imports lead to strange errors!
+import { Chargy }             from './chargy.js'
+import * as chargyInterfaces  from './chargyInterfaces.js'
+import * as chargyLib         from './chargyLib.js'
 // import { debug } from "util";
 // import * as crypto from "crypto";
 // import { readSync } from "fs";
@@ -38,13 +27,13 @@
 var map:     any  = "";
 var leaflet: any  = "";
 
-function OpenLink(url: string)
+export function OpenLink(url: string)
 {
     if (url.startsWith("https://"))
         require('electron').shell.openExternal(url);
 }
 
-class ChargyApp {
+export class ChargyApp {
 
     //#region Data
 
@@ -61,7 +50,7 @@ class ChargyApp {
     public  feedbackEMail:                 string[]            = [];
     public  feedbackHotline:               string[]            = [];
     public  issueURL:                      string              = "";
-    private ipcRenderer                                        = require('electron').ipcRenderer;
+    private ipcRenderer                                        = require('electron').ipcRenderer; // (window as any)?.electron?.ipcRenderer;
     private commandLineArguments:          Array<string>       = [];
     public  packageJson:                   any                 = {};
     private httpPort:                      number              = 0;
@@ -407,7 +396,7 @@ class ChargyApp {
                         if (versionsDiv != null)
                         {
 
-                            this.currentAppInfos = JSON.parse(GetListOfVersions.responseText) as IVersions;
+                            this.currentAppInfos = JSON.parse(GetListOfVersions.responseText) as chargyInterfaces.IVersions;
 
                             for (let version of this.currentAppInfos.versions)
                             {
@@ -462,7 +451,7 @@ class ChargyApp {
 
                                     const releaseDateDiv = headlineDiv.appendChild(document.createElement('div'));
                                     releaseDateDiv.className = "releaseDate";
-                                    releaseDateDiv.innerHTML = parseUTC(version.releaseDate).format("ll");
+                                    releaseDateDiv.innerHTML = chargyLib.parseUTC(version.releaseDate).format("ll");
 
                                     const descriptionDiv = versionDiv.appendChild(document.createElement('div'));
                                     descriptionDiv.className = "description";
@@ -695,13 +684,13 @@ class ChargyApp {
             if (d.fullScreen || d.mozFullScreen || d.webkitIsFullScreen)
             {
                 this.overlayDiv.classList.remove("fullScreen");
-                closeFullscreen();
+                chargyLib.closeFullscreen();
                 this.fullScreenButton.innerHTML = '<i class="fas fa-expand"></i>';
             }
             else
             {
                 this.overlayDiv.classList.add("fullScreen");
-                openFullscreen();
+                chargyLib.openFullscreen();
                 this.fullScreenButton.innerHTML = '<i class="fas fa-compress"></i>';
             }
         }
@@ -963,7 +952,7 @@ class ChargyApp {
                                         data: Buffer.concat(binaryData)
                                     }]);
 
-                                    if (IsAChargeTransparencyRecord(result))
+                                    if (chargyInterfaces.IsAChargeTransparencyRecord(result))
                                     {
 
                                         response.writeHead(200, {'Content-Type': 'application/json'});
@@ -1094,7 +1083,7 @@ class ChargyApp {
 
     //#region doGlobalError(...)
 
-    private doGlobalError(result:   ISessionCryptoResult,
+    private doGlobalError(result:   chargyInterfaces.ISessionCryptoResult,
                           context?: any)
     {
 
@@ -1130,7 +1119,7 @@ class ChargyApp {
         catch (exception)
         {
             this.doGlobalError({
-                status:   SessionVerificationResult.InvalidSessionFormat,
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Unbekannter Transparenzdatensatz!"
             });
         }
@@ -1155,7 +1144,7 @@ class ChargyApp {
 
             //#region Map file names
 
-            let filesToLoad = new Array<IFileInfo>();
+            let filesToLoad = new Array<chargyInterfaces.IFileInfo>();
 
             for (let i = 0; i < files.length; i++)
             {
@@ -1172,7 +1161,7 @@ class ChargyApp {
             //#endregion
 
             let fs          = require('original-fs');
-            let loadedFiles = new Array<IFileInfo>();
+            let loadedFiles = new Array<chargyInterfaces.IFileInfo>();
 
             for (const filename of filesToLoad)
             {
@@ -1333,7 +1322,7 @@ class ChargyApp {
 
     //#region detectAndConvertContentFormat(FileInfos)
 
-    private async detectAndConvertContentFormat(FileInfos: Array<IFileInfo>|IFileInfo|string) {
+    private async detectAndConvertContentFormat(FileInfos: Array<chargyInterfaces.IFileInfo>|chargyInterfaces.IFileInfo|string) {
 
         this.inputInfosDiv.style.display  = 'none';
         this.errorTextDiv.style.display   = 'none';
@@ -1347,14 +1336,14 @@ class ChargyApp {
                                                                          data: new TextEncoder().encode(FileInfos)
                                                                       }]);
 
-        else if (isIFileInfo(FileInfos))
+        else if (chargyInterfaces.isIFileInfo(FileInfos))
             result = await this.chargy.detectAndConvertContentFormat([ FileInfos ]);
 
         else
             result = await this.chargy.detectAndConvertContentFormat(FileInfos);
 
 
-        if (IsAChargeTransparencyRecord(result))
+        if (chargyInterfaces.IsAChargeTransparencyRecord(result))
         {
 
             if (!this.ipcRenderer.sendSync('noGUI'))
@@ -1367,7 +1356,7 @@ class ChargyApp {
         else
             this.doGlobalError(result ??
                                {
-                                   status:   SessionVerificationResult.InvalidSessionFormat,
+                                   status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                    message:  "Unbekannter Transparenzdatensatz!"
                                });
 
@@ -1377,7 +1366,7 @@ class ChargyApp {
 
     //#region showChargeTransparencyRecord(CTR)
 
-    private async showChargeTransparencyRecord(CTR: IChargeTransparencyRecord)
+    private async showChargeTransparencyRecord(CTR: chargyInterfaces.IChargeTransparencyRecord)
     {
 
         if (CTR == null)
@@ -1401,21 +1390,21 @@ class ChargyApp {
         if (CTR.description) {
             let descriptionDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
             descriptionDiv.id  = "description";
-            descriptionDiv.innerText = firstValue(CTR.description);
+            descriptionDiv.innerText = chargyLib.firstValue(CTR.description);
         }
 
         if (CTR.begin) {
             let beginDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
             beginDiv.id        = "begin";
             beginDiv.className = "defi";
-            beginDiv.innerHTML = "von " + parseUTC(CTR.begin).format('dddd, D. MMMM YYYY');
+            beginDiv.innerHTML = "von " + chargyLib.parseUTC(CTR.begin).format('dddd, D. MMMM YYYY');
         }
 
         if (CTR.end) {
             let endDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
             endDiv.id          = "begin";
             endDiv.className   = "defi";
-            endDiv.innerHTML   = "bis " + parseUTC(CTR.end).format('dddd, D. MMMM YYYY');
+            endDiv.innerHTML   = "bis " + chargyLib.parseUTC(CTR.end).format('dddd, D. MMMM YYYY');
         }
 
         //#endregion
@@ -1439,7 +1428,7 @@ class ChargyApp {
             for (const chargingSession of CTR.chargingSessions)
             {
 
-                const chargingSessionDiv    = CreateDiv(chargingSessionsDiv, "chargingSession");
+                const chargingSessionDiv    = chargyLib.CreateDiv(chargingSessionsDiv, "chargingSession");
                 chargingSession.GUI         = chargingSessionDiv;
                 chargingSessionDiv.onclick  = (ev: MouseEvent) => {
 
@@ -1469,13 +1458,13 @@ class ChargyApp {
                         let dateDiv  = chargingSessionDiv.appendChild(document.createElement('div'));
                         dateDiv.className = "date";
                         //dateDiv.innerHTML = UTC2human(chargingSession.begin);
-                        dateDiv.innerHTML = time2human(chargingSession.begin);
+                        dateDiv.innerHTML = chargyLib.time2human(chargingSession.begin);
 
                         if (chargingSession.end)
                         {
 
-                            let endUTC   = parseUTC(chargingSession.end);
-                            let duration = this.moment.duration(endUTC - parseUTC(chargingSession.begin));
+                            let endUTC   = chargyLib.parseUTC(chargingSession.end);
+                            let duration = this.moment.duration(endUTC - chargyLib.parseUTC(chargingSession.begin));
 
                             dateDiv.innerHTML += " - " +
                                                 (Math.floor(duration.asDays()) > 0 ? endUTC.format("dddd") + " " : "") +
@@ -1516,7 +1505,7 @@ class ChargyApp {
                     if (chargingSession.begin && chargingSession.end)
                     {
 
-                        let duration = this.moment.duration(parseUTC(chargingSession.end) - parseUTC(chargingSession.begin));
+                        let duration = this.moment.duration(chargyLib.parseUTC(chargingSession.end) - chargyLib.parseUTC(chargingSession.begin));
 
                         productDiv.innerHTML += "Ladedauer ";
                         if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days()    + " Tage "    + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
@@ -1531,12 +1520,12 @@ class ChargyApp {
                             switch (chargingSession.chargingProductRelevance.time)
                             {
 
-                                case InformationRelevance.Unkonwn:
-                                case InformationRelevance.Ignored:
-                                case InformationRelevance.Important:
+                                case chargyInterfaces.InformationRelevance.Unkonwn:
+                                case chargyInterfaces.InformationRelevance.Ignored:
+                                case chargyInterfaces.InformationRelevance.Important:
                                     break;
 
-                                case InformationRelevance.Informative:
+                                case chargyInterfaces.InformationRelevance.Informative:
                                     productDiv.innerHTML += " <span class=\"relevance\">(informativ)</span>";
                                     break;
 
@@ -1590,7 +1579,7 @@ class ChargyApp {
 
                                 }
 
-                                productDiv.innerHTML += "<br />" + measurementName2human(measurement.name) + " " + amount.toString() + " kWh";// (" + measurement.values.length + " Messwerte)";
+                                productDiv.innerHTML += "<br />" + chargyLib.measurementName2human(measurement.name) + " " + amount.toString() + " kWh";// (" + measurement.values.length + " Messwerte)";
 
 
                                 if (chargingSession.chargingProductRelevance != undefined && chargingSession.chargingProductRelevance.energy != undefined)
@@ -1598,12 +1587,12 @@ class ChargyApp {
                                     switch (chargingSession.chargingProductRelevance.energy)
                                     {
 
-                                        case InformationRelevance.Unkonwn:
-                                        case InformationRelevance.Ignored:
-                                        case InformationRelevance.Important:
+                                        case chargyInterfaces.InformationRelevance.Unkonwn:
+                                        case chargyInterfaces.InformationRelevance.Ignored:
+                                        case chargyInterfaces.InformationRelevance.Important:
                                             break;
 
-                                        case InformationRelevance.Informative:
+                                        case chargyInterfaces.InformationRelevance.Informative:
                                             productDiv.innerHTML += " <span class=\"relevance\">(informativ)</span>";
                                             break;
 
@@ -1649,7 +1638,7 @@ class ChargyApp {
                         if (chargingSession.parking[chargingSession.parking.length-1].end != null)
                         {
 
-                            let parkingBegin  = parseUTC(chargingSession.parking[0].begin);
+                            let parkingBegin  = chargyLib.parseUTC(chargingSession.parking[0].begin);
                             //@ts-ignore
                             let parkingEnd    = parseUTC(chargingSession.parking[chargingSession.parking.length-1].end);
                             let duration      = this.moment.duration(parkingEnd - parkingBegin);
@@ -1667,12 +1656,12 @@ class ChargyApp {
                                 switch (chargingSession.chargingProductRelevance.parking)
                                 {
 
-                                    case InformationRelevance.Unkonwn:
-                                    case InformationRelevance.Ignored:
-                                    case InformationRelevance.Important:
+                                    case chargyInterfaces.InformationRelevance.Unkonwn:
+                                    case chargyInterfaces.InformationRelevance.Ignored:
+                                    case chargyInterfaces.InformationRelevance.Important:
                                         break;
 
-                                    case InformationRelevance.Informative:
+                                    case chargyInterfaces.InformationRelevance.Informative:
                                         parkingDiv.innerHTML += " <span class=\"relevance\">(informativ)</span>";
                                         break;
 
@@ -1796,7 +1785,7 @@ class ChargyApp {
 
                             chargingStationDiv.classList.add("EVSE");
                             chargingStationDiv.innerHTML      = (chargingSession.EVSE   != null && chargingSession.EVSE.description != null
-                                                                    ? firstValue(chargingSession.EVSE.description) + "<br />"
+                                                                    ? chargyLib.firstValue(chargingSession.EVSE.description) + "<br />"
                                                                     : "") +
                                                                 (chargingSession.EVSEId != null
                                                                     ? chargingSession.EVSEId
@@ -1829,7 +1818,7 @@ class ChargyApp {
 
                                 chargingStationDiv.classList.add("chargingStation");
                                 chargingStationDiv.innerHTML      = (chargingSession.chargingStation   != null && chargingSession.chargingStation.description != null
-                                                                        ? firstValue(chargingSession.chargingStation.description) + "<br />"
+                                                                        ? chargyLib.firstValue(chargingSession.chargingStation.description) + "<br />"
                                                                         : "") +
                                                                     (chargingSession.chargingStationId != null
                                                                         ? chargingSession.chargingStationId
@@ -1854,7 +1843,7 @@ class ChargyApp {
 
                                 chargingStationDiv.classList.add("chargingPool");
                                 chargingStationDiv.innerHTML      = (chargingSession.chargingPool   != null && chargingSession.chargingPool.description != null
-                                                                        ? firstValue(chargingSession.chargingPool.description) + "<br />"
+                                                                        ? chargyLib.firstValue(chargingSession.chargingPool.description) + "<br />"
                                                                         : "") +
                                                                     (chargingSession.chargingPoolId != null
                                                                         ? chargingSession.chargingPoolId
@@ -1880,7 +1869,7 @@ class ChargyApp {
                 try
                 {
 
-                    var address:IAddress|undefined = undefined;
+                    var address:chargyInterfaces.IAddress|undefined = undefined;
 
                     if (chargingSession.chargingStation != null && chargingSession.chargingStation.address != null)
                         address = chargingSession.chargingStation.address;
@@ -1938,14 +1927,14 @@ class ChargyApp {
                     switch (chargingSession.verificationResult.status)
                     {
 
-                        case SessionVerificationResult.UnknownSessionFormat:
-                        case SessionVerificationResult.PublicKeyNotFound:
-                        case SessionVerificationResult.InvalidPublicKey:
-                        case SessionVerificationResult.InvalidSignature:
+                        case chargyInterfaces.SessionVerificationResult.UnknownSessionFormat:
+                        case chargyInterfaces.SessionVerificationResult.PublicKeyNotFound:
+                        case chargyInterfaces.SessionVerificationResult.InvalidPublicKey:
+                        case chargyInterfaces.SessionVerificationResult.InvalidSignature:
                             markerIcon = redMarker;
                             break;
 
-                        case SessionVerificationResult.ValidSignature:
+                        case chargyInterfaces.SessionVerificationResult.ValidSignature:
                             markerIcon = greenMarker;
                             break;
 
@@ -1987,14 +1976,14 @@ class ChargyApp {
                         switch (chargingSession.verificationResult.status)
                         {
 
-                            case SessionVerificationResult.UnknownSessionFormat:
-                            case SessionVerificationResult.PublicKeyNotFound:
-                            case SessionVerificationResult.InvalidPublicKey:
-                            case SessionVerificationResult.InvalidSignature:
+                            case chargyInterfaces.SessionVerificationResult.UnknownSessionFormat:
+                            case chargyInterfaces.SessionVerificationResult.PublicKeyNotFound:
+                            case chargyInterfaces.SessionVerificationResult.InvalidPublicKey:
+                            case chargyInterfaces.SessionVerificationResult.InvalidSignature:
                                 marker.bindPopup("Ungültiger Ladevorgang!");
                                 break;
 
-                            case SessionVerificationResult.ValidSignature:
+                            case chargyInterfaces.SessionVerificationResult.ValidSignature:
                                 marker.bindPopup("Gültiger Ladevorgang!");
                                 break;
 
@@ -2013,14 +2002,14 @@ class ChargyApp {
                     switch (chargingSession.verificationResult.status)
                     {
 
-                        case SessionVerificationResult.UnknownSessionFormat:
-                        case SessionVerificationResult.PublicKeyNotFound:
-                        case SessionVerificationResult.InvalidPublicKey:
-                        case SessionVerificationResult.InvalidSignature:
+                        case chargyInterfaces.SessionVerificationResult.UnknownSessionFormat:
+                        case chargyInterfaces.SessionVerificationResult.PublicKeyNotFound:
+                        case chargyInterfaces.SessionVerificationResult.InvalidPublicKey:
+                        case chargyInterfaces.SessionVerificationResult.InvalidSignature:
                             verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Ungültig';
                             break;
 
-                        case SessionVerificationResult.ValidSignature:
+                        case chargyInterfaces.SessionVerificationResult.ValidSignature:
                             verificationStatusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Gültig';
                             break;
 
@@ -2065,18 +2054,18 @@ class ChargyApp {
 
                 const result = invalidDataSet.result;
 
-                if (IsASessionCryptoResult(result))
+                if (chargyInterfaces.IsASessionCryptoResult(result))
                 {
 
-                    const invalidDataSetDiv = CreateDiv(invalidDataSetsDiv, "invalidDataSet");
+                    const invalidDataSetDiv = chargyLib.CreateDiv(invalidDataSetsDiv, "invalidDataSet");
 
-                    const filenameDiv = CreateDiv(invalidDataSetDiv, "row");
-                    CreateDiv(filenameDiv, "key",   "Dateiname");
-                    CreateDiv(filenameDiv, "value", invalidDataSet.name);
+                    const filenameDiv = chargyLib.CreateDiv(invalidDataSetDiv, "row");
+                    chargyLib.CreateDiv(filenameDiv, "key",   "Dateiname");
+                    chargyLib.CreateDiv(filenameDiv, "value", invalidDataSet.name);
 
-                    const resultDiv = CreateDiv(invalidDataSetDiv, "row");
-                    CreateDiv(resultDiv,   "key",   "Fehler");
-                    const valueDiv  = CreateDiv(resultDiv, "value");
+                    const resultDiv = chargyLib.CreateDiv(invalidDataSetDiv, "row");
+                    chargyLib.CreateDiv(resultDiv,   "key",   "Fehler");
+                    const valueDiv  = chargyLib.CreateDiv(resultDiv, "value");
 
                     if (result.message)
                         valueDiv.innerHTML  = result.message;
@@ -2085,7 +2074,7 @@ class ChargyApp {
                         switch (result.status)
                         {
 
-                            case SessionVerificationResult.InvalidSessionFormat:
+                            case chargyInterfaces.SessionVerificationResult.InvalidSessionFormat:
                                 valueDiv.innerHTML  = "Ungültiges Transparenzformat";
                                 break;
 
@@ -2108,7 +2097,7 @@ class ChargyApp {
 
     //#region showChargingSessionDetails
 
-    private async showChargingSessionDetails(chargingSession: IChargingSession)
+    private async showChargingSessionDetails(chargingSession: chargyInterfaces.IChargingSession)
     {
 
         try
@@ -2123,31 +2112,31 @@ class ChargyApp {
 
                     measurement.chargingSession      = chargingSession;
 
-                    let headline                     = CreateDiv(this.evseTarifInfosDiv);
+                    let headline                     = chargyLib.CreateDiv(this.evseTarifInfosDiv);
                     headline.id                      = "headline";
                     headline.innerHTML               = "Informationen zum Ladevorgang";
 
-                    let MeasurementInfoDiv           = CreateDiv(this.evseTarifInfosDiv,  "measurementInfos");
+                    let MeasurementInfoDiv           = chargyLib.CreateDiv(this.evseTarifInfosDiv,  "measurementInfos");
 
                     //#region Show charging station infos
 
                     if (measurement.chargingSession.chargingStation != null)
                     {
 
-                        let ChargingStationDiv       = CreateDiv(MeasurementInfoDiv,  "chargingStation");
-                        let ChargingStationHeadline  = CreateDiv(ChargingStationDiv,  "chargingStationHeadline",
+                        let ChargingStationDiv       = chargyLib.CreateDiv(MeasurementInfoDiv,  "chargingStation");
+                        let ChargingStationHeadline  = chargyLib.CreateDiv(ChargingStationDiv,  "chargingStationHeadline",
                                                                  "Ladestation");
 
                         if (measurement.chargingSession.chargingStation["@id"]?.length > 0)
                         {
-                            CreateDiv2(ChargingStationDiv,  "chargingStationId",
+                            chargyLib.CreateDiv2(ChargingStationDiv,  "chargingStationId",
                                        "Identifikation",    measurement.chargingSession.chargingStation["@id"]);
                         }
 
                         if (measurement.chargingSession.chargingStation.firmwareVersion &&
                             measurement.chargingSession.chargingStation.firmwareVersion.length > 0)
                         {
-                            CreateDiv2(ChargingStationDiv,  "firmwareVersion",
+                            chargyLib.CreateDiv2(ChargingStationDiv,  "firmwareVersion",
                                        "Firmware-Version",  measurement.chargingSession.chargingStation.firmwareVersion);
                         }
 
@@ -2157,8 +2146,8 @@ class ChargyApp {
 
                     //#region Show meter infos...
 
-                    let meterDiv       = CreateDiv(MeasurementInfoDiv,  "meter");
-                    let meterHeadline  = CreateDiv(meterDiv,            "meterHeadline",
+                    let meterDiv       = chargyLib.CreateDiv(MeasurementInfoDiv,  "meter");
+                    let meterHeadline  = chargyLib.CreateDiv(meterDiv,            "meterHeadline",
                                                                         "Energiezähler");
 
                     var meter          = this.chargy.GetMeter(measurement.energyMeterId);
@@ -2166,27 +2155,27 @@ class ChargyApp {
                     if (meter != null)
                     {
 
-                        CreateDiv2(meterDiv,         "meterId",
+                        chargyLib.CreateDiv2(meterDiv,         "meterId",
                                    "Seriennummer",   measurement.energyMeterId);
 
                         if (meter.vendor?.length > 0)
-                            CreateDiv2(meterDiv,            "meterVendor",
+                            chargyLib.CreateDiv2(meterDiv,            "meterVendor",
                                        "Zählerhersteller",  meter.vendorURL != undefined && meter.vendorURL?.length > 0
                                                                 ? "<a href=\"javascript:OpenLink('" + meter.vendorURL + "')\">" + meter.vendor + "</a>"
                                                                 : meter.vendor);
 
                         if (meter.model?.length > 0)
-                            CreateDiv2(meterDiv,            "meterModel",
+                            chargyLib.CreateDiv2(meterDiv,            "meterModel",
                                        "Model",             meter.modelURL != undefined && meter.modelURL?.length > 0
                                                                 ? "<a href=\"javascript:OpenLink('" + meter.modelURL + "')\">" + meter.model + "</a>"
                                                                 : meter.model);
 
                         if (meter.hardwareVersion && meter.hardwareVersion?.length > 0)
-                            CreateDiv2(meterDiv,            "meterHardwareVersion",
+                            chargyLib.CreateDiv2(meterDiv,            "meterHardwareVersion",
                                        "Hardware Version",  meter.hardwareVersion);
 
                         if (meter.firmwareVersion?.length > 0)
-                            CreateDiv2(meterDiv,            "meterFirmwareVersion",
+                            chargyLib.CreateDiv2(meterDiv,            "meterFirmwareVersion",
                                        "Firmware Version",  meter.firmwareVersion);
 
                     }
@@ -2196,17 +2185,17 @@ class ChargyApp {
                     //#region ...or just show the meter identification
 
                     else
-                        CreateDiv2(meterDiv,              "meterId",
+                        chargyLib.CreateDiv2(meterDiv,              "meterId",
                                    "Zählerseriennummer",  measurement.energyMeterId);
 
                     //#endregion
 
                     //#region Show measurement infos
 
-                    CreateDiv2(meterDiv,              "measurement",
+                    chargyLib.CreateDiv2(meterDiv,              "measurement",
                                "Messung",             measurement.phenomena?.[0]?.name ?? measurement.name);
 
-                    CreateDiv2(meterDiv,              "OBIS",
+                    chargyLib.CreateDiv2(meterDiv,              "OBIS",
                                "OBIS-Kennzahl",       measurement.phenomena?.[0]?.obis ?? measurement.obis);
 
                     //#endregion
@@ -2216,11 +2205,11 @@ class ChargyApp {
                     if (measurement.values && measurement.values.length > 0)
                     {
 
-                        let meterHeadline                = CreateDiv(this.evseTarifInfosDiv,  "measurementsHeadline",
+                        let meterHeadline                = chargyLib.CreateDiv(this.evseTarifInfosDiv,  "measurementsHeadline",
                                                                      "Messwerte");
                         meterHeadline.id                 = "measurementValues-headline";
 
-                        let MeasurementValuesDiv         = CreateDiv(this.evseTarifInfosDiv,     "measurementValues");
+                        let MeasurementValuesDiv         = chargyLib.CreateDiv(this.evseTarifInfosDiv,     "measurementValues");
                         let previousValue                = 0;
 
                         for (let measurementValue of measurement.values)
@@ -2228,19 +2217,19 @@ class ChargyApp {
 
                             measurementValue.measurement     = measurement;
 
-                            let MeasurementValueDiv          = CreateDiv(MeasurementValuesDiv, "measurementValue");
+                            let MeasurementValueDiv          = chargyLib.CreateDiv(MeasurementValuesDiv, "measurementValue");
                             MeasurementValueDiv.onclick      = (ev: MouseEvent) => {
                                 this.showMeasurementCryptoDetails(measurementValue);
                             };
 
-                            var timestamp                    = parseUTC(measurementValue.timestamp);
+                            var timestamp                    = chargyLib.parseUTC(measurementValue.timestamp);
 
-                            let timestampDiv                 = CreateDiv(MeasurementValueDiv, "timestamp",
+                            let timestampDiv                 = chargyLib.CreateDiv(MeasurementValueDiv, "timestamp",
                                                                          timestamp.format('HH:mm:ss') + " Uhr");
 
 
                             // Show energy counter value
-                            let value2Div                    = CreateDiv(MeasurementValueDiv, "value1",
+                            let value2Div                    = chargyLib.CreateDiv(MeasurementValueDiv, "value1",
                                                                          parseFloat((measurementValue.value * Math.pow(10, measurementValue.measurement.scale)).toFixed(10)).toString());
 
                             switch (measurement.unit)
@@ -2248,12 +2237,12 @@ class ChargyApp {
 
                                 case "kWh":
                                 case "KILO_WATT_HOURS":
-                                    CreateDiv(MeasurementValueDiv, "unit1", "kWh");
+                                    chargyLib.CreateDiv(MeasurementValueDiv, "unit1", "kWh");
                                     break;
 
                                 // "WATT_HOURS"
                                 default:
-                                    CreateDiv(MeasurementValueDiv, "unit1", "Wh");
+                                    chargyLib.CreateDiv(MeasurementValueDiv, "unit1", "Wh");
                                     break;
 
                             }
@@ -2277,12 +2266,12 @@ class ChargyApp {
 
                             }
 
-                            let valueDiv                     = CreateDiv(MeasurementValueDiv, "value2",
+                            let valueDiv                     = chargyLib.CreateDiv(MeasurementValueDiv, "value2",
                                                                          previousValue > 0
                                                                              ? "+" + parseFloat((currentValue - previousValue).toFixed(10))
                                                                              : "0");
 
-                            let unitDiv                      = CreateDiv(MeasurementValueDiv, "unit2",
+                            let unitDiv                      = chargyLib.CreateDiv(MeasurementValueDiv, "unit2",
                                                                          previousValue > 0
                                                                              ? "kWh"
                                                                              : "");
@@ -2295,76 +2284,76 @@ class ChargyApp {
                                 switch (measurementValue.result.status)
                                 {
 
-                                    case VerificationResult.UnknownCTRFormat:
+                                    case chargyInterfaces.VerificationResult.UnknownCTRFormat:
                                         icon = '<i class="fas fa-times-circle"></i> Unbekanntes Transparenzdatenformat';
                                         break;
 
-                                    case VerificationResult.EnergyMeterNotFound:
+                                    case chargyInterfaces.VerificationResult.EnergyMeterNotFound:
                                         icon = '<i class="fas fa-times-circle"></i> Ungültiger Energiezähler';
                                         break;
 
-                                    case VerificationResult.PublicKeyNotFound:
+                                    case chargyInterfaces.VerificationResult.PublicKeyNotFound:
                                         icon = '<i class="fas fa-times-circle"></i> Public Key nicht gefunden';
                                         break;
 
-                                    case VerificationResult.InvalidPublicKey:
+                                    case chargyInterfaces.VerificationResult.InvalidPublicKey:
                                         icon = '<i class="fas fa-times-circle"></i> Ungültiger Public Key';
                                         break;
 
 
-                                    case VerificationResult.InvalidSignature:
+                                    case chargyInterfaces.VerificationResult.InvalidSignature:
                                         icon = '<i class="fas fa-times-circle"></i> Ungültige Signatur';
                                         break;
 
-                                    case VerificationResult.InvalidStartValue:
+                                    case chargyInterfaces.VerificationResult.InvalidStartValue:
                                         icon = '<i class="fas fa-times-circle"></i> Ungültiger Startwert';
                                         break;
 
-                                    case VerificationResult.InvalidIntermediateValue:
+                                    case chargyInterfaces.VerificationResult.InvalidIntermediateValue:
                                         icon = '<i class="fas fa-times-circle"></i> Ungültiger Zwischenwert';
                                         break;
 
-                                    case VerificationResult.InvalidStopValue:
+                                    case chargyInterfaces.VerificationResult.InvalidStopValue:
                                         icon = '<i class="fas fa-times-circle"></i> Ungültiger Endwert';
                                         break;
 
 
-                                    case VerificationResult.NoOperation:
+                                    case chargyInterfaces.VerificationResult.NoOperation:
                                         icon = '<div class="noValidation">Messwert</div>';
                                         break;
 
-                                    case VerificationResult.StartValue:
+                                    case chargyInterfaces.VerificationResult.StartValue:
                                         icon = '<div class="noValidation">Startwert</div>';
                                         break;
 
-                                    case VerificationResult.IntermediateValue:
+                                    case chargyInterfaces.VerificationResult.IntermediateValue:
                                         icon = '<div class="noValidation">Zwischenwert</div>';
                                         break;
 
-                                    case VerificationResult.StopValue:
+                                    case chargyInterfaces.VerificationResult.StopValue:
                                         icon = '<div class="noValidation">Endwert</div>';
                                         break;
 
 
-                                    case VerificationResult.ValidSignature:
+                                    case chargyInterfaces.VerificationResult.ValidSignature:
                                         icon = '<i class="fas fa-check-circle"></i> Gültige Signatur';
                                         break;
 
-                                    case VerificationResult.ValidStartValue:
+                                    case chargyInterfaces.VerificationResult.ValidStartValue:
                                         icon = '<i class="fas fa-check-circle"></i> Gültiger Startwert';
                                         break;
 
-                                    case VerificationResult.ValidIntermediateValue:
+                                    case chargyInterfaces.VerificationResult.ValidIntermediateValue:
                                         icon = '<i class="fas fa-check-circle"></i> Gültiger Zwischenwert';
                                         break;
 
-                                    case VerificationResult.ValidStopValue:
+                                    case chargyInterfaces.VerificationResult.ValidStopValue:
                                         icon = '<i class="fas fa-check-circle"></i> Gültiger Endwert';
                                         break;
 
                                 }
 
-                            let verificationStatusDiv        = CreateDiv(MeasurementValueDiv,
+                            let verificationStatusDiv        = chargyLib.CreateDiv(MeasurementValueDiv,
                                                                          "verificationStatus",
                                                                          icon);
 
@@ -2385,7 +2374,7 @@ class ChargyApp {
         catch (exception)
         {
             this.doGlobalError({
-                status:     SessionVerificationResult.InvalidSessionFormat,
+                status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:    "Ungültiger Transparenzdatensatz!",
                 exception:  exception
             });
@@ -2397,7 +2386,7 @@ class ChargyApp {
 
     //#region showMeasurementCryptoDetails
 
-    private showMeasurementCryptoDetails(measurementValue:  IMeasurementValue) : void
+    private showMeasurementCryptoDetails(measurementValue:  chargyInterfaces.IMeasurementValue) : void
     {
 
         function doError(text: String)
@@ -2458,3 +2447,10 @@ class ChargyApp {
     //#endregion
 
 }
+
+console.log("hello world!");
+
+const app = new ChargyApp("https://chargeit.charging.cloud/chargy/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
+                          ["info@chargeit-mobility.com", "?subject=Chargy%20Supportanfrage"],
+                          ["+4993219319101",             "+49 9321 9319 101"],
+                          "https://chargeit.charging.cloud/chargy/issues");

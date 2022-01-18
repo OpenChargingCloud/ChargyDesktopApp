@@ -15,21 +15,21 @@
  * limitations under the License.
  */
 
-///<reference path="chargyInterfaces.ts" />
-///<reference path="chargyLib.ts" />
-///<reference path="ACrypt.ts" />
+import { Chargy }             from './chargy.js'
+import { ACrypt }             from './ACrypt.js'
+import * as chargyInterfaces  from './chargyInterfaces.js'
+import * as chargyLib         from './chargyLib.js'
 
-
-interface IGDFMeasurementValue extends IMeasurementValue
+export interface IGDFMeasurementValue extends chargyInterfaces.IMeasurementValue
 {
     prevSignature:                 string,
 }
 
-interface IGDFCrypt01Result extends ICryptoResult
+export interface IGDFCrypt01Result extends chargyInterfaces.ICryptoResult
 {
     sha256value?:                  any,
     meterId?:                      string,
-    meter?:                        IMeter,
+    meter?:                        chargyInterfaces.IMeter,
     timestamp?:                    string,
     obis?:                         string,
     unitEncoded?:                  string,
@@ -40,10 +40,10 @@ interface IGDFCrypt01Result extends ICryptoResult
     publicKey?:                    string,
     publicKeyFormat?:              string,
     publicKeySignatures?:          any,
-    signature?:                    IECCSignature
+    signature?:                    chargyInterfaces.IECCSignature
 }
 
-class GDFCrypt01 extends ACrypt {
+export class GDFCrypt01 extends ACrypt {
 
     readonly curve = new this.chargy.elliptic.ec('p256');
 
@@ -65,20 +65,20 @@ class GDFCrypt01 extends ACrypt {
     }
 
 
-    async SignChargingSession  (chargingSession:         IChargingSession,
-                                privateKey:              any):              Promise<ISessionCryptoResult>
+    async SignChargingSession  (chargingSession:         chargyInterfaces.IChargingSession,
+                                privateKey:              any):              Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         return {
-            status: SessionVerificationResult.UnknownSessionFormat
+            status: chargyInterfaces.SessionVerificationResult.UnknownSessionFormat
         }
 
     }
 
-    async VerifyChargingSession(chargingSession:         IChargingSession): Promise<ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession:         chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
-        var sessionResult = SessionVerificationResult.UnknownSessionFormat;
+        var sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
 
         if (chargingSession.measurements)
         {
@@ -100,21 +100,21 @@ class GDFCrypt01 extends ACrypt {
 
 
                     // Find an overall result...
-                    sessionResult = SessionVerificationResult.ValidSignature;
+                    sessionResult = chargyInterfaces.SessionVerificationResult.ValidSignature;
 
                     for (var measurementValue of measurement.values)
                     {
-                        if (sessionResult                   === SessionVerificationResult.ValidSignature &&
-                            measurementValue.result?.status !== VerificationResult.ValidSignature)
+                        if (sessionResult                   === chargyInterfaces.SessionVerificationResult.ValidSignature &&
+                            measurementValue.result?.status !== chargyInterfaces.VerificationResult.ValidSignature)
                         {
-                            sessionResult = SessionVerificationResult.InvalidSignature;
+                            sessionResult = chargyInterfaces.SessionVerificationResult.InvalidSignature;
                         }
                     }
 
                 }
 
                 else
-                    sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsRequired;
+                    sessionResult = chargyInterfaces.SessionVerificationResult.AtLeastTwoMeasurementsRequired;
 
             }
         }
@@ -134,7 +134,7 @@ class GDFCrypt01 extends ACrypt {
             measurementValue.measurement.chargingSession === undefined)
         {
             return {
-                status: VerificationResult.InvalidMeasurement
+                status: chargyInterfaces.VerificationResult.InvalidMeasurement
             }
         }
 
@@ -142,18 +142,18 @@ class GDFCrypt01 extends ACrypt {
         var cryptoBuffer                 = new DataView(buffer);
 
         var cryptoResult:IGDFCrypt01Result = {
-            status:                       VerificationResult.InvalidSignature,
-            meterId:                      SetText     (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
-            timestamp:                    SetTimestamp(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            obis:                         SetHex      (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
-            unitEncoded:                  SetInt8     (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-            scale:                        SetInt8     (cryptoBuffer, measurementValue.measurement.scale,                                         30),
-            value:                        SetUInt64   (cryptoBuffer, measurementValue.value,                                                     31, true),
-            authorizationStart:           SetHex      (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
-            authorizationStartTimestamp:  SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
+            status:                       chargyInterfaces.VerificationResult.InvalidSignature,
+            meterId:                      chargyLib.SetText     (cryptoBuffer, measurementValue.measurement.energyMeterId,                                   0),
+            timestamp:                    chargyLib.SetTimestamp(cryptoBuffer, measurementValue.timestamp,                                                  10),
+            obis:                         chargyLib.SetHex      (cryptoBuffer, measurementValue.measurement.obis,                                           23, false),
+            unitEncoded:                  chargyLib.SetInt8     (cryptoBuffer, measurementValue.measurement.unitEncoded,                                    29),
+            scale:                        chargyLib.SetInt8     (cryptoBuffer, measurementValue.measurement.scale,                                          30),
+            value:                        chargyLib.SetUInt64   (cryptoBuffer, measurementValue.value,                                                      31, true),
+            authorizationStart:           chargyLib.SetHex      (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],      41),
+            authorizationStartTimestamp:  chargyLib.SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp,  169)
         };
 
-        cryptoResult.sha256value  = await sha256(cryptoBuffer);
+        cryptoResult.sha256value  = await chargyLib.sha256(cryptoBuffer);
 
         // cryptoResult.publicKey    = publicKey.encode('hex').
         //                                       toLowerCase();
@@ -164,7 +164,7 @@ class GDFCrypt01 extends ACrypt {
         switch (measurementValue.measurement.signatureInfos.format)
         {
 
-            case SignatureFormats.DER:
+            case chargyInterfaces.SignatureFormats.DER:
 
                 cryptoResult.signature = {
                     algorithm:  measurementValue.measurement.signatureInfos.algorithm,
@@ -175,7 +175,7 @@ class GDFCrypt01 extends ACrypt {
                 return cryptoResult;
 
 
-            case SignatureFormats.rs:
+            case chargyInterfaces.SignatureFormats.rs:
 
                 cryptoResult.signature = {
                     algorithm:  measurementValue.measurement.signatureInfos.algorithm,
@@ -186,21 +186,13 @@ class GDFCrypt01 extends ACrypt {
 
                 return cryptoResult;
 
-
-            //default:
-
-
         }
-
-        cryptoResult.status = VerificationResult.ValidSignature;
-        return cryptoResult;
-
     }
 
     async VerifyMeasurement(measurementValue:  IGDFMeasurementValue): Promise<IGDFCrypt01Result>
     {
 
-        function setResult(vr: VerificationResult)
+        function setResult(vr: chargyInterfaces.VerificationResult)
         {
             cryptoResult.status     = vr;
             measurementValue.result = cryptoResult;
@@ -211,7 +203,7 @@ class GDFCrypt01 extends ACrypt {
             measurementValue.measurement.chargingSession === undefined)
         {
             return {
-                status: VerificationResult.InvalidMeasurement
+                status: chargyInterfaces.VerificationResult.InvalidMeasurement
             }
         }
 
@@ -221,18 +213,18 @@ class GDFCrypt01 extends ACrypt {
         var cryptoBuffer  = new DataView(buffer);
 
         var cryptoResult:IGDFCrypt01Result = {
-            status:                       VerificationResult.InvalidSignature,
-            meterId:                      SetText     (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
-            timestamp:                    SetTimestamp(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            obis:                         SetHex      (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
-            unitEncoded:                  SetInt8     (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-            scale:                        SetInt8     (cryptoBuffer, measurementValue.measurement.scale,                                         30),
-            value:                        SetUInt64   (cryptoBuffer, measurementValue.value,                                                     31, true),
-            authorizationStart:           SetHex      (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
-            authorizationStartTimestamp:  SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
+            status:                       chargyInterfaces.VerificationResult.InvalidSignature,
+            meterId:                      chargyLib.SetText     (cryptoBuffer, measurementValue.measurement.energyMeterId,                                   0),
+            timestamp:                    chargyLib.SetTimestamp(cryptoBuffer, measurementValue.timestamp,                                                  10),
+            obis:                         chargyLib.SetHex      (cryptoBuffer, measurementValue.measurement.obis,                                           23, false),
+            unitEncoded:                  chargyLib.SetInt8     (cryptoBuffer, measurementValue.measurement.unitEncoded,                                    29),
+            scale:                        chargyLib.SetInt8     (cryptoBuffer, measurementValue.measurement.scale,                                          30),
+            value:                        chargyLib.SetUInt64   (cryptoBuffer, measurementValue.value,                                                      31, true),
+            authorizationStart:           chargyLib.SetHex      (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],      41),
+            authorizationStartTimestamp:  chargyLib.SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp,  169)
         };
 
-        var signatureExpected = measurementValue.signatures[0] as IECCSignature;
+        var signatureExpected = measurementValue.signatures[0] as chargyInterfaces.IECCSignature;
         if (signatureExpected != null)
         {
 
@@ -246,7 +238,7 @@ class GDFCrypt01 extends ACrypt {
                     s:          signatureExpected.s
                 };
 
-                cryptoResult.sha256value = await sha256(cryptoBuffer);
+                cryptoResult.sha256value = await chargyLib.sha256(cryptoBuffer);
 
 
                 const meter = this.chargy.GetMeter(measurementValue.measurement.energyMeterId);
@@ -272,37 +264,37 @@ class GDFCrypt01 extends ACrypt {
                                                verify       (cryptoResult.sha256value,
                                                              cryptoResult.signature))
                                 {
-                                    return setResult(VerificationResult.ValidSignature);
+                                    return setResult(chargyInterfaces.VerificationResult.ValidSignature);
                                 }
 
-                                return setResult(VerificationResult.InvalidSignature);
+                                return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
 
                             }
                             catch (exception)
                             {
-                                return setResult(VerificationResult.InvalidSignature);
+                                return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
                             }
 
                         }
                         catch (exception)
                         {
-                            return setResult(VerificationResult.InvalidPublicKey);
+                            return setResult(chargyInterfaces.VerificationResult.InvalidPublicKey);
                         }
 
                     }
 
                     else
-                        return setResult(VerificationResult.PublicKeyNotFound);
+                        return setResult(chargyInterfaces.VerificationResult.PublicKeyNotFound);
 
                 }
 
                 else
-                    return setResult(VerificationResult.EnergyMeterNotFound);
+                    return setResult(chargyInterfaces.VerificationResult.EnergyMeterNotFound);
 
             }
             catch (exception)
             {
-                return setResult(VerificationResult.InvalidSignature);
+                return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
             }
 
         }
@@ -311,7 +303,7 @@ class GDFCrypt01 extends ACrypt {
 
     }
 
-    async ViewMeasurement(measurementValue:        IMeasurementValue,
+    async ViewMeasurement(measurementValue:        chargyInterfaces.IMeasurementValue,
                           introDiv:                HTMLDivElement,
                           infoDiv:                 HTMLDivElement,
                           bufferValue:             HTMLDivElement,
@@ -327,7 +319,7 @@ class GDFCrypt01 extends ACrypt {
             measurementValue.measurement.chargingSession.authorizationStart.timestamp === undefined)
         {
             return {
-                status: VerificationResult.InvalidMeasurement
+                status: chargyInterfaces.VerificationResult.InvalidMeasurement
             }
         }
 
@@ -336,14 +328,14 @@ class GDFCrypt01 extends ACrypt {
         const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
         cryptoSpan.innerHTML = "GDFCrypt01 (" + this.description + ")";
 
-        this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                          result.meterId                     || "",  infoDiv, bufferValue);
-        this.CreateLine("Zeitstempel",              parseUTC(measurementValue.timestamp),                                                result.timestamp                   || "",  infoDiv, bufferValue);
-        this.CreateLine("OBIS-Kennzahl",            parseOBIS(measurementValue.measurement.obis),                                        result.obis                        || "",  infoDiv, bufferValue);
-        this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                            result.unitEncoded                 || "",  infoDiv, bufferValue);
-        this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                  result.scale                       || "",  infoDiv, bufferValue);
-        this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                      result.value                       || "",  infoDiv, bufferValue);
-        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",     result.authorizationStart          || "",  infoDiv, bufferValue);
-        this.CreateLine("Autorisierungszeitpunkt",  parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), result.authorizationStartTimestamp || "",  infoDiv, bufferValue);
+        this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                                    result.meterId                     || "",  infoDiv, bufferValue);
+        this.CreateLine("Zeitstempel",              chargyLib.parseUTC(measurementValue.timestamp),                                                result.timestamp                   || "",  infoDiv, bufferValue);
+        this.CreateLine("OBIS-Kennzahl",            chargyLib.parseOBIS(measurementValue.measurement.obis),                                        result.obis                        || "",  infoDiv, bufferValue);
+        this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                                      result.unitEncoded                 || "",  infoDiv, bufferValue);
+        this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                            result.scale                       || "",  infoDiv, bufferValue);
+        this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                                result.value                       || "",  infoDiv, bufferValue);
+        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",               result.authorizationStart          || "",  infoDiv, bufferValue);
+        this.CreateLine("Autorisierungszeitpunkt",  chargyLib.parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), result.authorizationStartTimestamp || "",  infoDiv, bufferValue);
 
         // Buffer
         bufferValue.parentElement!.children[0].innerHTML             = "Puffer (hex)";
@@ -360,9 +352,9 @@ class GDFCrypt01 extends ACrypt {
                                                                            : "") +
                                                                        "hex)";
 
-        var pubKey = WhenNullOrEmpty(result.publicKey, "");
+        var pubKey = chargyLib.WhenNullOrEmpty(result.publicKey, "");
 
-        if (!IsNullOrEmpty(result.publicKey))
+        if (!chargyLib.IsNullOrEmpty(result.publicKey))
             publicKeyValue.innerHTML                                 = pubKey.startsWith("04")
                                                                            ? "04 " + pubKey.substring(2).match(/.{1,8}/g)!.join(" ")
                                                                            : pubKey.match(/.{1,8}/g)!.join(" ");
@@ -383,27 +375,27 @@ class GDFCrypt01 extends ACrypt {
         switch (result.status)
         {
 
-            case VerificationResult.UnknownCTRFormat:
+            case chargyInterfaces.VerificationResult.UnknownCTRFormat:
                 signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
                 break;
 
-            case VerificationResult.EnergyMeterNotFound:
+            case chargyInterfaces.VerificationResult.EnergyMeterNotFound:
                 signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
                 break;
 
-            case VerificationResult.PublicKeyNotFound:
+            case chargyInterfaces.VerificationResult.PublicKeyNotFound:
                 signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
                 break;
 
-            case VerificationResult.InvalidPublicKey:
+            case chargyInterfaces.VerificationResult.InvalidPublicKey:
                 signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
                 break;
 
-            case VerificationResult.InvalidSignature:
+            case chargyInterfaces.VerificationResult.InvalidSignature:
                 signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
                 break;
 
-            case VerificationResult.ValidSignature:
+            case chargyInterfaces.VerificationResult.ValidSignature:
                 signatureCheckValue.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
                 break;
 

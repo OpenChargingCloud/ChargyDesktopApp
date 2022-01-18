@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-///<reference path="certificates.ts" />
-///<reference path="chargyInterfaces.ts" />
-///<reference path="chargyLib.ts" />
+import { Chargy }             from './chargy.js'
+import { Alfen01 }            from './Alfen01.js'
+import { BSMCrypt01 }         from './BSMCrypt01.js'
+import * as chargyInterfaces  from './chargyInterfaces.js'
+import * as chargyLib         from './chargyLib.js'
 
-class ChargeIT {
+export class ChargeIT {
 
     private readonly chargy: Chargy;
 
@@ -51,18 +53,18 @@ class ChargeIT {
     //private async tryToParseAnonymousFormat(SomeJSON: { signedMeterValues: any[]; placeInfo: any; }) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
 
     // The chargeIT mobility data format does not always provide context or format identifiers
-    public async tryToParseChargeITContainerFormatJSON(SomeJSON: any) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+    public async tryToParseChargeITContainerFormatJSON(SomeJSON: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         if (SomeJSON === undefined || SomeJSON === null || Array.isArray(SomeJSON))
             return {
-                status: SessionVerificationResult.InvalidSessionFormat
+                status: chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
             }
 
         try
         {
 
-            const ctrContext = isMandatoryString(SomeJSON["@context"])
+            const ctrContext = chargyLib.isMandatoryString(SomeJSON["@context"])
                                    ? SomeJSON["@context"]?.trim()
                                    : "oldChargeITContainerFormat";
 
@@ -186,7 +188,7 @@ class ChargeIT {
 
                 //#region Generate default-transparency record
 
-                let CTR: IChargeTransparencyRecord = {
+                let CTR: chargyInterfaces.IChargeTransparencyRecord = {
 
                     "@id":              "",
                     "@context":         "https://open.charging.cloud/contexts/CTR+json",
@@ -305,7 +307,7 @@ class ChargeIT {
 
                     //#region Get and validate signedMeterValue context
 
-                    const signedMeterValueContext  = isMandatoryString(signedMeterValues[0]["@context"])
+                    const signedMeterValueContext  = chargyLib.isMandatoryString(signedMeterValues[0]["@context"])
                                                              ? signedMeterValues[0]["@context"]?.trim()
                                                              : "oldChargeITMeterValueFormat";
 
@@ -314,7 +316,7 @@ class ChargeIT {
                         if ((signedMeterValue["@context"] ?? "oldChargeITMeterValueFormat") !== signedMeterValueContext)
                         {
                             return {
-                                status:  SessionVerificationResult.InvalidSessionFormat,
+                                status:  chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                 message: "Inconsistent '@context' information!"
                             }
                         }
@@ -352,7 +354,7 @@ class ChargeIT {
                             const _timestamp = signedMeterValue["timestamp"] as number;
                             if (_timestamp == null || typeof _timestamp !== 'number')
                                 throw "Missing or invalid timestamp[" + i + "]!"
-                            const timestamp = parseUTC(_timestamp);
+                            const timestamp = chargyLib.parseUTC(_timestamp);
 
                             const _meterInfo = signedMeterValue["meterInfo"] as string;
                             if (_meterInfo == null || typeof _meterInfo !== 'object')
@@ -708,18 +710,18 @@ class ChargeIT {
                                 "energyMeterId":        CTRArray[0]["meterInfo"]["meterId"],
                                 "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
                                 "name":                 CTRArray[0]["measurand"]["name"],
-                                "obis":                 parseOBIS(CTRArray[0]["measurand"]["id"]),
+                                "obis":                 chargyLib.parseOBIS(CTRArray[0]["measurand"]["id"]),
                                 "unit":                 CTRArray[0]["measuredValue"]["unit"],
                                 "unitEncoded":          CTRArray[0]["measuredValue"]["unitEncoded"],
                                 "valueType":            CTRArray[0]["measuredValue"]["valueType"],
                                 "scale":                CTRArray[0]["measuredValue"]["scale"],
 
                                 "signatureInfos": {
-                                    "hash":                 CryptoHashAlgorithms.SHA256,
+                                    "hash":                 chargyInterfaces.CryptoHashAlgorithms.SHA256,
                                     "hashTruncation":       24,
-                                    "algorithm":            CryptoAlgorithms.ECC,
+                                    "algorithm":            chargyInterfaces.CryptoAlgorithms.ECC,
                                     "curve":                "secp192r1",
-                                    "format":               SignatureFormats.rs
+                                    "format":               chargyInterfaces.SignatureFormats.rs
                                 },
 
                                 "values": [ ]
@@ -748,14 +750,14 @@ class ChargeIT {
                             });
                         }
 
-                        CTR["status"] = SessionVerificationResult.ValidSignature;
+                        CTR["status"] = chargyInterfaces.SessionVerificationResult.ValidSignature;
 
                         return CTR;
 
                     }
 
                     return {
-                        status: SessionVerificationResult.InvalidSessionFormat
+                        status: chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
                     }
 
                 }
@@ -808,54 +810,54 @@ class ChargeIT {
                 //#endregion
 
                 const id                                         = SomeJSON["@id"];
-                if (!isMandatoryString(id)) return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                if (!chargyLib.isMandatoryString(id)) return {
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Missing or invalid charge transparency record identification!"
                 }
 
                 //#region chargePointInfo
 
                 const evseId                                   = SomeJSON?.chargePointInfo?.evseId;
-                if (!isMandatoryString(evseId)) return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                if (!chargyLib.isMandatoryString(evseId)) return {
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Missing or invalid EVSE Id!"
                 }
 
 
                 const geoLocation_lat                          = SomeJSON.chargePointInfo?.placeInfo?.geoLocation?.lat;
-                if (!isOptionalNumber(geoLocation_lat)) return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                if (!chargyLib.isOptionalNumber(geoLocation_lat)) return {
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid geo location latitude!"
                 }
 
                 const geoLocation_lon                          = SomeJSON.chargePointInfo?.placeInfo?.geoLocation?.lon;
-                if (!isOptionalNumber(geoLocation_lon)) return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                if (!chargyLib.isOptionalNumber(geoLocation_lon)) return {
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid geo location longitude!"
                 }
 
 
                 const address_street                           = SomeJSON.chargePointInfo?.placeInfo?.address?.street;
-                if (!isOptionalString(address_street)) return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                if (!chargyLib.isOptionalString(address_street)) return {
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid address street!"
                 }
 
                 const address_zipCode                          = SomeJSON.chargePointInfo?.placeInfo?.address?.zipCode;
-                if (!isOptionalString(address_zipCode)) return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                if (!chargyLib.isOptionalString(address_zipCode)) return {
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid address zipCode!"
                 }
 
                 const address_town                             = SomeJSON.chargePointInfo?.placeInfo?.address?.town;
-                if (!isOptionalString(address_town)) return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                if (!chargyLib.isOptionalString(address_town)) return {
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid address town!"
                 }
 
                 const address_country                          = SomeJSON.chargePointInfo?.placeInfo?.address?.country;
-                if (!isOptionalString(address_country)) return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                if (!chargyLib.isOptionalString(address_country)) return {
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid address country!"
                 }
 
@@ -864,32 +866,32 @@ class ChargeIT {
                 //#region chargingStationInfo
 
                 const chargingStation_manufacturer               = SomeJSON.chargingStationInfo?.manufacturer;
-                if (!isOptionalString(chargingStation_manufacturer)) return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                if (!chargyLib.isOptionalString(chargingStation_manufacturer)) return {
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid charging station manufacturer!"
                 }
 
                 const chargingStation_type                       = SomeJSON.chargingStationInfo?.type;
-                if (!isOptionalString(chargingStation_type)) return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                if (!chargyLib.isOptionalString(chargingStation_type)) return {
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid charging station type!"
                 }
 
                 const chargingStation_serialNumber               = SomeJSON.chargingStationInfo?.serialNumber;
-                if (!isOptionalString(chargingStation_serialNumber)) return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                if (!chargyLib.isOptionalString(chargingStation_serialNumber)) return {
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid charging station serial number!"
                 }
 
                 const chargingStation_controllerSoftwareVersion  = SomeJSON.chargingStationInfo?.controllerSoftwareVersion;
-                if (!isOptionalString(chargingStation_controllerSoftwareVersion)) return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                if (!chargyLib.isOptionalString(chargingStation_controllerSoftwareVersion)) return {
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid charging station controller software version!"
                 }
 
                 const chargingStation_compliance                 = SomeJSON.chargingStationInfo?.compliance;
-                if (!isOptionalString(chargingStation_compliance)) return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                if (!chargyLib.isOptionalString(chargingStation_compliance)) return {
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid charging station compliance!"
                 }
 
@@ -897,27 +899,27 @@ class ChargeIT {
 
                 const signedMeterValues                          = SomeJSON?.signedMeterValues as Array<any>;
                 if (signedMeterValues == undefined || signedMeterValues == null || !Array.isArray(signedMeterValues)) return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid signed meter values!"
                 }
 
-                const smvContext = isMandatoryString(signedMeterValues[0]["@context"])
+                const smvContext = chargyLib.isMandatoryString(signedMeterValues[0]["@context"])
                                        ? signedMeterValues[0]["@context"]?.trim()
-                                       : isMandatoryString(signedMeterValues[0]?.format)
+                                       : chargyLib.isMandatoryString(signedMeterValues[0]?.format)
                                              ? signedMeterValues[0]?.format?.trim()
                                              : null;
 
                 for (let i = 1; i < signedMeterValues.length; i++)
                 {
 
-                    let context = isMandatoryString(signedMeterValues[i]["@context"])
+                    let context = chargyLib.isMandatoryString(signedMeterValues[i]["@context"])
                                       ? signedMeterValues[i]["@context"]?.trim()
-                                      : isMandatoryString(signedMeterValues[i]?.format)
+                                      : chargyLib.isMandatoryString(signedMeterValues[i]?.format)
                                             ? signedMeterValues[i]?.format?.trim()
                                             : null;
 
                     if (smvContext !== context) return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent signed meter value format!"
                     }
 
@@ -926,7 +928,7 @@ class ChargeIT {
 
                 //#region Generate default-transparency record
 
-                let CTR: IChargeTransparencyRecord = {
+                let CTR: chargyInterfaces.IChargeTransparencyRecord = {
 
                     "@id":              "",
                     "@context":         "https://open.charging.cloud/contexts/CTR+json",
@@ -1043,7 +1045,7 @@ class ChargeIT {
                     return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
 
                 else return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 }
 
             }
@@ -1055,13 +1057,13 @@ class ChargeIT {
         catch (exception)
         {
             return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }
 
         return {
-            status:   SessionVerificationResult.InvalidSessionFormat
+            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
         }
 
     }

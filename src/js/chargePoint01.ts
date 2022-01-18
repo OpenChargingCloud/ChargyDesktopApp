@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-///<reference path="certificates.ts" />
-///<reference path="chargyInterfaces.ts" />
-///<reference path="chargyLib.ts" />
-///<reference path="ACrypt.ts" />
-///<reference path="secp224k1.ts" />
+import { Chargy }             from './chargy.js'
+import { ACrypt }             from './ACrypt.js'
+import * as chargyInterfaces  from './chargyInterfaces.js'
+import * as chargyLib         from './chargyLib.js'
 
-class Chargepoint01 {
+export class Chargepoint01 {
 
     private readonly chargy: Chargy;
 
@@ -31,7 +30,7 @@ class Chargepoint01 {
 
     //#region tryToParseChargepointJSON(SomeJSON)
 
-    public async tryToParseChargepointJSON(SomeJSON: any) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+    public async tryToParseChargepointJSON(SomeJSON: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         try
@@ -369,10 +368,10 @@ class Chargepoint01 {
                             },
 
                             "chargingProductRelevance": {
-                                "time":                     InformationRelevance.Informative,
-                                "energy":                   InformationRelevance.Important,
-                                "parking":                  InformationRelevance.Informative,
-                                "sessionFee":               InformationRelevance.Informative,
+                                "time":                     chargyInterfaces.InformationRelevance.Informative,
+                                "energy":                   chargyInterfaces.InformationRelevance.Important,
+                                "parking":                  chargyInterfaces.InformationRelevance.Informative,
+                                "sessionFee":               chargyInterfaces.InformationRelevance.Informative,
                             },
 
                             // "signatureInfos": {
@@ -445,7 +444,7 @@ class Chargepoint01 {
 
                 }
 
-                return _CTR as IChargeTransparencyRecord;
+                return _CTR as chargyInterfaces.IChargeTransparencyRecord;
 
             }
 
@@ -646,10 +645,10 @@ class Chargepoint01 {
                             },
 
                             "chargingProductRelevance": {
-                                "time":                     InformationRelevance.Informative,
-                                "energy":                   InformationRelevance.Important,
-                                "parking":                  InformationRelevance.Informative,
-                                "sessionFee":               InformationRelevance.Informative,
+                                "time":                     chargyInterfaces.InformationRelevance.Informative,
+                                "energy":                   chargyInterfaces.InformationRelevance.Important,
+                                "parking":                  chargyInterfaces.InformationRelevance.Informative,
+                                "sessionFee":               chargyInterfaces.InformationRelevance.Informative,
                             },
 
                             // "signatureInfos": {
@@ -702,7 +701,7 @@ class Chargepoint01 {
 
                 };
 
-                return _CTR as IChargeTransparencyRecord;
+                return _CTR as chargyInterfaces.IChargeTransparencyRecord;
 
             }
 
@@ -712,13 +711,13 @@ class Chargepoint01 {
         catch (exception)
         {
             return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }
 
         return {
-            status:  SessionVerificationResult.InvalidSessionFormat
+            status:  chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
         }
 
     }
@@ -728,7 +727,7 @@ class Chargepoint01 {
 }
 
 
-interface IChargepointMeasurementValue extends IMeasurementValue
+export interface IChargepointMeasurementValue extends chargyInterfaces.IMeasurementValue
 {
     infoStatus:                    string,
     secondsIndex:                  number,
@@ -736,11 +735,11 @@ interface IChargepointMeasurementValue extends IMeasurementValue
     logBookIndex:                  string
 }
 
-interface IChargePointCrypt01Result extends ICryptoResult
+export interface IChargePointCrypt01Result extends chargyInterfaces.ICryptoResult
 {
     sha256value?:                  any,
     meterId?:                      string,
-    meter?:                        IMeter,
+    meter?:                        chargyInterfaces.IMeter,
     timestamp?:                    string,
     infoStatus?:                   string,
     secondsIndex?:                 string,
@@ -756,11 +755,11 @@ interface IChargePointCrypt01Result extends ICryptoResult
     publicKey?:                    string,
     publicKeyFormat?:              string,
     publicKeySignatures?:          any,
-    signature?:                    IECCSignature
+    signature?:                    chargyInterfaces.IECCSignature
 }
 
 
-class ChargePointCrypt01 extends ACrypt {
+export class ChargePointCrypt01 extends ACrypt {
 
     // For older chargepoint charging station firmwares
     // Koblitz 224-bit curve: secp224k1
@@ -788,31 +787,31 @@ class ChargePointCrypt01 extends ACrypt {
     }
 
 
-    async SignChargingSession  (chargingSession:         IChargingSession,
-                                privateKey:              any):              Promise<ISessionCryptoResult>
+    async SignChargingSession  (chargingSession:         chargyInterfaces.IChargingSession,
+                                privateKey:              any):              Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         return {
-            status: SessionVerificationResult.UnknownSessionFormat
+            status: chargyInterfaces.SessionVerificationResult.UnknownSessionFormat
         }
 
     }
 
-    async VerifyChargingSession(chargingSession: IChargingSession): Promise<ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         if (chargingSession     === undefined ||
             chargingSession.ctr === undefined)
         {
             return {
-                status:  SessionVerificationResult.InvalidSignature
+                status:  chargyInterfaces.SessionVerificationResult.InvalidSignature
             }
         }
 
         try
         {
 
-            let   sessionResult  = SessionVerificationResult.UnknownSessionFormat;
+            let   sessionResult  = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
             const plainText      = chargingSession.original != null ? atob(chargingSession.original) : "";
 
             //#region Convert signature into rs-format...
@@ -867,7 +866,7 @@ class ChargePointCrypt01 extends ACrypt {
 
             if (publicKeys.length == 0)
                 return {
-                    status: SessionVerificationResult.PublicKeyNotFound
+                    status: chargyInterfaces.SessionVerificationResult.PublicKeyNotFound
                 }
 
             //#endregion
@@ -898,46 +897,46 @@ class ChargePointCrypt01 extends ACrypt {
 
                         case "secp224k1":
 
-                            sha225Value          = sha225Value ?? (BigInt("0x" + (await sha256(plainText))) >> BigInt(31)).toString(16);
+                            sha225Value          = sha225Value ?? (BigInt("0x" + (await chargyLib.sha256(plainText))) >> BigInt(31)).toString(16);
                             sessionResult        = this.curve224k1.validate(BigInt("0x" + sha225Value),
                                                                             BigInt("0x" + chargingSession.signature.r),
                                                                             BigInt("0x" + chargingSession.signature.s),
                                                                             [ BigInt("0x" + publicKey.value.substr(2,  56)),
                                                                               BigInt("0x" + publicKey.value.substr(58, 56)) ])
-                                                       ? SessionVerificationResult.ValidSignature
-                                                       : SessionVerificationResult.InvalidSignature;
+                                                       ? chargyInterfaces.SessionVerificationResult.ValidSignature
+                                                       : chargyInterfaces.SessionVerificationResult.InvalidSignature;
                             break;
 
                         case "secp256r1":
-                            sha256Value          = sha256Value ?? await sha256(plainText);
+                            sha256Value          = sha256Value ?? await chargyLib.sha256(plainText);
                             sessionResult        = this.curve256r1.keyFromPublic(publicKey.value, 'hex').
                                                                    verify       (sha256Value,
                                                                                  chargingSession.signature)
-                                                       ? SessionVerificationResult.ValidSignature
-                                                       : SessionVerificationResult.InvalidSignature;
+                                                       ? chargyInterfaces.SessionVerificationResult.ValidSignature
+                                                       : chargyInterfaces.SessionVerificationResult.InvalidSignature;
                             break;
 
                         case "secp384r1":
-                            sha385Value          = sha385Value ?? await sha384(plainText);
+                            sha385Value          = sha385Value ?? await chargyLib.sha384(plainText);
                             sessionResult        = this.curve384r1.keyFromPublic(publicKey.value, 'hex').
                                                                    verify       (sha385Value,
                                                                                  chargingSession.signature)
-                                                       ? SessionVerificationResult.ValidSignature
-                                                       : SessionVerificationResult.InvalidSignature;
+                                                       ? chargyInterfaces.SessionVerificationResult.ValidSignature
+                                                       : chargyInterfaces.SessionVerificationResult.InvalidSignature;
                             break;
 
                         case "secp521r1":
-                            sha512Value          = sha512Value ?? await sha512(plainText);
+                            sha512Value          = sha512Value ?? await chargyLib.sha512(plainText);
                             sessionResult        = this.curve521r1.keyFromPublic(publicKey.value, 'hex').
                                                                    verify       (sha512Value,
                                                                                  chargingSession.signature)
-                                                       ? SessionVerificationResult.ValidSignature
-                                                       : SessionVerificationResult.InvalidSignature;
+                                                       ? chargyInterfaces.SessionVerificationResult.ValidSignature
+                                                       : chargyInterfaces.SessionVerificationResult.InvalidSignature;
                             break;
 
                     }
 
-                    if (sessionResult == SessionVerificationResult.ValidSignature)
+                    if (sessionResult == chargyInterfaces.SessionVerificationResult.ValidSignature)
                     {
 
                         chargingSession.publicKey = publicKey;
@@ -998,11 +997,11 @@ class ChargePointCrypt01 extends ACrypt {
 
                         for (let measurementValue of measurement.values)
                         {
-                            if (measurementValue.result?.status !== VerificationResult.ValidSignature &&
-                                measurementValue.result?.status !== VerificationResult.NoOperation)
+                            if (measurementValue.result?.status !== chargyInterfaces.VerificationResult.ValidSignature &&
+                                measurementValue.result?.status !== chargyInterfaces.VerificationResult.NoOperation)
                             {
                                 return {
-                                    status: SessionVerificationResult.InvalidSignature
+                                    status: chargyInterfaces.SessionVerificationResult.InvalidSignature
                                 }
                             }
                         }
@@ -1023,16 +1022,16 @@ class ChargePointCrypt01 extends ACrypt {
                                     switch (currentResult.status)
                                     {
 
-                                        case VerificationResult.ValidSignature:
-                                            currentResult.status = VerificationResult.ValidStartValue;
+                                        case chargyInterfaces.VerificationResult.ValidSignature:
+                                            currentResult.status = chargyInterfaces.VerificationResult.ValidStartValue;
                                             break;
 
-                                        case VerificationResult.NoOperation:
-                                            currentResult.status = VerificationResult.StartValue;
+                                        case chargyInterfaces.VerificationResult.NoOperation:
+                                            currentResult.status = chargyInterfaces.VerificationResult.StartValue;
                                             break;
 
-                                        case VerificationResult.InvalidSignature:
-                                            currentResult.status = VerificationResult.InvalidStartValue;
+                                        case chargyInterfaces.VerificationResult.InvalidSignature:
+                                            currentResult.status = chargyInterfaces.VerificationResult.InvalidStartValue;
                                             break;
 
                                     }
@@ -1047,16 +1046,16 @@ class ChargePointCrypt01 extends ACrypt {
                                     switch (currentResult.status)
                                     {
 
-                                        case VerificationResult.ValidSignature:
-                                            currentResult.status = VerificationResult.ValidStopValue;
+                                        case chargyInterfaces.VerificationResult.ValidSignature:
+                                            currentResult.status = chargyInterfaces.VerificationResult.ValidStopValue;
                                             break;
 
-                                        case VerificationResult.NoOperation:
-                                            currentResult.status = VerificationResult.StopValue;
+                                        case chargyInterfaces.VerificationResult.NoOperation:
+                                            currentResult.status = chargyInterfaces.VerificationResult.StopValue;
                                             break;
 
-                                        case VerificationResult.InvalidSignature:
-                                            currentResult.status = VerificationResult.InvalidStopValue;
+                                        case chargyInterfaces.VerificationResult.InvalidSignature:
+                                            currentResult.status = chargyInterfaces.VerificationResult.InvalidStopValue;
                                             break;
 
                                     }
@@ -1071,16 +1070,16 @@ class ChargePointCrypt01 extends ACrypt {
                                     switch (currentResult.status)
                                     {
 
-                                        case VerificationResult.ValidSignature:
-                                            currentResult.status = VerificationResult.ValidIntermediateValue;
+                                        case chargyInterfaces.VerificationResult.ValidSignature:
+                                            currentResult.status = chargyInterfaces.VerificationResult.ValidIntermediateValue;
                                             break;
 
-                                        case VerificationResult.NoOperation:
-                                            currentResult.status = VerificationResult.IntermediateValue;
+                                        case chargyInterfaces.VerificationResult.NoOperation:
+                                            currentResult.status = chargyInterfaces.VerificationResult.IntermediateValue;
                                             break;
 
-                                        case VerificationResult.InvalidSignature:
-                                            currentResult.status = VerificationResult.InvalidStopValue;
+                                        case chargyInterfaces.VerificationResult.InvalidSignature:
+                                            currentResult.status = chargyInterfaces.VerificationResult.InvalidStopValue;
                                             break;
 
                                     }
@@ -1095,12 +1094,12 @@ class ChargePointCrypt01 extends ACrypt {
 
                     }
                     else
-                        sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsRequired;
+                        sessionResult = chargyInterfaces.SessionVerificationResult.AtLeastTwoMeasurementsRequired;
 
                 }
             }
             else
-                sessionResult = SessionVerificationResult.InvalidSessionFormat;
+                sessionResult = chargyInterfaces.SessionVerificationResult.InvalidSessionFormat;
 
             //#endregion
 
@@ -1112,7 +1111,7 @@ class ChargePointCrypt01 extends ACrypt {
         catch (exception)
         {
             return {
-                status:  SessionVerificationResult.InvalidSignature,
+                status:  chargyInterfaces.SessionVerificationResult.InvalidSignature,
                 message: "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }
@@ -1128,7 +1127,7 @@ class ChargePointCrypt01 extends ACrypt {
             measurementValue.measurement.chargingSession === undefined)
         {
             return {
-                status: VerificationResult.InvalidMeasurement
+                status: chargyInterfaces.VerificationResult.InvalidMeasurement
             }
         }
 
@@ -1136,23 +1135,23 @@ class ChargePointCrypt01 extends ACrypt {
         var cryptoBuffer                 = new DataView(buffer);
 
         var cryptoResult:IChargePointCrypt01Result = {
-            status:                       VerificationResult.InvalidSignature,
-            meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
-            timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
-            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
-            paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
-            obis:                         SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
-            unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-            scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
-            value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
-            logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
-            authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
-            authorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
+            status:                       chargyInterfaces.VerificationResult.InvalidSignature,
+            meterId:                      chargyLib.SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
+            timestamp:                    chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
+            infoStatus:                   chargyLib.SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
+            secondsIndex:                 chargyLib.SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
+            paginationId:                 chargyLib.SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
+            obis:                         chargyLib.SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
+            unitEncoded:                  chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
+            scale:                        chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
+            value:                        chargyLib.SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
+            logBookIndex:                 chargyLib.SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
+            authorizationStart:           chargyLib.SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
+            authorizationStartTimestamp:  chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
         };
 
         // Only the first 24 bytes/192 bits are used!
-        cryptoResult.sha256value  = (await sha256(cryptoBuffer)).substring(0, 48);
+        cryptoResult.sha256value  = (await chargyLib.sha256(cryptoBuffer)).substring(0, 48);
 
         // cryptoResult.publicKey    = publicKey.encode('hex').
         //                                       toLowerCase();
@@ -1163,7 +1162,7 @@ class ChargePointCrypt01 extends ACrypt {
         switch (measurementValue.measurement.signatureInfos.format)
         {
 
-            case SignatureFormats.DER:
+            case chargyInterfaces.SignatureFormats.DER:
 
                 cryptoResult.signature = {
                     algorithm:  measurementValue.measurement.signatureInfos.algorithm,
@@ -1174,7 +1173,7 @@ class ChargePointCrypt01 extends ACrypt {
                 return cryptoResult;
 
 
-            case SignatureFormats.rs:
+            case chargyInterfaces.SignatureFormats.rs:
 
                 cryptoResult.signature = {
                     algorithm:  measurementValue.measurement.signatureInfos.algorithm,
@@ -1191,7 +1190,7 @@ class ChargePointCrypt01 extends ACrypt {
 
         }
 
-        cryptoResult.status = VerificationResult.ValidSignature;
+        cryptoResult.status = chargyInterfaces.VerificationResult.ValidSignature;
         return cryptoResult;
 
     }
@@ -1201,7 +1200,7 @@ class ChargePointCrypt01 extends ACrypt {
 
         // Note: chargepoint does not sign individual measurements!
 
-        function setResult(verificationResult: VerificationResult)
+        function setResult(verificationResult: chargyInterfaces.VerificationResult)
         {
             cryptoResult.status     = verificationResult;
             measurementValue.result = cryptoResult;
@@ -1211,10 +1210,10 @@ class ChargePointCrypt01 extends ACrypt {
         measurementValue.method = this;
 
         var cryptoResult:IChargePointCrypt01Result = {
-            status: VerificationResult.NoOperation,
+            status: chargyInterfaces.VerificationResult.NoOperation,
         };
 
-        return setResult(VerificationResult.NoOperation);
+        return setResult(chargyInterfaces.VerificationResult.NoOperation);
 
     }
 
@@ -1235,7 +1234,7 @@ class ChargePointCrypt01 extends ACrypt {
             measurementValue.measurement.chargingSession.authorizationStart.timestamp === undefined)
         {
             return {
-                status: VerificationResult.InvalidMeasurement
+                status: chargyInterfaces.VerificationResult.InvalidMeasurement
             }
         }
 
@@ -1404,19 +1403,19 @@ class ChargePointCrypt01 extends ACrypt {
                 //     signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
                 //     break;
 
-                case SessionVerificationResult.PublicKeyNotFound:
+                case chargyInterfaces.SessionVerificationResult.PublicKeyNotFound:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
                     break;
 
-                case SessionVerificationResult.InvalidPublicKey:
+                case chargyInterfaces.SessionVerificationResult.InvalidPublicKey:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
                     break;
 
-                case SessionVerificationResult.InvalidSignature:
+                case chargyInterfaces.SessionVerificationResult.InvalidSignature:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
                     break;
 
-                case SessionVerificationResult.ValidSignature:
+                case chargyInterfaces.SessionVerificationResult.ValidSignature:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
                     break;
 

@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-///<reference path="chargyInterfaces.ts" />
-///<reference path="chargyLib.ts" />
-///<reference path="ACrypt.ts" />
+import { Chargy }             from './chargy.js'
+import { ACrypt }             from './ACrypt.js'
+import * as chargyInterfaces  from './chargyInterfaces.js'
+import * as chargyLib         from './chargyLib.js'
 
 
-interface IBSMMeasurementValue extends IMeasurementValue
+export interface IBSMMeasurementValue extends chargyInterfaces.IMeasurementValue
 {
     Typ:                        number,
     RCR:                        number,
@@ -41,11 +42,11 @@ interface IBSMMeasurementValue extends IMeasurementValue
     Evt:                        number
 }
 
-interface IBSMCrypt01Result extends ICryptoResult
+export interface IBSMCrypt01Result extends chargyInterfaces.ICryptoResult
 {
     sha256value?:                  any,
     meterId?:                      string,
-    meter?:                        IMeter,
+    meter?:                        chargyInterfaces.IMeter,
     timestamp?:                    string,
 
     ArraySize:                     number,
@@ -82,11 +83,11 @@ interface IBSMCrypt01Result extends ICryptoResult
     publicKey?:                    string,
     publicKeyFormat?:              string,
     publicKeySignatures?:          any,
-    signature?:                    IECCSignature
+    signature?:                    chargyInterfaces.IECCSignature
 }
 
 
-class BSMCrypt01 extends ACrypt {
+export class BSMCrypt01 extends ACrypt {
 
     readonly curve = new this.chargy.elliptic.ec('p256');
 
@@ -100,11 +101,11 @@ class BSMCrypt01 extends ACrypt {
 
     //#region tryToParseBSM_WS36aMeasurements(Measurements)
 
-    public async tryToParseBSM_WS36aMeasurements(CTR: IChargeTransparencyRecord, EVSEId: String, CSCSWVersion: String, Measurements: Array<any>) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+    public async tryToParseBSM_WS36aMeasurements(CTR: chargyInterfaces.IChargeTransparencyRecord, EVSEId: String, CSCSWVersion: String, Measurements: Array<any>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         if (!Array.isArray(Measurements) || Measurements.length < 2) return {
-            status:   SessionVerificationResult.InvalidSessionFormat,
+            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
             message:  "Invalid signed meter values format!"
         }
 
@@ -379,55 +380,55 @@ class BSMCrypt01 extends ACrypt {
             };
 
 
-            if (!isMandatoryString(common.context)) return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+            if (!chargyLib.isMandatoryString(common.context)) return {
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Missing or invalid measurements format identification!"
             }
 
-            if (!isMandatoryString(common.meterFirmwareVersion)) return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+            if (!chargyLib.isMandatoryString(common.meterFirmwareVersion)) return {
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Invalid meter firmeware version!"
             }
 
-            if (!isMandatoryString(common.meterPublicKey)) return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+            if (!chargyLib.isMandatoryString(common.meterPublicKey)) return {
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Invalid meter public key!"
             }
 
-            if (!isMandatoryString(common.meterId)) return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+            if (!chargyLib.isMandatoryString(common.meterId)) return {
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Invalid meter identification!"
             }
 
-            if (!isMandatoryString(common.meterManufacturer)) return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+            if (!chargyLib.isMandatoryString(common.meterManufacturer)) return {
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Invalid meter manufacturer!"
             }
 
-            if (!isMandatoryString(common.meterType)) return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+            if (!chargyLib.isMandatoryString(common.meterType)) return {
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Invalid meter type!"
             }
 
 
-            if (!isMandatoryString(common.contractId)) return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+            if (!chargyLib.isMandatoryString(common.contractId)) return {
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Invalid contract identification!"
             }
 
-            if (!isOptionalString(common.contractType)) return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+            if (!chargyLib.isOptionalString(common.contractType)) return {
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Invalid contract type!"
             }
 
 
-            if (!isMandatoryString(common.valueMeasurandId)) return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+            if (!chargyLib.isMandatoryString(common.valueMeasurandId)) return {
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Invalid measurand identification!"
             }
 
-            if (!isMandatoryString(common.valueMeasurandName)) return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+            if (!chargyLib.isMandatoryString(common.valueMeasurandName)) return {
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Invalid measurand name!"
             }
 
@@ -484,14 +485,14 @@ class BSMCrypt01 extends ACrypt {
 
                 if (currentMeasurement["@context"] !== common.context)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent @context!"
                     };
 
 
                 if (previousId !== "" && currentMeasurement["@id"] <= previousId)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent measurement identifications!"
                     };
                 previousId   = currentMeasurement["@id"];
@@ -499,7 +500,7 @@ class BSMCrypt01 extends ACrypt {
 
                 if (previousTime !== "" && currentMeasurement.time <= previousTime)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent measurement timestamps!"
                     };
                 previousTime = currentMeasurement.time;
@@ -507,7 +508,7 @@ class BSMCrypt01 extends ACrypt {
 
                 if (previousValue !== "" && currentMeasurement.value?.measuredValue?.value < previousValue)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent measurement values!"
                     };
                 previousValue = currentMeasurement.value?.measuredValue?.value;
@@ -518,37 +519,37 @@ class BSMCrypt01 extends ACrypt {
 
                     if (currentMeasurement.meterInfo?.firmwareVersion    !== common.meterFirmwareVersion)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent meterInfo.firmwareVersion!"
                         };
 
                     if (currentMeasurement.meterInfo?.publicKey          !== common.meterPublicKey)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent meterInfo.publicKey!"
                         };
 
                     if (currentMeasurement.meterInfo?.meterId            !== common.meterId)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent meterInfo.meterId!"
                         };
 
                     if (currentMeasurement.meterInfo?.meterId            !== currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name === "MA1")[0]?.measuredValue?.value)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent meterInfo.meterId!"
                         };
 
                     if (currentMeasurement.meterInfo?.manufacturer       !== common.meterManufacturer)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent meterInfo.manufacturer!"
                         };
 
                     if (currentMeasurement.meterInfo?.type               !== common.meterType)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent meterInfo.type!"
                         };
 
@@ -558,7 +559,7 @@ class BSMCrypt01 extends ACrypt {
                 {
                     if (currentMeasurement.operatorInfo                  !== common.operatorInfo)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent operatorInfo!"
                         };
                 }
@@ -568,19 +569,19 @@ class BSMCrypt01 extends ACrypt {
 
                     if (currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('contract-id:')).length == 0)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent contract information!"
                         };
 
                     if (currentMeasurement.contract.id                   !== common.contractId)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent contract.id!"
                         };
 
                     if (currentMeasurement.contract.type                 !== common.contractType)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent contract.type!"
                         };
 
@@ -591,13 +592,13 @@ class BSMCrypt01 extends ACrypt {
 
                         if ( currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contractType + ":" + common.contractId)
                             return {
-                                status:   SessionVerificationResult.InvalidSessionFormat,
+                                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                 message:  "Inconsistent contract information!"
                             };
 
                         if (!currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contractId)
                             return {
-                                status:   SessionVerificationResult.InvalidSessionFormat,
+                                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                 message:  "Inconsistent contract information!"
                             };
 
@@ -619,13 +620,13 @@ class BSMCrypt01 extends ACrypt {
 
                     if (measurand.id !== common.valueMeasurandId || measurand.id !== rcrInAdditional.measurand.id)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measurand.id!"
                         };
 
                     if (measurand.name !== common.valueMeasurandName || measurand.name !== rcrInAdditional.measurand.name)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measurand.name!"
                         };
 
@@ -638,31 +639,31 @@ class BSMCrypt01 extends ACrypt {
 
                     if (measuredValue.value !== rcrInAdditional.measuredValue.value)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.value!"
                         };
 
                     if (measuredValue.scale !== common.measuredValueScale || measuredValue.scale !== rcrInAdditional.measuredValue.scale)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.scale!"
                         };
 
                     if (measuredValue.unit !== common.measuredValueUnit || measuredValue.unit !== rcrInAdditional.measuredValue.unit)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.unit!"
                         };
 
                     if (measuredValue.unitEncoded !== common.measuredValueUnitEncoded || measuredValue.unitEncoded !== rcrInAdditional.measuredValue.unitEncoded)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.unitEncoded!"
                         };
 
                     if (measuredValue.valueType !== common.measuredValueValueType || measuredValue.valueType !== rcrInAdditional.measuredValue.valueType)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.valueType!"
                         };
 
@@ -673,7 +674,7 @@ class BSMCrypt01 extends ACrypt {
                 {
                     if (currentMeasurement.chargePoint?.softwareVersion  !== common.chargePointSoftwareVersion)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent chargePoint.softwareVersion!"
                         };
                 }
@@ -688,7 +689,7 @@ class BSMCrypt01 extends ACrypt {
 
                     if (evse__id !== 'unknown' && EVSEId !== evse__id)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent EVSE identification!"
                         };
 
@@ -704,7 +705,7 @@ class BSMCrypt01 extends ACrypt {
 
                     if (csc_sw_version !== 'unknown' && CSCSWVersion !== csc_sw_version)
                         return {
-                            status:   SessionVerificationResult.InvalidSessionFormat,
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent charging station controller software version!"
                         };
 
@@ -756,7 +757,7 @@ class BSMCrypt01 extends ACrypt {
 
                 if (previousRCR !== -1 && RCR[4] < previousRCR)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent measurement value!"
                     };
                 previousRCR = RCR[4];
@@ -764,14 +765,14 @@ class BSMCrypt01 extends ACrypt {
 
                 if (RCnt !== currentMeasurement.measurementId)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent measurement identification!"
                     };
 
 
                 if (previousRCnt !== -1 && RCnt != previousRCnt + 1)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent measurement snapshot counter!"
                     };
                 previousRCnt = RCnt;
@@ -779,7 +780,7 @@ class BSMCrypt01 extends ACrypt {
 
                 if (previousOS !== -1 && OS <= previousOS)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent measurement operation-seconds counter!"
                     };
                 previousOS = OS;
@@ -787,7 +788,7 @@ class BSMCrypt01 extends ACrypt {
 
                 if (previousEpoch !== -1 && Epoch <= previousEpoch)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent measurement epochs!"
                     };
                 previousEpoch = Epoch;
@@ -799,14 +800,14 @@ class BSMCrypt01 extends ACrypt {
 
                 if (currentMeasurement.time !== measurementTimestamp3)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent measurement timestamp!"
                     };
 
 
                 if (common.MA1 !== null && MA1 !== common.MA1)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent measurement meter address 1!"
                     };
                 common.MA1 = MA1;
@@ -814,7 +815,7 @@ class BSMCrypt01 extends ACrypt {
 
                 if (common.epochSetCnt !== -1 && EpochSetCnt !== common.epochSetCnt)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent measurement epoch set counter!"
                     };
                 common.epochSetCnt = EpochSetCnt;
@@ -822,7 +823,7 @@ class BSMCrypt01 extends ACrypt {
 
                 if (common.epochSetOS !== -1 && EpochSetOS !== common.epochSetOS)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent measurement epoch set operation-seconds!"
                     };
                 common.epochSetOS = EpochSetOS;
@@ -862,7 +863,7 @@ class BSMCrypt01 extends ACrypt {
 
             if (common.dataSets[0].TypParsed !== "START" && common.dataSets[0].TypParsed !== "TURN ON")
                 return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid start snapshot!"
                 };
 
@@ -870,14 +871,14 @@ class BSMCrypt01 extends ACrypt {
             {
                 if (common.dataSets[i].TypParsed !== "CURRENT")
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Invalid intermediate snapshot!"
                     };
             }
 
             if (common.dataSets[n].TypParsed !== "END"   && common.dataSets[n].TypParsed !== "TURN OFF")
                 return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Invalid end snapshot!"
                 };
 
@@ -989,7 +990,7 @@ class BSMCrypt01 extends ACrypt {
 
             }
 
-            CTR.chargingSessions.push(session as any as IChargingSession);
+            CTR.chargingSessions.push(session as any as chargyInterfaces.IChargingSession);
 
 
 
@@ -1030,11 +1031,11 @@ class BSMCrypt01 extends ACrypt {
                 firmwareVersion:            common.meterFirmwareVersion,
                 //hardwareVersion?:           string;
                 signatureInfos:             {
-                                                hash:            CryptoHashAlgorithms.SHA256,
+                                                hash:            chargyInterfaces.CryptoHashAlgorithms.SHA256,
                                                 hashTruncation:  0,
-                                                algorithm:       CryptoAlgorithms.ECC,
+                                                algorithm:       chargyInterfaces.CryptoAlgorithms.ECC,
                                                 curve:           "secp256r1",
-                                                format:          SignatureFormats.rs
+                                                format:          chargyInterfaces.SignatureFormats.rs
                                             },
                 signatureFormat:            "BSMCrypt01",
                 publicKeys:                 [{
@@ -1237,7 +1238,7 @@ class BSMCrypt01 extends ACrypt {
 
             // };
 
-            CTR["status"] = SessionVerificationResult.ValidSignature;
+            CTR["status"] = chargyInterfaces.SessionVerificationResult.ValidSignature;
 
             return CTR;
 
@@ -1245,7 +1246,7 @@ class BSMCrypt01 extends ACrypt {
         catch (exception)
         {
             return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }
@@ -1265,20 +1266,20 @@ class BSMCrypt01 extends ACrypt {
     }
 
 
-    async SignChargingSession  (chargingSession:         IChargingSession,
-                                privateKey:              any):              Promise<ISessionCryptoResult>
+    async SignChargingSession  (chargingSession:         chargyInterfaces.IChargingSession,
+                                privateKey:              any):              Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         return {
-            status: SessionVerificationResult.UnknownSessionFormat
+            status: chargyInterfaces.SessionVerificationResult.UnknownSessionFormat
         }
 
     }
 
-    async VerifyChargingSession(chargingSession:         IChargingSession): Promise<ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession:         chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
-        var sessionResult = SessionVerificationResult.UnknownSessionFormat;
+        var sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
 
         if (chargingSession.measurements)
         {
@@ -1300,21 +1301,21 @@ class BSMCrypt01 extends ACrypt {
 
 
                     // Find an overall result...
-                    sessionResult = SessionVerificationResult.ValidSignature;
+                    sessionResult = chargyInterfaces.SessionVerificationResult.ValidSignature;
 
                     for (var measurementValue of measurement.values)
                     {
-                        if (sessionResult                   == SessionVerificationResult.ValidSignature &&
-                            measurementValue.result!.status != VerificationResult.ValidSignature)
+                        if (sessionResult                   == chargyInterfaces.SessionVerificationResult.ValidSignature &&
+                            measurementValue.result!.status != chargyInterfaces.VerificationResult.ValidSignature)
                         {
-                            sessionResult = SessionVerificationResult.InvalidSignature;
+                            sessionResult = chargyInterfaces.SessionVerificationResult.InvalidSignature;
                         }
                     }
 
                 }
 
                 else
-                    sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsRequired;
+                    sessionResult = chargyInterfaces.SessionVerificationResult.AtLeastTwoMeasurementsRequired;
 
             }
         }
@@ -1339,25 +1340,25 @@ class BSMCrypt01 extends ACrypt {
         var cryptoBuffer  = new DataView(buffer);
 
         var cryptoResult:IBSMCrypt01Result = {
-            status:        VerificationResult.InvalidSignature,
+            status:        chargyInterfaces.VerificationResult.InvalidSignature,
             ArraySize:     requiredSize,
-            Typ:           SetUInt32_withCode(cryptoBuffer, measurementValue.Typ,          0, 255,   0),
-            RCR:           SetUInt32_withCode(cryptoBuffer, measurementValue.RCR,          0,  30,   6),
-            TotWhImp:      SetUInt32_withCode(cryptoBuffer, measurementValue.TotWhImp,     0,  30,  12),
-            W:             SetUInt32_withCode(cryptoBuffer, measurementValue.W,            1,  27,  18),
-            MA1:           SetText_withLength(cryptoBuffer, measurementValue.MA1,                   24),
-            RCnt:          SetUInt32_withCode(cryptoBuffer, measurementValue.RCnt,         0, 255,  24 + MA1_length),
-            OS:            SetUInt32_withCode(cryptoBuffer, measurementValue.OS,           0,   7,  30 + MA1_length),
-            Epoch:         SetUInt32_withCode(cryptoBuffer, measurementValue.Epoch,        0,   7,  36 + MA1_length),
-            TZO:           SetUInt32_withCode(cryptoBuffer, measurementValue.TZO,          0,   6,  42 + MA1_length),
-            EpochSetCnt:   SetUInt32_withCode(cryptoBuffer, measurementValue.EpochSetCnt,  0, 255,  48 + MA1_length),
-            EpochSetOS:    SetUInt32_withCode(cryptoBuffer, measurementValue.EpochSetOS,   0,   7,  54 + MA1_length),
-            DI:            SetUInt32_withCode(cryptoBuffer, measurementValue.DI,           0, 255,  60 + MA1_length),
-            DO:            SetUInt32_withCode(cryptoBuffer, measurementValue.DO,           0, 255,  66 + MA1_length),
-            Meta1:         SetText_withLength(cryptoBuffer, measurementValue.Meta1,                 72 + MA1_length),
-            Meta2:         SetText_withLength(cryptoBuffer, measurementValue.Meta2,                 72 + MA1_length + Meta1_length),
-            Meta3:         SetText_withLength(cryptoBuffer, measurementValue.Meta3,                 72 + MA1_length + Meta1_length + Meta2_length),
-            Evt:           SetUInt32_withCode(cryptoBuffer, measurementValue.Evt,          0, 255,  72 + MA1_length + Meta1_length + Meta2_length + Meta3_length),
+            Typ:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.Typ,          0, 255,   0),
+            RCR:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.RCR,          0,  30,   6),
+            TotWhImp:      chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.TotWhImp,     0,  30,  12),
+            W:             chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.W,            1,  27,  18),
+            MA1:           chargyLib.SetText_withLength(cryptoBuffer, measurementValue.MA1,                   24),
+            RCnt:          chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.RCnt,         0, 255,  24 + MA1_length),
+            OS:            chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.OS,           0,   7,  30 + MA1_length),
+            Epoch:         chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.Epoch,        0,   7,  36 + MA1_length),
+            TZO:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.TZO,          0,   6,  42 + MA1_length),
+            EpochSetCnt:   chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.EpochSetCnt,  0, 255,  48 + MA1_length),
+            EpochSetOS:    chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.EpochSetOS,   0,   7,  54 + MA1_length),
+            DI:            chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.DI,           0, 255,  60 + MA1_length),
+            DO:            chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.DO,           0, 255,  66 + MA1_length),
+            Meta1:         chargyLib.SetText_withLength(cryptoBuffer, measurementValue.Meta1,                 72 + MA1_length),
+            Meta2:         chargyLib.SetText_withLength(cryptoBuffer, measurementValue.Meta2,                 72 + MA1_length + Meta1_length),
+            Meta3:         chargyLib.SetText_withLength(cryptoBuffer, measurementValue.Meta3,                 72 + MA1_length + Meta1_length + Meta2_length),
+            Evt:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.Evt,          0, 255,  72 + MA1_length + Meta1_length + Meta2_length + Meta3_length),
             //status:                       VerificationResult.InvalidSignature,
             //meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
             //timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
@@ -1374,7 +1375,7 @@ class BSMCrypt01 extends ACrypt {
         };
 
         // Only the first 24 bytes/192 bits are used!
-        cryptoResult.sha256value  = (await sha256(cryptoBuffer)).substring(0, 48);
+        cryptoResult.sha256value  = (await chargyLib.sha256(cryptoBuffer)).substring(0, 48);
 
         // cryptoResult.publicKey    = publicKey.encode('hex').
         //                                       toLowerCase();
@@ -1385,7 +1386,7 @@ class BSMCrypt01 extends ACrypt {
         switch (measurementValue.measurement!.signatureInfos.format)
         {
 
-            case SignatureFormats.DER:
+            case chargyInterfaces.SignatureFormats.DER:
 
                 cryptoResult.signature = {
                     algorithm:  measurementValue.measurement!.signatureInfos.algorithm,
@@ -1396,7 +1397,7 @@ class BSMCrypt01 extends ACrypt {
                 return cryptoResult;
 
 
-            case SignatureFormats.rs:
+            case chargyInterfaces.SignatureFormats.rs:
 
                 cryptoResult.signature = {
                     algorithm:  measurementValue.measurement!.signatureInfos.algorithm,
@@ -1413,7 +1414,7 @@ class BSMCrypt01 extends ACrypt {
 
         }
 
-        cryptoResult.status = VerificationResult.ValidSignature;
+        cryptoResult.status = chargyInterfaces.VerificationResult.ValidSignature;
         return cryptoResult;
 
 
@@ -1423,7 +1424,7 @@ class BSMCrypt01 extends ACrypt {
     async VerifyMeasurement(measurementValue:  IBSMMeasurementValue): Promise<IBSMCrypt01Result>
     {
 
-        function setResult(verificationResult: VerificationResult)
+        function setResult(verificationResult: chargyInterfaces.VerificationResult)
         {
             cryptoResult.status     = verificationResult;
             measurementValue.result = cryptoResult;
@@ -1506,35 +1507,35 @@ class BSMCrypt01 extends ACrypt {
         let cryptoBuffer  = new DataView(buffer);
 
         let cryptoResult:IBSMCrypt01Result = {
-            status:        VerificationResult.InvalidSignature,
+            status:        chargyInterfaces.VerificationResult.InvalidSignature,
             ArraySize:     requiredSize,
-            Typ:           SetUInt32_withCode(cryptoBuffer, measurementValue.Typ,          0, 255,   0),
-            RCR:           SetUInt32_withCode(cryptoBuffer, measurementValue.RCR,          0,  30,   6),
-            TotWhImp:      SetUInt32_withCode(cryptoBuffer, measurementValue.TotWhImp,     0,  30,  12),
-            W:             SetUInt32_withCode(cryptoBuffer, measurementValue.W,            1,  27,  18),
-            MA1:           SetText_withLength(cryptoBuffer, measurementValue.MA1,                   24),
-            RCnt:          SetUInt32_withCode(cryptoBuffer, measurementValue.RCnt,         0, 255,  24 + MA1_length),
-            OS:            SetUInt32_withCode(cryptoBuffer, measurementValue.OS,           0,   7,  30 + MA1_length),
-            Epoch:         SetUInt32_withCode(cryptoBuffer, measurementValue.Epoch,        0,   7,  36 + MA1_length),
-            TZO:           SetUInt32_withCode(cryptoBuffer, measurementValue.TZO,          0,   6,  42 + MA1_length),
-            EpochSetCnt:   SetUInt32_withCode(cryptoBuffer, measurementValue.EpochSetCnt,  0, 255,  48 + MA1_length),
-            EpochSetOS:    SetUInt32_withCode(cryptoBuffer, measurementValue.EpochSetOS,   0,   7,  54 + MA1_length),
-            DI:            SetUInt32_withCode(cryptoBuffer, measurementValue.DI,           0, 255,  60 + MA1_length),
-            DO:            SetUInt32_withCode(cryptoBuffer, measurementValue.DO,           0, 255,  66 + MA1_length),
-            Meta1:         SetText_withLength(cryptoBuffer, measurementValue.Meta1,                 72 + MA1_length),
-            Meta2:         SetText_withLength(cryptoBuffer, measurementValue.Meta2,                 72 + MA1_length + Meta1_length),
-            Meta3:         SetText_withLength(cryptoBuffer, measurementValue.Meta3,                 72 + MA1_length + Meta1_length + Meta2_length),
-            Evt:           SetUInt32_withCode(cryptoBuffer, measurementValue.Evt,          0, 255,  72 + MA1_length + Meta1_length + Meta2_length + Meta3_length),
+            Typ:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.Typ,          0, 255,   0),
+            RCR:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.RCR,          0,  30,   6),
+            TotWhImp:      chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.TotWhImp,     0,  30,  12),
+            W:             chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.W,            1,  27,  18),
+            MA1:           chargyLib.SetText_withLength(cryptoBuffer, measurementValue.MA1,                   24),
+            RCnt:          chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.RCnt,         0, 255,  24 + MA1_length),
+            OS:            chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.OS,           0,   7,  30 + MA1_length),
+            Epoch:         chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.Epoch,        0,   7,  36 + MA1_length),
+            TZO:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.TZO,          0,   6,  42 + MA1_length),
+            EpochSetCnt:   chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.EpochSetCnt,  0, 255,  48 + MA1_length),
+            EpochSetOS:    chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.EpochSetOS,   0,   7,  54 + MA1_length),
+            DI:            chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.DI,           0, 255,  60 + MA1_length),
+            DO:            chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.DO,           0, 255,  66 + MA1_length),
+            Meta1:         chargyLib.SetText_withLength(cryptoBuffer, measurementValue.Meta1,                 72 + MA1_length),
+            Meta2:         chargyLib.SetText_withLength(cryptoBuffer, measurementValue.Meta2,                 72 + MA1_length + Meta1_length),
+            Meta3:         chargyLib.SetText_withLength(cryptoBuffer, measurementValue.Meta3,                 72 + MA1_length + Meta1_length + Meta2_length),
+            Evt:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.Evt,          0, 255,  72 + MA1_length + Meta1_length + Meta2_length + Meta3_length),
         };
 
-        var signatureExpected = measurementValue.signatures[0] as IECCSignature;
+        var signatureExpected = measurementValue.signatures[0] as chargyInterfaces.IECCSignature;
         if (signatureExpected != null)
         {
 
             try
             {
 
-                cryptoResult.sha256value = (await sha256(cryptoBuffer));
+                cryptoResult.sha256value = (await chargyLib.sha256(cryptoBuffer));
 
                 const meter = this.chargy.GetMeter(measurementValue.measurement!.energyMeterId);
 
@@ -1582,7 +1583,7 @@ class BSMCrypt01 extends ACrypt {
                                 });
 
                                 const publicKeyDER = ASN1_PublicKey.decode(Buffer.from(meter.publicKeys[0].value, 'hex'), 'der');
-                                publicKey = buf2hex(publicKeyDER.publicKey.data).toLowerCase();
+                                publicKey = chargyLib.buf2hex(publicKeyDER.publicKey.data).toLowerCase();
 
                             }
 
@@ -1593,37 +1594,37 @@ class BSMCrypt01 extends ACrypt {
                                                verify       (cryptoResult.sha256value,
                                                              cryptoResult.signature))
                                 {
-                                    return setResult(VerificationResult.ValidSignature);
+                                    return setResult(chargyInterfaces.VerificationResult.ValidSignature);
                                 }
 
-                                return setResult(VerificationResult.InvalidSignature);
+                                return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
 
                             }
                             catch (exception)
                             {
-                                return setResult(VerificationResult.InvalidSignature);
+                                return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
                             }
 
                         }
                         catch (exception)
                         {
-                            return setResult(VerificationResult.InvalidPublicKey);
+                            return setResult(chargyInterfaces.VerificationResult.InvalidPublicKey);
                         }
 
                     }
 
                     else
-                        return setResult(VerificationResult.PublicKeyNotFound);
+                        return setResult(chargyInterfaces.VerificationResult.PublicKeyNotFound);
 
                 }
 
                 else
-                    return setResult(VerificationResult.EnergyMeterNotFound);
+                    return setResult(chargyInterfaces.VerificationResult.EnergyMeterNotFound);
 
             }
             catch (exception)
             {
-                return setResult(VerificationResult.InvalidSignature);
+                return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
             }
 
         }
@@ -1669,7 +1670,7 @@ class BSMCrypt01 extends ACrypt {
             this.CreateLine("MA1",          measurementValue.MA1,                                result.MA1         || "", infoDiv, PlainTextDiv);
             this.CreateLine("RCnt",         measurementValue.RCnt,                               result.RCnt        || "", infoDiv, PlainTextDiv);
             this.CreateLine("OS",           measurementValue.OS,                                 result.OS          || "", infoDiv, PlainTextDiv);
-            this.CreateLine("Zeitstempel",  UTC2human(measurementValue.Epoch),                   result.Epoch       || "", infoDiv, PlainTextDiv);
+            this.CreateLine("Zeitstempel",  chargyLib.UTC2human(measurementValue.Epoch),         result.Epoch       || "", infoDiv, PlainTextDiv);
             this.CreateLine("TZO",          measurementValue.TZO + " Minuten",                   result.TZO         || "", infoDiv, PlainTextDiv);
             this.CreateLine("EpochSetCnt",  measurementValue.EpochSetCnt,                        result.EpochSetCnt || "", infoDiv, PlainTextDiv);
             this.CreateLine("EpochSetOS",   measurementValue.EpochSetOS,                         result.EpochSetOS  || "", infoDiv, PlainTextDiv);
@@ -1712,7 +1713,7 @@ class BSMCrypt01 extends ACrypt {
                                                                              : "") +
                                                                          "hex)";
 
-            if (!IsNullOrEmpty(result.publicKey))
+            if (!chargyLib.IsNullOrEmpty(result.publicKey))
                 PublicKeyDiv.innerHTML                                 = result.publicKey.startsWith("04") // Add some space after '04' to avoid confused customers
                                                                             ? "<span class=\"leadingFour\">04</span> "
                                                                                 + result.publicKey.substring(2).match(/.{1,8}/g)!.join(" ")
@@ -1724,7 +1725,7 @@ class BSMCrypt01 extends ACrypt {
             if (PublicKeyDiv.parentElement != null)
                 PublicKeyDiv.parentElement.children[3].innerHTML = "";
 
-            if (!IsNullOrEmpty(result.publicKeySignatures)) {
+            if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures)) {
 
                 for (let signature of result.publicKeySignatures)
                 {
@@ -1781,27 +1782,27 @@ class BSMCrypt01 extends ACrypt {
             switch (result.status)
             {
 
-                case VerificationResult.UnknownCTRFormat:
+                case chargyInterfaces.VerificationResult.UnknownCTRFormat:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
                     break;
 
-                case VerificationResult.EnergyMeterNotFound:
+                case chargyInterfaces.VerificationResult.EnergyMeterNotFound:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
                     break;
 
-                case VerificationResult.PublicKeyNotFound:
+                case chargyInterfaces.VerificationResult.PublicKeyNotFound:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
                     break;
 
-                case VerificationResult.InvalidPublicKey:
+                case chargyInterfaces.VerificationResult.InvalidPublicKey:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
                     break;
 
-                case VerificationResult.InvalidSignature:
+                case chargyInterfaces.VerificationResult.InvalidSignature:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
                     break;
 
-                case VerificationResult.ValidSignature:
+                case chargyInterfaces.VerificationResult.ValidSignature:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
                     break;
 

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-///<reference path="certificates.ts" />
-///<reference path="chargyInterfaces.ts" />
-///<reference path="chargyLib.ts" />
-///<reference path="ACrypt.ts" />
+import { Chargy }             from './chargy.js'
+import { ACrypt }             from './ACrypt.js'
+import * as chargyInterfaces  from './chargyInterfaces.js'
+import * as chargyLib         from './chargyLib.js'
 
-class Alfen01  {
+export class Alfen01  {
 
     private readonly chargy: Chargy;
 
@@ -44,7 +44,7 @@ class Alfen01  {
 
     //#region tryToParseALFENFormat(Content)
 
-    public async tryToParseALFENFormat(Content: string|string[]) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+    public async tryToParseALFENFormat(Content: string|string[]) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         // AP;
@@ -94,7 +94,7 @@ class Alfen01  {
 
                 if (elements.length != 6 && elements.length != 7)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Invalid number of array elements!"
                     };
 
@@ -110,7 +110,7 @@ class Alfen01  {
                     common.PublicKey = elements[3];
                 else if (elements[3] !== common.PublicKey)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent public keys!"
                     };
 
@@ -123,7 +123,7 @@ class Alfen01  {
                     Signature.byteLength  !== 48)
                 {
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Invalid data format!"
                     };
                 }
@@ -159,7 +159,7 @@ class Alfen01  {
                     common.AdapterId = AdapterId;
                 else if (AdapterId !== common.AdapterId)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent adapter identification!"
                     };
 
@@ -167,7 +167,7 @@ class Alfen01  {
                     common.AdapterFWVersion = AdapterFWVersion;
                 else if (AdapterFWVersion !== common.AdapterFWVersion)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent adapter firmware version!"
                     };
 
@@ -175,7 +175,7 @@ class Alfen01  {
                     common.AdapterFWChecksum = AdapterFWChecksum;
                 else if (AdapterFWChecksum !== common.AdapterFWChecksum)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent adapter firmware checksum!"
                     };
 
@@ -183,7 +183,7 @@ class Alfen01  {
                     common.MeterId = MeterId;
                 else if (MeterId !== common.MeterId)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent meter identification!"
                     };
 
@@ -191,7 +191,7 @@ class Alfen01  {
                     common.ObisId = ObisId;
                 else if (ObisId !== common.ObisId)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent OBIS identification!"
                     };
 
@@ -199,7 +199,7 @@ class Alfen01  {
                     common.UnitEncoded = UnitEncoded;
                 else if (UnitEncoded !== common.UnitEncoded)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent unit (encoded) value!"
                     };
 
@@ -207,7 +207,7 @@ class Alfen01  {
                     common.Scalar = Scalar;
                 else if (Scalar !== common.Scalar)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent measurement scaler!"
                     };
 
@@ -215,7 +215,7 @@ class Alfen01  {
                     common.UID = UID;
                 else if (UID !== common.UID)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent user identification!"
                     };
 
@@ -223,13 +223,13 @@ class Alfen01  {
                     common.SessionId = SessionId;
                 else if (SessionId !== common.SessionId)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Inconsistent charging session identification!"
                     };
 
                 if (previousTimestamp !== "" && previousTimestamp > Timestamp)
                     return {
-                        status:   SessionVerificationResult.InconsistentTimestamps,
+                        status:   chargyInterfaces.SessionVerificationResult.InconsistentTimestamps,
                         message:  "Inconsistent timestamps!"
                     };
                 else
@@ -347,8 +347,8 @@ class Alfen01  {
 
                                  "energyMeterId":        common.MeterId,
                                  "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/AlfenCrypt03+json",
-                                 "name":                 OBIS2MeasurementName(parseOBIS(common.ObisId)),
-                                 "obis":                 parseOBIS(common.ObisId),
+                                 "name":                 chargyLib.OBIS2MeasurementName(chargyLib.parseOBIS(common.ObisId)),
+                                 "obis":                 chargyLib.parseOBIS(common.ObisId),
             //                     "unit":                 CTRArray[0]["measuredValue"]["unit"],
                                  "unitEncoded":          common.UnitEncoded,
             //                     "valueType":            CTRArray[0]["measuredValue"]["valueType"],
@@ -399,13 +399,13 @@ class Alfen01  {
             }
 
             //await this.processChargeTransparencyRecord(_CTR);
-            return _CTR as IChargeTransparencyRecord;
+            return _CTR as chargyInterfaces.IChargeTransparencyRecord;
 
         }
         catch (exception)
         {
             return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }
@@ -417,14 +417,14 @@ class Alfen01  {
 
 }
 
-interface IAlfenMeasurement extends IMeasurement
+export interface IAlfenMeasurement extends chargyInterfaces.IMeasurement
 {
     adapterId:                     string,
     adapterFWVersion:              string,
     adapterFWChecksum:             string
 }
 
-interface IAlfenMeasurementValue extends IMeasurementValue
+export interface IAlfenMeasurementValue extends chargyInterfaces.IMeasurementValue
 {
     statusMeter:                   string,
     statusAdapter:                 string,
@@ -434,13 +434,13 @@ interface IAlfenMeasurementValue extends IMeasurementValue
     measurement:                   IAlfenMeasurement
 }
 
-interface IAlfenCrypt01Result extends ICryptoResult
+export interface IAlfenCrypt01Result extends chargyInterfaces.ICryptoResult
 {
     adapterId?:                    string
     adapterFWVersion?:             string
     adapterFWChecksum?:            string
     meterId?:                      string,
-    meter?:                        IMeter,
+    meter?:                        chargyInterfaces.IMeter,
     statusMeter?:                  string,
     statusAdapter?:                string,
     secondsIndex?:                 string,
@@ -457,11 +457,11 @@ interface IAlfenCrypt01Result extends ICryptoResult
     publicKey?:                    string,
     publicKeyFormat?:              string,
     publicKeySignatures?:          any,
-    signature?:                    IECCSignature
+    signature?:                    chargyInterfaces.IECCSignature
 }
 
 
-class AlfenCrypt01 extends ACrypt {
+export class AlfenCrypt01 extends ACrypt {
 
     constructor(chargy:  Chargy) {
 
@@ -481,20 +481,20 @@ class AlfenCrypt01 extends ACrypt {
     }
 
 
-    async SignChargingSession  (chargingSession:         IChargingSession,
-                                privateKey:              any):              Promise<ISessionCryptoResult>
+    async SignChargingSession  (chargingSession:         chargyInterfaces.IChargingSession,
+                                privateKey:              any):              Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         return {
-            status: SessionVerificationResult.UnknownSessionFormat
+            status: chargyInterfaces.SessionVerificationResult.UnknownSessionFormat
         }
 
     }
 
-    async VerifyChargingSession(chargingSession: IChargingSession): Promise<ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
-        var sessionResult = SessionVerificationResult.UnknownSessionFormat;
+        var sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
 
         if (chargingSession.measurements)
         {
@@ -516,21 +516,21 @@ class AlfenCrypt01 extends ACrypt {
 
 
                     // Find an overall result...
-                    sessionResult = SessionVerificationResult.ValidSignature;
+                    sessionResult = chargyInterfaces.SessionVerificationResult.ValidSignature;
 
                     for (var measurementValue of measurement.values)
                     {
-                        if (sessionResult                   == SessionVerificationResult.ValidSignature &&
-                            measurementValue.result?.status != VerificationResult.ValidSignature)
+                        if (sessionResult                   == chargyInterfaces.SessionVerificationResult.ValidSignature &&
+                            measurementValue.result?.status != chargyInterfaces.VerificationResult.ValidSignature)
                         {
-                            sessionResult = SessionVerificationResult.InvalidSignature;
+                            sessionResult = chargyInterfaces.SessionVerificationResult.InvalidSignature;
                         }
                     }
 
                 }
 
                 else
-                    sessionResult = SessionVerificationResult.AtLeastTwoMeasurementsRequired;
+                    sessionResult = chargyInterfaces.SessionVerificationResult.AtLeastTwoMeasurementsRequired;
 
             }
         }
@@ -550,21 +550,21 @@ class AlfenCrypt01 extends ACrypt {
         var cryptoBuffer                 = new DataView(buffer);
 
         var cryptoResult:IAlfenCrypt01Result = {
-            status:                       VerificationResult.InvalidSignature,
-            meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
-            timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            statusMeter:                  SetHex        (cryptoBuffer, measurementValue.statusMeter,                                               14, false),
-            statusAdapter:                SetHex        (cryptoBuffer, measurementValue.statusAdapter,                                             15, false),
-            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              16, true),
-            paging:                       SetUInt32     (cryptoBuffer, measurementValue.paginationId,                                              19, true),
-            obisId:                       SetHex        (cryptoBuffer, OBIS2Hex(measurementValue.measurement.obis),                                23, false),
-            unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-            scalar:                       SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
-            value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true)
+            status:                       chargyInterfaces.VerificationResult.InvalidSignature,
+            meterId:                      chargyLib.SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,              0),
+            timestamp:                    chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                             10),
+            statusMeter:                  chargyLib.SetHex        (cryptoBuffer, measurementValue.statusMeter,                           14, false),
+            statusAdapter:                chargyLib.SetHex        (cryptoBuffer, measurementValue.statusAdapter,                         15, false),
+            secondsIndex:                 chargyLib.SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                          16, true),
+            paging:                       chargyLib.SetUInt32     (cryptoBuffer, measurementValue.paginationId,                          19, true),
+            obisId:                       chargyLib.SetHex        (cryptoBuffer, chargyLib.OBIS2Hex(measurementValue.measurement.obis),  23, false),
+            unitEncoded:                  chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,               29),
+            scalar:                       chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                     30),
+            value:                        chargyLib.SetUInt64     (cryptoBuffer, measurementValue.value,                                 31, true)
         };
 
         // Only the first 24 bytes/192 bits are used!
-        cryptoResult.hashValue  = (await sha256(cryptoBuffer)).substring(0, 48);
+        cryptoResult.hashValue  = (await chargyLib.sha256(cryptoBuffer)).substring(0, 48);
 
         // cryptoResult.publicKey    = publicKey.encode('hex').
         //                                       toLowerCase();
@@ -575,7 +575,7 @@ class AlfenCrypt01 extends ACrypt {
         switch (measurementValue.measurement.signatureInfos.format)
         {
 
-            case SignatureFormats.DER:
+            case chargyInterfaces.SignatureFormats.DER:
 
                 cryptoResult.signature = {
                     algorithm:  measurementValue.measurement.signatureInfos.algorithm,
@@ -586,7 +586,7 @@ class AlfenCrypt01 extends ACrypt {
                 return cryptoResult;
 
 
-            case SignatureFormats.rs:
+            case chargyInterfaces.SignatureFormats.rs:
 
                 cryptoResult.signature = {
                     algorithm:  measurementValue.measurement.signatureInfos.algorithm,
@@ -603,7 +603,7 @@ class AlfenCrypt01 extends ACrypt {
 
         }
 
-        cryptoResult.status = VerificationResult.ValidSignature;
+        cryptoResult.status = chargyInterfaces.VerificationResult.ValidSignature;
         return cryptoResult;
 
     }
@@ -611,7 +611,7 @@ class AlfenCrypt01 extends ACrypt {
     async VerifyMeasurement(measurementValue: IAlfenMeasurementValue): Promise<IAlfenCrypt01Result>
     {
 
-        function setResult(verificationResult: VerificationResult)
+        function setResult(verificationResult: chargyInterfaces.VerificationResult)
         {
             cryptoResult.status     = verificationResult;
             measurementValue.result = cryptoResult;
@@ -624,26 +624,26 @@ class AlfenCrypt01 extends ACrypt {
         var cryptoBuffer  = new DataView(buffer);
 
         var cryptoResult:IAlfenCrypt01Result = {
-            status:                       VerificationResult.InvalidSignature,
-            adapterId:                    SetHex        (cryptoBuffer, measurementValue.measurement.adapterId,                                           0),
-            adapterFWVersion:             SetText       (cryptoBuffer, measurementValue.measurement.adapterFWVersion,                                    10),
-            adapterFWChecksum:            SetHex        (cryptoBuffer, measurementValue.measurement.adapterFWChecksum,                                   14),
-            meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                       16),
-            statusMeter:                  SetHex        (cryptoBuffer, measurementValue.statusMeter,                                                     26, true),
-            statusAdapter:                SetHex        (cryptoBuffer, measurementValue.statusAdapter,                                                   28, true),
-            secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                                    30, true),
-            timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                       34, false),
-            obisId:                       SetHex        (cryptoBuffer, OBIS2Hex(measurementValue.measurement.obis),                                      38, false),
-            unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                         44),
-            scalar:                       SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                               45),
-            value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                           46, true),
-            uid:                          SetText       (cryptoBuffer, (measurementValue.measurement.chargingSession?.authorizationStart["@id"] ?? ""),  54),
-            sessionId:                    SetUInt32     (cryptoBuffer, parseInt(measurementValue.measurement.chargingSession!["@id"]),                   74, true),
-            paging:                       SetUInt32     (cryptoBuffer, measurementValue.paginationId,                                                    78, true)
+            status:                       chargyInterfaces.VerificationResult.InvalidSignature,
+            adapterId:                    chargyLib.SetHex        (cryptoBuffer, measurementValue.measurement.adapterId,                                           0),
+            adapterFWVersion:             chargyLib.SetText       (cryptoBuffer, measurementValue.measurement.adapterFWVersion,                                    10),
+            adapterFWChecksum:            chargyLib.SetHex        (cryptoBuffer, measurementValue.measurement.adapterFWChecksum,                                   14),
+            meterId:                      chargyLib.SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                       16),
+            statusMeter:                  chargyLib.SetHex        (cryptoBuffer, measurementValue.statusMeter,                                                     26, true),
+            statusAdapter:                chargyLib.SetHex        (cryptoBuffer, measurementValue.statusAdapter,                                                   28, true),
+            secondsIndex:                 chargyLib.SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                                    30, true),
+            timestamp:                    chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                       34, false),
+            obisId:                       chargyLib.SetHex        (cryptoBuffer, chargyLib.OBIS2Hex(measurementValue.measurement.obis),                            38, false),
+            unitEncoded:                  chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                         44),
+            scalar:                       chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                               45),
+            value:                        chargyLib.SetUInt64     (cryptoBuffer, measurementValue.value,                                                           46, true),
+            uid:                          chargyLib.SetText       (cryptoBuffer, (measurementValue.measurement.chargingSession?.authorizationStart["@id"] ?? ""),  54),
+            sessionId:                    chargyLib.SetUInt32     (cryptoBuffer, parseInt(measurementValue.measurement.chargingSession!["@id"]),                   74, true),
+            paging:                       chargyLib.SetUInt32     (cryptoBuffer, measurementValue.paginationId,                                                    78, true)
         };
 
 
-        var signatureExpected = measurementValue.signatures[0] as IECCSignature;
+        var signatureExpected = measurementValue.signatures[0] as chargyInterfaces.IECCSignature;
         if (signatureExpected != null)
         {
 
@@ -676,21 +676,21 @@ class AlfenCrypt01 extends ACrypt {
                             try
                             {
 
-                                const publicKey  = buf2hex(this.chargy.base32Decode(cryptoResult.publicKey.toUpperCase(), 'RFC4648'));
+                                const publicKey  = chargyLib.buf2hex(this.chargy.base32Decode(cryptoResult.publicKey?.toUpperCase(), 'RFC4648'));
                                 let   result     = false;
 
                                 switch (meter.publicKeys[0].algorithm)
                                 {
 
                                     case "secp192r1":
-                                        cryptoResult.hashValue  = (await sha256(cryptoBuffer));
+                                        cryptoResult.hashValue  = (await chargyLib.sha256(cryptoBuffer));
                                         result                  = this.curve192r1.keyFromPublic(publicKey, 'hex').
                                                                                   verify       (cryptoResult.hashValue.toUpperCase(),
                                                                                                 cryptoResult.signature);
                                         break;
 
                                      case "curve224k1":
-                                        cryptoResult.hashValue  = (BigInt("0x" + (await sha256(cryptoBuffer))) >> BigInt(31));//.toString(16);
+                                        cryptoResult.hashValue  = (BigInt("0x" + (await chargyLib.sha256(cryptoBuffer))) >> BigInt(31));//.toString(16);
                                         result                  = this.curve224k1.validate(BigInt("0x" + cryptoResult.hashValue),
                                                                             BigInt("0x" + signatureExpected.r),
                                                                             BigInt("0x" + signatureExpected.s),
@@ -699,21 +699,21 @@ class AlfenCrypt01 extends ACrypt {
                                          break;
 
                                     case "curve256r1":
-                                        cryptoResult.hashValue  = (await sha256(cryptoBuffer));
+                                        cryptoResult.hashValue  = (await chargyLib.sha256(cryptoBuffer));
                                         result                  = this.curve192r1.keyFromPublic(publicKey, 'hex').
                                                                                   verify       (cryptoResult.hashValue.toUpperCase(),
                                                                                                 cryptoResult.signature);
                                         break;
 
                                     case "curve384r1":
-                                        cryptoResult.hashValue  = (await sha384(cryptoBuffer));
+                                        cryptoResult.hashValue  = (await chargyLib.sha384(cryptoBuffer));
                                         result                  = this.curve192r1.keyFromPublic(publicKey, 'hex').
                                                                                   verify       (cryptoResult.hashValue.toUpperCase(),
                                                                                                 cryptoResult.signature);
                                         break;
 
                                     case "curve521r1":
-                                        cryptoResult.hashValue  = (await sha512(cryptoBuffer));
+                                        cryptoResult.hashValue  = (await chargyLib.sha512(cryptoBuffer));
                                         result                  = this.curve192r1.keyFromPublic(publicKey, 'hex').
                                                                                   verify       (cryptoResult.hashValue.toUpperCase(),
                                                                                                 cryptoResult.signature);
@@ -723,37 +723,37 @@ class AlfenCrypt01 extends ACrypt {
 
                                 if (result)
                                 {
-                                    return setResult(VerificationResult.ValidSignature);
+                                    return setResult(chargyInterfaces.VerificationResult.ValidSignature);
                                 }
 
-                                return setResult(VerificationResult.InvalidSignature);
+                                return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
 
                             }
                             catch (exception)
                             {
-                                return setResult(VerificationResult.InvalidSignature);
+                                return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
                             }
 
                         }
                         catch (exception)
                         {
-                            return setResult(VerificationResult.InvalidPublicKey);
+                            return setResult(chargyInterfaces.VerificationResult.InvalidPublicKey);
                         }
 
                     }
 
                     else
-                        return setResult(VerificationResult.PublicKeyNotFound);
+                        return setResult(chargyInterfaces.VerificationResult.PublicKeyNotFound);
 
                 }
 
                 else
-                    return setResult(VerificationResult.EnergyMeterNotFound);
+                    return setResult(chargyInterfaces.VerificationResult.EnergyMeterNotFound);
 
             }
             catch (exception)
             {
-                return setResult(VerificationResult.InvalidSignature);
+                return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
             }
 
         }
@@ -790,25 +790,25 @@ class AlfenCrypt01 extends ACrypt {
             PlainTextDiv.style.maxHeight   = "";
             PlainTextDiv.style.overflowY   = "";
 
-            this.CreateLine("Adapter Id",                  measurementValue.measurement.adapterId,                                                   result.adapterId          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Adapter Firmware Version",    measurementValue.measurement.adapterFWVersion,                                            result.adapterFWVersion   || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Adapter Firmware Prüfsumme",  measurementValue.measurement.adapterFWChecksum,                                           result.adapterFWChecksum  || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Zählernummer",                measurementValue.measurement.energyMeterId,                                               result.meterId            || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Meter status",                hex2bin(measurementValue.statusMeter, true) + " (" + measurementValue.statusMeter + " hex)<br /><span class=\"statusInfos\">" +
+            this.CreateLine("Adapter Id",                  measurementValue.measurement.adapterId,                                                   result.adapterId              || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Adapter Firmware Version",    measurementValue.measurement.adapterFWVersion,                                            result.adapterFWVersion       || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Adapter Firmware Prüfsumme",  measurementValue.measurement.adapterFWChecksum,                                           result.adapterFWChecksum      || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Zählernummer",                measurementValue.measurement.energyMeterId,                                               result.meterId                || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Meter status",                chargyLib.hex2bin(measurementValue.statusMeter, true) + " (" + measurementValue.statusMeter + " hex)<br /><span class=\"statusInfos\">" +
                                                            this.DecodeMeterStatus(measurementValue.statusMeter).join("<br />") + "</span>",
-                                                                                                                                                     result.statusMeter        || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Adapter status",              hex2bin(measurementValue.statusAdapter, true) + " (" + measurementValue.statusAdapter + " hex)<br /><span class=\"statusInfos\">" +
-                                                           this.DecodeAdapterStatus(measurementValue.statusAdapter).join("<br />") + "</span>",
-                                                                                                                                                     result.statusAdapter      || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Sekundenindex",               measurementValue.secondsIndex,                                                            result.secondsIndex       || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Zeitstempel",                 UTC2human(measurementValue.timestamp),                                                    result.timestamp          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("OBIS-Kennzahl",               measurementValue.measurement.obis,                                                        result.obisId             || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Einheit (codiert)",           measurementValue.measurement.unitEncoded,                                                 result.unitEncoded        || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Skalierung",                  measurementValue.measurement.scale,                                                       result.scalar             || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Messwert",                    measurementValue.value + " Wh",                                                           result.value              || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Autorisierung",              (measurementValue.measurement.chargingSession?.authorizationStart["@id"] ?? "") + " hex",  pad(result.uid, 20)       || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("SessionId",                  (measurementValue.measurement.chargingSession?.["@id"] ?? ""),                             result.sessionId          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Paginierungszähler",          measurementValue.paginationId,                                                            result.paging             || "",  infoDiv, PlainTextDiv);
+                                                                                                                                                     result.statusMeter            || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Adapter status",              chargyLib.hex2bin(measurementValue.statusAdapter, true) + " (" + measurementValue.statusAdapter + " hex)<br /><span class=\"statusInfos\">" +
+                                                           this.DecodeAdapterStatus(measurementValue.statusAdapter).join("<br />") + "</span>",    
+                                                                                                                                                     result.statusAdapter          || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Sekundenindex",               measurementValue.secondsIndex,                                                            result.secondsIndex           || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Zeitstempel",                 chargyLib.UTC2human(measurementValue.timestamp),                                          result.timestamp              || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("OBIS-Kennzahl",               measurementValue.measurement.obis,                                                        result.obisId                 || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Einheit (codiert)",           measurementValue.measurement.unitEncoded,                                                 result.unitEncoded            || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Skalierung",                  measurementValue.measurement.scale,                                                       result.scalar                 || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Messwert",                    measurementValue.value + " Wh",                                                           result.value                  || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Autorisierung",              (measurementValue.measurement.chargingSession?.authorizationStart["@id"] ?? "") + " hex",  chargyLib.pad(result.uid, 20) || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("SessionId",                  (measurementValue.measurement.chargingSession?.["@id"] ?? ""),                             result.sessionId              || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Paginierungszähler",          measurementValue.paginationId,                                                            result.paging                 || "",  infoDiv, PlainTextDiv);
 
         }
 
@@ -842,7 +842,7 @@ class AlfenCrypt01 extends ACrypt {
                                                                              : "") +
                                                                          "base32)";
 
-            if (!IsNullOrEmpty(result.publicKey))
+            if (!chargyLib.IsNullOrEmpty(result.publicKey))
                 PublicKeyDiv.innerHTML                                 = result.publicKey.match(/.{1,4}/g)?.join(" ") ?? "";
 
 
@@ -851,7 +851,7 @@ class AlfenCrypt01 extends ACrypt {
             if (PublicKeyDiv.parentElement != null)
                 PublicKeyDiv.parentElement.children[3].innerHTML = "";
 
-            if (!IsNullOrEmpty(result.publicKeySignatures)) {
+            if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures)) {
 
                 for (let signature of result.publicKeySignatures)
                 {
@@ -908,27 +908,27 @@ class AlfenCrypt01 extends ACrypt {
             switch (result.status)
             {
 
-                case VerificationResult.UnknownCTRFormat:
+                case chargyInterfaces.VerificationResult.UnknownCTRFormat:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
                     break;
 
-                case VerificationResult.EnergyMeterNotFound:
+                case chargyInterfaces.VerificationResult.EnergyMeterNotFound:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
                     break;
 
-                case VerificationResult.PublicKeyNotFound:
+                case chargyInterfaces.VerificationResult.PublicKeyNotFound:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
                     break;
 
-                case VerificationResult.InvalidPublicKey:
+                case chargyInterfaces.VerificationResult.InvalidPublicKey:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
                     break;
 
-                case VerificationResult.InvalidSignature:
+                case chargyInterfaces.VerificationResult.InvalidSignature:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
                     break;
 
-                case VerificationResult.ValidSignature:
+                case chargyInterfaces.VerificationResult.ValidSignature:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
                     break;
 
