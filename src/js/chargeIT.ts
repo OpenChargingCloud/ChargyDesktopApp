@@ -339,7 +339,7 @@ class ChargeIT {
 
                     }
 
-                    else if (signedMeterValueContext === "oldChargeITMeterValueFormat")
+                    if (signedMeterValueContext === "oldChargeITMeterValueFormat")
                     {
 
                         let CTRArray = [];
@@ -747,6 +747,8 @@ class ChargeIT {
                                 ]
                             });
                         }
+
+                        CTR["status"] = SessionVerificationResult.ValidSignature;
 
                         return CTR;
 

@@ -109,7 +109,7 @@ interface IChargeTransparencyRecord
     chargingSessions?:          Array<IChargingSession>;
     eMobilityProviders?:        Array<IEMobilityProvider>;
     mediationServices?:         Array<IMediationService>;
-    verificatinResult?:         ISessionCryptoResult;
+    verificationResult?:        ISessionCryptoResult;
     invalidDataSets?:           Array<IExtendedFileInfo>;
 }
 

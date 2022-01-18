@@ -20,6 +20,8 @@
 ///<reference path="chargyLib.ts" />
 ///<reference path="ACrypt.ts" />
 
+//import fileType from 'file-type';
+
 class Chargy {
 
     //#region Data
@@ -203,7 +205,8 @@ class Chargy {
         if (FileInfos == null || FileInfos.length == 0)
             return FileInfos;
 
-        const fileType         = require('file-type');
+        //const fileType         = require('file-type');
+        const fileType         = import('file-type');
         const decompress       = require('decompress');
         const decompressTar    = require('decompress-tar');
         const decompressTargz  = require('decompress-targz');
@@ -232,15 +235,19 @@ class Chargy {
                     try
                     {
 
-                        const filetype = await fileType.fromBuffer(FileInfo.data);
-                        const mimeType = filetype?.mime;
+                        const filetype = await (await fileType).fileTypeFromBuffer(FileInfo.data);    //.fileTypeFromBuffer(FileInfo.data);
 
-                        if (mimeType != null              &&
-                            mimeType != undefined         &&
-                            mimeType != "text/xml"        &&
-                            mimeType != "text/json"       &&
-                            mimeType != "application/xml" &&
-                            mimeType != "application/json")
+                        if (filetype?.mime == undefined)
+                            expandedFileInfos.push({
+                                                  name:       FileInfo.name,
+                                                  data:       FileInfo.data,
+                                                  exception:  "Unknown file type!"
+                                              });
+
+                        else (filetype.mime.toString() != "text/xml"        &&
+                              filetype.mime.toString() != "text/json"       &&
+                              filetype.mime.toString() != "application/xml" &&
+                              filetype.mime.toString() != "application/json")
                         {
 
                             let compressedFiles:Array<TarInfo> = await decompress(Buffer.from(FileInfo.data),
