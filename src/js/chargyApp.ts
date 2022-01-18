@@ -15,17 +15,19 @@
  * limitations under the License.
  */
 
-// ToDo: Imports lead to strange errors!
 import { Chargy }             from './chargy.js'
 import * as chargyInterfaces  from './chargyInterfaces.js'
 import * as chargyLib         from './chargyLib.js'
+
+import * as L                 from 'leaflet';
+
 // import { debug } from "util";
 // import * as crypto from "crypto";
 // import { readSync } from "fs";
 // import { version } from "punycode";
 
-var map:     any  = "";
-var leaflet: any  = "";
+//var map:     any  = "";
+//var leaflet: any  = "";
 
 export function OpenLink(url: string)
 {
@@ -36,6 +38,9 @@ export function OpenLink(url: string)
 export class ChargyApp {
 
     //#region Data
+
+    private readonly leaflet:              any;
+    private readonly map23:                L.Map;
 
     private readonly elliptic:             any;
     private readonly moment:               any;
@@ -723,7 +728,7 @@ export class ChargyApp {
 
             // Clear the map and reset zoom bounds...
             while(this.markers.length > 0)
-                map.removeLayer(this.markers.pop());
+                this.map23.removeLayer(this.markers.pop());
 
             this.minlat = +1000;
             this.maxlat = -1000;
@@ -1077,6 +1082,21 @@ export class ChargyApp {
         }
 
         //#endregion
+
+
+        this.leaflet = L;
+        const mapDiv = document.getElementById('map') as HTMLElement;
+        this.map23     = L.map(mapDiv);
+        this.map23.setView([49.7325504, 10.1424442], 10);
+
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
+            tileSize: 512,
+            maxZoom: 18,
+            zoomOffset: -1,
+            id: 'mapbox/light-v10',
+            accessToken: 'pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w'
+        }).addTo(this.map23);
 
     }
 
@@ -1907,14 +1927,17 @@ export class ChargyApp {
 
                 //#region Add marker to map
 
-                var redMarker                 = leaflet.AwesomeMarkers.icon({
+                var leaflet = require('leaflet');
+                var ff      = require('leaflet.awesome-markers');
+
+                var redMarker                 = leaflet.AwesomeMarkers?.icon({
                     prefix:                     'fa',
                     icon:                       'exclamation',
                     markerColor:                'red',
                     iconColor:                  '#ecc8c3'
                 });
 
-                var greenMarker               = leaflet.AwesomeMarkers.icon({
+                var greenMarker               = leaflet.AwesomeMarkers?.icon({
                     prefix:                     'fa',
                     icon:                       'charging-station',
                     markerColor:                'green',
@@ -1957,7 +1980,7 @@ export class ChargyApp {
                 if (geoLocation != null)
                 {
 
-                    var marker = leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(map);
+                    var marker = leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(this.map23);
                     this.markers.push(marker);
 
                     if (this.minlat > geoLocation.lat)
@@ -2027,8 +2050,8 @@ export class ChargyApp {
             if (CTR.chargingSessions.length >= 1)
                 CTR.chargingSessions[0].GUI!.click();
 
-            map.fitBounds([[this.minlat, this.minlng], [this.maxlat, this.maxlng]],
-                          { padding: [40, 40] });
+            this.map23.fitBounds([[this.minlat, this.minlng], [this.maxlat, this.maxlng]],
+                               { padding: [40, 40] });
 
         }
 

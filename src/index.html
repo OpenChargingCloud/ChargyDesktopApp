@@ -26,7 +26,7 @@
     <meta name="description" content="Transparenzsoftware für die Elektromobilität">
     <meta name="author"      content="achim.friedland@graphdefined.com">
     <meta name="viewport"    content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://chargeit.charging.cloud/chargy/ https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://chargeit.charging.cloud/chargy/ https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';">
 
     <!--<link rel="icon"       href="/favicon.png"                 type="image/png" />-->
     <link rel="stylesheet" href="css/fontawesome-all.min.css"            type="text/css" />
@@ -35,8 +35,8 @@
     <link rel="stylesheet" href="css/chargy.css"                         type="text/css" />
 
     <script>var exports = {"__esModule": true};</script>
-    <script type="text/javascript" src="js/leaflet/leaflet.js"></script>
-    <script type="text/javascript" src="js/leaflet/leaflet.awesome-markers.js"></script>
+    <!-- <script type="text/javascript" src="js/leaflet/leaflet.js"></script>
+    <script type="text/javascript" src="js/leaflet/leaflet.awesome-markers.js"></script> -->
     <!-- <script type="text/javascript" src="js/chargyInterfaces.js"></script> -->
     <!-- <script type="text/javascript" src="js/chargyLib.js"></script> -->
     <!-- <script type="text/javascript" src="js/ACrypt.js"></script> -->
@@ -53,7 +53,7 @@
     <!-- <script type="text/javascript" src="js/Alfen01.js"></script> -->
     <!-- <script type="text/javascript" src="js/Mennekes.js"></script> -->
     <!-- <script type="module" src="js/chargy.js"></script> -->
-    <script type="module" src="./js/chargyApp.js"></script>
+    <script type="module" src="./js/chargyApp2.js"></script>
 
   </head>
 
@@ -471,18 +471,18 @@
       // You can also require other files to run in this process
       require('./renderer.cjs')
 
-      var ACCESS_TOKEN = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
+    //   var ACCESS_TOKEN = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
 
-      leaflet = L;
-      map     = L.map('map').setView([49.7325504, 10.1424442], 10);
+    //   leaflet = L;
+    //   map     = L.map('map').setView([49.7325504, 10.1424442], 10);
 
-      L.tileLayer('https://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + ACCESS_TOKEN, {
-          maxZoom: 18,
-          attribution: '<a href="http://openstreetmap.org">OSM</a> contr., ' +
-          '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-          'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-          id: 'ahzf.nc811hb2'
-      }).addTo(map);
+    //   L.tileLayer('https://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + ACCESS_TOKEN, {
+    //       maxZoom: 18,
+    //       attribution: '<a href="http://openstreetmap.org">OSM</a> contr., ' +
+    //       '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+    //       'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+    //       id: 'ahzf.nc811hb2'
+    //   }).addTo(map);
 
 
    //   import('./js/chargyApp.js');

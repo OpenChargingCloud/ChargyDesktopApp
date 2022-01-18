@@ -1,8 +1,9 @@
 { 
     "compilerOptions": {
       "target": "es6",
+      "module": "es2020",
       //"module": "commonjs",
-      "lib": ["dom", "es2018"],
+      "lib": ["dom", "es2020"],
       "moduleResolution": "node",
       "sourceMap": true,
       "emitDecoratorMetadata": true,

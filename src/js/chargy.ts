@@ -15,7 +15,14 @@
  * limitations under the License.
  */
 
-//import { fileTypeFromBuffer }                 from 'node:file-type'
+//import path from 'node:path'
+//import { fileURLToPath } from 'node:url'
+//import { createRequire } from 'module';
+
+import {Buffer} from 'node:buffer';
+//import { fileTypeFromBuffer }                 from '../../node_modules/file-type/browser.js'
+import { fileTypeFromBuffer }                 from 'file-type';
+
 import { Alfen01, AlfenCrypt01 }              from './Alfen01.js'
 import { BSMCrypt01 }                         from './BSMCrypt01.js'
 import { ChargeIT }                           from './chargeIT.js'
@@ -212,7 +219,8 @@ class Chargy {
         if (FileInfos == null || FileInfos.length == 0)
             return FileInfos;
 
-        //const fileType         = require('file-type');
+        //const require = createRequire(import.meta.url);
+
         const decompress       = require('decompress');
         const decompressTar    = require('decompress-tar');
         const decompressTargz  = require('decompress-targz');
@@ -241,9 +249,7 @@ class Chargy {
                     try
                     {
 
-                        var ft = require('file-type');
-
-                        const filetype = await ft. fileTypeFromBuffer(FileInfo.data);
+                        const filetype = await fileTypeFromBuffer(FileInfo.data);
 
                         if (filetype?.mime == undefined)
                             expandedFileInfos.push({
