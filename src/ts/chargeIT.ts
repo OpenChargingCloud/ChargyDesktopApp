@@ -750,7 +750,7 @@ export class ChargeIT {
                             });
                         }
 
-                        CTR["status"] = chargyInterfaces.SessionVerificationResult.ValidSignature;
+                        CTR["status"] = chargyInterfaces.SessionVerificationResult.Unvalidated;
 
                         return CTR;
 

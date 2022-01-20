@@ -444,7 +444,8 @@ export interface ISessionCryptoResult
 }
 
 export function isISessionCryptoResult(obj: any): obj is ISessionCryptoResult {
-    return obj.status !== undefined
+    return obj.status !== undefined &&
+           obj.status !== SessionVerificationResult.InvalidSessionFormat
 }
 
 export interface ICryptoResult
@@ -520,6 +521,7 @@ export enum SessionVerificationResult {
     PublicKeyNotFound,
     InvalidPublicKey,
     InvalidSignature,
+    Unvalidated,
     ValidSignature,
     InconsistentTimestamps,
     AtLeastTwoMeasurementsRequired
@@ -604,6 +606,7 @@ export interface IFileInfo {
     name:           string,
     path?:          string,
     data?:          ArrayBuffer,
+    info?:          string,
     error?:         string,
     exception?:     any
 }

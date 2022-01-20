@@ -398,6 +398,9 @@ export class Alfen01  {
                  );
             }
 
+
+            _CTR["status"] = chargyInterfaces.SessionVerificationResult.Unvalidated;
+
             //await this.processChargeTransparencyRecord(_CTR);
             return _CTR as chargyInterfaces.IChargeTransparencyRecord;
 

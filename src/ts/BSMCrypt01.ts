@@ -900,15 +900,15 @@ export class BSMCrypt01 extends ACrypt {
 
             let session = {
 
-                "@id":                          "XXX", //Content["@id"],
+                "@id":                          common.meterId + "-" + common.dataSets[0]["Epoch"],
                 "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/bsm-ws36a-v0+json",
                 "begin":                        common.dataSets[0].time,
                 "end":                          common.dataSets[n].time,
                 "EVSEId":                       CTR.chargingStationOperators![0]!["chargingStations"]![0]!["EVSEs"]![0]!["@id"],
 
                 "authorizationStart": {
-                    "@id":                      common.contractId,   //CTR.contract!["@id"],
-                    "@context":                 common.contractType, //CTRArray[0]["contract"]["type"],
+                    "@id":                      common.contractId,
+                    "@context":                 common.contractType,
                    //  "timestamp":                this.moment.unix(CTRArray[0]["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
                    //                                               CTRArray[0]["contract"]["timestampLocal"]["localOffset"] +
                    //                                               CTRArray[0]["contract"]["timestampLocal"]["seasonOffset"]).format(),
@@ -1238,7 +1238,7 @@ export class BSMCrypt01 extends ACrypt {
 
             // };
 
-            CTR["status"] = chargyInterfaces.SessionVerificationResult.ValidSignature;
+            CTR["status"] = chargyInterfaces.SessionVerificationResult.Unvalidated;
 
             return CTR;
 

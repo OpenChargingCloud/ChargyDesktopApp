@@ -247,16 +247,54 @@ export class Chargy {
                         const filetype = await fileTypeFromBuffer(FileInfo.data);
 
                         if (filetype?.mime == undefined)
-                            expandedFileInfos.push({
-                                                  name:       FileInfo.name,
-                                                  data:       FileInfo.data,
-                                                  exception:  "Unknown file type!"
-                                              });
+                        {
 
-                        else (filetype.mime.toString() != "text/xml"        &&
-                              filetype.mime.toString() != "text/json"       &&
-                              filetype.mime.toString() != "application/xml" &&
-                              filetype.mime.toString() != "application/json")
+                            if (FileInfo.name.endsWith(".chargy"))
+                                expandedFileInfos.push({
+                                                      name:       FileInfo.name,
+                                                      data:       FileInfo.data,
+                                                      info:       ".chargy file"
+                                                  });
+
+                            else
+                                expandedFileInfos.push({
+                                                      name:       FileInfo.name,
+                                                      data:       FileInfo.data,
+                                                      exception:  "Unknown file type!"
+                                                  });
+
+                            continue;
+
+                        }
+
+                        else if (filetype.mime.toString() === "text/xml" ||
+                                 filetype.mime.toString() === "application/xml"
+                                 )
+                        {
+                            expandedFileInfos.push({
+                                                  name:  FileInfo.name,
+                                                  data:  FileInfo.data,
+                                                  info:  "XML file"
+                                              });
+                            continue;
+                        }
+
+                        else if (filetype.mime.toString() === "text/json" ||
+                                 filetype.mime.toString() === "application/json"
+                                 )
+                        {
+                            expandedFileInfos.push({
+                                                  name:  FileInfo.name,
+                                                  data:  FileInfo.data,
+                                                  info:  "JSON file"
+                                              });
+                            continue;
+                        }
+
+                        else if (filetype.mime.toString() === "application/zip"     ||
+                                 filetype.mime.toString() === "application/x-bzip2" ||
+                                 filetype.mime.toString() === "application/gzip"    ||
+                                 filetype.mime.toString() === "application/x-tar")
                         {
 
                             let compressedFiles:Array<chargyInterfaces.TarInfo> = await decompress(Buffer.from(FileInfo.data),
@@ -278,8 +316,10 @@ export class Chargy {
 
                             if (compressedFiles.length == 1 && compressedFiles[0]?.path == null)
                             {
-                                expandedFileInfos.push({ name: FileInfo.name.substring(0, FileInfo.name.lastIndexOf('.')),
-                                                        data: compressedFiles[0]?.data });
+                                expandedFileInfos.push({
+                                                      name:  FileInfo.name.substring(0, FileInfo.name.lastIndexOf('.')),
+                                                      data:  compressedFiles[0]?.data
+                                                  });
                                 continue;
                             }
 
@@ -358,10 +398,10 @@ export class Chargy {
 
                         }
 
-                        expandedFileInfos.push({
-                                              name:  FileInfo.name,
-                                              data:  FileInfo.data
-                                          });
+                        // expandedFileInfos.push({
+                        //                       name:  FileInfo.name,
+                        //                       data:  FileInfo.data
+                        //                   });
 
                     }
                     catch (exception)
