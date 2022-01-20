@@ -15,21 +15,21 @@
  * limitations under the License.
  */
 
-const enum OCMFTransactionTypes
+export const enum OCMFTransactionTypes
 {
     undefined,
     fiscal,
     transaction
 }
 
-const enum TimeStatusTypes {
+export const enum TimeStatusTypes {
     unknown,
     informative,
     syncronized,
     relative
 }
 
-interface IOCMFReading {
+export interface IOCMFReading {
     TM:         string, // Timestamp
     TX?:        string, // Transaction
     RV?:        string, // typeof RV == 'number', but MUST NOT be rounded!
@@ -40,14 +40,14 @@ interface IOCMFReading {
     ST:         string  // Status
 }
 
-interface IOCMFSignature {
+export interface IOCMFSignature {
     SA?:        string,
     SE?:        string,
     SM?:        string,
     SD:         string
 }
 
-interface IOCMFData {
+export interface IOCMFData {
 
     FV:         string,
 
@@ -74,12 +74,12 @@ interface IOCMFData {
 
 }
 
-interface IOCMFData_v0_1 extends IOCMFData {
+export interface IOCMFData_v0_1 extends IOCMFData {
     VI:         string,
     VV:         string,
 }
 
-interface IOCMFData_v1_0 extends IOCMFData {
+export interface IOCMFData_v1_0 extends IOCMFData {
     GI:         string,
     GS:         string,
     GV:         string,

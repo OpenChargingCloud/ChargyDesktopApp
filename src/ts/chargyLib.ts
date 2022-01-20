@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-function ParseJSON_LD<T>(Text:     string,
-                         Context:  string = ""): T {
+export function ParseJSON_LD<T>(Text:     string,
+                                Context:  string = ""): T {
 
     let JObject = JSON.parse(Text);
 
@@ -26,17 +26,17 @@ function ParseJSON_LD<T>(Text:     string,
 
 }
 
-function firstKey(obj: any) {
+export function firstKey(obj: any) {
     for (let a in obj)
         return a;
 }
 
-function firstValue(obj: any) {
+export function firstValue(obj: any) {
     for (let a in obj)
         return obj[a];
 }
 
-function parseUTC(UTCTime: string|number): any {
+export function parseUTC(UTCTime: string|number): any {
 
     const moment = require('moment');
 
@@ -48,7 +48,7 @@ function parseUTC(UTCTime: string|number): any {
 
 }
 
-function time2human(Time: string|number): any {
+export function time2human(Time: string|number): any {
 
     const moment = require('moment');
 
@@ -64,7 +64,7 @@ function time2human(Time: string|number): any {
 
 }
 
-function UTC2human(UTCTime: string|number): any {
+export function UTC2human(UTCTime: string|number): any {
 
     const moment = require('moment');
 
@@ -80,7 +80,7 @@ function UTC2human(UTCTime: string|number): any {
 
 }
 
-function parseOBIS(OBIS: string): string
+export function parseOBIS(OBIS: string): string
 {
 
     if (OBIS.length != 12)
@@ -107,9 +107,9 @@ function parseOBIS(OBIS: string): string
 
 }
 
-const OBIS_RegExpr = new RegExp("((\\d+)\\-)?((\\d+):)?((\\d+)\\.)(\\d+)(\\.(\\d+))?(\\*(\\d+))?");
+export const OBIS_RegExpr = new RegExp("((\\d+)\\-)?((\\d+):)?((\\d+)\\.)(\\d+)(\\.(\\d+))?(\\*(\\d+))?");
 
-function OBIS2Hex(OBIS: string): string
+export function OBIS2Hex(OBIS: string): string
 {
 
     //  1-0:1.8.0*255 => 0100010800ff
@@ -127,7 +127,7 @@ function OBIS2Hex(OBIS: string): string
 
 }
 
-function OBIS2MeasurementName(In: string) : string
+export function OBIS2MeasurementName(In: string) : string
 {
     switch (In)
     {
@@ -150,7 +150,7 @@ function OBIS2MeasurementName(In: string) : string
     }
 }
 
-function measurementName2human(In: string) : string
+export function measurementName2human(In: string) : string
 {
     switch (In)
     {
@@ -164,11 +164,11 @@ function measurementName2human(In: string) : string
     }
 }
 
-function IsNullOrEmpty(value: string|undefined): boolean {
+export function IsNullOrEmpty(value: string|undefined): boolean {
     return (!value || value === null || value == undefined || value == "" || value.length == 0);
 }
 
-function WhenNullOrEmpty(value: string|undefined, replacement: string): string {
+export function WhenNullOrEmpty(value: string|undefined, replacement: string): string {
 
     if (!value || value === null || value == undefined || value == "" || value.length == 0)
         return replacement;
@@ -177,7 +177,7 @@ function WhenNullOrEmpty(value: string|undefined, replacement: string): string {
 
 }
 
-function hex2bin(hex: string, Reverse?: Boolean) : string {
+export function hex2bin(hex: string, Reverse?: Boolean) : string {
 
     if (Reverse)
     {
@@ -195,13 +195,13 @@ function hex2bin(hex: string, Reverse?: Boolean) : string {
 
 }
 
-function hex32(val: number) {
+export function hex32(val: number) {
     val &= 0xFFFFFFFF;
     let hex = val.toString(16).toUpperCase();
     return ("00000000" + hex).slice(-8);
 }
 
-function parseHexString(str: string): number[] {
+export function parseHexString(str: string): number[] {
 
     let result:number[] = [];
 
@@ -214,7 +214,7 @@ function parseHexString(str: string): number[] {
 
 }
 
-function createHexString(arr: Iterable<number>) {
+export function createHexString(arr: Iterable<number>) {
 
     let result = "";
 
@@ -231,11 +231,11 @@ function createHexString(arr: Iterable<number>) {
 
 }
 
-function buf2hex(buffer: ArrayBuffer) {
+export function buf2hex(buffer: ArrayBuffer) {
     return Array.prototype.map.call(new Uint8Array(buffer), (x:number) => ('00' + x.toString(16)).slice(-2)).join('');
 }
 
-function hexToArrayBuffer(hex: string): ArrayBuffer {
+export function hexToArrayBuffer(hex: string): ArrayBuffer {
 
     if ((hex.length % 2) !== 0) {
         throw new RangeError('Expected string to be an even number of characters')
@@ -251,12 +251,12 @@ function hexToArrayBuffer(hex: string): ArrayBuffer {
 
 }
 
-function intFromBytes(x: number[]){
+export function intFromBytes(x: number[]){
 
     let val = 0;
 
     for (let i = 0; i < x.length; ++i) {
-        val += x[i];
+        val += x[i] ?? 0;
         if (i < x.length-1) {
             val = val << 8;
         }
@@ -266,7 +266,7 @@ function intFromBytes(x: number[]){
 
 }
 
-function getInt8Bytes(x: number) : number[] {
+export function getInt8Bytes(x: number) : number[] {
 
     let bytes:number[] = [];
     let i              = 1;
@@ -280,7 +280,7 @@ function getInt8Bytes(x: number) : number[] {
 
 }
 
-function getInt16Bytes(x: number) : number[] {
+export function getInt16Bytes(x: number) : number[] {
 
     let bytes:number[] = [];
     let i              = 2;
@@ -294,7 +294,7 @@ function getInt16Bytes(x: number) : number[] {
 
 }
 
-function getInt32Bytes(x: number) : number[] {
+export function getInt32Bytes(x: number) : number[] {
 
     let bytes:number[]  = [];
     let i               = 4;
@@ -308,7 +308,7 @@ function getInt32Bytes(x: number) : number[] {
 
 }
 
-function getInt64Bytes(x: number) : number[] {
+export function getInt64Bytes(x: number) : number[] {
 
     let bytes:number[]  = [];
     let i               = 8;
@@ -322,7 +322,7 @@ function getInt64Bytes(x: number) : number[] {
 
 }
 
-function SetHex(dv: DataView, hex: string, offset: number, reverse?: boolean): string
+export function SetHex(dv: DataView, hex: string, offset: number, reverse?: boolean): string
 {
 
     const bytes   = parseHexString(hex);
@@ -333,15 +333,15 @@ function SetHex(dv: DataView, hex: string, offset: number, reverse?: boolean): s
         bytes.reverse();
 
     for (let i = 0; i < bytes.length; i++) {
-        dv.setUint8(offset + i, bytes[i]);
-        tv.setUint8(i,          bytes[i]);
+        dv.setUint8(offset + i, bytes[i] ?? 0);
+        tv.setUint8(i,          bytes[i] ?? 0);
     }
 
     return buf2hex(buffer);
 
 }
 
-function SetTimestamp(dv: DataView, timestamp: any, offset: number, addLocalOffset: boolean = true): string
+export function SetTimestamp(dv: DataView, timestamp: any, offset: number, addLocalOffset: boolean = true): string
 {
 
     if (typeof timestamp === 'string')
@@ -353,15 +353,15 @@ function SetTimestamp(dv: DataView, timestamp: any, offset: number, addLocalOffs
     const tv        = new DataView(buffer);
 
     for (let i = 4; i < bytes.length; i++) {
-        dv.setUint8(offset + (bytes.length - i - 1), bytes[i]);
-        tv.setUint8(bytes.length - i - 1,            bytes[i]);
+        dv.setUint8(offset + (bytes.length - i - 1), bytes[i] ?? 0);
+        tv.setUint8(bytes.length - i - 1,            bytes[i] ?? 0);
     }
 
     return buf2hex(buffer);
 
 }
 
-function SetTimestamp32(dv: DataView, timestamp: any, offset: number, addLocalOffset: boolean = true): string
+export function SetTimestamp32(dv: DataView, timestamp: any, offset: number, addLocalOffset: boolean = true): string
 {
 
     if (typeof timestamp === 'string')
@@ -373,15 +373,15 @@ function SetTimestamp32(dv: DataView, timestamp: any, offset: number, addLocalOf
     const tv        = new DataView(buffer);
 
     for (let i = 4; i < bytes.length; i++) {
-        dv.setUint8(offset + (bytes.length - i - 1), bytes[i]);
-        tv.setUint8(bytes.length - i - 1,            bytes[i]);
+        dv.setUint8(offset + (bytes.length - i - 1), bytes[i] ?? 0);
+        tv.setUint8(bytes.length - i - 1,            bytes[i] ?? 0);
     }
 
     return buf2hex(buffer);
 
 }
 
-function SetInt8(dv: DataView, value: number, offset: number): string
+export function SetInt8(dv: DataView, value: number, offset: number): string
 {
 
     const buffer  = new ArrayBuffer(1);
@@ -394,7 +394,7 @@ function SetInt8(dv: DataView, value: number, offset: number): string
 
 }
 
-function SetUInt32(dv: DataView, value: number, offset: number, reverse?: boolean): string
+export function SetUInt32(dv: DataView, value: number, offset: number, reverse?: boolean): string
 {
 
     const bytes   = getInt32Bytes(value);
@@ -405,15 +405,15 @@ function SetUInt32(dv: DataView, value: number, offset: number, reverse?: boolea
         bytes.reverse();
 
     for (let i = 0; i < bytes.length; i++) {
-        dv.setUint8(offset + i, bytes[i]);
-        tv.setUint8(i,          bytes[i]);
+        dv.setUint8(offset + i, bytes[i] ?? 0);
+        tv.setUint8(i,          bytes[i] ?? 0);
     }
 
     return buf2hex(buffer);
 
 }
 
-function SetUInt64(dv: DataView, value: number, offset: number, reverse?: boolean): string
+export function SetUInt64(dv: DataView, value: number, offset: number, reverse?: boolean): string
 {
 
     const bytes   = getInt64Bytes(value);
@@ -424,15 +424,15 @@ function SetUInt64(dv: DataView, value: number, offset: number, reverse?: boolea
         bytes.reverse();
 
     for (let i = 0; i < bytes.length; i++) {
-        dv.setUint8(offset + i, bytes[i]);
-        tv.setUint8(i,          bytes[i]);
+        dv.setUint8(offset + i, bytes[i] ?? 0);
+        tv.setUint8(i,          bytes[i] ?? 0);
     }
 
     return buf2hex(buffer);
 
 }
 
-function SetText(dv: DataView, text: string, offset: number): string
+export function SetText(dv: DataView, text: string, offset: number): string
 {
 
     //var bytes = new TextEncoder("utf-8").encode(text);
@@ -441,8 +441,8 @@ function SetText(dv: DataView, text: string, offset: number): string
     const tv      = new DataView(buffer);
 
     for (let i = 0; i < bytes.length; i++) {
-        dv.setUint8(offset + i, bytes[i]);
-        tv.setUint8(i,          bytes[i]);
+        dv.setUint8(offset + i, bytes[i] ?? 0);
+        tv.setUint8(i,          bytes[i] ?? 0);
     }
 
     return buf2hex(buffer);
@@ -450,7 +450,7 @@ function SetText(dv: DataView, text: string, offset: number): string
 }
 
 
-function SetUInt32_withCode(dv: DataView, value: number, scale: number, obis: number, offset: number, reverse?: boolean): string
+export function SetUInt32_withCode(dv: DataView, value: number, scale: number, obis: number, offset: number, reverse?: boolean): string
 {
 
     const valueBytes  = getInt32Bytes(value);
@@ -463,14 +463,14 @@ function SetUInt32_withCode(dv: DataView, value: number, scale: number, obis: nu
         valueBytes.reverse();
 
     for (let i = 0; i < valueBytes.length; i++) {
-        dv.setUint8(offset + i, valueBytes[i]);
-        tv.setUint8(i,          valueBytes[i]);
+        dv.setUint8(offset + i, valueBytes[i] ?? 0);
+        tv.setUint8(i,          valueBytes[i] ?? 0);
     }
 
-    dv.setUint8(offset + valueBytes.length,     scaleBytes[0]);
-    tv.setInt8 (         valueBytes.length,     scaleBytes[0]);
-    dv.setUint8(offset + valueBytes.length + 1, obisBytes[0]);
-    tv.setInt8 (         valueBytes.length + 1, obisBytes[0]);
+    dv.setUint8(offset + valueBytes.length,     scaleBytes[0] ?? 0);
+    tv.setInt8 (         valueBytes.length,     scaleBytes[0] ?? 0);
+    dv.setUint8(offset + valueBytes.length + 1, obisBytes[0]  ?? 0);
+    tv.setInt8 (         valueBytes.length + 1, obisBytes[0]  ?? 0);
 
     const result = buf2hex(buffer);
 
@@ -478,7 +478,7 @@ function SetUInt32_withCode(dv: DataView, value: number, scale: number, obis: nu
 
 }
 
-function SetText_withLength(dv: DataView, text: string, offset: number): string
+export function SetText_withLength(dv: DataView, text: string, offset: number): string
 {
 
     //var bytes = new TextEncoder("utf-8").encode(text);
@@ -490,8 +490,8 @@ function SetText_withLength(dv: DataView, text: string, offset: number): string
     tv.setInt32(0,      bytes.length);
 
     for (let i = 0; i < bytes.length; i++) {
-        dv.setUint8(offset + 4 + i, bytes[i]);
-        tv.setUint8(         4 + i, bytes[i]);
+        dv.setUint8(offset + 4 + i, bytes[i] ?? 0);
+        tv.setUint8(         4 + i, bytes[i] ?? 0);
     }
 
     const result = buf2hex(buffer);
@@ -503,7 +503,7 @@ function SetText_withLength(dv: DataView, text: string, offset: number): string
 }
 
 
-function Clone(obj: any) {
+export function Clone(obj: any) {
 
     if (obj == null || typeof(obj) != 'object')
         return obj;
@@ -518,7 +518,7 @@ function Clone(obj: any) {
 }
 
 
-function openFullscreen() {
+export function openFullscreen() {
 
     var elem = document.documentElement as any;
 
@@ -537,7 +537,7 @@ function openFullscreen() {
 
 }
 
-function closeFullscreen() {
+export function closeFullscreen() {
 
     var d = document as any;
 
@@ -557,9 +557,9 @@ function closeFullscreen() {
 }
 
 
-function CreateDiv(ParentDiv:   HTMLDivElement,
-                   ClassName?:  string,
-                   InnerHTML?:  string) : HTMLDivElement
+export function CreateDiv(ParentDiv:   HTMLDivElement,
+                          ClassName?:  string,
+                          InnerHTML?:  string) : HTMLDivElement
 {
 
     let childDiv            = ParentDiv.appendChild(document.createElement('div'));
@@ -574,12 +574,12 @@ function CreateDiv(ParentDiv:   HTMLDivElement,
 
 }
 
-function CreateDiv2(ParentDiv:        HTMLDivElement,
-                    ChildClassName:   string,
-               //     ChildAClassName:  string,
-                    ChildAInnerHTML:  string,
-              //      ChildBClassName:  string,
-                    ChildBInnerHTML:  string) : HTMLDivElement
+export function CreateDiv2(ParentDiv:        HTMLDivElement,
+                           ChildClassName:   string,
+                      //     ChildAClassName:  string,
+                           ChildAInnerHTML:  string,
+                     //      ChildBClassName:  string,
+                           ChildBInnerHTML:  string) : HTMLDivElement
 {
 
     let childDiv            = ParentDiv.appendChild(document.createElement('div'));
@@ -598,7 +598,7 @@ function CreateDiv2(ParentDiv:        HTMLDivElement,
 }
 
 
-function OpenExternal(URL: string)
+export function OpenExternal(URL: string)
 {
 
     var shell = require('electron').shell;
@@ -608,20 +608,20 @@ function OpenExternal(URL: string)
 }
 
 
-interface String {
+export interface String {
     isNullOrEmpty(): boolean;
     isNotNullOrEmpty(): boolean;
 }
 
-String.prototype.isNullOrEmpty = function() {
-    return !(typeof this === "string" && this.length > 0);
-}
+// String.prototype.isNullOrEmpty = function() {
+//     return !(typeof this === "string" && this.length > 0);
+// }
 
-String.prototype.isNotNullOrEmpty = function() {
-    return typeof this === "string" && this.length > 0;
-}
+// String.prototype.isNotNullOrEmpty = function() {
+//     return typeof this === "string" && this.length > 0;
+// }
 
-function pad(text: string|undefined, paddingValue: number) {
+export function pad(text: string|undefined, paddingValue: number) {
 
     if (text == null || text == undefined)
         text = "";
@@ -630,24 +630,24 @@ function pad(text: string|undefined, paddingValue: number) {
 
 };
 
-async function sha224(message: string|DataView) {
+// export async function sha224(message: string|DataView) {
 
-    let hashBuffer = null;
-    const SHA224 = require("sha224");
+//     let hashBuffer = null;
+//     const SHA224 = require("sha224");
 
-    if (typeof message === 'string')
-        hashBuffer = SHA224(Buffer.from(message, 'utf8'));
-    else
-        hashBuffer = SHA224(message);
+//     if (typeof message === 'string')
+//         hashBuffer = SHA224(Buffer.from(message, 'utf8'));
+//     else
+//         hashBuffer = SHA224(message);
 
-  //  const hashArray  = Array.from(hashBuffer);                                       // convert hash to byte array
-    const hashHex    = hashBuffer.toString("hex");
+//   //  const hashArray  = Array.from(hashBuffer);                                       // convert hash to byte array
+//     const hashHex    = hashBuffer.toString("hex");
 
-    return hashHex;
+//     return hashHex;
 
-}
+// }
 
-async function sha256(message: string|DataView) {
+export async function sha256(message: string|DataView) {
 
     let hashBuffer = null;
 
@@ -663,7 +663,7 @@ async function sha256(message: string|DataView) {
 
 }
 
-async function sha384(message: string|DataView) {
+export async function sha384(message: string|DataView) {
 
     let hashBuffer = null;
 
@@ -679,7 +679,7 @@ async function sha384(message: string|DataView) {
 
 }
 
-async function sha512(message: string|DataView) {
+export async function sha512(message: string|DataView) {
 
     let hashBuffer = null;
 
@@ -696,21 +696,21 @@ async function sha512(message: string|DataView) {
 }
 
 
-function isMandatoryString(x: any): x is string {
+export function isMandatoryString(x: any): x is string {
     return x !== undefined && x !== null && typeof x === "string";
 }
 
-function isOptionalString(x: any): x is string {
+export function isOptionalString(x: any): x is string {
     return x !== undefined && x !== null
                ? typeof x === "string"
                : true;
 }
 
-function isMandatoryNumber(x: any): x is number {
+export function isMandatoryNumber(x: any): x is number {
     return x !== undefined && x !== null && typeof x === "number";
 }
 
-function isOptionalNumber(x: any): x is number {
+export function isOptionalNumber(x: any): x is number {
     return x !== undefined && x !== null
                ? typeof x === "number"
                : true;

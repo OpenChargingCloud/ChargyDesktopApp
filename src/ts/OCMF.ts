@@ -15,14 +15,12 @@
  * limitations under the License.
  */
 
-///<reference path="certificates.ts" />
-///<reference path="chargyInterfaces.ts" />
-///<reference path="chargyLib.ts" />
-///<reference path="Alfen01.ts" />
-///<reference path="OCMFTypes.ts" />
-///<reference path="OCMFv1_0.ts" />
+import { Chargy }             from './chargy'
+import * as ocmfTypes         from './OCMFTypes'
+import * as chargyInterfaces  from './chargyInterfaces'
 
-class OCMF {
+
+export class OCMF {
 
     private readonly chargy: Chargy;
 
@@ -32,8 +30,8 @@ class OCMF {
 
     //#region tryToParseOCMFv0_1(OCMFData, PublicKey?)
 
-    private async tryToParseOCMFv0_1(OCMFData:    IOCMFData_v0_1,
-                                     PublicKey?:  string) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+    private async tryToParseOCMFv0_1(OCMFData:    ocmfTypes.IOCMFData_v0_1,
+                                     PublicKey?:  string) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         // {
@@ -71,16 +69,16 @@ class OCMF {
             let VendorVersion      :string = OCMFData.VV != null ? OCMFData.VV.trim() : ""; // Software version of the vendor.
 
             let paging             :string = OCMFData.PG != null ? OCMFData.PG.trim() : ""; // Paging, as this data might be part of a larger context.
-            let transactionType     = OCMFTransactionTypes.undefined;
-            switch (paging[0].toLowerCase())
+            let transactionType     = ocmfTypes.OCMFTransactionTypes.undefined;
+            switch (paging[0]?.toLowerCase())
             {
 
                 case 't':
-                    transactionType = OCMFTransactionTypes.transaction;
+                    transactionType = ocmfTypes.OCMFTransactionTypes.transaction;
                     break;
 
                 case 'f':
-                    transactionType = OCMFTransactionTypes.fiscal;
+                    transactionType = ocmfTypes.OCMFTransactionTypes.fiscal;
                     break
 
             }
@@ -92,13 +90,13 @@ class OCMF {
             let MeterFirmware      :string = OCMFData.MF != null ? OCMFData.MF.trim() : ""; // Software version of the device.
 
             return {
-                status:   SessionVerificationResult.InvalidSessionFormat
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
             }
 
         } catch (exception)
         {
             return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }
@@ -109,8 +107,8 @@ class OCMF {
 
     //#region tryToParseOCMFv1_0(OCMFData, PublicKey?)
 
-    public async tryToParseOCMF(OCMFValues:  IOCMFData_v1_0[],
-                                PublicKey?:  string) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+    public async tryToParseOCMF(OCMFValues:  ocmfTypes.IOCMFData_v1_0[],
+                                PublicKey?:  string) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         try
@@ -274,16 +272,16 @@ class OCMF {
                 let GatewayVersion     :string    = OCMFData.GV != null ? OCMFData.GV.trim() : ""; // Software version of the gateway.
 
                 let paging             :string    = OCMFData.PG != null ? OCMFData.PG.trim() : ""; // Paging, as this data might be part of a larger context.
-                let TransactionType               = OCMFTransactionTypes.undefined;
-                switch (paging[0].toLowerCase())
+                let TransactionType               = ocmfTypes.OCMFTransactionTypes.undefined;
+                switch (paging[0]?.toLowerCase())
                 {
 
                     case 't':
-                        TransactionType = OCMFTransactionTypes.transaction;
+                        TransactionType = ocmfTypes.OCMFTransactionTypes.transaction;
                         break;
 
                     case 'f':
-                        TransactionType = OCMFTransactionTypes.fiscal;
+                        TransactionType = ocmfTypes.OCMFTransactionTypes.fiscal;
                         break
 
                 }
@@ -305,7 +303,7 @@ class OCMF {
 
                 if (!OCMFData.RD || OCMFData.RD.length == 0)
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Each OCMF data set must have at least one meter reading!"
                     }
 
@@ -371,7 +369,7 @@ class OCMF {
         catch (exception)
         {
             return {
-                status:   SessionVerificationResult.InvalidSessionFormat,
+                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
             }
         }
@@ -384,7 +382,7 @@ class OCMF {
     //#region Try
 
     public async tryToParseOCMF2(OCMFValues:  string|string[],
-                                 PublicKey?:  string) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
+                                 PublicKey?:  string) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         let commonVersion          = "";
@@ -404,7 +402,7 @@ class OCMF {
 
                 if (OCMFSections[0] !== "OCMF")
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "The given data does not have a valid OCMF header!"
                     }
 
@@ -453,28 +451,28 @@ class OCMF {
                     //     "SD": "304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"
                     // }
 
-                    OCMFData       = JSON.parse(OCMFSections[1]);
-                    OCMFSignature  = JSON.parse(OCMFSections[2]);
+                    OCMFData       = JSON.parse(OCMFSections[1] ?? "{}");
+                    OCMFSignature  = JSON.parse(OCMFSections[2] ?? "{}");
                     OCMFVersion    = OCMFData["FV"] != null ? OCMFData["FV"].trim() : ""; 
 
                 }
                 catch (exception)
                 {
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Could not parse the given OCMF data!"
                     }
                 }
 
                 if (OCMFData      == null || OCMFData      == {})
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Could not parse the given OCMF data!"
                     }
 
                 if (OCMFSignature == null || OCMFSignature == {})
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Could not parse the given OCMF signature!"
                     }
 
@@ -492,7 +490,7 @@ class OCMF {
 
             else
                 return {
-                    status:   SessionVerificationResult.InvalidSessionFormat,
+                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "The given data is not valid OCMF!"
                 }
 
@@ -500,7 +498,7 @@ class OCMF {
 
         if (OCMFDataList.length == 1)
             return {
-                status:   SessionVerificationResult.AtLeastTwoMeasurementsRequired,
+                status:   chargyInterfaces.SessionVerificationResult.AtLeastTwoMeasurementsRequired,
                 message:  "At least two OCMF measurements are required!"
             }
 
@@ -513,11 +511,11 @@ class OCMF {
                 //     return await this.tryToParseOCMFv0_1(OCMFDataList as IOCMFData_v0_1[], PublicKey);
 
                 case "1.0":
-                    return await this.tryToParseOCMF(OCMFDataList as IOCMFData_v1_0[], PublicKey);
+                    return await this.tryToParseOCMF(OCMFDataList as ocmfTypes.IOCMFData_v1_0[], PublicKey);
 
                 default:
                     return {
-                        status:   SessionVerificationResult.InvalidSessionFormat,
+                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Unknown OCMF version!"
                     }
 
@@ -525,7 +523,7 @@ class OCMF {
         }
 
         return {
-            status:   SessionVerificationResult.InvalidSessionFormat,
+            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
             message:  "Unknown OCMF version!"
         }
 

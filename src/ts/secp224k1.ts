@@ -28,7 +28,7 @@
  * Actual curve: y^2 = x^3 + Acurve * x + Bcurve
   */
 
-class secp224k1 {
+export class secp224k1 {
 
     // Pcurve = 2**224 - 2**32 - 2**12 - 2**11 - 2**9 - 2**7 - 2**4 - 2**1 - 1 or
     //          FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE FFFFE56D
@@ -52,11 +52,11 @@ class secp224k1 {
                 privateKey:    bigint)
     {
 
-      let RandSignPoint  = this.ECmultiply(this.GPoint, RandomNumber);
-      let r              = this.modulo(RandSignPoint[0], this.N);
-      let s              = this.modulo((hash + r*privateKey) * (this.modInv(RandomNumber, this.N)), this.N);
+        const RandSignPoint  = this.ECmultiply(this.GPoint, RandomNumber);
+        const r              = this.modulo(RandSignPoint[0]!, this.N);
+        const s              = this.modulo((hash + r*privateKey) * (this.modInv(RandomNumber, this.N)), this.N);
 
-      return [ r, s ];
+        return [ r, s ];
 
     }
 
@@ -72,10 +72,10 @@ class secp224k1 {
         if (signatureS==this.Zero || signatureS>=this.N)
             throw "Invalid S";
 
-        let w           = this.modInv(signatureS, this.N);
-        let u1          = this.ECmultiply(this.GPoint, this.modulo(w * hash,       this.N));
-        let u2          = this.ECmultiply(PublicKey,   this.modulo(w * signatureR, this.N));
-        let validation  = this.ECadd(u1, u2);
+        const w           = this.modInv(signatureS, this.N);
+        const u1          = this.ECmultiply(this.GPoint, this.modulo(w * hash,       this.N));
+        const u2          = this.ECmultiply(PublicKey,   this.modulo(w * signatureR, this.N));
+        const validation  = this.ECadd(u1, u2);
 
         return validation[0] == signatureR;
 
@@ -122,9 +122,9 @@ class secp224k1 {
 
     public ECadd(a: Array<bigint>, b: Array<bigint>) {
 
-        let LamAdd  = this.modulo((b[1]-a[1])*( this.modInv( b[0]-a[0] ) ), this.Pcurve);
-        let x       = this.modulo((LamAdd*LamAdd)-a[0]-b[0], this.Pcurve);
-        let y       = this.modulo((LamAdd*( a[0]-x )-a[1]),  this.Pcurve);
+        let LamAdd  = this.modulo((b[1]!-a[1]!)*( this.modInv( b[0]!-a[0]! ) ), this.Pcurve);
+        let x       = this.modulo((LamAdd*LamAdd)-a[0]!-b[0]!, this.Pcurve);
+        let y       = this.modulo((LamAdd*( a[0]!-x )-a[1]!),  this.Pcurve);
 
         return [x, y];
 
@@ -132,9 +132,9 @@ class secp224k1 {
 
     public ECdouble(a: Array<bigint>) {
 
-        let Lam  = this.modulo((((a[0]*a[0])*this.Three) + this.Acurve)*( this.modInv( a[1]*this.Two )), this.Pcurve);
-        let x    = this.modulo((Lam*Lam)-(a[0]*this.Two),  this.Pcurve);
-        let y    = this.modulo( Lam*( a[0]-x )-a[1],       this.Pcurve);
+        let Lam  = this.modulo((((a[0]!*a[0]!)*this.Three) + this.Acurve)*( this.modInv( a[1]!*this.Two )), this.Pcurve);
+        let x    = this.modulo((Lam*Lam)-(a[0]!*this.Two),  this.Pcurve);
+        let y    = this.modulo( Lam*( a[0]!-x )-a[1]!,       this.Pcurve);
 
         return [x, y];
 
@@ -184,7 +184,7 @@ class secp224k1 {
         //                         : "02" + Px;
         // let xy            = [ Px, Py ];
 
-        return [ PublicKey[0], PublicKey[1] ];
+        return [ PublicKey[0]!, PublicKey[1]! ];
 
     }
 
