@@ -2,7 +2,7 @@
 module.exports = [
     {
       mode: 'development',
-      entry: './src/js/chargyApp.ts',
+      entry: './src/ts/chargyApp.ts',
       target: 'electron-renderer',
       devtool: "eval-source-map",
       resolve: {
