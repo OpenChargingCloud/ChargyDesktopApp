@@ -1,14 +1,5 @@
 // Modules to control application life and create native browser window
 
-// require = require("esm")(module)
-// module.exports = require("./js/electronMain.js")
-
-
-
-// import path from 'node:path'
-// import { fileURLToPath } from 'node:url'
-// import { createRequire } from 'node:module'
-// const require = createRequire(import.meta.url)
 const { app, BrowserWindow, dialog, ipcMain } = require('electron')
 const path                                    = require('path');
 const fs                                      = require('fs');

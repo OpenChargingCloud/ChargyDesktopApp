@@ -2490,7 +2490,19 @@ export class ChargyApp {
 
 }
 
+
+// Remember to set the application file name for generating the application hash!
+// Remember to set Content-Security-Policy for customer support URLs!
+// Remember to set Customer Privacy Statement!
+// Remember to set Customer Mapbox Access Token and MapId!
+// Remember to set the "applicationEdition" in main.cjs
+
 const app = new ChargyApp("https://chargeit.charging.cloud/chargy/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
                           ["info@chargeit-mobility.com", "?subject=Chargy%20Supportanfrage"],
                           ["+4993219319101",             "+49 9321 9319 101"],
                           "https://chargeit.charging.cloud/chargy/issues");
+
+// const app = new ChargyApp("https://chargepoint.charging.cloud/chargy/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
+//                           ["support.eu@chargepoint.com", "?subject=Chargy%20Supportanfrage"],
+//                           ["+496995307383",              "+49 69 95307383"],
+//                           "https://chargepoint.charging.cloud/chargy/issues");

@@ -2,45 +2,40 @@
 
     "compilerOptions": {
 
-        "target":                          "es6",
-        "module":                          "es2020",  // es6. ES2020 adds support for dynamic imports & import.meta
-        "lib":                             ["dom", "es2020"],
-        "moduleResolution":                "node", //node12 for Node.js’ ECMAScript Module Support
-        "sourceMap":                       true,
-        "emitDecoratorMetadata":           true,
-        "experimentalDecorators":          true,
-        "removeComments":                  false,
-        "suppressImplicitAnyIndexErrors":  true,
-        "preserveConstEnums":              true,
+        "target":                             "es6",
+        "module":                             "es2020",  // es6. ES2020 adds support for dynamic imports & import.meta
+        "lib":                                ["dom", "es2020"],
+        "moduleResolution":                   "node", //node12 for Node.js’ ECMAScript Module Support
+        "sourceMap":                          true,
+        "emitDecoratorMetadata":              true,
+        "experimentalDecorators":             true,
+        "removeComments":                     false,
+        "suppressImplicitAnyIndexErrors":     true,
+        "preserveConstEnums":                 true,
 
         /* Strict Type-Checking Options */
-        "strict":                          true,   // Enable all strict type-checking options
-        "noImplicitAny":                   true,   // Raise error on expressions and declarations with an implied 'any' type
-        "strictNullChecks":                true,   // Enable strict null checks
-        "noImplicitThis":                  true,   // Raise error on 'this' expressions with an implied 'any' type
-        "alwaysStrict":                    true,   // Parse in strict mode and emit "use strict" for each source file
-        "noFallthroughCasesInSwitch":      true,   // Report error when not all code paths in function return a value
+        "strict":                             true,   // Enable all strict type-checking options
+        "noImplicitAny":                      true,   // Raise error on expressions and declarations with an implied 'any' type
+        "strictNullChecks":                   true,   // Enable strict null checks
+        "noImplicitThis":                     true,   // Raise error on 'this' expressions with an implied 'any' type
+        "alwaysStrict":                       true,   // Parse in strict mode and emit "use strict" for each source file
+        "noFallthroughCasesInSwitch":         true,   // Report error when not all code paths in function return a value
 
         /* Additional Checks */
-        "noUncheckedIndexedAccess": true,
+        "noUncheckedIndexedAccess":           true,
         "noPropertyAccessFromIndexSignature": true,
-        "strictBindCallApply": true,
-        "strictFunctionTypes": true,
-        "strictPropertyInitialization": true,
-        "noImplicitOverride":true,
-        // "noUnusedLocals":                  false,  // Report errors on unused locals
-        // "noUnusedParameters":              true,   // Report errors on unused parameters
-        "noImplicitReturns":               false,
+        "strictBindCallApply":                true,
+        "strictFunctionTypes":                true,
+        "strictPropertyInitialization":       true,
+        "noImplicitOverride":                 true,
+        // "noUnusedLocals":                     false,  // Report errors on unused locals
+        // "noUnusedParameters":                 true,   // Report errors on unused parameters
+        "noImplicitReturns":                  false,
         "typeRoots": [
            "./node_modules/@types/"
         ]
 
     },
-
-    //"baseUrl": ".", // this must be specified if "paths" is specified.
-    //"paths": {
-    //  "jquery": ["node_modules/jquery/dist/jquery"] // this mapping is relative to "baseUrl"
-    //}
 
     "exclude": [ "node_modules" ],
 

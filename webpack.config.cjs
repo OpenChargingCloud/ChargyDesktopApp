@@ -1,9 +1,9 @@
 // webpack.config.js
 module.exports = [
     {
-      mode: 'development',
-      entry: './src/ts/chargyApp.ts',
-      target: 'electron-renderer',
+      mode:    'development',
+      entry:   './src/ts/chargyApp.ts',
+      target:  'electron-renderer',
       devtool: "eval-source-map",
       resolve: {
         extensions: ["", ".ts", ".js"]
@@ -16,7 +16,7 @@ module.exports = [
         }]
       },
       externals: {
-        'asn1': 'asn1.js',
+        'asn1':         'asn1.js',
         'base32decode': 'base32-decode'
       },
       output: {
