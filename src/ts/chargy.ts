@@ -15,12 +15,7 @@
  * limitations under the License.
  */
 
-//import path from 'node:path'
-//import { fileURLToPath } from 'node:url'
-//import { createRequire } from 'module';
-
-import {Buffer} from 'node:buffer';
-//import { fileTypeFromBuffer }                 from '../../node_modules/file-type/browser.js'
+import { Buffer }                             from 'node:buffer';
 import { fileTypeFromBuffer }                 from 'file-type';
 
 import { Alfen01, AlfenCrypt01 }              from './Alfen01'
@@ -36,7 +31,7 @@ import { SAFEXML }                            from './SAFE_XML'
 import * as chargyInterfaces                  from './chargyInterfaces'
 import * as chargyLib                         from './chargyLib'
 
-class Chargy {
+export class Chargy {
 
     //#region Data
 
@@ -1190,5 +1185,3 @@ class Chargy {
     //#endregion
 
 }
-
-export {Chargy}
