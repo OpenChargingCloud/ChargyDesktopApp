@@ -2490,8 +2490,6 @@ export class ChargyApp {
 
 }
 
-console.log("hello world!");
-
 const app = new ChargyApp("https://chargeit.charging.cloud/chargy/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
                           ["info@chargeit-mobility.com", "?subject=Chargy%20Supportanfrage"],
                           ["+4993219319101",             "+49 9321 9319 101"],
