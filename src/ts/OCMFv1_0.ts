@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy.js'
-import { ACrypt }             from './ACrypt.js'
-import * as chargyInterfaces  from './chargyInterfaces.js'
-import * as chargyLib         from './chargyLib.js'
+import { Chargy }             from './chargy'
+import { ACrypt }             from './ACrypt'
+import * as chargyInterfaces  from './chargyInterfaces'
+import * as chargyLib         from './chargyLib'
 
-export interface IEMHMeasurementValue extends chargyInterfaces.IMeasurementValue
+export interface IOCMFv1_0MeasurementValue extends chargyInterfaces.IMeasurementValue
 {
     infoStatus:                 string,
     secondsIndex:               number,
@@ -28,7 +28,7 @@ export interface IEMHMeasurementValue extends chargyInterfaces.IMeasurementValue
     logBookIndex:               string
 }
 
-export interface IEMHCrypt01Result extends chargyInterfaces.ICryptoResult
+export interface IOCMFv1_0Result extends chargyInterfaces.ICryptoResult
 {
     sha256value?:                  any,
     meterId?:                      string,
@@ -52,9 +52,9 @@ export interface IEMHCrypt01Result extends chargyInterfaces.ICryptoResult
 }
 
 
-export class EMHCrypt01 extends ACrypt {
+export class OCMFv1_0 extends ACrypt {
 
-    readonly curve = new this.chargy.elliptic.ec('p192');
+    readonly curve = new this.chargy.elliptic.ec('p256');
 
     constructor(chargy:  Chargy) {
 
@@ -84,7 +84,7 @@ export class EMHCrypt01 extends ACrypt {
 
     }
 
-    async VerifyChargingSession(chargingSession:         chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession:   chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         var sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
@@ -104,7 +104,7 @@ export class EMHCrypt01 extends ACrypt {
                     for (var measurementValue of measurement.values)
                     {
                         measurementValue.measurement = measurement;
-                        await this.VerifyMeasurement(measurementValue as IEMHMeasurementValue);
+                        await this.VerifyMeasurement(measurementValue as IOCMFv1_0MeasurementValue);
                     }
 
 
@@ -130,13 +130,13 @@ export class EMHCrypt01 extends ACrypt {
 
         return {
             status: sessionResult
-        }
+        } ;
 
     }
 
 
-    async SignMeasurement  (measurementValue:  IEMHMeasurementValue,
-                            privateKey:        any): Promise<IEMHCrypt01Result>
+    async SignMeasurement(measurementValue:  IOCMFv1_0MeasurementValue,
+                          privateKey:        any): Promise<IOCMFv1_0Result>
     {
 
         if (measurementValue.measurement                 === undefined ||
@@ -150,7 +150,7 @@ export class EMHCrypt01 extends ACrypt {
         var buffer                       = new ArrayBuffer(320);
         var cryptoBuffer                 = new DataView(buffer);
 
-        var cryptoResult:IEMHCrypt01Result = {
+        var cryptoResult:IOCMFv1_0Result = {
             status:                       chargyInterfaces.VerificationResult.InvalidSignature,
             meterId:                      chargyLib.SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                   0),
             timestamp:                    chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                  10),
@@ -164,13 +164,13 @@ export class EMHCrypt01 extends ACrypt {
             logBookIndex:                 chargyLib.SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                               39, false),
             authorizationStart:           chargyLib.SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],      41),
             authorizationStartTimestamp:  chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp,  169)
-        }; 
+        };
 
         // Only the first 24 bytes/192 bits are used!
         cryptoResult.sha256value  = (await chargyLib.sha256(cryptoBuffer)).substring(0, 48);
 
         const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
-                                               sign          (cryptoResult.sha256value);
+                                               sign(cryptoResult.sha256value);
 
         switch (measurementValue.measurement.signatureInfos.format)
         {
@@ -201,7 +201,7 @@ export class EMHCrypt01 extends ACrypt {
 
     }
 
-    async VerifyMeasurement(measurementValue:  IEMHMeasurementValue): Promise<IEMHCrypt01Result>
+    async VerifyMeasurement(measurementValue:  IOCMFv1_0MeasurementValue): Promise<IOCMFv1_0Result>
     {
 
         function setResult(verificationResult: chargyInterfaces.VerificationResult)
@@ -211,116 +211,184 @@ export class EMHCrypt01 extends ACrypt {
             return cryptoResult;
         }
 
-        if (measurementValue.measurement                 === undefined ||
-            measurementValue.measurement.chargingSession === undefined)
-        {
-            return {
-                status: chargyInterfaces.VerificationResult.InvalidMeasurement
-            }
-        }
-
         measurementValue.method = this;
 
-        var buffer        = new ArrayBuffer(320);
-        var cryptoBuffer  = new DataView(buffer);
+        // {
+        //
+        //     "FV": "1.0",
+        //     "GI": "SEAL AG",
+        //     "GS": "1850006a",
+        //     "GV": "1.34",
+        //
+        //     "PG": "T9289",
+        //
+        //     "MV": "Carlo Gavazzi",
+        //     "MM": "EM340-DIN.AV2.3.X.S1.PF",
+        //     "MS": "******240084S",
+        //     "MF": "B4",
+        //
+        //     "IS": true,
+        //     "IL": "TRUSTED",
+        //     "IF": ["OCCP_AUTH"],
+        //     "IT": "ISO14443",
+        //     "ID": "56213C05",
+        //
+        //     "RD": [{
+        //         "TM": "2019-06-26T08:57:44,337+0000 U",
+        //         "TX": "B",
+        //         "RV": 268.978,
+        //         "RI": "1-b:1.8.0",
+        //         "RU": "kWh",
+        //         "RT": "AC",
+        //         "EF": "",
+        //         "ST": "G"
+        //     }]
+        //
+        // }
 
-        var cryptoResult:IEMHCrypt01Result = {
-            status:                       chargyInterfaces.VerificationResult.InvalidSignature,
-            meterId:                      chargyLib.SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                   0),
-            timestamp:                    chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                  10),
-            infoStatus:                   chargyLib.SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                 14, false),
-            secondsIndex:                 chargyLib.SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                               15, true),
-            paginationId:                 chargyLib.SetHex        (cryptoBuffer, measurementValue.paginationId,                                               19, true),
-            obis:                         chargyLib.SetHex        (cryptoBuffer, chargyLib.OBIS2Hex(measurementValue.measurement.obis),                       23, false),
-            unitEncoded:                  chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                    29),
-            scale:                        chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                          30),
-            value:                        chargyLib.SetUInt64     (cryptoBuffer, measurementValue.value,                                                      31, true),
-            logBookIndex:                 chargyLib.SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                               39, false),
-            authorizationStart:           chargyLib.SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],      41),
-            authorizationStartTimestamp:  chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp,  169)
+        var reading = {
+
+           "FV": "1.0",
+           "GI": "SEAL AG",
+           "GS": "1850006a",
+           "GV": "1.34",
+
+           "PG": "T9289",
+
+           "MV": "Carlo Gavazzi",
+           "MM": "EM340-DIN.AV2.3.X.S1.PF",
+           "MS": "******240084S",
+           "MF": "B4",
+
+           "IS": true,
+           "IL": "TRUSTED",
+           "IF": ["OCCP_AUTH"],
+           "IT": "ISO14443",
+           "ID": "56213C05",
+
+           "RD": [{
+               "TM": "2019-06-26T08:57:44,337+0000 U",
+               "TX": "B",
+               "RV": 268.978,
+               "RI": "1-b:1.8.0",
+               "RU": "kWh",
+               "RT": "AC",
+               "EF": "",
+               "ST": "G"
+           }]
+
         };
 
-        var signatureExpected = measurementValue.signatures[0] as chargyInterfaces.IECCSignature;
-        if (signatureExpected != null)
-        {
 
-            try
-            {
+        var serialized = JSON.stringify(reading);
 
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
-                    r:          signatureExpected.r,
-                    s:          signatureExpected.s
-                };
+        var cryptoResult:IOCMFv1_0Result = {
+            status:                       chargyInterfaces.VerificationResult.ValidSignature,
+        };
 
-                // Only the first 24 bytes/192 bits are used!
-                cryptoResult.sha256value = (await chargyLib.sha256(cryptoBuffer)).substring(0, 48);
+        return setResult(chargyInterfaces.VerificationResult.ValidSignature);
+
+        // var buffer        = new ArrayBuffer(320);
+        // var cryptoBuffer  = new DataView(buffer);
+
+        // var cryptoResult:IOCMFv1_0Result = {
+        //     status:                       VerificationResult.InvalidSignature,
+        //     meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
+        //     timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
+        //     infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
+        //     secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
+        //     paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
+        //     obis:                         SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
+        //     unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
+        //     scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
+        //     value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
+        //     logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
+        //     authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
+        //     authorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
+        // };
+
+        // var signatureExpected = measurementValue.signatures[0] as IECCSignature;
+        // if (signatureExpected != null)
+        // {
+
+        //     try
+        //     {
+
+        //         cryptoResult.signature = {
+        //             algorithm:  measurementValue.measurement.signatureInfos.algorithm,
+        //             format:     measurementValue.measurement.signatureInfos.format,
+        //             r:          signatureExpected.r,
+        //             s:          signatureExpected.s
+        //         };
+
+        //         // Only the first 24 bytes/192 bits are used!
+        //         cryptoResult.sha256value = (await this.sha256(cryptoBuffer)).substring(0, 48);
 
 
-                const meter = this.chargy.GetMeter(measurementValue.measurement.energyMeterId);
-                if (meter != null)
-                {
+        //         const meter = this.GetMeter(measurementValue.measurement.energyMeterId);
+        //         if (meter != null)
+        //         {
 
-                    cryptoResult.meter = meter;
+        //             cryptoResult.meter = meter;
 
-                    if (meter.publicKeys != null && meter.publicKeys.length > 0)
-                    {
+        //             var iPublicKey = meter.publicKeys[0] as IPublicKey;
+        //             if (iPublicKey != null)
+        //             {
 
-                        try
-                        {
+        //                 try
+        //                 {
 
-                            cryptoResult.publicKey            = meter.publicKeys[0].value.toLowerCase();
-                            cryptoResult.publicKeyFormat      = meter.publicKeys[0].format;
-                            cryptoResult.publicKeySignatures  = meter.publicKeys[0].signatures;
+        //                     cryptoResult.publicKey            = iPublicKey.value.toLowerCase();
+        //                     cryptoResult.publicKeyFormat      = iPublicKey.format;
+        //                     cryptoResult.publicKeySignatures  = iPublicKey.signatures;
 
-                            try
-                            {
+        //                     try
+        //                     {
 
-                                if (this.curve.keyFromPublic(cryptoResult.publicKey, 'hex').
-                                               verify       (cryptoResult.sha256value,
-                                                             cryptoResult.signature))
-                                {
-                                    return setResult(chargyInterfaces.VerificationResult.ValidSignature);
-                                }
+        //                         if (this.curve.keyFromPublic(cryptoResult.publicKey, 'hex').
+        //                                        verify       (cryptoResult.sha256value,
+        //                                                      cryptoResult.signature))
+        //                         {
+        //                             return setResult(VerificationResult.ValidSignature);
+        //                         }
+                                
+        //                         return setResult(VerificationResult.InvalidSignature);
 
-                                return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
+        //                     }
+        //                     catch (exception)
+        //                     {
+        //                         return setResult(VerificationResult.InvalidSignature);
+        //                     }
 
-                            }
-                            catch (exception)
-                            {
-                                return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
-                            }
+        //                 }
+        //                 catch (exception)
+        //                 {
+        //                     return setResult(VerificationResult.InvalidPublicKey);
+        //                 }
 
-                        }
-                        catch (exception)
-                        {
-                            return setResult(chargyInterfaces.VerificationResult.InvalidPublicKey);
-                        }
+        //             }
 
-                    }
+        //             else
+        //                 return setResult(VerificationResult.PublicKeyNotFound);
 
-                    else
-                        return setResult(chargyInterfaces.VerificationResult.PublicKeyNotFound);
+        //         }
 
-                }
+        //         else
+        //             return setResult(VerificationResult.EnergyMeterNotFound);
 
-                else
-                    return setResult(chargyInterfaces.VerificationResult.EnergyMeterNotFound);
+        //     }
+        //     catch (exception)
+        //     {
+        //         return setResult(VerificationResult.InvalidSignature);
+        //     }
 
-            }
-            catch (exception)
-            {
-                return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
-            }
+        // }
 
-        }
-
-        return {} as IEMHCrypt01Result;
+        // return {} as IOCMFv1_0Result;
 
     }
 
-    async ViewMeasurement(measurementValue:      IEMHMeasurementValue,
+    async ViewMeasurement(measurementValue:      IOCMFv1_0MeasurementValue,
                           introDiv:              HTMLDivElement,
                           infoDiv:               HTMLDivElement,
                           PlainTextDiv:          HTMLDivElement,
@@ -340,37 +408,41 @@ export class EMHCrypt01 extends ACrypt {
             }
         }
 
-        const result     = measurementValue.result as IEMHCrypt01Result;
+        const result     = measurementValue.result as IOCMFv1_0Result;
 
         const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
-        cryptoSpan.innerHTML = "EMHCrypt01 (" + this.description + ")";
+        cryptoSpan.innerHTML = "OCMFCrypt01 (" + this.description + ")";
 
         //#region Plain text
 
         if (PlainTextDiv != null)
         {
 
-            if (PlainTextDiv.parentElement != null)
+            if (PlainTextDiv                           != undefined &&
+                PlainTextDiv.parentElement             != undefined &&
+                PlainTextDiv.parentElement             != undefined &&
+                PlainTextDiv.parentElement.children[0] != undefined)
+            {
                 PlainTextDiv.parentElement.children[0].innerHTML = "Plain text (320 Bytes, hex)";
+            }
 
             PlainTextDiv.style.fontFamily  = "";
             PlainTextDiv.style.whiteSpace  = "";
             PlainTextDiv.style.maxHeight   = "";
             PlainTextDiv.style.overflowY   = "";
 
-            this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                                     result.meterId                                         || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Zeitstempel",              chargyLib.UTC2human(measurementValue.timestamp),                                                result.timestamp                                       || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Status",                   chargyLib.hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
-                                                        this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",                      result.infoStatus                                      || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                                  result.secondsIndex                                    || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                                    result.paginationId                                    || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("OBIS-Kennzahl",            measurementValue.measurement.obis,                                                              result.obis                                            || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                                       result.unitEncoded                                     || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                             result.scale                                           || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                                 result.value                                           || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                                         result.logBookIndex                                    || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",                chargyLib.pad(result.authorizationStart,          128) || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Autorisierungszeitpunkt",  chargyLib.UTC2human(measurementValue.measurement.chargingSession.authorizationStart.timestamp), chargyLib.pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                                    result.meterId                                         || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Zeitstempel",              chargyLib.parseUTC(measurementValue.timestamp),                                                result.timestamp                                       || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Status",                   chargyLib.hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)", result.infoStatus                                      || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                                 result.secondsIndex                                    || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                                   result.paginationId                                    || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("OBIS-Kennzahl",            measurementValue.measurement.obis,                                                             result.obis                                            || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                                      result.unitEncoded                                     || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                            result.scale                                           || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                                result.value                                           || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                                        result.logBookIndex                                    || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",               chargyLib.pad(result.authorizationStart,          128) || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Autorisierungszeitpunkt",  chargyLib.parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), chargyLib.pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, PlainTextDiv);
 
         }
 
@@ -381,8 +453,13 @@ export class EMHCrypt01 extends ACrypt {
         if (HashedPlainTextDiv != null)
         {
 
-            if (HashedPlainTextDiv.parentElement != null)
+            if (HashedPlainTextDiv                           != undefined &&
+                HashedPlainTextDiv.parentElement             != undefined &&
+                HashedPlainTextDiv.parentElement             != undefined &&
+                HashedPlainTextDiv.parentElement.children[0] != undefined)
+            {
                 HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text (SHA256, 24 bytes, hex)";
+            }
 
             HashedPlainTextDiv.innerHTML                                 = result.sha256value.match(/.{1,8}/g).join(" ");
 
@@ -397,12 +474,17 @@ export class EMHCrypt01 extends ACrypt {
             result.publicKey != "")
         {
 
-            if (PublicKeyDiv.parentElement != null)
+            if (PublicKeyDiv                           != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement.children[0] != undefined)
+            {
                 PublicKeyDiv.parentElement.children[0].innerHTML       = "Public Key (" +
                                                                          (result.publicKeyFormat
                                                                              ? result.publicKeyFormat + ", "
                                                                              : "") +
                                                                          "hex)";
+            }
 
             if (!chargyLib.IsNullOrEmpty(result.publicKey))
                 PublicKeyDiv.innerHTML                                 = result.publicKey.startsWith("04") // Add some space after '04' to avoid confused customers
@@ -410,28 +492,34 @@ export class EMHCrypt01 extends ACrypt {
                                                                                 + result.publicKey.substring(2).match(/.{1,8}/g)!.join(" ")
                                                                             :   result.publicKey.match(/.{1,8}/g)!.join(" ");
 
-
             //#region Public key signatures
 
-            if (PublicKeyDiv.parentElement != null)
+            if (PublicKeyDiv                           != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement.children[3] != undefined)
+            {
                 PublicKeyDiv.parentElement.children[3].innerHTML = "";
+            }
 
             if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures)) {
 
-                for (let signature of result.publicKeySignatures)
+                for (const signature of result.publicKeySignatures)
                 {
 
                     try
                     {
 
-                        let signatureDiv = PublicKeyDiv.parentElement!.children[3].appendChild(document.createElement('div'));
-                        signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
-                                                                                                measurementValue.measurement.chargingSession.EVSE,
-                                                                                                //@ts-ignore
-                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                                                //@ts-ignore
-                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
-                                                                                                signature);
+                        const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
+
+                        if (signatureDiv != null)
+                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession?.chargingStation,
+                                                                                                    measurementValue.measurement.chargingSession?.EVSE,
+                                                                                                    //@ts-ignore
+                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                                                                    //@ts-ignore
+                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                                                                    signature);
 
                     }
                     catch (exception)
@@ -452,8 +540,13 @@ export class EMHCrypt01 extends ACrypt {
         if (SignatureExpectedDiv != null && result.signature != null)
         {
 
-            if (SignatureExpectedDiv.parentElement != null)
+            if (SignatureExpectedDiv                           != undefined &&
+                SignatureExpectedDiv.parentElement             != undefined &&
+                SignatureExpectedDiv.parentElement             != undefined &&
+                SignatureExpectedDiv.parentElement.children[0] != undefined)
+            {
                 SignatureExpectedDiv.parentElement.children[0].innerHTML  = "Erwartete Signatur (" + (result.signature.format || "") + ", hex)";
+            }
 
             if (result.signature.r && result.signature.s)
                 SignatureExpectedDiv.innerHTML                            = "r: " + result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") + "<br />" +
@@ -508,52 +601,5 @@ export class EMHCrypt01 extends ACrypt {
         //#endregion
 
     }
-
-
-    //#region Helper methods
-
-    private DecodeStatus(statusValue: string) : Array<string>
-    {
-
-        let statusArray:string[] = [];
-
-        try
-        {
-
-            let status = parseInt(statusValue);
-
-            if ((status &  1) ==  1)
-                statusArray.push("Fehler erkannt");
-
-            if ((status &  2) ==  2)
-                statusArray.push("Synchrone Messwertübermittlung");
-
-            // Bit 3 is reserved!
-
-            if ((status &  8) ==  8)
-                statusArray.push("System-Uhr ist synchron");
-            else
-                statusArray.push("System-Uhr ist nicht synchron");
-
-            if ((status & 16) == 16)
-                statusArray.push("Rücklaufsperre aktiv");
-
-            if ((status & 32) == 32)
-                statusArray.push("Energierichtung -A");
-
-            if ((status & 64) == 64)
-                statusArray.push("Magnetfeld erkannt");
-
-        }
-        catch (exception)
-        {
-            statusArray.push("Invalid status!");
-        }
-
-        return statusArray;
-
-    }
-
-    //#endregion
 
 }

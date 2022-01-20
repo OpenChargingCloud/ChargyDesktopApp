@@ -3,6 +3,7 @@
 !.vscode/launch.json
 !.vscode/tasks.json
 node_modules
+build
 dist
 src/css/*.css
 src/css/*.css.map

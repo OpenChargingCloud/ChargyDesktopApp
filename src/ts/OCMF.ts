@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy.js'
-import * as ocmfTypes         from './OCMFTypes.js'
-import * as chargyInterfaces  from './chargyInterfaces.js'
+import { Chargy }             from './chargy'
+import * as ocmfTypes         from './OCMFTypes'
+import * as chargyInterfaces  from './chargyInterfaces'
 
 
 export class OCMF {
@@ -70,7 +70,7 @@ export class OCMF {
 
             let paging             :string = OCMFData.PG != null ? OCMFData.PG.trim() : ""; // Paging, as this data might be part of a larger context.
             let transactionType     = ocmfTypes.OCMFTransactionTypes.undefined;
-            switch (paging[0].toLowerCase())
+            switch (paging[0]?.toLowerCase())
             {
 
                 case 't':
@@ -273,7 +273,7 @@ export class OCMF {
 
                 let paging             :string    = OCMFData.PG != null ? OCMFData.PG.trim() : ""; // Paging, as this data might be part of a larger context.
                 let TransactionType               = ocmfTypes.OCMFTransactionTypes.undefined;
-                switch (paging[0].toLowerCase())
+                switch (paging[0]?.toLowerCase())
                 {
 
                     case 't':
@@ -451,8 +451,8 @@ export class OCMF {
                     //     "SD": "304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"
                     // }
 
-                    OCMFData       = JSON.parse(OCMFSections[1]);
-                    OCMFSignature  = JSON.parse(OCMFSections[2]);
+                    OCMFData       = JSON.parse(OCMFSections[1] ?? "{}");
+                    OCMFSignature  = JSON.parse(OCMFSections[2] ?? "{}");
                     OCMFVersion    = OCMFData["FV"] != null ? OCMFData["FV"].trim() : ""; 
 
                 }

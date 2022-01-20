@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy.js'
-import { ACrypt }             from './ACrypt.js'
-import * as chargyInterfaces  from './chargyInterfaces.js'
-import * as chargyLib         from './chargyLib.js'
+import { Chargy }             from './chargy'
+import { ACrypt }             from './ACrypt'
+import * as chargyInterfaces  from './chargyInterfaces'
+import * as chargyLib         from './chargyLib'
 
 export class Alfen01  {
 
@@ -90,24 +90,24 @@ export class Alfen01  {
             for (let i=0; i<signedValues.length; i++)
             {
 
-                let elements = signedValues[i].split(';');
+                const elements = signedValues[i]?.split(';');
 
-                if (elements.length != 6 && elements.length != 7)
+                if (elements?.length != 6 && elements?.length != 7)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Invalid number of array elements!"
                     };
 
-                let FormatId               = elements[0];                                  //  2 bytes
-                let Type                   = elements[1];                                  //  1 byte; "0": start meter value | "1": stop meter value | "2": intermediate value
-                let BlobVersion            = elements[2];                                  //  1 byte; "3" (current version)
-                let PublicKey:ArrayBuffer  = this.chargy.base32Decode(elements[3], 'RFC4648');  // 25 bytes; base32 encoded; secp192r1
-                let DataSet:  ArrayBuffer  = this.chargy.base32Decode(elements[4], 'RFC4648');  // 82 bytes; base32 encoded
-                let Signature:ArrayBuffer  = this.chargy.base32Decode(elements[5], 'RFC4648');  // 48 bytes; base32 encoded; secp192r1
+                const FormatId               = elements[0];                                       //  2 bytes
+                const Type                   = elements[1];                                       //  1 byte; "0": start meter value | "1": stop meter value | "2": intermediate value
+                const BlobVersion            = elements[2];                                       //  1 byte; "3" (current version)
+                const PublicKey:ArrayBuffer  = this.chargy.base32Decode(elements[3], 'RFC4648');  // 25 bytes; base32 encoded; secp192r1
+                const DataSet:  ArrayBuffer  = this.chargy.base32Decode(elements[4], 'RFC4648');  // 82 bytes; base32 encoded
+                const Signature:ArrayBuffer  = this.chargy.base32Decode(elements[5], 'RFC4648');  // 48 bytes; base32 encoded; secp192r1
 
                 // Verify common public key
                 if (common.PublicKey === "")
-                    common.PublicKey = elements[3];
+                    common.PublicKey = elements[3] ?? "";
                 else if (elements[3] !== common.PublicKey)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
@@ -115,8 +115,8 @@ export class Alfen01  {
                     };
 
                 if (FormatId              !== "AP" ||
-                    Type.length           !==  1   ||
-                    BlobVersion.length    !==  1   ||
+                    Type?.length          !==  1   ||
+                    BlobVersion?.length   !==  1   ||
                     BlobVersion           !== "3"  ||
                     PublicKey.byteLength  !== 25   ||
                     DataSet.byteLength    !== 82   ||
@@ -669,9 +669,9 @@ export class AlfenCrypt01 extends ACrypt {
                         try
                         {
 
-                            cryptoResult.publicKey            = meter.publicKeys[0].value.toLowerCase();
-                            cryptoResult.publicKeyFormat      = meter.publicKeys[0].format;
-                            cryptoResult.publicKeySignatures  = meter.publicKeys[0].signatures;
+                            cryptoResult.publicKey            = meter.publicKeys[0]?.value?.toLowerCase();
+                            cryptoResult.publicKeyFormat      = meter.publicKeys[0]?.format;
+                            cryptoResult.publicKeySignatures  = meter.publicKeys[0]?.signatures;
 
                             try
                             {
@@ -679,7 +679,7 @@ export class AlfenCrypt01 extends ACrypt {
                                 const publicKey  = chargyLib.buf2hex(this.chargy.base32Decode(cryptoResult.publicKey?.toUpperCase(), 'RFC4648'));
                                 let   result     = false;
 
-                                switch (meter.publicKeys[0].algorithm)
+                                switch (meter?.publicKeys[0]?.algorithm)
                                 {
 
                                     case "secp192r1":
@@ -782,8 +782,13 @@ export class AlfenCrypt01 extends ACrypt {
         if (PlainTextDiv != null)
         {
 
-            if (PlainTextDiv.parentElement != null)
+            if (PlainTextDiv                           != undefined &&
+                PlainTextDiv.parentElement             != undefined &&
+                PlainTextDiv.parentElement             != undefined &&
+                PlainTextDiv.parentElement.children[0] != undefined)
+            {
                 PlainTextDiv.parentElement.children[0].innerHTML = "Plain text (320 Bytes, hex)";
+            }
 
             PlainTextDiv.style.fontFamily  = "";
             PlainTextDiv.style.whiteSpace  = "";
@@ -819,10 +824,15 @@ export class AlfenCrypt01 extends ACrypt {
         if (HashedPlainTextDiv != null)
         {
 
-            if (HashedPlainTextDiv.parentElement != null)
-                HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text (SHA256, hex)";
+            if (HashedPlainTextDiv                           != undefined &&
+                HashedPlainTextDiv.parentElement             != undefined &&
+                HashedPlainTextDiv.parentElement             != undefined &&
+                HashedPlainTextDiv.parentElement.children[0] != undefined)
+            {
+                HashedPlainTextDiv.parentElement.children[0].innerHTML  = "Hashed plain text (SHA256, hex)";
+            }
 
-            HashedPlainTextDiv.innerHTML                                 = result.hashValue.match(/.{1,8}/g).join(" ");
+            HashedPlainTextDiv.innerHTML                                = result.hashValue.match(/.{1,8}/g).join(" ");
 
         }
 
@@ -835,12 +845,17 @@ export class AlfenCrypt01 extends ACrypt {
             result.publicKey != "")
         {
 
-            if (PublicKeyDiv.parentElement != null)
+            if (PublicKeyDiv                           != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement.children[0] != undefined)
+            {
                 PublicKeyDiv.parentElement.children[0].innerHTML       = "Public Key (" +
                                                                          (result.publicKeyFormat
                                                                              ? result.publicKeyFormat + ", "
                                                                              : "") +
                                                                          "base32)";
+            }
 
             if (!chargyLib.IsNullOrEmpty(result.publicKey))
                 PublicKeyDiv.innerHTML                                 = result.publicKey.match(/.{1,4}/g)?.join(" ") ?? "";
@@ -848,25 +863,32 @@ export class AlfenCrypt01 extends ACrypt {
 
             //#region Public key signatures
 
-            if (PublicKeyDiv.parentElement != null)
+            if (PublicKeyDiv                           != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement.children[3] != undefined)
+            {
                 PublicKeyDiv.parentElement.children[3].innerHTML = "";
+            }
 
             if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures)) {
 
-                for (let signature of result.publicKeySignatures)
+                for (const signature of result.publicKeySignatures)
                 {
 
                     try
                     {
 
-                        let signatureDiv = PublicKeyDiv.parentElement!.children[3].appendChild(document.createElement('div'));
-                        signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession?.chargingStation,
-                                                                                                measurementValue.measurement.chargingSession?.EVSE,
-                                                                                                //@ts-ignore
-                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                                                //@ts-ignore
-                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
-                                                                                                signature);
+                        const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
+
+                        if (signatureDiv != null)
+                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession?.chargingStation,
+                                                                                                    measurementValue.measurement.chargingSession?.EVSE,
+                                                                                                    //@ts-ignore
+                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                                                                    //@ts-ignore
+                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                                                                    signature);
 
                     }
                     catch (exception)
@@ -887,8 +909,13 @@ export class AlfenCrypt01 extends ACrypt {
         if (SignatureExpectedDiv != null && result.signature != null)
         {
 
-            if (SignatureExpectedDiv.parentElement != null)
+            if (SignatureExpectedDiv                           != undefined &&
+                SignatureExpectedDiv.parentElement             != undefined &&
+                SignatureExpectedDiv.parentElement             != undefined &&
+                SignatureExpectedDiv.parentElement.children[0] != undefined)
+            {
                 SignatureExpectedDiv.parentElement.children[0].innerHTML  = "Erwartete Signatur (" + (result.signature.format || "") + ", hex)";
+            }
 
             if (result.signature.r && result.signature.s)
                 SignatureExpectedDiv.innerHTML                            = "r: " + result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") + "<br />" +

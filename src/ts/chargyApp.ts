@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy.js'
-import * as chargyInterfaces  from './chargyInterfaces.js'
-import * as chargyLib         from './chargyLib.js'
+import { Chargy }             from './chargy'
+import * as chargyInterfaces  from './chargyInterfaces'
+import * as chargyLib         from './chargyLib'
 
 import * as L                 from 'leaflet';
 
@@ -25,9 +25,6 @@ import * as L                 from 'leaflet';
 // import * as crypto from "crypto";
 // import { readSync } from "fs";
 // import { version } from "punycode";
-
-//var map:     any  = "";
-//var leaflet: any  = "";
 
 export function OpenLink(url: string)
 {
@@ -437,9 +434,9 @@ export class ChargyApp {
 
                                 //#region Find newer/updated version
 
-                                else if (remoteVersion[0] >  thisVersion[0] ||
-                                        (remoteVersion[0] >= thisVersion[0] && remoteVersion[1] >  thisVersion[1]) ||
-                                        (remoteVersion[0] >= thisVersion[0] && remoteVersion[1] >= thisVersion[1] && remoteVersion[2] > thisVersion[2]))
+                                else if (remoteVersion[0] >  thisVersion[0]! ||
+                                        (remoteVersion[0] >= thisVersion[0]! && remoteVersion[1] >  thisVersion[1]!) ||
+                                        (remoteVersion[0] >= thisVersion[0]! && remoteVersion[1] >= thisVersion[1]! && remoteVersion[2] > thisVersion[2]!))
                                 {
 
                                     this.updateAvailableButton.style.display = "block";
@@ -639,35 +636,48 @@ export class ChargyApp {
                 this.applicationHash     != "")
             {
 
-                let sigHeadDiv    = this.applicationHashDiv.children[2];
-                let signaturesDiv = this.applicationHashDiv.children[3];
+                const sigHeadDiv = this.applicationHashDiv.children[2];
 
-                // Bad hash value
-                if (this.currentPackage.cryptoHashes.SHA512.replace("0x", "") !== this.applicationHash)
-                    sigHeadDiv.innerHTML = "<i class=\"fas fa-times-circle\"></i> Ungültiger Hashwert!";
-
-                // At least the same hash value...
-                else
+                if (sigHeadDiv != null)
                 {
 
-                    if (this.currentPackage.signatures == null || this.currentPackage.signatures.length == 0)
-                    {
-                        sigHeadDiv.innerHTML = "<i class=\"fas fa-check-circle\"></i> Gültiger Hashwert";
-                    }
+                    // Bad hash value
+                    if (this.currentPackage.cryptoHashes.SHA512.replace("0x", "") !== this.applicationHash)
+                        sigHeadDiv.innerHTML = "<i class=\"fas fa-times-circle\"></i> Ungültiger Hashwert!";
 
-                    // Some crypto signatures found...
+                    // At least the same hash value...
                     else
                     {
 
-                        sigHeadDiv.innerHTML = "Bestätigt durch...";
-
-                        for (let signature of this.currentPackage.signatures)
+                        if (this.currentPackage.signatures == null || this.currentPackage.signatures.length == 0)
                         {
-                            let signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
-                            signatureDiv.innerHTML = this.checkApplicationHashSignature(this.currentAppInfos,
-                                                                                        this.currentVersionInfos,
-                                                                                        this.currentPackage,
-                                                                                        signature);
+                            sigHeadDiv.innerHTML = "<i class=\"fas fa-check-circle\"></i> Gültiger Hashwert";
+                        }
+
+                        // Some crypto signatures found...
+                        else
+                        {
+
+                            sigHeadDiv.innerHTML = "Bestätigt durch...";
+
+                            const signaturesDiv = this.applicationHashDiv.children[3];
+
+                            if (signaturesDiv != null)
+                            {
+                                for (const signature of this.currentPackage.signatures)
+                                {
+
+                                    const signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
+
+                                    if (signatureDiv != null)
+                                        signatureDiv.innerHTML = this.checkApplicationHashSignature(this.currentAppInfos,
+                                                                                                    this.currentVersionInfos,
+                                                                                                    this.currentPackage,
+                                                                                                    signature);
+
+                                }
+                            }
+
                         }
 
                     }
@@ -776,15 +786,19 @@ export class ChargyApp {
 
         const shell        = require('electron').shell;
         const linkButtons  = document.getElementsByClassName('linkButton') as HTMLCollectionOf<HTMLButtonElement>;
+
         for (let i = 0; i < linkButtons.length; i++) {
 
             const linkButton = linkButtons[i];
 
-            linkButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
-                ev.preventDefault();
-                const link = linkButton.attributes["href"].nodeValue;
-                if (link.startsWith("http://") || link.startsWith("https://")) {
-                    shell.openExternal(link);
+            if (linkButton != null)
+            {
+                linkButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
+                    ev.preventDefault();
+                    const link = linkButton.attributes["href"].nodeValue;
+                    if (link.startsWith("http://") || link.startsWith("https://")) {
+                        shell.openExternal(link);
+                    }
                 }
             }
 
@@ -1164,17 +1178,20 @@ export class ChargyApp {
 
             //#region Map file names
 
-            let filesToLoad = new Array<chargyInterfaces.IFileInfo>();
+            const filesToLoad = new Array<chargyInterfaces.IFileInfo>();
 
             for (let i = 0; i < files.length; i++)
             {
 
                 let file = files[i];
 
-                if (typeof file == 'string')
-                    filesToLoad.push({ name: file });
-                else
-                    filesToLoad.push(file)
+                if (file != undefined)
+                {
+                    if (typeof file == 'string')
+                        filesToLoad.push({ name: file });
+                    else
+                        filesToLoad.push(file)
+                }
 
             }
 
@@ -1454,9 +1471,11 @@ export class ChargyApp {
 
                     //#region Highlight the selected charging session...
 
-                    var AllChargingSessionsDivs = document.getElementsByClassName("chargingSession");
-                    for(var i=0; i<AllChargingSessionsDivs.length; i++)
-                        AllChargingSessionsDivs[i].classList.remove("activated");
+                    const AllChargingSessionsDivs = document.getElementsByClassName("chargingSession");
+
+                    if (AllChargingSessionsDivs != null)
+                        for(var i=0; i<AllChargingSessionsDivs.length; i++)
+                            AllChargingSessionsDivs[i]?.classList.remove("activated");
 
                     //(this as HTMLDivElement)?.classList.add("activated");
                     (ev.currentTarget as HTMLDivElement)?.classList.add("activated");
@@ -1581,9 +1600,9 @@ export class ChargyApp {
 
                                 }
 
-                                let first  = measurement.values[0].value;
-                                let last   = measurement.values[measurement.values.length-1].value;
-                                let amount = parseFloat(((last - first) * Math.pow(10, measurement.scale)).toFixed(10));
+                                const first  = measurement?.values[0]?.value                           ?? 0;
+                                const last   = measurement?.values[measurement.values.length-1]?.value ?? first;
+                                let   amount = parseFloat(((last - first) * Math.pow(10, measurement.scale)).toFixed(10));
 
                                 switch (measurement.unit)
                                 {
@@ -1655,13 +1674,13 @@ export class ChargyApp {
                         parkingDiv.className                 = "text";
                        // parkingDiv.innerHTML = chargingSession.parking != null ? chargingSession.product["@id"] + "<br />" : "";
 
-                        if (chargingSession.parking[chargingSession.parking.length-1].end != null)
+                        if (chargingSession?.parking[chargingSession.parking.length-1]?.end != null)
                         {
 
-                            let parkingBegin  = chargyLib.parseUTC(chargingSession.parking[0].begin);
+                            let parkingBegin = chargyLib.parseUTC(chargingSession?.parking[0]?.begin ?? "-");
                             //@ts-ignore
-                            let parkingEnd    = parseUTC(chargingSession.parking[chargingSession.parking.length-1].end);
-                            let duration      = this.moment.duration(parkingEnd - parkingBegin);
+                            let parkingEnd   = parseUTC(chargingSession.parking[chargingSession.parking.length-1].end);
+                            let duration     = this.moment.duration(parkingEnd - parkingBegin);
 
                             parkingDiv.innerHTML += "Parkdauer ";
                             if      (Math.floor(duration.asDays())    > 1) parkingDiv.innerHTML += duration.days()    + " Tage " + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
@@ -2048,7 +2067,7 @@ export class ChargyApp {
 
             // If there is at least one charging session show its details at once...
             if (CTR.chargingSessions.length >= 1)
-                CTR.chargingSessions[0].GUI!.click();
+                CTR.chargingSessions[0]?.GUI?.click();
 
             this.map23.fitBounds([[this.minlat, this.minlng], [this.maxlat, this.maxlng]],
                                { padding: [40, 40] });

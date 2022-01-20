@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy.js'
-import { ACrypt }             from './ACrypt.js'
-import * as chargyInterfaces  from './chargyInterfaces.js'
-import * as chargyLib         from './chargyLib.js'
+import { Chargy }             from './chargy'
+import { ACrypt }             from './ACrypt'
+import * as chargyInterfaces  from './chargyInterfaces'
+import * as chargyLib         from './chargyLib'
 
 export class Chargepoint01 {
 
@@ -1011,7 +1011,7 @@ export class ChargePointCrypt01 extends ACrypt {
                         for (let i = 0; i < measurement.values.length; i++)
                         {
 
-                            const currentResult = measurement.values[i].result;
+                            const currentResult = measurement.values[i]?.result;
 
                             if (currentResult !== undefined) {
 
@@ -1256,9 +1256,15 @@ export class ChargePointCrypt01 extends ACrypt {
         if (PlainTextDiv != null)
         {
 
-            if (PlainTextDiv.parentElement != null)
-                PlainTextDiv.parentElement.children[0].innerHTML         = "Plain text (secrrct)";
-            PlainTextDiv.innerText                                       = atob(chargingSession.original ?? "");
+            if (PlainTextDiv                           != undefined &&
+                PlainTextDiv.parentElement             != undefined &&
+                PlainTextDiv.parentElement             != undefined &&
+                PlainTextDiv.parentElement.children[0] != undefined)
+            {
+                PlainTextDiv.parentElement.children[0].innerHTML  = "Plain text (secrrct)";
+            }
+
+            PlainTextDiv.innerText                                = atob(chargingSession.original ?? "");
 
             PlainTextDiv.style.fontFamily  = "monospace";
             PlainTextDiv.style.whiteSpace  = "pre";
@@ -1297,10 +1303,16 @@ export class ChargePointCrypt01 extends ACrypt {
 
             }
 
-            if (HashedPlainTextDiv.parentElement != null)
+            if (HashedPlainTextDiv                           != undefined &&
+                HashedPlainTextDiv.parentElement             != undefined &&
+                HashedPlainTextDiv.parentElement             != undefined &&
+                HashedPlainTextDiv.parentElement.children[0] != undefined)
+            {
                 HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text " + hashInfo;
-                HashedPlainTextDiv.innerHTML                             = chargingSession.hashValue?.match(/.{1,8}/g)?.join(" ")
-                                                                               ?? "0x00000000000000000000000000000000000";
+            }
+
+            HashedPlainTextDiv.innerHTML  = chargingSession.hashValue?.match(/.{1,8}/g)?.join(" ")
+                                                ?? "0x00000000000000000000000000000000000";
 
         }
 
@@ -1311,7 +1323,11 @@ export class ChargePointCrypt01 extends ACrypt {
         if (PublicKeyDiv != null && chargingSession.publicKey != null)
         {
 
-            if (PublicKeyDiv.parentElement != null)
+            if (PublicKeyDiv                           != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement.children[0] != undefined)
+            {
                 PublicKeyDiv.parentElement.children[0].innerHTML  = "Public Key (" +
                                                                          (algorithmType
                                                                               ? algorithmType + ", "
@@ -1320,40 +1336,42 @@ export class ChargePointCrypt01 extends ACrypt {
                                                                               ? algorithmName + ", "
                                                                               : "") +
                                                                           "hex)";
+            }
 
-            PublicKeyDiv.innerHTML                                = chargingSession.publicKey.value.startsWith("04") // Add some space after '04' to avoid confused customers
-                                                                          ? "<span class=\"leadingFour\">04</span> "
-                                                                            + chargingSession.publicKey.value.substring(2).match(/.{1,8}/g)!.join(" ")
-                                                                          :   chargingSession.publicKey.value.match(/.{1,8}/g)!.join(" ");
+            PublicKeyDiv.innerHTML  = chargingSession.publicKey.value.startsWith("04") // Add some space after '04' to avoid confused customers
+                                          ? "<span class=\"leadingFour\">04</span> "
+                                            + chargingSession.publicKey.value.substring(2).match(/.{1,8}/g)!.join(" ")
+                                          :   chargingSession.publicKey.value.match(/.{1,8}/g)!.join(" ");
 
 
             //#region Public key signatures
 
-            if (PublicKeyDiv.parentElement != null)
+            if (PublicKeyDiv                           != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement.children[3] != undefined)
+            {
                 PublicKeyDiv.parentElement.children[3].innerHTML = "";
+            }
 
-            if (chargingSession.publicKey.signatures) {
+            if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures)) {
 
-                for (let signature of chargingSession.publicKey.signatures)
+                for (const signature of result.publicKeySignatures)
                 {
 
                     try
                     {
 
-                        let signatureDiv2 = PublicKeyDiv.parentElement;
+                        const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
 
-                        if (signatureDiv2 != null)
-                        {
-                            let signatureDiv = signatureDiv2.children[3].appendChild(document.createElement('div'));
-
-                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
-                                                                                                    measurementValue.measurement.chargingSession.EVSE,
+                        if (signatureDiv != null)
+                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement!.chargingSession!.chargingStation,
+                                                                                                    measurementValue.measurement!.chargingSession!.EVSE,
                                                                                                     //@ts-ignore
                                                                                                     measurementValue.measurement.chargingSession.EVSE.meters[0],
                                                                                                     //@ts-ignore
                                                                                                     measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
                                                                                                     signature);
-                        }
 
                     }
                     catch (exception)
@@ -1374,8 +1392,13 @@ export class ChargePointCrypt01 extends ACrypt {
         if (SignatureExpectedDiv != null && chargingSession.signature != null)
         {
 
-            if (SignatureExpectedDiv.parentElement != null)
+            if (SignatureExpectedDiv                           != undefined &&
+                SignatureExpectedDiv.parentElement             != undefined &&
+                SignatureExpectedDiv.parentElement             != undefined &&
+                SignatureExpectedDiv.parentElement.children[0] != undefined)
+            {
                 SignatureExpectedDiv.parentElement.children[0].innerHTML  = "Erwartete Signatur (secrrct.sign, rs, hex)";// " + (result.signature?.format ?? "") + ", hex)";
+            }
 
             if (typeof chargingSession.signature != 'string')
                 SignatureExpectedDiv.innerHTML                            = "r: " + chargingSession.signature.r.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") + "<br />" +

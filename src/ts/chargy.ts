@@ -23,18 +23,18 @@ import {Buffer} from 'node:buffer';
 //import { fileTypeFromBuffer }                 from '../../node_modules/file-type/browser.js'
 import { fileTypeFromBuffer }                 from 'file-type';
 
-import { Alfen01, AlfenCrypt01 }              from './Alfen01.js'
-import { BSMCrypt01 }                         from './BSMCrypt01.js'
-import { ChargeIT }                           from './chargeIT.js'
-import { Chargepoint01, ChargePointCrypt01 }  from './chargePoint01.js'
-import { EMHCrypt01 }                         from './EMHCrypt01.js'
-import { GDFCrypt01 }                         from './GDFCrypt01.js'
-import { Mennekes }                           from './Mennekes.js'
-import { OCMF }                               from './OCMF.js'
-import { OCMFv1_0 }                           from './OCMFv1_0.js'
-import { SAFEXML }                            from './SAFE_XML.js'
-import * as chargyInterfaces                  from './chargyInterfaces.js'
-import * as chargyLib                         from './chargyLib.js'
+import { Alfen01, AlfenCrypt01 }              from './Alfen01'
+import { BSMCrypt01 }                         from './BSMCrypt01'
+import { ChargeIT }                           from './chargeIT'
+import { Chargepoint01, ChargePointCrypt01 }  from './chargePoint01'
+import { EMHCrypt01 }                         from './EMHCrypt01'
+import { GDFCrypt01 }                         from './GDFCrypt01'
+import { Mennekes }                           from './Mennekes'
+import { OCMF }                               from './OCMF'
+import { OCMFv1_0 }                           from './OCMFv1_0'
+import { SAFEXML }                            from './SAFE_XML'
+import * as chargyInterfaces                  from './chargyInterfaces'
+import * as chargyLib                         from './chargyLib'
 
 class Chargy {
 
@@ -281,10 +281,10 @@ class Chargy {
 
                             //#region A single compressed file without a path/filename, e.g. within bz2
 
-                            if (compressedFiles.length == 1 && compressedFiles[0].path == null)
+                            if (compressedFiles.length == 1 && compressedFiles[0]?.path == null)
                             {
                                 expandedFileInfos.push({ name: FileInfo.name.substring(0, FileInfo.name.lastIndexOf('.')),
-                                                        data: compressedFiles[0].data });
+                                                        data: compressedFiles[0]?.data });
                                 continue;
                             }
 
@@ -661,16 +661,16 @@ class Chargy {
         if (processedFiles.length == 1)
         {
 
-            if (chargyInterfaces.IsAChargeTransparencyRecord(processedFiles[0].result))
-                return this.processChargeTransparencyRecord(processedFiles[0].result);
+            if (chargyInterfaces.IsAChargeTransparencyRecord(processedFiles[0]?.result))
+                return this.processChargeTransparencyRecord(processedFiles[0]!.result);
 
-            if (chargyInterfaces.IsAPublicKeyLookup(processedFiles[0].result))
+            if (chargyInterfaces.IsAPublicKeyLookup(processedFiles[0]?.result))
                 return {
                     status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Unbekanntes oder ungültiges Transparenzdatensatzformat!",
                 };
 
-            return processedFiles[0].result;
+            return processedFiles[0]!.result;
 
         }
 

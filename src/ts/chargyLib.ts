@@ -256,7 +256,7 @@ export function intFromBytes(x: number[]){
     let val = 0;
 
     for (let i = 0; i < x.length; ++i) {
-        val += x[i];
+        val += x[i] ?? 0;
         if (i < x.length-1) {
             val = val << 8;
         }
@@ -333,8 +333,8 @@ export function SetHex(dv: DataView, hex: string, offset: number, reverse?: bool
         bytes.reverse();
 
     for (let i = 0; i < bytes.length; i++) {
-        dv.setUint8(offset + i, bytes[i]);
-        tv.setUint8(i,          bytes[i]);
+        dv.setUint8(offset + i, bytes[i] ?? 0);
+        tv.setUint8(i,          bytes[i] ?? 0);
     }
 
     return buf2hex(buffer);
@@ -353,8 +353,8 @@ export function SetTimestamp(dv: DataView, timestamp: any, offset: number, addLo
     const tv        = new DataView(buffer);
 
     for (let i = 4; i < bytes.length; i++) {
-        dv.setUint8(offset + (bytes.length - i - 1), bytes[i]);
-        tv.setUint8(bytes.length - i - 1,            bytes[i]);
+        dv.setUint8(offset + (bytes.length - i - 1), bytes[i] ?? 0);
+        tv.setUint8(bytes.length - i - 1,            bytes[i] ?? 0);
     }
 
     return buf2hex(buffer);
@@ -373,8 +373,8 @@ export function SetTimestamp32(dv: DataView, timestamp: any, offset: number, add
     const tv        = new DataView(buffer);
 
     for (let i = 4; i < bytes.length; i++) {
-        dv.setUint8(offset + (bytes.length - i - 1), bytes[i]);
-        tv.setUint8(bytes.length - i - 1,            bytes[i]);
+        dv.setUint8(offset + (bytes.length - i - 1), bytes[i] ?? 0);
+        tv.setUint8(bytes.length - i - 1,            bytes[i] ?? 0);
     }
 
     return buf2hex(buffer);
@@ -405,8 +405,8 @@ export function SetUInt32(dv: DataView, value: number, offset: number, reverse?:
         bytes.reverse();
 
     for (let i = 0; i < bytes.length; i++) {
-        dv.setUint8(offset + i, bytes[i]);
-        tv.setUint8(i,          bytes[i]);
+        dv.setUint8(offset + i, bytes[i] ?? 0);
+        tv.setUint8(i,          bytes[i] ?? 0);
     }
 
     return buf2hex(buffer);
@@ -424,8 +424,8 @@ export function SetUInt64(dv: DataView, value: number, offset: number, reverse?:
         bytes.reverse();
 
     for (let i = 0; i < bytes.length; i++) {
-        dv.setUint8(offset + i, bytes[i]);
-        tv.setUint8(i,          bytes[i]);
+        dv.setUint8(offset + i, bytes[i] ?? 0);
+        tv.setUint8(i,          bytes[i] ?? 0);
     }
 
     return buf2hex(buffer);
@@ -441,8 +441,8 @@ export function SetText(dv: DataView, text: string, offset: number): string
     const tv      = new DataView(buffer);
 
     for (let i = 0; i < bytes.length; i++) {
-        dv.setUint8(offset + i, bytes[i]);
-        tv.setUint8(i,          bytes[i]);
+        dv.setUint8(offset + i, bytes[i] ?? 0);
+        tv.setUint8(i,          bytes[i] ?? 0);
     }
 
     return buf2hex(buffer);
@@ -463,14 +463,14 @@ export function SetUInt32_withCode(dv: DataView, value: number, scale: number, o
         valueBytes.reverse();
 
     for (let i = 0; i < valueBytes.length; i++) {
-        dv.setUint8(offset + i, valueBytes[i]);
-        tv.setUint8(i,          valueBytes[i]);
+        dv.setUint8(offset + i, valueBytes[i] ?? 0);
+        tv.setUint8(i,          valueBytes[i] ?? 0);
     }
 
-    dv.setUint8(offset + valueBytes.length,     scaleBytes[0]);
-    tv.setInt8 (         valueBytes.length,     scaleBytes[0]);
-    dv.setUint8(offset + valueBytes.length + 1, obisBytes[0]);
-    tv.setInt8 (         valueBytes.length + 1, obisBytes[0]);
+    dv.setUint8(offset + valueBytes.length,     scaleBytes[0] ?? 0);
+    tv.setInt8 (         valueBytes.length,     scaleBytes[0] ?? 0);
+    dv.setUint8(offset + valueBytes.length + 1, obisBytes[0]  ?? 0);
+    tv.setInt8 (         valueBytes.length + 1, obisBytes[0]  ?? 0);
 
     const result = buf2hex(buffer);
 
@@ -490,8 +490,8 @@ export function SetText_withLength(dv: DataView, text: string, offset: number): 
     tv.setInt32(0,      bytes.length);
 
     for (let i = 0; i < bytes.length; i++) {
-        dv.setUint8(offset + 4 + i, bytes[i]);
-        tv.setUint8(         4 + i, bytes[i]);
+        dv.setUint8(offset + 4 + i, bytes[i] ?? 0);
+        tv.setUint8(         4 + i, bytes[i] ?? 0);
     }
 
     const result = buf2hex(buffer);
@@ -630,22 +630,22 @@ export function pad(text: string|undefined, paddingValue: number) {
 
 };
 
-export async function sha224(message: string|DataView) {
+// export async function sha224(message: string|DataView) {
 
-    let hashBuffer = null;
-    const SHA224 = require("sha224");
+//     let hashBuffer = null;
+//     const SHA224 = require("sha224");
 
-    if (typeof message === 'string')
-        hashBuffer = SHA224(Buffer.from(message, 'utf8'));
-    else
-        hashBuffer = SHA224(message);
+//     if (typeof message === 'string')
+//         hashBuffer = SHA224(Buffer.from(message, 'utf8'));
+//     else
+//         hashBuffer = SHA224(message);
 
-  //  const hashArray  = Array.from(hashBuffer);                                       // convert hash to byte array
-    const hashHex    = hashBuffer.toString("hex");
+//   //  const hashArray  = Array.from(hashBuffer);                                       // convert hash to byte array
+//     const hashHex    = hashBuffer.toString("hex");
 
-    return hashHex;
+//     return hashHex;
 
-}
+// }
 
 export async function sha256(message: string|DataView) {
 

@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy.js'
-import { ACrypt }             from './ACrypt.js'
-import * as chargyInterfaces  from './chargyInterfaces.js'
-import * as chargyLib         from './chargyLib.js'
+import { Chargy }             from './chargy'
+import { ACrypt }             from './ACrypt'
+import * as chargyInterfaces  from './chargyInterfaces'
+import * as chargyLib         from './chargyLib'
 
 
 export interface IBSMMeasurementValue extends chargyInterfaces.IMeasurementValue
@@ -904,7 +904,7 @@ export class BSMCrypt01 extends ACrypt {
                 "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/bsm-ws36a-v0+json",
                 "begin":                        common.dataSets[0].time,
                 "end":                          common.dataSets[n].time,
-                "EVSEId":                       CTR.chargingStationOperators![0].chargingStations![0].EVSEs![0]["@id"],
+                "EVSEId":                       CTR.chargingStationOperators?[0]?["chargingStations"]?[0]?["EVSEs"]?[0]?["@id"]:null:null:null:null:null:null,
 
                 "authorizationStart": {
                     "@id":                      common.contractId,   //CTR.contract!["@id"],
@@ -986,7 +986,7 @@ export class BSMCrypt01 extends ACrypt {
                     ]
                 };
 
-                (session.measurements[0].values as any[]).push(bsmMeasurementValue);
+            (session?.measurements[0]!.values as any[])?.push(bsmMeasurementValue);
 
             }
 
@@ -999,14 +999,14 @@ export class BSMCrypt01 extends ACrypt {
             if (CTR.chargingSessions)
             {
 
-                if (CTR.begin == undefined || CTR.begin === "" || CTR.begin > CTR.chargingSessions[0].begin)
-                    CTR.begin =   CTR.chargingSessions[0].begin;
+                if (CTR.begin == undefined || CTR.begin === "" || CTR.begin > CTR.chargingSessions[0]!["begin"])
+                    CTR.begin =   CTR.chargingSessions[0]?.begin;
 
-                var end = CTR.chargingSessions[CTR.chargingSessions.length - 1].end;
+                var end = CTR.chargingSessions[CTR.chargingSessions.length - 1]?.end;
                 if (end !== undefined)
                 {
                     if (CTR.end == undefined || CTR.end === "" || CTR.end < end)
-                        CTR.end = CTR.chargingSessions[CTR.chargingSessions.length - 1].end;
+                        CTR.end = CTR.chargingSessions[CTR.chargingSessions.length - 1]?.end;
                 }
 
             }
@@ -1023,7 +1023,7 @@ export class BSMCrypt01 extends ACrypt {
                 CTR.contract["@context"] = common.contractType;
             }
 
-            CTR.chargingStationOperators![0].chargingStations![0].EVSEs![0].meters.push({
+            (CTR!.chargingStationOperators![0]!.chargingStations![0]!.EVSEs[0]?.meters)?.push({
                 "@id":                      common.meterId,
                 model:                      common.meterType,
                 vendor:                     common.meterManufacturer,
@@ -1557,9 +1557,9 @@ export class BSMCrypt01 extends ACrypt {
                         try
                         {
 
-                            cryptoResult.publicKey            = meter.publicKeys[0].value;
-                            cryptoResult.publicKeyFormat      = meter.publicKeys[0].format;
-                            cryptoResult.publicKeySignatures  = meter.publicKeys[0].signatures;
+                            cryptoResult.publicKey            = meter?.publicKeys[0]?.value;
+                            cryptoResult.publicKeyFormat      = meter?.publicKeys[0]?.format;
+                            cryptoResult.publicKeySignatures  = meter?.publicKeys[0]?.signatures;
                             let publicKey                     = cryptoResult.publicKey;
 
                             if (cryptoResult.publicKeyFormat == "DER")
@@ -1582,7 +1582,7 @@ export class BSMCrypt01 extends ACrypt {
                                     );
                                 });
 
-                                const publicKeyDER = ASN1_PublicKey.decode(Buffer.from(meter.publicKeys[0].value, 'hex'), 'der');
+                                const publicKeyDER = ASN1_PublicKey.decode(Buffer.from(meter?.publicKeys[0]!.value, 'hex'), 'der');
                                 publicKey = chargyLib.buf2hex(publicKeyDER.publicKey.data).toLowerCase();
 
                             }
@@ -1653,8 +1653,13 @@ export class BSMCrypt01 extends ACrypt {
         if (PlainTextDiv != null)
         {
 
-            if (PlainTextDiv.parentElement != null)
+            if (PlainTextDiv                           != undefined &&
+                PlainTextDiv.parentElement             != undefined &&
+                PlainTextDiv.parentElement             != undefined &&
+                PlainTextDiv.parentElement.children[0] != undefined)
+            {
                 PlainTextDiv.parentElement.children[0].innerHTML = "Plain text (" + (measurementValue.result as IBSMCrypt01Result)?.ArraySize + " Bytes, hex)";
+            }
 
             PlainTextDiv.style.fontFamily  = "";
             PlainTextDiv.style.whiteSpace  = "";
@@ -1690,10 +1695,15 @@ export class BSMCrypt01 extends ACrypt {
         if (HashedPlainTextDiv != null)
         {
 
-            if (HashedPlainTextDiv.parentElement != null)
-                HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text (SHA256, hex)";
+            if (HashedPlainTextDiv                           != undefined &&
+                HashedPlainTextDiv.parentElement             != undefined &&
+                HashedPlainTextDiv.parentElement             != undefined &&
+                HashedPlainTextDiv.parentElement.children[0] != undefined)
+            {
+                HashedPlainTextDiv.parentElement.children[0].innerHTML  = "Hashed plain text (SHA256, hex)";
+            }
 
-            HashedPlainTextDiv.innerHTML                                 = result.sha256value.match(/.{1,8}/g).join(" ");
+            HashedPlainTextDiv.innerHTML                                = result.sha256value.match(/.{1,8}/g).join(" ");
 
         }
 
@@ -1706,41 +1716,53 @@ export class BSMCrypt01 extends ACrypt {
             result.publicKey != "")
         {
 
-            if (PublicKeyDiv.parentElement != null)
-                PublicKeyDiv.parentElement.children[0].innerHTML       = "Public Key (" +
-                                                                         (result.publicKeyFormat
-                                                                             ? result.publicKeyFormat + ", "
-                                                                             : "") +
-                                                                         "hex)";
+            if (PublicKeyDiv                           != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement.children[0] != undefined)
+            {
+                PublicKeyDiv.parentElement.children[0].innerHTML  = "Public Key (" +
+                                                                    (result.publicKeyFormat
+                                                                        ? result.publicKeyFormat + ", "
+                                                                        : "") +
+                                                                    "hex)";
+            }
 
             if (!chargyLib.IsNullOrEmpty(result.publicKey))
-                PublicKeyDiv.innerHTML                                 = result.publicKey.startsWith("04") // Add some space after '04' to avoid confused customers
-                                                                            ? "<span class=\"leadingFour\">04</span> "
-                                                                                + result.publicKey.substring(2).match(/.{1,8}/g)!.join(" ")
-                                                                            :   result.publicKey.match(/.{1,8}/g)!.join(" ");
+                PublicKeyDiv.innerHTML                            = result.publicKey.startsWith("04") // Add some space after '04' to avoid confused customers
+                                                                       ? "<span class=\"leadingFour\">04</span> "
+                                                                           + result.publicKey.substring(2).match(/.{1,8}/g)!.join(" ")
+                                                                       :   result.publicKey.match(/.{1,8}/g)!.join(" ");
 
 
             //#region Public key signatures
 
-            if (PublicKeyDiv.parentElement != null)
+            if (PublicKeyDiv                           != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement.children[3] != undefined)
+            {
                 PublicKeyDiv.parentElement.children[3].innerHTML = "";
+            }
 
             if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures)) {
 
-                for (let signature of result.publicKeySignatures)
+                for (const signature of result.publicKeySignatures)
                 {
 
                     try
                     {
 
-                        let signatureDiv = PublicKeyDiv.parentElement!.children[3].appendChild(document.createElement('div'));
-                        signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement!.chargingSession!.chargingStation,
-                                                                                                measurementValue.measurement!.chargingSession!.EVSE,
-                                                                                                //@ts-ignore
-                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                                                //@ts-ignore
-                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
-                                                                                                signature);
+                        const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
+
+                        if (signatureDiv != null)
+                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement!.chargingSession!.chargingStation,
+                                                                                                    measurementValue.measurement!.chargingSession!.EVSE,
+                                                                                                    //@ts-ignore
+                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                                                                    //@ts-ignore
+                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                                                                    signature);
 
                     }
                     catch (exception)
@@ -1761,15 +1783,20 @@ export class BSMCrypt01 extends ACrypt {
         if (SignatureExpectedDiv != null && result.signature != null)
         {
 
-            if (SignatureExpectedDiv.parentElement != null)
+            if (SignatureExpectedDiv                           != undefined &&
+                SignatureExpectedDiv.parentElement             != undefined &&
+                SignatureExpectedDiv.parentElement             != undefined &&
+                SignatureExpectedDiv.parentElement.children[0] != undefined)
+            {
                 SignatureExpectedDiv.parentElement.children[0].innerHTML  = "Erwartete Signatur (" + (result.signature.format || "") + ", hex)";
+            }
 
             if (result.signature.r && result.signature.s)
-                SignatureExpectedDiv.innerHTML                            = "r: " + result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") + "<br />" +
-                                                                            "s: " + result.signature.s.toLowerCase().match(/.{1,8}/g)?.join(" ");
+                SignatureExpectedDiv.innerHTML  = "r: " + result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") + "<br />" +
+                                                  "s: " + result.signature.s.toLowerCase().match(/.{1,8}/g)?.join(" ");
 
             else if (result.signature.value)
-                SignatureExpectedDiv.innerHTML                            = result.signature.value.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
+                SignatureExpectedDiv.innerHTML  = result.signature.value.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
 
         }
 

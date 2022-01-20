@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy.js'
-import { Alfen01 }            from './Alfen01.js'
-import { OCMF }               from './OCMF.js'
-import * as chargyInterfaces  from './chargyInterfaces.js'
-import * as chargyLib         from './chargyLib.js'
+import { Chargy }             from './chargy'
+import { Alfen01 }            from './Alfen01'
+import { OCMF }               from './OCMF'
+import * as chargyInterfaces  from './chargyInterfaces'
+import * as chargyLib         from './chargyLib'
 
 export class SAFEXML  {
 
@@ -47,8 +47,10 @@ export class SAFEXML  {
             let values = XMLDocument.querySelectorAll("values");
             if (values.length == 1)
             {
-                let valueList = values[0].querySelectorAll("value");
-                if (valueList.length >= 1)
+                const valueList = values[0]?.querySelectorAll("value");
+
+                if (valueList        != null &&
+                    valueList.length >= 1)
                 {
                     for (let i=0; i<valueList.length; i++)
                     {
@@ -61,7 +63,7 @@ export class SAFEXML  {
 
                         //#region <signedData>...</signedData>
 
-                        var signedData = valueList[i].querySelector("signedData");
+                        const signedData = valueList[i]?.querySelector("signedData");
                         if (signedData != null)
                         {
 
@@ -148,7 +150,7 @@ export class SAFEXML  {
                         //#region <publicKey>...</publicKey>
 
                         // Note: The public key is optional!
-                        var publicKey  = valueList[i].querySelector("publicKey");
+                        const publicKey  = valueList[i]?.querySelector("publicKey");
                         if (publicKey != null)
                         {
 

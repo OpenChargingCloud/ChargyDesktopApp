@@ -4,11 +4,14 @@ module.exports = [
       mode: 'development',
       entry: './src/js/chargyApp.ts',
       target: 'electron-renderer',
-      devtool: "source-map",
+      devtool: "eval-source-map",
+      resolve: {
+        extensions: ["", ".ts", ".js"]
+      },
       module: {
         rules: [{
           test: /\.ts$/,
-          include: /src/,
+          //include: /src/,
           use: [{ loader: 'ts-loader' }]
         }]
       },
@@ -17,8 +20,8 @@ module.exports = [
         'base32decode': 'base32-decode'
       },
       output: {
-        path: __dirname + '/src/js',
-        filename: 'chargyApp2.js'
+        path: __dirname + '/build',
+        filename: 'chargyApp-bundle.js'
       }
     }
   ];

@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy.js'
-import { Alfen01 }            from './Alfen01.js'
-import { BSMCrypt01 }         from './BSMCrypt01.js'
-import * as chargyInterfaces  from './chargyInterfaces.js'
-import * as chargyLib         from './chargyLib.js'
+import { Chargy }             from './chargy'
+import { Alfen01 }            from './Alfen01'
+import { BSMCrypt01 }         from './BSMCrypt01'
+import * as chargyInterfaces  from './chargyInterfaces'
+import * as chargyLib         from './chargyLib'
 
 export class ChargeIT {
 
@@ -571,13 +571,13 @@ export class ChargeIT {
 
                         let n = CTRArray.length-1;
 
-                        CTR["@id"]  = CTRArray[n]["transactionId"];
-                        CTR.begin   = this.chargy.moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
-                        CTR.end     = this.chargy.moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
+                        CTR["@id"]  = CTRArray[n]!["transactionId"];
+                        CTR.begin   = this.chargy.moment.unix(CTRArray[0]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
+                        CTR.end     = this.chargy.moment.unix(CTRArray[n]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
 
                         CTR.contract = {
-                             "@id":       CTRArray[0]["contract"]["id"],
-                             "@context":  CTRArray[0]["contract"]["type"]
+                             "@id":       CTRArray[0]!["contract"]["id"],
+                             "@context":  CTRArray[0]!["contract"]["type"]
                         };
 
                         CTR.chargingStationOperators = [{
@@ -638,7 +638,7 @@ export class ChargeIT {
                                     // "description": {
                                     //     "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
                                     // },
-                                    "firmwareVersion":          CTRArray[0]["chargePoint"]["softwareVersion"],
+                                    "firmwareVersion":          CTRArray[0]!["chargePoint"]["softwareVersion"],
                                     "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
                                     "address": {
                                         "street":               address_street,
@@ -655,21 +655,21 @@ export class ChargeIT {
                                             // "connectors": [{ }],
                                             "meters": [
                                                 {
-                                                    "@id":                      CTRArray[0]["meterInfo"]["meterId"],
-                                                    "vendor":                   CTRArray[0]["meterInfo"]["manufacturer"],
+                                                    "@id":                      CTRArray[0]!["meterInfo"]["meterId"],
+                                                    "vendor":                   CTRArray[0]!["meterInfo"]["manufacturer"],
                                                     "vendorURL":                "http://www.emh-metering.de",
-                                                    "model":                    CTRArray[0]["meterInfo"]["type"],
+                                                    "model":                    CTRArray[0]!["meterInfo"]["type"],
                                                     "hardwareVersion":          "1.0",
-                                                    "firmwareVersion":          CTRArray[0]["meterInfo"]["firmwareVersion"],
+                                                    "firmwareVersion":          CTRArray[0]!["meterInfo"]["firmwareVersion"],
                                                     "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
                                                     "publicKeys": [
                                                         {
                                                             "algorithm":        "secp192r1",
                                                             "format":           "DER",
-                                                            "value":            CTRArray[0]["meterInfo"]["publicKey"].startsWith("04")
-                                                                                    ?        CTRArray[0]["meterInfo"]["publicKey"]
-                                                                                    : "04" + CTRArray[0]["meterInfo"]["publicKey"],
-                                                            "signatures":       CTRArray[0]["meterInfo"]["publicKeySignatures"]
+                                                            "value":            CTRArray[0]!["meterInfo"]["publicKey"].startsWith("04")
+                                                                                    ?        CTRArray[0]!["meterInfo"]["publicKey"]
+                                                                                    : "04" + CTRArray[0]!["meterInfo"]["publicKey"],
+                                                            "signatures":       CTRArray[0]!["meterInfo"]["publicKeySignatures"]
                                                         }
                                                     ]
                                                 }
@@ -683,18 +683,18 @@ export class ChargeIT {
 
                         CTR.chargingSessions = [{
 
-                            "@id":                          CTRArray[n]["transactionId"],
+                            "@id":                          CTRArray[n]!["transactionId"],
                             "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
-                            "begin":                        this.chargy.moment.unix(CTRArray[0]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
-                            "end":                          this.chargy.moment.unix(CTRArray[n]["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                            "begin":                        this.chargy.moment.unix(CTRArray[0]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                            "end":                          this.chargy.moment.unix(CTRArray[n]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
                             "EVSEId":                       evseId,
 
                             "authorizationStart": {
-                                "@id":                      CTRArray[0]["contract"]["id"],
-                                "type":                     CTRArray[0]["contract"]["type"],
-                                "timestamp":                this.chargy.moment.unix(CTRArray[0]["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
-                                                                                    CTRArray[0]["contract"]["timestampLocal"]["localOffset"] +
-                                                                                    CTRArray[0]["contract"]["timestampLocal"]["seasonOffset"]).format(),
+                                "@id":                      CTRArray[0]!["contract"]["id"],
+                                "type":                     CTRArray[0]!["contract"]["type"],
+                                "timestamp":                this.chargy.moment.unix(CTRArray[0]!["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
+                                                                                    CTRArray[0]!["contract"]["timestampLocal"]["localOffset"] +
+                                                                                    CTRArray[0]!["contract"]["timestampLocal"]["seasonOffset"]).format(),
                             },
 
                             // "signatureInfos": {
@@ -707,14 +707,14 @@ export class ChargeIT {
 
                             "measurements": [{
 
-                                "energyMeterId":        CTRArray[0]["meterInfo"]["meterId"],
+                                "energyMeterId":        CTRArray[0]!["meterInfo"]["meterId"],
                                 "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
-                                "name":                 CTRArray[0]["measurand"]["name"],
-                                "obis":                 chargyLib.parseOBIS(CTRArray[0]["measurand"]["id"]),
-                                "unit":                 CTRArray[0]["measuredValue"]["unit"],
-                                "unitEncoded":          CTRArray[0]["measuredValue"]["unitEncoded"],
-                                "valueType":            CTRArray[0]["measuredValue"]["valueType"],
-                                "scale":                CTRArray[0]["measuredValue"]["scale"],
+                                "name":                 CTRArray[0]!["measurand"]["name"],
+                                "obis":                 chargyLib.parseOBIS(CTRArray[0]!["measurand"]["id"]),
+                                "unit":                 CTRArray[0]!["measuredValue"]["unit"],
+                                "unitEncoded":          CTRArray[0]!["measuredValue"]["unitEncoded"],
+                                "valueType":            CTRArray[0]!["measuredValue"]["valueType"],
+                                "scale":                CTRArray[0]!["measuredValue"]["scale"],
 
                                 "signatureInfos": {
                                     "hash":                 chargyInterfaces.CryptoHashAlgorithms.SHA256,
@@ -732,7 +732,7 @@ export class ChargeIT {
 
                         for (let _measurement of CTRArray)
                         {
-                            CTR["chargingSessions"][0]["measurements"][0]["values"].push({
+                            CTR["chargingSessions"][0]!["measurements"][0]!["values"].push({
                                 "timestamp":     this.chargy.moment.unix(_measurement["measuredValue"]["timestampLocal"]["timestamp"]).utc().utcOffset(
                                                                          _measurement["measuredValue"]["timestampLocal"]["localOffset"] +
                                                                          _measurement["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),

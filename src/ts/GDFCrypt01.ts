@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy.js'
-import { ACrypt }             from './ACrypt.js'
-import * as chargyInterfaces  from './chargyInterfaces.js'
-import * as chargyLib         from './chargyLib.js'
+import { Chargy }             from './chargy'
+import { ACrypt }             from './ACrypt'
+import * as chargyInterfaces  from './chargyInterfaces'
+import * as chargyLib         from './chargyLib'
 
 export interface IGDFMeasurementValue extends chargyInterfaces.IMeasurementValue
 {
@@ -124,7 +124,6 @@ export class GDFCrypt01 extends ACrypt {
         } ;
 
     }
-
 
     async SignMeasurement(measurementValue:  IGDFMeasurementValue,
                           privateKey:        any): Promise<IGDFCrypt01Result>
@@ -253,9 +252,9 @@ export class GDFCrypt01 extends ACrypt {
                         try
                         {
 
-                            cryptoResult.publicKey            = meter.publicKeys[0].value.toLowerCase();
-                            cryptoResult.publicKeyFormat      = meter.publicKeys[0].format;
-                            cryptoResult.publicKeySignatures  = meter.publicKeys[0].signatures;
+                            cryptoResult.publicKey            = meter?.publicKeys[0]?.value?.toLowerCase();
+                            cryptoResult.publicKeyFormat      = meter?.publicKeys[0]?.format;
+                            cryptoResult.publicKeySignatures  = meter?.publicKeys[0]?.signatures;
 
                             try
                             {
@@ -303,14 +302,14 @@ export class GDFCrypt01 extends ACrypt {
 
     }
 
-    async ViewMeasurement(measurementValue:        chargyInterfaces.IMeasurementValue,
-                          introDiv:                HTMLDivElement,
-                          infoDiv:                 HTMLDivElement,
-                          bufferValue:             HTMLDivElement,
-                          hashedBufferValue:       HTMLDivElement,
-                          publicKeyValue:          HTMLDivElement,
-                          signatureExpectedValue:  HTMLDivElement,
-                          signatureCheckValue:     HTMLDivElement)
+    async ViewMeasurement(measurementValue:      IGDFMeasurementValue,
+                          introDiv:              HTMLDivElement,
+                          infoDiv:               HTMLDivElement,
+                          PlainTextDiv:          HTMLDivElement,
+                          HashedPlainTextDiv:    HTMLDivElement,
+                          PublicKeyDiv:          HTMLDivElement,
+                          SignatureExpectedDiv:  HTMLDivElement,
+                          SignatureCheckDiv:     HTMLDivElement)
     {
 
         if (measurementValue.measurement                                              === undefined ||
@@ -323,88 +322,199 @@ export class GDFCrypt01 extends ACrypt {
             }
         }
 
-        const result    = measurementValue.result as IGDFCrypt01Result;
+        const result     = measurementValue.result as IGDFCrypt01Result;
 
         const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
-        cryptoSpan.innerHTML = "GDFCrypt01 (" + this.description + ")";
+        cryptoSpan.innerHTML = "EMHCrypt01 (" + this.description + ")";
 
-        this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                                    result.meterId                     || "",  infoDiv, bufferValue);
-        this.CreateLine("Zeitstempel",              chargyLib.parseUTC(measurementValue.timestamp),                                                result.timestamp                   || "",  infoDiv, bufferValue);
-        this.CreateLine("OBIS-Kennzahl",            chargyLib.parseOBIS(measurementValue.measurement.obis),                                        result.obis                        || "",  infoDiv, bufferValue);
-        this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                                      result.unitEncoded                 || "",  infoDiv, bufferValue);
-        this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                            result.scale                       || "",  infoDiv, bufferValue);
-        this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                                result.value                       || "",  infoDiv, bufferValue);
-        this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",               result.authorizationStart          || "",  infoDiv, bufferValue);
-        this.CreateLine("Autorisierungszeitpunkt",  chargyLib.parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp), result.authorizationStartTimestamp || "",  infoDiv, bufferValue);
+        //#region Plain text
 
-        // Buffer
-        bufferValue.parentElement!.children[0].innerHTML             = "Puffer (hex)";
-
-        // Hashed Buffer
-        hashedBufferValue.parentElement!.children[0].innerHTML       = "Hashed Puffer (SHA256, 24 bytes, hex)";
-        hashedBufferValue.innerHTML                                  = result.sha256value.match(/.{1,8}/g).join(" ");;
-
-
-        // Public Key
-        publicKeyValue.parentElement!.children[0].innerHTML          = "Public Key (" +
-                                                                       (result.publicKeyFormat
-                                                                           ? result.publicKeyFormat + ", "
-                                                                           : "") +
-                                                                       "hex)";
-
-        var pubKey = chargyLib.WhenNullOrEmpty(result.publicKey, "");
-
-        if (!chargyLib.IsNullOrEmpty(result.publicKey))
-            publicKeyValue.innerHTML                                 = pubKey.startsWith("04")
-                                                                           ? "04 " + pubKey.substring(2).match(/.{1,8}/g)!.join(" ")
-                                                                           : pubKey.match(/.{1,8}/g)!.join(" ");
-
-
-        // Signature
-        signatureExpectedValue.parentElement!.children[0].innerHTML  = "Erwartete Signatur (" + (result.signature!.format || "") + ", hex)";
-
-        if (result.signature!.r && result.signature!.s)
-            signatureExpectedValue.innerHTML                         = "r: " + result.signature!.r!.toLowerCase().match(/.{1,8}/g)!.join(" ") + "<br />" +
-                                                                       "s: " + result.signature!.s!.toLowerCase().match(/.{1,8}/g)!.join(" ");
-
-        else if (result.signature!.value)
-            signatureExpectedValue.innerHTML                         = result.signature!.value!.toLowerCase().match(/.{1,8}/g)!.join(" ");
-
-
-        // Result
-        switch (result.status)
+        if (PlainTextDiv != null)
         {
 
-            case chargyInterfaces.VerificationResult.UnknownCTRFormat:
-                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
-                break;
+            if (PlainTextDiv                           != undefined &&
+                PlainTextDiv.parentElement             != undefined &&
+                PlainTextDiv.parentElement             != undefined &&
+                PlainTextDiv.parentElement.children[0] != undefined)
+            {
+                PlainTextDiv.parentElement.children[0].innerHTML = "Plain text (320 Bytes, hex)";
+            }
 
-            case chargyInterfaces.VerificationResult.EnergyMeterNotFound:
-                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
-                break;
+            PlainTextDiv.style.fontFamily  = "";
+            PlainTextDiv.style.whiteSpace  = "";
+            PlainTextDiv.style.maxHeight   = "";
+            PlainTextDiv.style.overflowY   = "";
 
-            case chargyInterfaces.VerificationResult.PublicKeyNotFound:
-                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
-                break;
-
-            case chargyInterfaces.VerificationResult.InvalidPublicKey:
-                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
-                break;
-
-            case chargyInterfaces.VerificationResult.InvalidSignature:
-                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
-                break;
-
-            case chargyInterfaces.VerificationResult.ValidSignature:
-                signatureCheckValue.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
-                break;
-
-
-            default:
-                signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
-                break;
+            this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                                     result.meterId                                         || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Zeitstempel",              chargyLib.UTC2human(measurementValue.timestamp),                                                result.timestamp                                       || "",  infoDiv, PlainTextDiv);
+            //this.CreateLine("Status",                   chargyLib.hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
+            //                                            this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",                      result.infoStatus                                      || "",  infoDiv, PlainTextDiv);
+            //this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                                  result.secondsIndex                                    || "",  infoDiv, PlainTextDiv);
+            //this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                                    result.paginationId                                    || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("OBIS-Kennzahl",            measurementValue.measurement.obis,                                                              result.obis                                            || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                                       result.unitEncoded                                     || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                             result.scale                                           || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                                 result.value                                           || "",  infoDiv, PlainTextDiv);
+            //this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                                         result.logBookIndex                                    || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",                chargyLib.pad(result.authorizationStart,          128) || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Autorisierungszeitpunkt",  chargyLib.UTC2human(measurementValue.measurement.chargingSession.authorizationStart.timestamp), chargyLib.pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, PlainTextDiv);
 
         }
+
+        //#endregion
+
+        //#region Hashed plain text
+
+        if (HashedPlainTextDiv != null)
+        {
+
+            if (HashedPlainTextDiv                           != undefined &&
+                HashedPlainTextDiv.parentElement             != undefined &&
+                HashedPlainTextDiv.parentElement             != undefined &&
+                HashedPlainTextDiv.parentElement.children[0] != undefined)
+            {
+                HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text (SHA256, 24 bytes, hex)";
+            }
+
+            HashedPlainTextDiv.innerHTML                                 = result.sha256value.match(/.{1,8}/g).join(" ");
+
+        }
+
+        //#endregion
+
+        //#region Public Key
+
+        if (PublicKeyDiv     != null &&
+            result.publicKey != null &&
+            result.publicKey != "")
+        {
+
+            if (PublicKeyDiv                           != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement.children[0] != undefined)
+            {
+                PublicKeyDiv.parentElement.children[0].innerHTML       = "Public Key (" +
+                                                                         (result.publicKeyFormat
+                                                                             ? result.publicKeyFormat + ", "
+                                                                             : "") +
+                                                                         "hex)";
+            }
+
+            if (!chargyLib.IsNullOrEmpty(result.publicKey))
+                PublicKeyDiv.innerHTML                                 = result.publicKey.startsWith("04") // Add some space after '04' to avoid confused customers
+                                                                            ? "<span class=\"leadingFour\">04</span> "
+                                                                                + result.publicKey.substring(2).match(/.{1,8}/g)!.join(" ")
+                                                                            :   result.publicKey.match(/.{1,8}/g)!.join(" ");
+
+
+            //#region Public key signatures
+
+            if (PublicKeyDiv                           != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement             != undefined &&
+                PublicKeyDiv.parentElement.children[3] != undefined)
+            {
+                PublicKeyDiv.parentElement.children[3].innerHTML = "";
+            }
+
+            if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures)) {
+
+                for (const signature of result.publicKeySignatures)
+                {
+
+                    try
+                    {
+
+                        const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
+
+                        if (signatureDiv != null)
+                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession?.chargingStation,
+                                                                                                    measurementValue.measurement.chargingSession?.EVSE,
+                                                                                                    //@ts-ignore
+                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                                                                    //@ts-ignore
+                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                                                                    signature);
+
+                    }
+                    catch (exception)
+                    { }
+
+                }
+
+            }
+
+            //#endregion
+
+        }
+
+        //#endregion
+
+        //#region Signature expected
+
+        if (SignatureExpectedDiv != null && result.signature != null)
+        {
+
+            if (SignatureExpectedDiv                           != undefined &&
+                SignatureExpectedDiv.parentElement             != undefined &&
+                SignatureExpectedDiv.parentElement             != undefined &&
+                SignatureExpectedDiv.parentElement.children[0] != undefined)
+            {
+                SignatureExpectedDiv.parentElement.children[0].innerHTML  = "Erwartete Signatur (" + (result.signature.format || "") + ", hex)";
+            }
+
+            if (result.signature.r && result.signature.s)
+                SignatureExpectedDiv.innerHTML                            = "r: " + result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") + "<br />" +
+                                                                            "s: " + result.signature.s.toLowerCase().match(/.{1,8}/g)?.join(" ");
+
+            else if (result.signature.value)
+                SignatureExpectedDiv.innerHTML                            = result.signature.value.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
+
+        }
+
+        //#endregion
+
+        //#region Signature check
+
+        if (SignatureCheckDiv != null)
+        {
+            switch (result.status)
+            {
+
+                case chargyInterfaces.VerificationResult.UnknownCTRFormat:
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
+                    break;
+
+                case chargyInterfaces.VerificationResult.EnergyMeterNotFound:
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
+                    break;
+
+                case chargyInterfaces.VerificationResult.PublicKeyNotFound:
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
+                    break;
+
+                case chargyInterfaces.VerificationResult.InvalidPublicKey:
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
+                    break;
+
+                case chargyInterfaces.VerificationResult.InvalidSignature:
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
+                    break;
+
+                case chargyInterfaces.VerificationResult.ValidSignature:
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
+                    break;
+
+
+                default:
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
+                    break;
+
+            }
+        }
+
+        //#endregion
 
     }
 
