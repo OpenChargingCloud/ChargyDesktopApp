@@ -904,7 +904,7 @@ export class BSMCrypt01 extends ACrypt {
                 "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/bsm-ws36a-v0+json",
                 "begin":                        common.dataSets[0].time,
                 "end":                          common.dataSets[n].time,
-                "EVSEId":                       CTR.chargingStationOperators?[0]?["chargingStations"]?[0]?["EVSEs"]?[0]?["@id"]:null:null:null:null:null:null,
+                "EVSEId":                       CTR.chargingStationOperators![0]!["chargingStations"]![0]!["EVSEs"]![0]!["@id"],
 
                 "authorizationStart": {
                     "@id":                      common.contractId,   //CTR.contract!["@id"],
