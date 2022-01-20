@@ -25,6 +25,10 @@ If you need help with the Chargy Transparency Software or want to include your s
 
 The development of version [v1.3](https://github.com/OpenChargingCloud/ChargyDesktopApp/tree/v1.3) already started and will focus on enhanced security concepts, more digital certificates and pricing information.
 
+## Credits
+
+- <a href="https://github.com/sirhcel">Christian Meusel</a> for some more BSM validations.
+
 ## Awards
 
 The Chargy Transparency Software is one of the winners of the [1. Thuringia's Open-Source Prize](https://www.it-leistungsschau.de/programm/TOSP2019/) </a> in March 2019. This prize was awarded by [Wolfgang Tiefensee](https://de.wikipedia.org/wiki/Wolfgang_Tiefensee), [Thuringia’s Secretary of Commerce](https://www.thueringen.de/th6/tmwwdg/), in conjunction with the board of directors of the IT industry network [ITNet Thuringia](https://www.itnet-th.de).
