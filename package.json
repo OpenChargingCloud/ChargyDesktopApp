@@ -61,6 +61,7 @@
     "productName": "Chargy Transparenzsoftware chargeIT mobility Edition",
     "copyright": "Copyright © 2018-2022 GraphDefined GmbH",
     "extraFiles": [
+      "build",
       "documentation",
       "versions"
     ],

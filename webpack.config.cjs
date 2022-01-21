@@ -20,7 +20,7 @@ module.exports = [
         'base32decode': 'base32-decode'
       },
       output: {
-        path: __dirname + '/build',
+        path: __dirname + '/src/build',
         filename: 'chargyApp-bundle.js'
       }
     }
