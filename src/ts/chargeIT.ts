@@ -327,7 +327,7 @@ export class ChargeIT {
 
                     if (signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0" ||
                         signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1") {
-                        return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, "", signedMeterValues);
+                        return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, null, signedMeterValues);
                     }
 
                     else if (signedMeterValueContext.startsWith("ALFEN")) {

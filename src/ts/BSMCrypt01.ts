@@ -101,7 +101,7 @@ export class BSMCrypt01 extends ACrypt {
 
     //#region tryToParseBSM_WS36aMeasurements(Measurements)
 
-    public async tryToParseBSM_WS36aMeasurements(CTR: chargyInterfaces.IChargeTransparencyRecord, EVSEId: String, CSCSWVersion: String, Measurements: Array<any>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async tryToParseBSM_WS36aMeasurements(CTR: chargyInterfaces.IChargeTransparencyRecord, EVSEId: String, ExpectedCscSwVersion: string|null, Measurements: Array<any>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         if (!Array.isArray(Measurements) || Measurements.length < 2) return {
@@ -476,6 +476,8 @@ export class BSMCrypt01 extends ACrypt {
             let previousOS              = -1;
             let previousEpoch           = -1;
 
+	    let previousCscSwVersion: string|null = null;
+
             //#endregion
 
             for (const currentMeasurement of Measurements)
@@ -703,11 +705,19 @@ export class BSMCrypt01 extends ACrypt {
 
                     const csc_sw_version = (signedCSCSWVersion[0].measuredValue.value as String).replace('csc-sw-version:', '').trim();
 
-                    if (csc_sw_version !== 'unknown' && CSCSWVersion !== csc_sw_version)
+                    if (ExpectedCscSwVersion !== null && ExpectedCscSwVersion !== csc_sw_version)
+                        return {
+                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:  "Unexpected charging station controller software version!"
+                        };
+
+                    if (previousCscSwVersion !== null && previousCscSwVersion !== csc_sw_version)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent charging station controller software version!"
                         };
+
+                    previousCscSwVersion = csc_sw_version;
 
                 }
 
