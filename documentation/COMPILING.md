@@ -34,23 +34,16 @@ sudo npm install -g n
 sudo n latest
 
 sudo npm install -g npm@latest
-+ npm@6.14.7
 ```
 
 Afterwards you can install the remaining software using the node packet manager
 ```
 $ sudo npm install -g electron@latest
-+ electron@9.1.2
-(If this fails on Linux try: sudo npm install -g electron --unsafe-perm=true --allow-root)
-
 $ sudo npm install -g electron-builder@latest
-+ electron-builder@22.8.0
-
 $ sudo npm install -g typescript@latest
-+ typescript@3.9.7
-
 $ sudo npm install -g sass@latest
-+ sass@1.26.10
+$ sudo npm install -g webpack@latest
+$ sudo npm install -g webpack-cli@latest
 ```
 
 

@@ -9,6 +9,8 @@ src/build/*.js
 src/css/*.css
 src/css/*.css.map
 !src/css/fontawesome-all.min.css
+!src/css/leaflet.css
+!src/css/leaflet.awesome-markers.css
 src/js/*.js
 src/js/*.js.map
 .DS_Store
