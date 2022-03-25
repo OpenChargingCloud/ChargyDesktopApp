@@ -26,7 +26,7 @@
     <meta name="description" content="Transparenzsoftware für die Elektromobilität">
     <meta name="author"      content="achim.friedland@graphdefined.com">
     <meta name="viewport"    content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://chargeit.charging.cloud/chargy/ https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://chargeit.ops.charging.cloud/chargy/ https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';">
 
     <!--<link rel="icon"       href="/favicon.png"                 type="image/png" />-->
     <link rel="stylesheet" href="css/fontawesome-all.min.css"     type="text/css" />
@@ -122,11 +122,11 @@
                                 <div class="license"><button class="linkButton" href="https://github.com/openssl/openssl/blob/master/LICENSE.txt">Copyright &copy; 1998-2018 The OpenSSL Project<br />Copyright &copy; 1995-1998 Eric A. Young, Tim J. Hudson<br />Apache License v2.0</button></div>
                             </div>
                             <div class="lib">
-                                <div class="name">TypeScript <span id="typeScript">3.9.5</span></div>
+                                <div class="name">TypeScript <span id="typeScript"></span></div>
                                 <div class="license"><button class="linkButton" href="https://github.com/microsoft/TypeScript/blob/master/LICENSE.txt">Copyright &copy; Microsoft Corporation<br />Apache License v2.0</button></div>
                             </div>
                             <div class="lib">
-                                <div class="name">SASS <span id="SASS">1.26.8</span></div>
+                                <div class="name">SASS <span id="SASS"></span></div>
                                 <div class="license"><button class="linkButton" href="https://github.com/sass/dart-sass/blob/main/LICENSE">Copyright &copy; 2016, Google Inc.<br />MIT License</button></div>
                             </div>
 
@@ -195,7 +195,7 @@
                             Die SHA256/512-Hash-Funktionen werden durch die <button class="linkButton" href="https://nodejs.org/api/crypto.html">Node.js Crypto API</button> realisiert. Diese nutzen intern die <button class="linkButton" href="https://github.com/openssl/openssl">OpenSSL-Bibliothek</button> des jeweils aktuellen Node.js-Frameworks.
                         </p>
                         <p>
-                            Elliptische Kurven Kryptographie wird durch <button class="linkButton" href="https://github.com/indutny/elliptic">elliptic</button> realisiert.
+                            Elliptische Kurven Kryptographie wird durch <button class="linkButton" href="https://github.com/indutny/elliptic">elliptic</button> und einer eigenen Implementierung der <i>secp224k1</i>-Kurve realisiert.
                             Hierbei kommen je nach Verfahren und Ladestations- bzw. Smart-Meter-Hersteller unterschiedliche elliptische Kurven zum Einsatz.
                         </p>
                         <p>
