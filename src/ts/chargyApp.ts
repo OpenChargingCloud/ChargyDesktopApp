@@ -202,8 +202,9 @@ export class ChargyApp {
         if (this.packageJson.devDependencies)
         {
             (this.openSourceLibsDiv.querySelector("#electronBuilder")        as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["electron-builder"]?.       replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#typeScript")             as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["typescript"]?.             replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#SASS")                   as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["sass"]?.                   replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#typeScript")             as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["typescript"]?.             replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#webpack")                as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["webpack"]?.                replace(/[^0-9\.]/g, "");
         }
 
         if (this.packageJson.dependencies)
@@ -2497,10 +2498,10 @@ export class ChargyApp {
 // Remember to set Customer Mapbox Access Token and MapId!
 // Remember to set the "applicationEdition" in main.cjs
 
-const app = new ChargyApp("https://chargeit.charging.cloud/chargy/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
+const app = new ChargyApp("https://chargeit.ops.charging.cloud/chargy/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
                           ["info@chargeit-mobility.com", "?subject=Chargy%20Supportanfrage"],
                           ["+4993219319101",             "+49 9321 9319 101"],
-                          "https://chargeit.charging.cloud/chargy/issues");
+                          "https://chargeit.ops.charging.cloud/chargy/issues");
 
 // const app = new ChargyApp("https://chargepoint.charging.cloud/chargy/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
 //                           ["support.eu@chargepoint.com", "?subject=Chargy%20Supportanfrage"],
