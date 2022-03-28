@@ -26,7 +26,8 @@ body {
             #logo {
                 background-color:   #ffffff;
                 //background-image:     url('../images/ChargePoint_logo_HEX.png');
-                background-image:     url('../images/chargeIT-logo.jpg');
+                //background-image:     url('../images/chargeIT-logo.jpg');
+                background-image:     url('../images/ENECO_eMobility_Logo.png');
             }
 
             #windowButtons {
@@ -49,8 +50,8 @@ body {
 
                             button {
 
-                                color:              #8d420e;
-                                background:         linear-gradient(to right, rgb(236,96,57) 0%,rgb(247,164,36) 100%);
+                                color:              #3a1d27;
+                                background:         radial-gradient(farthest-corner at 39px 40px, #fbd789 0%, #ed9828 35%, #CC0B12 70%);
 
                                 i {
                                     font-size:          120%;
@@ -59,8 +60,8 @@ body {
                             }
 
                             button:hover {
-                                color:              #fff2ee;
-                                background:         linear-gradient(to right, rgb(239, 136, 107) 0%,rgb(240, 182, 93) 100%);
+                                color:              #ffffff;
+                                background:         radial-gradient(farthest-corner at 39px 40px, #f9e8c2 0%, #ebad5c 40%, #ed4f54 80%);
                             }
 
                         }
@@ -96,7 +97,7 @@ body {
 
                     #feedbackMethods {
                         button:hover, a:hover {
-                            color:        #d78930;
+                            color:        #c40546;
                         }
                     }
 
