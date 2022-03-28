@@ -1,6 +1,6 @@
 {
   "name": "chargytransparenzsoftware",
-  "version": "1.3.7",
+  "version": "1.4.0",
   "description": "Chargy ist eine Transparenzsoftware für das Eichrecht in der Elektromobilität. Hiermit können Endkunden und E-Mobilitäts-Anbieter die Plausibilitäts und Validität von Ladevorgängen überprüfen.",
   "main": "src/main.cjs",
   "type": "module",
@@ -77,11 +77,11 @@
       "target": [
         "nsis"
       ],
-      "icon": "src/icons/chargeITmobility.ico"
+      "icon": "src/icons/ENECO_eMobility_Icon.ico"
     },
     "nsis": {
       "perMachine": true,
-      "installerIcon": "src/icons/chargeITmobility.ico",
+      "installerIcon": "src/icons/ENECO_eMobility_Icon.ico",
       "deleteAppDataOnUninstall": true,
       "runAfterFinish": true
     },
@@ -89,10 +89,10 @@
       "target": [
         "deb"
       ],
-      "icon": "src/icons/chargeITmobility.png"
+      "icon": "src/icons/ENECO_eMobility_Icon.png"
     },
     "mac": {
-      "icon": "./src/icons/chargeITmobility.icns",
+      "icon": "./src/icons/ENECO_eMobility_Icon.icns",
       "category": "public.app-category.utilities",
       "type": "distribution"
     }
