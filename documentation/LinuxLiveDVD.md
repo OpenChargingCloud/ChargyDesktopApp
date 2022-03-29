@@ -261,7 +261,7 @@ rmdir new
 ### Create ISO image
 ```
 sudo genisoimage \
-    -o "Chargy Transparenzsoftware Live v1.2.0.iso" \
+    -o "Chargy Transparenzsoftware Live v1.4.0.iso" \
     -b isolinux/isolinux.bin \
     -c isolinux/boot.cat \
     -no-emul-boot \
