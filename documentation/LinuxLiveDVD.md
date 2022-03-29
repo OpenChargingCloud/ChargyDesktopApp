@@ -116,7 +116,7 @@ sudo mount --bind /tmp new/tmp
 sudo mount --bind /var/tmp new/var/tmp
 sudo mount --bind /var/cache new/var/cache
 
-sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_1.2.0_amd64.deb new/opt/
+sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_1.4.0_amd64.deb new/opt/
 ```
 
 ### Change root into the new Linux system and update all software packages
@@ -152,7 +152,7 @@ echo "yes" >> /etc/skel/.config/gnome-initial-setup-done
 ### Install Chargy Transparency Software
 Install Chargy and make it easily accessible from the Desktop and via AutoStart.
 ```
-apt install -y /opt/chargytransparenzsoftware_1.2.0_amd64.deb
+apt install -y /opt/chargytransparenzsoftware_1.4.0_amd64.deb
 
 # If the Chargy application icon is broken, try the following work-around for chargeIT
 sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\ chargeIT\ Edition\/appIcons\/chargepoint.png/g'  /usr/share/applications/chargytransparenzsoftware.desktop
@@ -160,16 +160,23 @@ sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware
 # ...or the following work-around for chargepoint
 sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\ ChargePoint\ Edition\/appIcons\/chargepoint.png/g'  /usr/share/applications/chargytransparenzsoftware.desktop
 
-mkdir /etc/skel/Dokumente
-cp /opt/Chargy\ Transparenzsoftware/documentation/chargeIT-Testdatensatz-01.chargy /etc/skel/Dokumente/
-cp /opt/Chargy\ Transparenzsoftware/documentation/Chargy\ Transparenzsoftware\ Nutzerhandbuch\ v1.0.0.pdf /etc/skel/Dokumente/Chargy_Transparenzsoftware_Nutzerhandbuch_v1.0.0.pdf
-chmod 644 /etc/skel/Dokumente/Chargy\ Transparenzsoftware/documentation/chargeIT-Testdatensatz-01.chargy
-chmod 644 /etc/skel/Dokumente/Chargy_Transparenzsoftware_Nutzerhandbuch_v1.0.0.pdf
+# ...or the following work-around for Eneco
+sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\ Eneco\ Edition\/appIcons\/ENECO_eMobility_Icon.png/g'  /usr/share/applications/chargytransparenzsoftware.desktop
 
 mkdir /etc/skel/.config/autostart
 cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/.config/autostart/
 
 echo -e "[org.gnome.shell]\nfavorite-apps=[ 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop', 'yelp.desktop', 'org.gnome.Terminal.desktop', 'firefox.desktop', 'chargytransparenzsoftware.desktop' ]" > /usr/share/glib-2.0/schemas/90_gnome-shell.gschema.override
+```
+
+If you want you can add some additional (test) data/documentation
+```
+mkdir /etc/skel/Dokumente
+cp /opt/Chargy\ Transparenzsoftware/documentation/chargeIT/chargeIT-Testdatensatz-01.chargy /etc/skel/Dokumente/
+#cp /opt/Chargy\ Transparenzsoftware/documentation/Chargy\ Transparenzsoftware\ Nutzerhandbuch\ v1.0.0.pdf /etc/skel/Dokumente/Chargy_Transparenzsoftware_Nutzerhandbuch_v1.0.0.pdf
+
+chmod 644 /etc/skel/Dokumente/Chargy\ Transparenzsoftware/documentation/chargeIT/chargeIT-Testdatensatz-01.chargy
+#chmod 644 /etc/skel/Dokumente/Chargy_Transparenzsoftware_Nutzerhandbuch_v1.0.0.pdf
 ```
 
 ### Register Chargy MIME type and file extentions/associations
