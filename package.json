@@ -57,8 +57,8 @@
     "safe-stable-stringify": "^1.1.1"
   },
   "build": {
-    "appId": "cloud.charging.chargeit.chargy.desktop",
-    "productName": "Chargy Transparenzsoftware chargeIT mobility Edition",
+    "appId": "cloud.charging.ops.eneco.chargy.desktop",
+    "productName": "Chargy Transparenzsoftware Eneco Edition",
     "copyright": "Copyright © 2018-2022 GraphDefined GmbH",
     "extraFiles": [
       "build",

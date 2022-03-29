@@ -2498,10 +2498,10 @@ export class ChargyApp {
 // Remember to set Customer Mapbox Access Token and MapId!
 // Remember to set the "applicationEdition" in main.cjs
 
-const app = new ChargyApp("https://chargeit.ops.charging.cloud/chargy/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
-                          ["info@chargeit-mobility.com", "?subject=Chargy%20Supportanfrage"],
+const app = new ChargyApp("https://eneco.ops.charging.cloud/chargy/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
+                          ["support-business@eneco.com", "?subject=Chargy%20Supportanfrage"],
                           ["+4993219319101",             "+49 9321 9319 101"],
-                          "https://chargeit.ops.charging.cloud/chargy/issues");
+                          "https://eneco.ops.charging.cloud/chargy/issues");
 
 // const app = new ChargyApp("https://chargepoint.charging.cloud/chargy/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
 //                           ["support.eu@chargepoint.com", "?subject=Chargy%20Supportanfrage"],

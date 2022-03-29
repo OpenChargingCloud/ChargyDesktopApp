@@ -1,16 +1,83 @@
 # Creating a Linux Live ISO Image
 
-This documentation is based on the following HowTo ["How to customize the Ubuntu Live CD?"](https://askubuntu.com/questions/48535/how-to-customize-the-ubuntu-live-cd#) and the documentation of the [TRuDI Live CD](https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master), which is a similar project of the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) for the transparency of smart meters, but was updated to support newer versions of Ubuntu Linux.
+The following documentation will describe how to setup a virtual Linux development environment for creating the Chargy Live ISO Image. It is based on ["How to customize the Ubuntu Live CD?"](https://askubuntu.com/questions/48535/how-to-customize-the-ubuntu-live-cd#) and [TRuDI Live CD](https://bitbucket.org/dzgtrudi/trudi-public/src/523dc990c741630342bdc5aeb93375373b11fb88/doc/linux-live-image.md?at=master), which is a similar project of the [Physikalisch-Technische Bundesanstalt](https://www.ptb.de) for the transparency of smart meters, but was updated to support newer versions of Ubuntu Linux.
 
 ![](Screenshot_VirtualBox01.png)
 
-### Preparing the Linux Live ISO Image
 
-We use [Ubuntu 20.04 (amd64)](https://releases.ubuntu.com/20.04/ubuntu-20.04-desktop-amd64.iso) as the base for our ISO image. We expect this ChargyDesktopApp git repository located at *../ChargyDesktopApp*.
+## Install the Chargy Linux Development System
 
+Instead of using a virtual PC, you can of course do this on your normal Linux Desktop computer.
+
+- Install VirtualBox, or any other virtualization software
+- Download Ubuntu 20.04 LTS ISO Image
+- Create a new VM configuration without hardware virtualization support, 1 vCPU and 100 GByte vHDD
+- Boot from ISO Image
+- Install Ubuntu on disc
+- Disable `Settings` -> `Power` -> `Power Savings` -> `Blank Screen` -> "never"
+- `ssh-keygen -t rsa -b 4096`
+- `sudo apt install joe git mc curl build-essential gcc make perl dkms`
+- Insert VirtualBox Guest Additions ISO image and run this software
+  - Reboot
+  - Activate the bidirectional clipboard
+  - Activate bidirectional drag'n'drop
+
+
+## Install additional software
+
+First you have to install the latest version of node.js via an external repository.
+```
+sudo curl -fsSL https://deb.nodesource.com/setup_17.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
+Now you can install the required node.js modules...
+```
+sudo npm install -g electron@latest
+sudo npm install -g electron-builder@latest
+sudo npm install -g typescript@latest
+sudo npm install -g sass@latest
+sudo npm install -g webpack@latest
+sudo npm install -g webpack-cli@latest
+```
+
+
+## Get the latest Chargy version
+
+Clone the github repository for the latest version of chargy and install its nodejs dependencies:
 ```
 git clone https://github.com/OpenChargingCloud/ChargyDesktopApp.git
-wget http://releases.ubuntu.com/20.04/ubuntu-20.04-desktop-amd64.iso
+cd ChargyDesktopApp
+npm install
+```
+You now can try to run it in *Debug Mode* via...
+```
+./run.sh
+```
+
+**Please be aware**, that Electron comes with its own internal version of Node.js. This version is currently still 16.13.0. Therefore Chargy will also show "16.13.0" and not the version number of the Node.js installation on your computer, e.g. "17.8.0". It is possible to rebuild the internal Node.js version, but we do not recommend it.
+
+
+## Build the Debian Linux Package
+
+On a Debian GNU/Linux or Ubuntu machine you can run the following commands to create a Debian software package. More information about this process can be found at: https://github.com/electron-userland/electron-installer-debian
+```
+sudo apt install debootstrap binutils
+./build.sh
+```
+
+Now you can use the normal package management tools of your Linux distribution to install the app:
+```
+cd dist
+sudo apt install ./chargytransparenzsoftware_X.Y.Z_amd64.deb
+```
+
+## Create the ISO Image
+
+We use [Ubuntu 20.04.4 (amd64)](https://releases.ubuntu.com/20.04.4/ubuntu-20.04.4-desktop-amd64.iso) as the base for our ISO image. We expect this ChargyDesktopApp git repository located at *../ChargyDesktopApp*.
+
+```
+wget https://releases.ubuntu.com/20.04.4/ubuntu-20.04.4-desktop-amd64.iso
 
 mkdir ChargyLive
 cd ChargyLive
@@ -18,7 +85,7 @@ cd ChargyLive
 sudo modprobe loop
 sudo modprobe iso9660
 mkdir source
-sudo mount -t iso9660 ../ubuntu-20.04-desktop-amd64.iso source -o ro,loop
+sudo mount -t iso9660 ../ubuntu-20.04.4-desktop-amd64.iso source -o ro,loop
 mkdir ubuntu-livecd
 cp -a source/. ubuntu-livecd
 sudo chmod -R u+w ubuntu-livecd 
