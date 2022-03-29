@@ -172,10 +172,10 @@ echo -e "[org.gnome.shell]\nfavorite-apps=[ 'org.gnome.Nautilus.desktop', 'org.g
 If you want you can add some additional (test) data/documentation
 ```
 mkdir /etc/skel/Dokumente
-cp /opt/Chargy\ Transparenzsoftware/documentation/chargeIT/chargeIT-Testdatensatz-01.chargy /etc/skel/Dokumente/
-#cp /opt/Chargy\ Transparenzsoftware/documentation/Chargy\ Transparenzsoftware\ Nutzerhandbuch\ v1.0.0.pdf /etc/skel/Dokumente/Chargy_Transparenzsoftware_Nutzerhandbuch_v1.0.0.pdf
+cp /opt/Chargy\ Transparenzsoftware\ Eneco\ Edition/documentation/chargeIT/chargeIT-Testdatensatz-01.chargy /etc/skel/Dokumente/
+#cp /opt/Chargy\ Transparenzsoftware\ Eneco\ Edition/documentation/Chargy\ Transparenzsoftware\ Nutzerhandbuch\ v1.0.0.pdf /etc/skel/Dokumente/Chargy_Transparenzsoftware_Nutzerhandbuch_v1.0.0.pdf
 
-chmod 644 /etc/skel/Dokumente/Chargy\ Transparenzsoftware/documentation/chargeIT/chargeIT-Testdatensatz-01.chargy
+chmod 644 /etc/skel/Dokumente/chargeIT-Testdatensatz-01.chargy
 #chmod 644 /etc/skel/Dokumente/Chargy_Transparenzsoftware_Nutzerhandbuch_v1.0.0.pdf
 ```
 
