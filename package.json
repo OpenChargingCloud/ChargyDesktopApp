@@ -63,6 +63,7 @@
     "extraFiles": [
       "build",
       "documentation",
+      "appIcons",
       "versions"
     ],
     "fileAssociations": [
