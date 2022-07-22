@@ -50,7 +50,7 @@
     "decompress-gz": "^0.0.1",
     "electron-localshortcut": "^3.2.1",
     "elliptic": "^6.5.4",
-    "file-type": "^17.1.1",
+    "file-type": "^17.1.3",
     "leaflet": "^1.7.1",
     "leaflet.awesome-markers": "^2.0.5",
     "moment": "^2.29.2",
