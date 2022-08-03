@@ -27,7 +27,7 @@ $ npm install decompress-bzip2@latest
 $ npm install decompress-gz@latest
 $ npm install chart.js@latest
 $ npm install @types/chart.js@latest --save-dev
-$ npm install electron-localshortcut --save
+$ npm install electron-localshortcut --save-dev
 $ npm install leaflet@latest --save
 $ npm install @types/leaflet@latest --save-dev
 $ npm install leaflet.awesome-markers@latest --save
