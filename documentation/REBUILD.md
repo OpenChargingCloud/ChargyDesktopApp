@@ -42,6 +42,11 @@ $ npm install ts-loader --save-dev
 $ npm update
 ```
 
+Security updates
+```
+$ npm audit fix
+```
+
 # Verify SHA512 hash values
 ```
 openssl dgst -sha512 -binary Chargy\ Transparenz\ Software\ Setup\ 0.26.0.exe | base64

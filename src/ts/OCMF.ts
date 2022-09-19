@@ -464,13 +464,13 @@ export class OCMF {
                     }
                 }
 
-                if (OCMFData      == null || OCMFData      == {})
+                if (OCMFData      == null || Object.keys(OCMFData).length === 0)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Could not parse the given OCMF data!"
                     }
 
-                if (OCMFSignature == null || OCMFSignature == {})
+                if (OCMFSignature == null || Object.keys(OCMFSignature).length === 0)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:  "Could not parse the given OCMF signature!"
