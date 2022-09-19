@@ -2273,7 +2273,7 @@ export class ChargyApp {
 
                             // Show energy counter value
                             let value2Div                    = chargyLib.CreateDiv(MeasurementValueDiv, "value1",
-                                                                         parseFloat((measurementValue.value * Math.pow(10, measurementValue.measurement.scale)).toFixed(10)).toString());
+                                                                         parseFloat((measurementValue.value * Math.pow(10, measurementValue.measurement.scale)).toFixed(Math.abs(measurementValue.measurement.scale))).toString());
 
                             switch (measurement.unit)
                             {
@@ -2299,19 +2299,19 @@ export class ChargyApp {
 
                                 case "kWh":
                                 case "KILO_WATT_HOURS":
-                                    currentValue = parseFloat((currentValue * Math.pow(10, measurementValue.measurement.scale)).toFixed(10));
+                                    currentValue = parseFloat((currentValue * Math.pow(10, measurementValue.measurement.scale)).toFixed(Math.abs(measurementValue.measurement.scale)));
                                     break;
 
                                 // "WATT_HOURS"
                                 default:
-                                    currentValue = parseFloat((currentValue / 1000 * Math.pow(10, measurementValue.measurement.scale)).toFixed(10));
+                                    currentValue = parseFloat((currentValue / 1000 * Math.pow(10, measurementValue.measurement.scale)).toFixed(Math.abs(measurementValue.measurement.scale)));
                                     break;
 
                             }
 
                             let valueDiv                     = chargyLib.CreateDiv(MeasurementValueDiv, "value2",
                                                                          previousValue > 0
-                                                                             ? "+" + parseFloat((currentValue - previousValue).toFixed(10))
+                                                                             ? "+" + parseFloat((currentValue - previousValue).toFixed(Math.abs(measurementValue.measurement.scale)))
                                                                              : "0");
 
                             let unitDiv                      = chargyLib.CreateDiv(MeasurementValueDiv, "unit2",
