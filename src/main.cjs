@@ -21,7 +21,7 @@ let httpPort              = 0;
 // [
 //   'D:\\Coding\\OpenChargingCloud\\ChargyDesktopApp\\node_modules\\electron\\dist\\electron.exe',
 //   '.',
-//   '--debug'
+//   '--inspect'
 // ]
 if (process.argv.length >= 2 && process.argv[0].endsWith("electron.exe") && process.argv[1] === ".")
     commandLineArguments = process.argv.slice(2);
@@ -29,7 +29,7 @@ if (process.argv.length >= 2 && process.argv[0].endsWith("electron.exe") && proc
 // Run the installed executable (via command line)
 // [
 //   'C:\\Program Files\\Chargy Transparenzsoftware\\Chargy Transparenzsoftware.exe',
-//   '--debug'
+//   '--inspect'
 // ]
 else
     commandLineArguments = process.argv.slice(1);
@@ -62,7 +62,7 @@ function createWindow () {
     mainWindow.removeMenu();
     mainWindow.loadURL(`file://${app.getAppPath()}/src/index.html`);
 
-    if (app.commandLine.hasSwitch('debug') && !app.commandLine.hasSwitch('nogui'))
+    if (app.commandLine.hasSwitch('inspect') && !app.commandLine.hasSwitch('nogui'))
         mainWindow.webContents.openDevTools();
 
     // Emitted when the window is closed
@@ -153,7 +153,7 @@ app.whenReady().then(() => {
 
         //#endregion
 
-        console.log("Chargy Transparenzsoftware " + applicationEdition + " v" + app.getVersion());
+        console.log("Chargy E-Mobility Transparency Software " + applicationEdition + " v" + app.getVersion());
         console.log(copyright.replace("&copy;", "(c)"));
         console.log("");
 
@@ -178,8 +178,8 @@ app.whenReady().then(() => {
                 console.log("Switches:");
                 console.log(" --help             Show this information");
               //console.log(" --help topic       Show information on the given topic");
-                console.log(" --debug            Run in debug modus and open development tools");
-                console.log(" --nogui            Run in command line modus (cli mode)");
+                console.log(" --inspect          Run in debug mode, enable inspector and open development tools");
+                console.log(" --nogui            Run in command line mode (cli mode)");
               //console.log(" --output=format    Set the verification result output format in cli/debug mode [text (default)|csv|json|xml|chargy]");
               //console.log(" --export filename  Convert all input files into the Chargy Transparency Format and save the result to the given file");
                 break;
@@ -273,7 +273,7 @@ app.on('open-file', (event, path) => {
 
 
 ipcMain.on('isDebug', (event) => {
-  event.returnValue = app.commandLine.hasSwitch('debug');
+  event.returnValue = app.commandLine.hasSwitch('inspect');
 });
 
 ipcMain.on('getHTTPConfig', (event) => {
@@ -326,7 +326,7 @@ ipcMain.on('setVerificationResult', (event, result) => {
 
     //console.log(result);
 
-    if (app.commandLine.hasSwitch('nogui') || app.commandLine.hasSwitch('debug'))
+    if (app.commandLine.hasSwitch('nogui') || app.commandLine.hasSwitch('inspect'))
     {
 
         if (!Array.isArray(result))
