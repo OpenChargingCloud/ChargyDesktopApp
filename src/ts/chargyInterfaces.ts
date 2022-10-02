@@ -443,7 +443,11 @@ export interface ISessionCryptoResult
     exception?:                 any;
 }
 
-export function isISessionCryptoResult(obj: any): obj is ISessionCryptoResult {
+export function isISessionCryptoResult1(obj: any): obj is ISessionCryptoResult {
+    return obj.status !== undefined
+}
+
+export function isISessionCryptoResult2(obj: any): obj is ISessionCryptoResult {
     return obj.status !== undefined &&
            obj.status !== SessionVerificationResult.InvalidSessionFormat
 }

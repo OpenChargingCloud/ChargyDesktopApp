@@ -656,11 +656,25 @@ export class Chargy {
                     else
                     {
 
+                        let tryNext = true;
+
                         // The older chargeIT mobility format does not provide any context or format identifiers
                         processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormatJSON(JSONContent);
 
+                        if (chargyInterfaces.isISessionCryptoResult1(processedFile.result))
+                        {
+                            if (processedFile.result.status == chargyInterfaces.SessionVerificationResult.InvalidSessionFormat)
+                            {
+                                tryNext = false;
+                            }
+                            else
+                            {
+                                tryNext = false;
+                            }
+                        }
+
                         // The current chargepoint format does not provide any context or format identifiers
-                        if (!chargyInterfaces.isISessionCryptoResult(processedFile.result))
+                        if (tryNext)
                             processedFile.result = await new Chargepoint01(this).tryToParseChargepointJSON(JSONContent);
 
                     }
