@@ -97,6 +97,29 @@ export class Chargy {
 
     }
 
+    public GetLocalizedMessageWithParameter(Text:       string,
+                                            Parameter:  any): string
+    {
+
+        const multiLanguage = this.i18n[Text];
+
+        if (multiLanguage !== undefined)
+        {
+
+            const localLanguage = multiLanguage[this.UILanguage];
+            if (localLanguage !== undefined)
+                return localLanguage.replace("%p", Parameter);
+
+            const english = multiLanguage["en"];
+            if (english !== undefined)
+                return english.replace("%p", Parameter);
+
+        }
+
+        return "Undefined Error!";
+
+    }
+
 
     public GetChargingPool: chargyInterfaces.GetChargingPoolFunc = (Id: string) => {
 

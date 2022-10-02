@@ -53,8 +53,11 @@
     "InconsistentJSONContextInformation!": {
         "de": "Inkonsistente JSON Context information!",
         "en": "Inconsistent JSON context information!"
-    }
+    },
 
-    
+    "MissingOrInvalidMeterInfoP": {
+        "de": "Fehlende oder ungültige Zählerinformationen [%p]!",
+        "en": "Missing or invalid meter information [%p]!"
+    }
 
 }
