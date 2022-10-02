@@ -308,6 +308,10 @@ ipcMain.on('getPackageJson', (event) => {
     event.returnValue = require('../package.json');
 });
 
+ipcMain.on('getI18N', (event) => {
+    event.returnValue = require('../i18n.json');
+});
+
 ipcMain.on('getFileToOpen', (event) => {
     event.returnValue = fileToOpen;
 });

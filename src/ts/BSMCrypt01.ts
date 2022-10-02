@@ -495,27 +495,30 @@ export class BSMCrypt01 extends ACrypt {
                     };
 
                 let currentId = currentMeasurement["@id"];
-                if (previousId !== "")
+                if (previousId !== "" && typeof currentId === 'string')
                 {
                     // IDs from the BSM-WS36A are in the form of "PREFIX-COUNTER". Check that prefixes
                     // match match and the counters are stricly increasing.
 
-                    let previousParts = previousId.split("-");
-                    let currentParts = currentId.split("-");
+                    const previousParts = previousId.split("-");
+                    const currentParts  = currentId. split("-");
 
-                    if (previousParts.length !== 2
-                        || previousParts.length !== currentParts.length
-                        || previousParts[0] !== currentParts[0]
+                    if (previousParts.length !== 2               ||
+                        currentParts. length !== 2               ||
+                        previousParts[0]     !== currentParts[0] ||
+                        previousParts[1]     === undefined       ||
+                        currentParts[1]      === undefined       ||
                         // parseInt returns NaN in case parsing fails which in turn does not match
                         // anything (not even NaN). This way we are checking that both counter values
                         // are numeric too.
-                        || parseInt(previousParts[1], 10) >= parseInt(currentParts[1], 10))
+                        parseInt(previousParts[1], 10) >= parseInt(currentParts[1], 10))
                     {
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measurement identifications!"
                         };
                     }
+
                 }
                 previousId = currentId;
 

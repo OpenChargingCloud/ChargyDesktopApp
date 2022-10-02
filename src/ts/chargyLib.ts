@@ -609,7 +609,7 @@ export function OpenExternal(URL: string)
 
 
 export interface String {
-    isNullOrEmpty(): boolean;
+    isNullOrEmpty():    boolean;
     isNotNullOrEmpty(): boolean;
 }
 
@@ -647,7 +647,13 @@ export function pad(text: string|undefined, paddingValue: number) {
 
 // }
 
-export async function sha256(message: string|DataView) {
+
+/**
+ * Calculate the SHA256 hash
+ * @param message a text of data view
+ * @returns true, when the given text exists and is a valid string
+ */
+export async function sha256(message: string|DataView): Promise<string> {
 
     let hashBuffer = null;
 
@@ -663,7 +669,12 @@ export async function sha256(message: string|DataView) {
 
 }
 
-export async function sha384(message: string|DataView) {
+/**
+ * Calculate the SHA384 hash
+ * @param message a text of data view
+ * @returns true, when the given text exists and is a valid string
+ */
+export async function sha384(message: string|DataView): Promise<string> {
 
     let hashBuffer = null;
 
@@ -679,7 +690,12 @@ export async function sha384(message: string|DataView) {
 
 }
 
-export async function sha512(message: string|DataView) {
+/**
+ * Calculate the SHA512 hash
+ * @param message a text of data view
+ * @returns true, when the given text exists and is a valid string
+ */
+export async function sha512(message: string|DataView): Promise<string> {
 
     let hashBuffer = null;
 
@@ -696,22 +712,43 @@ export async function sha512(message: string|DataView) {
 }
 
 
-export function isMandatoryString(x: any): x is string {
-    return x !== undefined && x !== null && typeof x === "string";
+/**
+ * Ensures, that the given text exists and is a valid string
+ * @param text a string
+ * @returns true, when the given text exists and is a valid string
+ */
+export function isMandatoryString(text: any): text is string {
+    return text !== undefined && text !== null && typeof text === "string";
 }
 
-export function isOptionalString(x: any): x is string {
-    return x !== undefined && x !== null
-               ? typeof x === "string"
+/**
+ * Ensures, that the given text is a valid string, if it exists
+ * @param text a string
+ * @returns true, when the given text is a valid string, if it exists
+ */
+export function isOptionalString(text: any): text is string {
+    return text !== undefined && text !== null
+               ? typeof text === "string"
                : true;
 }
 
-export function isMandatoryNumber(x: any): x is number {
-    return x !== undefined && x !== null && typeof x === "number";
+
+/**
+ * Ensures, that the given number exists and is a valid number
+ * @param number a number
+ * @returns true, when the given number exists and is a valid number
+ */
+export function isMandatoryNumber(number: any): number is number {
+    return number !== undefined && number !== null && typeof number === "number";
 }
 
-export function isOptionalNumber(x: any): x is number {
-    return x !== undefined && x !== null
-               ? typeof x === "number"
+/**
+ * Ensures, that the given number is a valid number, if it exists
+ * @param number a number
+ * @returns true, when the given number is a valid number, if it exists
+ */
+export function isOptionalNumber(number: any): number is number {
+    return number !== undefined && number !== null
+               ? typeof number === "number"
                : true;
 }

@@ -438,9 +438,17 @@ export interface IMeasurementValue
 
 export interface ISessionCryptoResult
 {
+
     status:                     SessionVerificationResult;
     message?:                   string;
     exception?:                 any;
+
+    // How sure we are that this result is correct!
+    // (JSON) transparency records might not always include an unambiguously
+    // format identifier. So multiple chargy parsers might be candidates, but
+    // hopefully one will be the best matching parser.
+    certainty?:                 number;
+
 }
 
 export function isISessionCryptoResult1(obj: any): obj is ISessionCryptoResult {

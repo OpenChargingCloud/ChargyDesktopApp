@@ -35,6 +35,8 @@ export class Chargy {
 
     //#region Data
 
+    public  readonly i18n:          any;
+    public  readonly UILanguage:    string;
     public  readonly elliptic:      any;
     public  readonly moment:        any;
     public  readonly asn1:          any;
@@ -55,11 +57,15 @@ export class Chargy {
 
     //#endregion
 
-    constructor(elliptic:      any,
+    constructor(i18n:          any,
+                UILanguage:    string,
+                elliptic:      any,
                 moment:        any,
                 asn1:          any,
                 base32Decode:  any) {
 
+        this.i18n          = i18n;
+        this.UILanguage    = UILanguage;
         this.elliptic      = elliptic;
         this.moment        = moment;
         this.asn1          = asn1;
@@ -68,6 +74,29 @@ export class Chargy {
     }
 
     //#region GetMethods...
+
+    public GetLocalizedMessage(Text: string): string
+    {
+
+        const multiLanguage = this.i18n[Text];
+
+        if (multiLanguage !== undefined)
+        {
+
+            const localLanguage = multiLanguage[this.UILanguage];
+            if (localLanguage !== undefined)
+                return localLanguage;
+
+            const english = multiLanguage["en"];
+            if (english !== undefined)
+                return english;
+
+        }
+
+        return "Undefined Error!";
+
+    }
+
 
     public GetChargingPool: chargyInterfaces.GetChargingPoolFunc = (Id: string) => {
 

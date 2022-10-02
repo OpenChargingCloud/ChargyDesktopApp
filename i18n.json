@@ -1,0 +1,60 @@
+{
+    "generalError": {
+        "de": "Allgemeiner Fehler!",
+        "en": "General Error!"
+    },
+
+
+    "MissingOrInvalidEVSEId": {
+        "de": "Fehlende oder ungültige EVSE Id!",
+        "en": "Missing or invalid EVSE Id!"
+    },
+
+    "MissingOrInvalidAddress": {
+        "de": "Fehlende oder ungültige Adresse!",
+        "en": "Missing or invalid address!"
+    },
+
+    "MissingOrInvalidAddressStreetName": {
+        "de": "Fehlender oder ungültiger Strassenname!",
+        "en": "Missing or invalid street name!"
+    },
+
+    "MissingOrInvalidAddressZIPCode": {
+        "de": "Fehlende oder ungültige Postleitzahl!",
+        "en": "Missing or invalid zip code!"
+    },
+
+    "MissingOrInvalidAddressCityName": {
+        "de": "Fehlender oder ungültiger Städtename!",
+        "en": "Missing or invalid city name!"
+    },
+
+    "MissingOrInvalidGeoLocation": {
+        "de": "Fehlende oder ungültige Geokoordinaten!",
+        "en": "Missing or invalid geo location!"
+    },
+
+    "MissingOrInvalidGeoLocationLatitude": {
+        "de": "Fehlende oder ungültige Latitude der Geokoordinate!",
+        "en": "Missing or invalid geo location latitude!"
+    },
+
+    "MissingOrInvalidGeoLocationLongitude": {
+        "de": "Fehlende oder ungültige Longitude der Geokoordinate!",
+        "en": "Missing or invalid geo location longitude!"
+    },
+
+    "MissingOrInvalidSignedMeterValues": {
+        "de": "Fehlende oder ungültige signierte Zählerwerte!",
+        "en": "Missing or invalid signed meter values!"
+    },
+
+    "InconsistentJSONContextInformation!": {
+        "de": "Inkonsistente JSON Context information!",
+        "en": "Inconsistent JSON context information!"
+    }
+
+    
+
+}

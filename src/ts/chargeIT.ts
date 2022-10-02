@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2022 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -20,6 +20,7 @@ import { Alfen01 }            from './Alfen01'
 import { BSMCrypt01 }         from './BSMCrypt01'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
+import { ChargyApp }          from './chargyApp'
 
 export class ChargeIT {
 
@@ -58,23 +59,30 @@ export class ChargeIT {
 
         if (SomeJSON === undefined || SomeJSON === null || Array.isArray(SomeJSON))
             return {
-                status: chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                certainty: 0
             }
+
+        // How sure we are, that this is really a chargeIT transparency format
+        let   formatCertainty       = 0;
+        const numnerOfFormatChecks  = 18;
 
         try
         {
 
-            const ctrContext = chargyLib.isMandatoryString(SomeJSON["@context"])
-                                   ? SomeJSON["@context"]?.trim()
-                                   : "oldChargeITContainerFormat";
+            const oldChargeITContainerFormat   = "oldChargeITContainerFormat";
+            const oldChargeITMeterValueFormat  = "oldChargeIT-MeterValueFormat";
+
+            const ctrContext                   = chargyLib.isMandatoryString(SomeJSON["@context"])
+                                                     ? SomeJSON["@context"]?.trim()
+                                                     : oldChargeITContainerFormat;
 
             //#region Old container format
 
-            if (ctrContext === "oldChargeITContainerFormat" &&
-                SomeJSON.placeInfo         &&
-                SomeJSON.signedMeterValues &&
-                Array.isArray(SomeJSON.signedMeterValues))
+            if (ctrContext === oldChargeITContainerFormat)
             {
+
+                formatCertainty = 3;
 
                 //#region documentation
 
@@ -144,47 +152,107 @@ export class ChargeIT {
 
                 //#endregion
 
-                //#region Try to parse 'placeInfo'
+                
+                //#region Validate 'placeInfo'
 
                 const placeInfo = SomeJSON.placeInfo;
+                if (placeInfo == null) return {
+                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:    this.chargy.GetLocalizedMessage("MissingOrInvalidAddress"),
+                    certainty:  formatCertainty/numnerOfFormatChecks
+                }
+                formatCertainty++;
 
-                const evseId = placeInfo["evseId"] as string;
-                if (evseId == null || typeof evseId !== 'string')
-                    throw "Missing or invalid EVSE Id!"
+                //#region placeInfo.evseId
 
-
-                // placeInfo.address
-                const address = placeInfo["address"];
-                if (address == null)
-                    throw "Missing or invalid address!"
-
-                const address_street = address["street"];
-                if (address_street == null || typeof address_street !== 'string')
-                    throw "Missing or invalid address street!"
-
-                const address_zipCode = address["zipCode"];
-                if (address_zipCode == null || typeof address_zipCode !== 'string')
-                    throw "Missing or invalid address zipCode!"
-
-                const address_town = address["town"];
-                if (address_town == null || typeof address_town !== 'string')
-                    throw "Missing or invalid address town!"
-
-
-                // placeInfo.geoLocation
-                const geoLocation = placeInfo["geoLocation"];
-                if (geoLocation == null)
-                    throw "Missing or invalid geoLocation!"
-
-                const geoLocation_lat = geoLocation["lat"];
-                if (geoLocation_lat == null || typeof geoLocation_lat !== 'number')
-                    throw "Missing or invalid geoLocation latitude!"
-
-                const geoLocation_lon = geoLocation["lon"];
-                if (geoLocation_lon == null || typeof geoLocation_lon !== 'number')
-                    throw "Missing or invalid geoLocation longitude!"
+                const evseId = placeInfo.evseId;
+                if (!chargyLib.isMandatoryString(evseId)) return {
+                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:    this.chargy.GetLocalizedMessage("MissingOrInvalidEVSEId"),
+                    certainty:  formatCertainty/numnerOfFormatChecks
+                }
+                formatCertainty++;
 
                 //#endregion
+
+                //#region placeInfo.address
+
+                const address = placeInfo.address;
+                if (address == null) return {
+                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:    this.chargy.GetLocalizedMessage("MissingOrInvalidAddress"),
+                    certainty:  formatCertainty/numnerOfFormatChecks
+                }
+                formatCertainty++;
+
+                const address_street = address.street;
+                if (!chargyLib.isMandatoryString(address_street)) return {
+                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:    this.chargy.GetLocalizedMessage("MissingOrInvalidAddressStreetName"),
+                    certainty:  formatCertainty/numnerOfFormatChecks
+                }
+                formatCertainty++;
+
+                const address_zipCode = address.zipCode;
+                if (!chargyLib.isMandatoryString(address_zipCode)) return {
+                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:    this.chargy.GetLocalizedMessage("MissingOrInvalidAddressZIPCode"),
+                    certainty:  formatCertainty/numnerOfFormatChecks
+                }
+                formatCertainty++;
+
+                const address_town = address.town;
+                if (!chargyLib.isMandatoryString(address_town)) return {
+                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:    this.chargy.GetLocalizedMessage("MissingOrInvalidAddressCityName"),
+                    certainty:  formatCertainty/numnerOfFormatChecks
+                }
+                formatCertainty++;
+
+                //#endregion
+
+                //#region placeInfo.geoLocation
+
+                const geoLocation = placeInfo.geoLocation;
+                if (geoLocation == null) return {
+                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:    this.chargy.GetLocalizedMessage("MissingOrInvalidGeoLocation"),
+                    certainty:  formatCertainty/numnerOfFormatChecks
+                }
+                formatCertainty++;
+
+                const geoLocation_lat = geoLocation.lat;
+                if (!chargyLib.isMandatoryNumber(geoLocation_lat)) return {
+                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:    this.chargy.GetLocalizedMessage("MissingOrInvalidGeoLocationLatitude"),
+                    certainty:  formatCertainty/numnerOfFormatChecks
+                }
+                formatCertainty++;
+
+                const geoLocation_lon = geoLocation.lon;
+                if (!chargyLib.isMandatoryNumber(geoLocation_lon)) return {
+                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:    this.chargy.GetLocalizedMessage("MissingOrInvalidGeoLocationLongitude"),
+                    certainty:  formatCertainty/numnerOfFormatChecks
+                }
+                formatCertainty++;
+
+                //#endregion
+
+                //#endregion
+
+                //#region Validate 'signedMeterValues'
+
+                const signedMeterValues = SomeJSON.signedMeterValues;// as Array<any>;
+                if (!Array.isArray(signedMeterValues) || signedMeterValues.length < 2) return {
+                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:    this.chargy.GetLocalizedMessage("MissingOrInvalidSignedMeterValues"),
+                    certainty:  formatCertainty/numnerOfFormatChecks
+                }
+                formatCertainty++;
+
+                //#endregion
+
 
                 //#region Generate default-transparency record
 
@@ -266,12 +334,10 @@ export class ChargeIT {
                             "chargingStations": [
                                 {
                                     "@id":                      evseId.substring(0, evseId.lastIndexOf("*")),
-                                    //"@context":                 "",
                                     //"description":              { },
                                     //"firmwareVersion":          "", //CTRArray[0]["chargePoint"]["softwareVersion"],
                                     "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
                                     "address": {
-                                        //"@context":             "",
                                         "street":               address_street,
                                         "postalCode":           address_zipCode,
                                         "city":                 address_town,
@@ -280,7 +346,6 @@ export class ChargeIT {
                                     "EVSEs": [
                                         {
                                             "@id":                      evseId,
-                                            //"@context":                 "",
                                             // "description": {
                                             //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
                                             // },
@@ -298,468 +363,460 @@ export class ChargeIT {
 
                 //#endregion
 
-                //#region Try to parse 'signedMeterValues'
 
-                const signedMeterValues = SomeJSON.signedMeterValues as Array<any>;
+                //#region Process 'signedMeterValues'
 
-                if (signedMeterValues != undefined && signedMeterValues.length > 1)
+                //#region Get and validate consistency of the signedMeterValue context
+
+                const signedMeterValueContext  = chargyLib.isMandatoryString(signedMeterValues[0]["@context"])
+                                                        ? signedMeterValues[0]["@context"]?.trim()
+                                                        : oldChargeITMeterValueFormat;
+
+                for (const signedMeterValue of signedMeterValues) {
+                    if ((signedMeterValue["@context"] ?? oldChargeITMeterValueFormat) !== signedMeterValueContext) {
+                        return {
+                            status:  chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message: this.chargy.GetLocalizedMessage("InconsistentJSONContextInformation")
+                        }
+                    }
+                }
+
+                //#endregion
+
+
+                if (signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0" ||
+                    signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1") {
+                    return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, null, signedMeterValues);
+                }
+
+                else if (signedMeterValueContext.startsWith("ALFEN")) {
+                    return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
+                }
+
+                else if (ctrContext === oldChargeITContainerFormat) {
+
+                    if (SomeJSON.signedMeterValues[0].format == "ALFEN")
+                        return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
+
+                }
+
+                if (signedMeterValueContext === oldChargeITMeterValueFormat)
                 {
 
-                    //#region Get and validate signedMeterValue context
+                    let CTRArray = [];
 
-                    const signedMeterValueContext  = chargyLib.isMandatoryString(signedMeterValues[0]["@context"])
-                                                             ? signedMeterValues[0]["@context"]?.trim()
-                                                             : "oldChargeITMeterValueFormat";
-
-                    for (const signedMeterValue of signedMeterValues)
-                    {
-                        if ((signedMeterValue["@context"] ?? "oldChargeITMeterValueFormat") !== signedMeterValueContext)
-                        {
-                            return {
-                                status:  chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message: "Inconsistent '@context' information!"
-                            }
-                        }
-                    }
-
-                    //#endregion
-
-
-                    if (signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0" ||
-                        signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1") {
-                        return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, null, signedMeterValues);
-                    }
-
-                    else if (signedMeterValueContext.startsWith("ALFEN")) {
-                        return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
-                    }
-
-                    else if (ctrContext === "oldChargeITContainerFormat") {
-
-                        if (SomeJSON.signedMeterValues[0].format == "ALFEN")
-                            return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
-
-                    }
-
-                    if (signedMeterValueContext === "oldChargeITMeterValueFormat")
+                    for (let i = 0; i < signedMeterValues.length; i++)
                     {
 
-                        let CTRArray = [];
+                        const signedMeterValue         = signedMeterValues[i];
 
-                        for (let i = 0; i < signedMeterValues.length; i++)
-                        {
+                        const _timestamp = signedMeterValue["timestamp"] as number;
+                        if (_timestamp == null || typeof _timestamp !== 'number')
+                            throw "Missing or invalid timestamp[" + i + "]!"
+                        const timestamp = chargyLib.parseUTC(_timestamp);
 
-                            const signedMeterValue         = signedMeterValues[i];
+                        const _meterInfo = signedMeterValue["meterInfo"] as string;
+                        if (_meterInfo == null || typeof _meterInfo !== 'object')
+                            throw "Missing or invalid meterInfo[" + i + "]!"
 
-                            const _timestamp = signedMeterValue["timestamp"] as number;
-                            if (_timestamp == null || typeof _timestamp !== 'number')
-                                throw "Missing or invalid timestamp[" + i + "]!"
-                            const timestamp = chargyLib.parseUTC(_timestamp);
+                        const _meterInfo_firmwareVersion = _meterInfo["firmwareVersion"] as string;
+                        if (_meterInfo_firmwareVersion == null || typeof _meterInfo_firmwareVersion !== 'string')
+                            throw "Missing or invalid meterInfo firmwareVersion[" + i + "]!"
 
-                            const _meterInfo = signedMeterValue["meterInfo"] as string;
-                            if (_meterInfo == null || typeof _meterInfo !== 'object')
-                                throw "Missing or invalid meterInfo[" + i + "]!"
+                        const _meterInfo_publicKey = _meterInfo["publicKey"] as string;
+                        if (_meterInfo_publicKey == null || typeof _meterInfo_publicKey !== 'string')
+                            throw "Missing or invalid meterInfo publicKey[" + i + "]!"
 
-                            const _meterInfo_firmwareVersion = _meterInfo["firmwareVersion"] as string;
-                            if (_meterInfo_firmwareVersion == null || typeof _meterInfo_firmwareVersion !== 'string')
-                                throw "Missing or invalid meterInfo firmwareVersion[" + i + "]!"
+                        const _meterInfo_publicKeySignatures = _meterInfo["publicKeySignatures"];
 
-                            const _meterInfo_publicKey = _meterInfo["publicKey"] as string;
-                            if (_meterInfo_publicKey == null || typeof _meterInfo_publicKey !== 'string')
-                                throw "Missing or invalid meterInfo publicKey[" + i + "]!"
+                        const _meterInfo_meterId = _meterInfo["meterId"] as string;
+                        if (_meterInfo_meterId == null || typeof _meterInfo_meterId !== 'string')
+                            throw "Missing or invalid meterInfo meterId[" + i + "]!"
 
-                            const _meterInfo_publicKeySignatures = _meterInfo["publicKeySignatures"];
+                        const _meterInfo_type = _meterInfo["type"] as string;
+                        if (_meterInfo_type == null || typeof _meterInfo_type !== 'string')
+                            throw "Missing or invalid meterInfo type[" + i + "]!"
 
-                            const _meterInfo_meterId = _meterInfo["meterId"] as string;
-                            if (_meterInfo_meterId == null || typeof _meterInfo_meterId !== 'string')
-                                throw "Missing or invalid meterInfo meterId[" + i + "]!"
-
-                            const _meterInfo_type = _meterInfo["type"] as string;
-                            if (_meterInfo_type == null || typeof _meterInfo_type !== 'string')
-                                throw "Missing or invalid meterInfo type[" + i + "]!"
-
-                            const _meterInfo_manufacturer = _meterInfo["manufacturer"] as string;
-                            if (_meterInfo_manufacturer == null || typeof _meterInfo_manufacturer !== 'string')
-                                throw "Missing or invalid meterInfo manufacturer[" + i + "]!"
+                        const _meterInfo_manufacturer = _meterInfo["manufacturer"] as string;
+                        if (_meterInfo_manufacturer == null || typeof _meterInfo_manufacturer !== 'string')
+                            throw "Missing or invalid meterInfo manufacturer[" + i + "]!"
 
 
-                            const _transactionId = signedMeterValue["transactionId"] as string;
-                            if (_transactionId == null || typeof _transactionId !== 'string')
-                                throw "Missing or invalid transactionId[" + i + "]!"
+                        const _transactionId = signedMeterValue["transactionId"] as string;
+                        if (_transactionId == null || typeof _transactionId !== 'string')
+                            throw "Missing or invalid transactionId[" + i + "]!"
 
 
-                            const _contract = signedMeterValue["contract"];
-                            if (_contract == null || typeof _contract !== 'object')
-                                throw "Missing or invalid contract[" + i + "]!"
+                        const _contract = signedMeterValue["contract"];
+                        if (_contract == null || typeof _contract !== 'object')
+                            throw "Missing or invalid contract[" + i + "]!"
 
-                            const _contract_type = _contract["type"] as string;
-                            if (_contract_type == null || typeof _contract_type !== 'string')
-                                throw "Missing or invalid contract type[" + i + "]!"
+                        const _contract_type = _contract["type"] as string;
+                        if (_contract_type == null || typeof _contract_type !== 'string')
+                            throw "Missing or invalid contract type[" + i + "]!"
 
-                            const _contract_timestampLocal = _contract["timestampLocal"];
-                            if (_contract_timestampLocal == null || typeof _contract_timestampLocal !== 'object')
-                                throw "Missing or invalid contract timestampLocal[" + i + "]!"
+                        const _contract_timestampLocal = _contract["timestampLocal"];
+                        if (_contract_timestampLocal == null || typeof _contract_timestampLocal !== 'object')
+                            throw "Missing or invalid contract timestampLocal[" + i + "]!"
 
-                            const _contract_timestampLocal_timestamp = _contract_timestampLocal["timestamp"] as number;
-                            if (_contract_timestampLocal_timestamp == null || typeof _contract_timestampLocal_timestamp !== 'number')
-                                throw "Missing or invalid contract timestampLocal timestamp[" + i + "]!"                            
+                        const _contract_timestampLocal_timestamp = _contract_timestampLocal["timestamp"] as number;
+                        if (_contract_timestampLocal_timestamp == null || typeof _contract_timestampLocal_timestamp !== 'number')
+                            throw "Missing or invalid contract timestampLocal timestamp[" + i + "]!"                            
 
-                            const _contract_timestampLocal_localOffset = _contract_timestampLocal["localOffset"] as number;
-                            if (_contract_timestampLocal_localOffset == null || typeof _contract_timestampLocal_localOffset !== 'number')
-                                throw "Missing or invalid contract timestampLocal localOffset[" + i + "]!"                            
+                        const _contract_timestampLocal_localOffset = _contract_timestampLocal["localOffset"] as number;
+                        if (_contract_timestampLocal_localOffset == null || typeof _contract_timestampLocal_localOffset !== 'number')
+                            throw "Missing or invalid contract timestampLocal localOffset[" + i + "]!"                            
 
-                            const _contract_timestampLocal_seasonOffset = _contract_timestampLocal["seasonOffset"] as number;
-                            if (_contract_timestampLocal_seasonOffset == null || typeof _contract_timestampLocal_seasonOffset !== 'number')
-                                throw "Missing or invalid contract timestampLocal seasonOffset[" + i + "]!"  
+                        const _contract_timestampLocal_seasonOffset = _contract_timestampLocal["seasonOffset"] as number;
+                        if (_contract_timestampLocal_seasonOffset == null || typeof _contract_timestampLocal_seasonOffset !== 'number')
+                            throw "Missing or invalid contract timestampLocal seasonOffset[" + i + "]!"  
 
-                            const _contract_timestamp = _contract["timestamp"] as number;
-                            if (_contract_timestamp == null || typeof _contract_timestamp !== 'number')
-                                throw "Missing or invalid contract timestamp[" + i + "]!"
+                        const _contract_timestamp = _contract["timestamp"] as number;
+                        if (_contract_timestamp == null || typeof _contract_timestamp !== 'number')
+                            throw "Missing or invalid contract timestamp[" + i + "]!"
 
-                            const _contract_id = _contract["id"] as string;
-                            if (_contract_id == null || typeof _contract_id !== 'string')
-                                throw "Missing or invalid contract type[" + i + "]!"
-
-
-                            const _measurementId = signedMeterValue["measurementId"] as string;
-                            if (_measurementId == null || typeof _measurementId !== 'string')
-                                throw "Missing or invalid measurementId[" + i + "]!"
+                        const _contract_id = _contract["id"] as string;
+                        if (_contract_id == null || typeof _contract_id !== 'string')
+                            throw "Missing or invalid contract type[" + i + "]!"
 
 
-                            const _measuredValue = signedMeterValue["measuredValue"];
-                            if (_measuredValue == null || typeof _measuredValue !== 'object')
-                                throw "Missing or invalid measuredValue[" + i + "]!"
-
-                            const _measuredValue_timestampLocal = _measuredValue["timestampLocal"];
-                            if (_measuredValue_timestampLocal == null || typeof _measuredValue_timestampLocal !== 'object')
-                                throw "Missing or invalid measuredValue timestampLocal[" + i + "]!"
-
-                            const _measuredValue_timestampLocal_timestamp = _measuredValue_timestampLocal["timestamp"] as number;
-                            if (_measuredValue_timestampLocal_timestamp == null || typeof _measuredValue_timestampLocal_timestamp !== 'number')
-                                throw "Missing or invalid measuredValue timestampLocal timestamp[" + i + "]!"                            
-
-                            const _measuredValue_timestampLocal_localOffset = _measuredValue_timestampLocal["localOffset"] as number;
-                            if (_measuredValue_timestampLocal_localOffset == null || typeof _measuredValue_timestampLocal_localOffset !== 'number')
-                                throw "Missing or invalid measuredValue timestampLocal localOffset[" + i + "]!"                            
-
-                            const _measuredValue_timestampLocal_seasonOffset = _measuredValue_timestampLocal["seasonOffset"] as number;
-                            if (_measuredValue_timestampLocal_seasonOffset == null || typeof _measuredValue_timestampLocal_seasonOffset !== 'number')
-                                throw "Missing or invalid measuredValue timestampLocal seasonOffset[" + i + "]!"                            
-
-                            const _measuredValue_value = _measuredValue["value"] as string;
-                            if (_measuredValue_value == null || typeof _measuredValue_value !== 'string')
-                                throw "Missing or invalid measuredValue value[" + i + "]!"
-
-                            const _measuredValue_unit = _measuredValue["unit"] as string;
-                            if (_measuredValue_unit == null || typeof _measuredValue_unit !== 'string')
-                                throw "Missing or invalid measuredValue unit[" + i + "]!"
-
-                            const _measuredValue_scale = _measuredValue["scale"] as number;
-                            if (_measuredValue_scale == null || typeof _measuredValue_scale !== 'number')
-                                throw "Missing or invalid measuredValue scale[" + i + "]!"
-
-                            const _measuredValue_valueType = _measuredValue["valueType"] as string;
-                            if (_measuredValue_valueType == null || typeof _measuredValue_valueType !== 'string')
-                                throw "Missing or invalid measuredValue valueType[" + i + "]!"
-
-                            const _measuredValue_unitEncoded = _measuredValue["unitEncoded"] as number;
-                            if (_measuredValue_unitEncoded == null || typeof _measuredValue_unitEncoded !== 'number')
-                                throw "Missing or invalid measuredValue unitEncoded[" + i + "]!"
+                        const _measurementId = signedMeterValue["measurementId"] as string;
+                        if (_measurementId == null || typeof _measurementId !== 'string')
+                            throw "Missing or invalid measurementId[" + i + "]!"
 
 
-                            const _measurand = signedMeterValue["measurand"];
-                                if (_measurand == null || typeof _measurand !== 'object')
-                                    throw "Missing or invalid measurand[" + i + "]!"
+                        const _measuredValue = signedMeterValue["measuredValue"];
+                        if (_measuredValue == null || typeof _measuredValue !== 'object')
+                            throw "Missing or invalid measuredValue[" + i + "]!"
 
-                            const _measurand_id = _measurand["id"] as string;
-                            if (_measurand_id == null || typeof _measurand_id !== 'string')
-                                throw "Missing or invalid measurand id[" + i + "]!"
+                        const _measuredValue_timestampLocal = _measuredValue["timestampLocal"];
+                        if (_measuredValue_timestampLocal == null || typeof _measuredValue_timestampLocal !== 'object')
+                            throw "Missing or invalid measuredValue timestampLocal[" + i + "]!"
 
-                            const _measurand_name = _measurand["name"] as string;
-                            if (_measurand_name == null || typeof _measurand_name !== 'string')
-                                throw "Missing or invalid measurand name[" + i + "]!"
+                        const _measuredValue_timestampLocal_timestamp = _measuredValue_timestampLocal["timestamp"] as number;
+                        if (_measuredValue_timestampLocal_timestamp == null || typeof _measuredValue_timestampLocal_timestamp !== 'number')
+                            throw "Missing or invalid measuredValue timestampLocal timestamp[" + i + "]!"                            
 
+                        const _measuredValue_timestampLocal_localOffset = _measuredValue_timestampLocal["localOffset"] as number;
+                        if (_measuredValue_timestampLocal_localOffset == null || typeof _measuredValue_timestampLocal_localOffset !== 'number')
+                            throw "Missing or invalid measuredValue timestampLocal localOffset[" + i + "]!"                            
 
-                            const _additionalInfo = signedMeterValue["additionalInfo"];
-                                if (_additionalInfo == null || typeof _additionalInfo !== 'object')
-                                    throw "Missing or invalid additionalInfo[" + i + "]!"
+                        const _measuredValue_timestampLocal_seasonOffset = _measuredValue_timestampLocal["seasonOffset"] as number;
+                        if (_measuredValue_timestampLocal_seasonOffset == null || typeof _measuredValue_timestampLocal_seasonOffset !== 'number')
+                            throw "Missing or invalid measuredValue timestampLocal seasonOffset[" + i + "]!"                            
 
-                            const _additionalInfo_indexes = _additionalInfo["indexes"];
-                            if (_additionalInfo_indexes == null || typeof _additionalInfo_indexes !== 'object')
-                                throw "Missing or invalid additionalInfo indexes[" + i + "]!"
+                        const _measuredValue_value = _measuredValue["value"] as string;
+                        if (_measuredValue_value == null || typeof _measuredValue_value !== 'string')
+                            throw "Missing or invalid measuredValue value[" + i + "]!"
 
-                            const _additionalInfo_indexes_timer = _additionalInfo_indexes["timer"] as number;
-                            if (_additionalInfo_indexes_timer == null || typeof _additionalInfo_indexes_timer !== 'number')
-                                throw "Missing or invalid additionalInfo indexes timer[" + i + "]!"
+                        const _measuredValue_unit = _measuredValue["unit"] as string;
+                        if (_measuredValue_unit == null || typeof _measuredValue_unit !== 'string')
+                            throw "Missing or invalid measuredValue unit[" + i + "]!"
 
-                            const _additionalInfo_indexes_logBook = _additionalInfo_indexes["logBook"] as string;
-                            if (_additionalInfo_indexes_logBook == null || typeof _additionalInfo_indexes_logBook !== 'string')
-                                throw "Missing or invalid additionalInfo indexes logBook[" + i + "]!"
+                        const _measuredValue_scale = _measuredValue["scale"] as number;
+                        if (_measuredValue_scale == null || typeof _measuredValue_scale !== 'number')
+                            throw "Missing or invalid measuredValue scale[" + i + "]!"
 
-                            const _additionalInfo_status = _additionalInfo["status"] as string;
-                            if (_additionalInfo_status == null || typeof _additionalInfo_status !== 'string')
-                                throw "Missing or invalid additionalInfo status[" + i + "]!"
+                        const _measuredValue_valueType = _measuredValue["valueType"] as string;
+                        if (_measuredValue_valueType == null || typeof _measuredValue_valueType !== 'string')
+                            throw "Missing or invalid measuredValue valueType[" + i + "]!"
 
-
-                            const _chargePoint = signedMeterValue["chargePoint"];
-                            if (_chargePoint == null || typeof _chargePoint !== 'object')
-                                throw "Missing or invalid chargePoint[" + i + "] information!"
-
-                            const _chargePointSoftwareVersion = _chargePoint["softwareVersion"];
-                            if (_chargePointSoftwareVersion == null || typeof _chargePointSoftwareVersion !== 'string')
-                                throw "Missing or invalid chargePoint softwareVersion[" + i + "]!"
+                        const _measuredValue_unitEncoded = _measuredValue["unitEncoded"] as number;
+                        if (_measuredValue_unitEncoded == null || typeof _measuredValue_unitEncoded !== 'number')
+                            throw "Missing or invalid measuredValue unitEncoded[" + i + "]!"
 
 
-                            const _signature = signedMeterValue["signature"] as string;
-                            if (_signature == null || typeof _signature !== 'string')
-                                throw "Missing or invalid signature[" + i + "]!"
+                        const _measurand = signedMeterValue["measurand"];
+                            if (_measurand == null || typeof _measurand !== 'object')
+                                throw "Missing or invalid measurand[" + i + "]!"
 
-                            //const aaa = moment.unix(_contract_timestampLocal_timestamp).utc();
+                        const _measurand_id = _measurand["id"] as string;
+                        if (_measurand_id == null || typeof _measurand_id !== 'string')
+                            throw "Missing or invalid measurand id[" + i + "]!"
 
-                            CTRArray.push({
-                                        "timestamp": _timestamp,
-                                        "meterInfo": {
-                                            "firmwareVersion": _meterInfo_firmwareVersion,
-                                            "publicKey": _meterInfo_publicKey,
-                                            "publicKeySignatures": _meterInfo_publicKeySignatures,
-                                            "meterId": _meterInfo_meterId,
-                                            "type": _meterInfo_type,
-                                            "manufacturer": _meterInfo_manufacturer
-                                        },
-                                        "transactionId": _transactionId,
-                                        "contract": {
-                                            "type": _contract_type,
-                                            "timestampLocal": {
-                                                "timestamp": _contract_timestampLocal_timestamp,
-                                                "localOffset": _contract_timestampLocal_localOffset,
-                                                "seasonOffset": _contract_timestampLocal_seasonOffset
-                                            },
-                                            "timestamp": _contract_timestamp,
-                                            "id": _contract_id
-                                        },
-                                        "measurementId": _measurementId,
-                                        "measuredValue": {
-                                            "timestampLocal": {
-                                                "timestamp": _measuredValue_timestampLocal_timestamp,
-                                                "localOffset": _measuredValue_timestampLocal_localOffset,
-                                                "seasonOffset": _measuredValue_timestampLocal_seasonOffset
-                                            },
-                                            "value": _measuredValue_value,
-                                            "unit": _measuredValue_unit,
-                                            "scale": _measuredValue_scale,
-                                            "valueType": _measuredValue_valueType,
-                                            "unitEncoded": _measuredValue_unitEncoded
-                                        },
-                                        "measurand": {
-                                            "id": _measurand_id,
-                                            "name": _measurand_name
-                                        },
-                                        "additionalInfo": {
-                                            "indexes": {
-                                                "timer": _additionalInfo_indexes_timer,
-                                                "logBook": _additionalInfo_indexes_logBook
-                                            },
-                                            "status": _additionalInfo_status
-                                        },
-                                        "chargePoint": {
-                                            "softwareVersion": _chargePointSoftwareVersion
-                                        },
-                                        "signature": _signature
-                            });
+                        const _measurand_name = _measurand["name"] as string;
+                        if (_measurand_name == null || typeof _measurand_name !== 'string')
+                            throw "Missing or invalid measurand name[" + i + "]!"
 
-                        }
 
-                        let n = CTRArray.length-1;
+                        const _additionalInfo = signedMeterValue["additionalInfo"];
+                            if (_additionalInfo == null || typeof _additionalInfo !== 'object')
+                                throw "Missing or invalid additionalInfo[" + i + "]!"
 
-                        CTR["@id"]  = CTRArray[n]!["transactionId"];
-                        CTR.begin   = this.chargy.moment.unix(CTRArray[0]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
-                        CTR.end     = this.chargy.moment.unix(CTRArray[n]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
+                        const _additionalInfo_indexes = _additionalInfo["indexes"];
+                        if (_additionalInfo_indexes == null || typeof _additionalInfo_indexes !== 'object')
+                            throw "Missing or invalid additionalInfo indexes[" + i + "]!"
 
-                        CTR.contract = {
-                             "@id":       CTRArray[0]!["contract"]["id"],
-                             "@context":  CTRArray[0]!["contract"]["type"]
-                        };
+                        const _additionalInfo_indexes_timer = _additionalInfo_indexes["timer"] as number;
+                        if (_additionalInfo_indexes_timer == null || typeof _additionalInfo_indexes_timer !== 'number')
+                            throw "Missing or invalid additionalInfo indexes timer[" + i + "]!"
 
-                        CTR.chargingStationOperators = [{
+                        const _additionalInfo_indexes_logBook = _additionalInfo_indexes["logBook"] as string;
+                        if (_additionalInfo_indexes_logBook == null || typeof _additionalInfo_indexes_logBook !== 'string')
+                            throw "Missing or invalid additionalInfo indexes logBook[" + i + "]!"
 
-                            "@id":              "chargeITmobilityCSO",
-                            "description":      { "de": "chargeIT mobility GmbH - Charging Station Operator Services" },
+                        const _additionalInfo_status = _additionalInfo["status"] as string;
+                        if (_additionalInfo_status == null || typeof _additionalInfo_status !== 'string')
+                            throw "Missing or invalid additionalInfo status[" + i + "]!"
 
-                            "contact": {
-                                "email":    "info@chargeit-mobility.com",
-                                "web":      "https://www.chargeit-mobility.com",
-                                "logoUrl":  "http://www.chargeit-mobility.com/fileadmin/BELECTRIC_Drive/templates/pics/chargeit_logo_408x70.png",
-                                "publicKeys": [{
-                                    "algorithm":  "secp192r1",
-                                    "format":     "DER",
-                                    "value":      "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
-                                    //"signatures":   [ ]
-                                },
-                                {
-                                    "algorithm":    "secp256k1",
-                                    "format":       "DER",
-                                    "value":        "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
-                                    //"signatures":   [ ]
-                                }
-                            ]},
 
-                            "support": {
-                                "hotline":                  "+49 9321 / 2680 - 700",
-                                "email":                    "service@chargeit-mobility.com",
-                                "web":                      "https://cso.chargeit.charging.cloud/issues"
-                                // "mediationServices":        [ "GraphDefined Mediation" ],
-                                // "publicKeys": [
-                                //     {
-                                //         "algorithm":        "secp256k1",
-                                //         "format":           "DER",
-                                //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
-                                //         "signatures":       [ ]
-                                //     }
-                                // ]
-                            },
+                        const _chargePoint = signedMeterValue["chargePoint"];
+                        if (_chargePoint == null || typeof _chargePoint !== 'object')
+                            throw "Missing or invalid chargePoint[" + i + "] information!"
 
-                            "privacy": {
-                                "contact":                  "Dr. iur. Christian Borchers, datenschutz süd GmbH",
-                                "email":                    "datenschutz@chargeit-mobility.com",
-                                "web":                      "http://www.chargeit-mobility.com/de/datenschutz/"
-                                // "publicKeys": [
-                                //     {
-                                //         "algorithm":        "secp256k1",
-                                //         "format":           "DER",
-                                //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
-                                //         "signatures":       [ ]
-                                //     }
-                                // ]
-                            },
+                        const _chargePointSoftwareVersion = _chargePoint["softwareVersion"];
+                        if (_chargePointSoftwareVersion == null || typeof _chargePointSoftwareVersion !== 'string')
+                            throw "Missing or invalid chargePoint softwareVersion[" + i + "]!"
 
-                            "chargingStations": [
-                                {
-                                    "@id":                      evseId.substring(0, evseId.lastIndexOf("*")),
-                                    // "description": {
-                                    //     "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
-                                    // },
-                                    "firmwareVersion":          CTRArray[0]!["chargePoint"]["softwareVersion"],
-                                    "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
-                                    "address": {
-                                        "street":               address_street,
-                                        "postalCode":           address_zipCode,
-                                        "city":                 address_town,
-                                        "country":              "Germany"
+
+                        const _signature = signedMeterValue["signature"] as string;
+                        if (_signature == null || typeof _signature !== 'string')
+                            throw "Missing or invalid signature[" + i + "]!"
+
+                        //const aaa = moment.unix(_contract_timestampLocal_timestamp).utc();
+
+                        CTRArray.push({
+                                    "timestamp": _timestamp,
+                                    "meterInfo": {
+                                        "firmwareVersion": _meterInfo_firmwareVersion,
+                                        "publicKey": _meterInfo_publicKey,
+                                        "publicKeySignatures": _meterInfo_publicKeySignatures,
+                                        "meterId": _meterInfo_meterId,
+                                        "type": _meterInfo_type,
+                                        "manufacturer": _meterInfo_manufacturer
                                     },
-                                    "EVSEs": [
-                                        {
-                                            "@id":                      evseId,
-                                            // "description": {
-                                            //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
-                                            // },
-                                            // "connectors": [{ }],
-                                            "meters": [
-                                                {
-                                                    "@id":                      CTRArray[0]!["meterInfo"]["meterId"],
-                                                    "vendor":                   CTRArray[0]!["meterInfo"]["manufacturer"],
-                                                    "vendorURL":                "http://www.emh-metering.de",
-                                                    "model":                    CTRArray[0]!["meterInfo"]["type"],
-                                                    "hardwareVersion":          "1.0",
-                                                    "firmwareVersion":          CTRArray[0]!["meterInfo"]["firmwareVersion"],
-                                                    "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
-                                                    "publicKeys": [
-                                                        {
-                                                            "algorithm":        "secp192r1",
-                                                            "format":           "DER",
-                                                            "value":            CTRArray[0]!["meterInfo"]["publicKey"].startsWith("04")
-                                                                                    ?        CTRArray[0]!["meterInfo"]["publicKey"]
-                                                                                    : "04" + CTRArray[0]!["meterInfo"]["publicKey"],
-                                                            "signatures":       CTRArray[0]!["meterInfo"]["publicKeySignatures"]
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
+                                    "transactionId": _transactionId,
+                                    "contract": {
+                                        "type": _contract_type,
+                                        "timestampLocal": {
+                                            "timestamp": _contract_timestampLocal_timestamp,
+                                            "localOffset": _contract_timestampLocal_localOffset,
+                                            "seasonOffset": _contract_timestampLocal_seasonOffset
+                                        },
+                                        "timestamp": _contract_timestamp,
+                                        "id": _contract_id
+                                    },
+                                    "measurementId": _measurementId,
+                                    "measuredValue": {
+                                        "timestampLocal": {
+                                            "timestamp": _measuredValue_timestampLocal_timestamp,
+                                            "localOffset": _measuredValue_timestampLocal_localOffset,
+                                            "seasonOffset": _measuredValue_timestampLocal_seasonOffset
+                                        },
+                                        "value": _measuredValue_value,
+                                        "unit": _measuredValue_unit,
+                                        "scale": _measuredValue_scale,
+                                        "valueType": _measuredValue_valueType,
+                                        "unitEncoded": _measuredValue_unitEncoded
+                                    },
+                                    "measurand": {
+                                        "id": _measurand_id,
+                                        "name": _measurand_name
+                                    },
+                                    "additionalInfo": {
+                                        "indexes": {
+                                            "timer": _additionalInfo_indexes_timer,
+                                            "logBook": _additionalInfo_indexes_logBook
+                                        },
+                                        "status": _additionalInfo_status
+                                    },
+                                    "chargePoint": {
+                                        "softwareVersion": _chargePointSoftwareVersion
+                                    },
+                                    "signature": _signature
+                        });
 
-                        }];
+                    }
 
-                        CTR.chargingSessions = [{
+                    let n = CTRArray.length-1;
 
-                            "@id":                          CTRArray[n]!["transactionId"],
-                            "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
-                            "begin":                        this.chargy.moment.unix(CTRArray[0]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
-                            "end":                          this.chargy.moment.unix(CTRArray[n]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
-                            "EVSEId":                       evseId,
+                    CTR["@id"]  = CTRArray[n]!["transactionId"];
+                    CTR.begin   = this.chargy.moment.unix(CTRArray[0]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
+                    CTR.end     = this.chargy.moment.unix(CTRArray[n]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
 
-                            "authorizationStart": {
-                                "@id":                      CTRArray[0]!["contract"]["id"],
-                                "type":                     CTRArray[0]!["contract"]["type"],
-                                "timestamp":                this.chargy.moment.unix(CTRArray[0]!["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
-                                                                                    CTRArray[0]!["contract"]["timestampLocal"]["localOffset"] +
-                                                                                    CTRArray[0]!["contract"]["timestampLocal"]["seasonOffset"]).format(),
+                    CTR.contract = {
+                            "@id":       CTRArray[0]!["contract"]["id"],
+                            "@context":  CTRArray[0]!["contract"]["type"]
+                    };
+
+                    CTR.chargingStationOperators = [{
+
+                        "@id":              "chargeITmobilityCSO",
+                        "description":      { "de": "chargeIT mobility GmbH - Charging Station Operator Services" },
+
+                        "contact": {
+                            "email":    "info@chargeit-mobility.com",
+                            "web":      "https://www.chargeit-mobility.com",
+                            "logoUrl":  "http://www.chargeit-mobility.com/fileadmin/BELECTRIC_Drive/templates/pics/chargeit_logo_408x70.png",
+                            "publicKeys": [{
+                                "algorithm":  "secp192r1",
+                                "format":     "DER",
+                                "value":      "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
+                                //"signatures":   [ ]
                             },
+                            {
+                                "algorithm":    "secp256k1",
+                                "format":       "DER",
+                                "value":        "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                                //"signatures":   [ ]
+                            }
+                        ]},
 
-                            // "signatureInfos": {
-                            //     "hash":                     CryptoHashAlgorithms.SHA256,
-                            //     "hashTruncation":           "24",
-                            //     "algorithm":                "ECC",
-                            //     "curve":                    "secp192r1",
-                            //     "format":                   "rs"
-                            // },
+                        "support": {
+                            "hotline":                  "+49 9321 / 2680 - 700",
+                            "email":                    "service@chargeit-mobility.com",
+                            "web":                      "https://cso.chargeit.charging.cloud/issues"
+                            // "mediationServices":        [ "GraphDefined Mediation" ],
+                            // "publicKeys": [
+                            //     {
+                            //         "algorithm":        "secp256k1",
+                            //         "format":           "DER",
+                            //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                            //         "signatures":       [ ]
+                            //     }
+                            // ]
+                        },
 
-                            "measurements": [{
+                        "privacy": {
+                            "contact":                  "Dr. iur. Christian Borchers, datenschutz süd GmbH",
+                            "email":                    "datenschutz@chargeit-mobility.com",
+                            "web":                      "http://www.chargeit-mobility.com/de/datenschutz/"
+                            // "publicKeys": [
+                            //     {
+                            //         "algorithm":        "secp256k1",
+                            //         "format":           "DER",
+                            //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                            //         "signatures":       [ ]
+                            //     }
+                            // ]
+                        },
 
-                                "energyMeterId":        CTRArray[0]!["meterInfo"]["meterId"],
-                                "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
-                                "name":                 CTRArray[0]!["measurand"]["name"],
-                                "obis":                 chargyLib.parseOBIS(CTRArray[0]!["measurand"]["id"]),
-                                "unit":                 CTRArray[0]!["measuredValue"]["unit"],
-                                "unitEncoded":          CTRArray[0]!["measuredValue"]["unitEncoded"],
-                                "valueType":            CTRArray[0]!["measuredValue"]["valueType"],
-                                "scale":                CTRArray[0]!["measuredValue"]["scale"],
-
-                                "signatureInfos": {
-                                    "hash":                 chargyInterfaces.CryptoHashAlgorithms.SHA256,
-                                    "hashTruncation":       24,
-                                    "algorithm":            chargyInterfaces.CryptoAlgorithms.ECC,
-                                    "curve":                "secp192r1",
-                                    "format":               chargyInterfaces.SignatureFormats.rs
+                        "chargingStations": [
+                            {
+                                "@id":                      evseId.substring(0, evseId.lastIndexOf("*")),
+                                // "description": {
+                                //     "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
+                                // },
+                                "firmwareVersion":          CTRArray[0]!["chargePoint"]["softwareVersion"],
+                                "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
+                                "address": {
+                                    "street":               address_street,
+                                    "postalCode":           address_zipCode,
+                                    "city":                 address_town,
+                                    "country":              "Germany"
                                 },
-
-                                "values": [ ]
-
-                            }]
-
-                        }];
-
-                        for (let _measurement of CTRArray)
-                        {
-                            CTR["chargingSessions"][0]!["measurements"][0]!["values"].push({
-                                "timestamp":     this.chargy.moment.unix(_measurement["measuredValue"]["timestampLocal"]["timestamp"]).utc().utcOffset(
-                                                                         _measurement["measuredValue"]["timestampLocal"]["localOffset"] +
-                                                                         _measurement["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
-                                "value":         parseInt(_measurement["measuredValue"]["value"]),
-                                "infoStatus":    _measurement["additionalInfo"]["status"],
-                                "secondsIndex":  _measurement["additionalInfo"]["indexes"]["timer"],
-                                "paginationId":  _measurement["measurementId"],
-                                "logBookIndex":  _measurement["additionalInfo"]["indexes"]["logBook"],
-                                "signatures": [
+                                "EVSEs": [
                                     {
-                                        "r":  _measurement["signature"].substring(0, 48),
-                                        "s":  _measurement["signature"].substring(48)
+                                        "@id":                      evseId,
+                                        // "description": {
+                                        //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
+                                        // },
+                                        // "connectors": [{ }],
+                                        "meters": [
+                                            {
+                                                "@id":                      CTRArray[0]!["meterInfo"]["meterId"],
+                                                "vendor":                   CTRArray[0]!["meterInfo"]["manufacturer"],
+                                                "vendorURL":                "http://www.emh-metering.de",
+                                                "model":                    CTRArray[0]!["meterInfo"]["type"],
+                                                "hardwareVersion":          "1.0",
+                                                "firmwareVersion":          CTRArray[0]!["meterInfo"]["firmwareVersion"],
+                                                "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+                                                "publicKeys": [
+                                                    {
+                                                        "algorithm":        "secp192r1",
+                                                        "format":           "DER",
+                                                        "value":            CTRArray[0]!["meterInfo"]["publicKey"].startsWith("04")
+                                                                                ?        CTRArray[0]!["meterInfo"]["publicKey"]
+                                                                                : "04" + CTRArray[0]!["meterInfo"]["publicKey"],
+                                                        "signatures":       CTRArray[0]!["meterInfo"]["publicKeySignatures"]
+                                                    }
+                                                ]
+                                            }
+                                        ]
                                     }
                                 ]
-                            });
-                        }
+                            }
+                        ]
 
-                        CTR["status"] = chargyInterfaces.SessionVerificationResult.Unvalidated;
+                    }];
 
-                        return CTR;
+                    CTR.chargingSessions = [{
 
+                        "@id":                          CTRArray[n]!["transactionId"],
+                        "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
+                        "begin":                        this.chargy.moment.unix(CTRArray[0]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                        "end":                          this.chargy.moment.unix(CTRArray[n]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+                        "EVSEId":                       evseId,
+
+                        "authorizationStart": {
+                            "@id":                      CTRArray[0]!["contract"]["id"],
+                            "type":                     CTRArray[0]!["contract"]["type"],
+                            "timestamp":                this.chargy.moment.unix(CTRArray[0]!["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
+                                                                                CTRArray[0]!["contract"]["timestampLocal"]["localOffset"] +
+                                                                                CTRArray[0]!["contract"]["timestampLocal"]["seasonOffset"]).format(),
+                        },
+
+                        // "signatureInfos": {
+                        //     "hash":                     CryptoHashAlgorithms.SHA256,
+                        //     "hashTruncation":           "24",
+                        //     "algorithm":                "ECC",
+                        //     "curve":                    "secp192r1",
+                        //     "format":                   "rs"
+                        // },
+
+                        "measurements": [{
+
+                            "energyMeterId":        CTRArray[0]!["meterInfo"]["meterId"],
+                            "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
+                            "name":                 CTRArray[0]!["measurand"]["name"],
+                            "obis":                 chargyLib.parseOBIS(CTRArray[0]!["measurand"]["id"]),
+                            "unit":                 CTRArray[0]!["measuredValue"]["unit"],
+                            "unitEncoded":          CTRArray[0]!["measuredValue"]["unitEncoded"],
+                            "valueType":            CTRArray[0]!["measuredValue"]["valueType"],
+                            "scale":                CTRArray[0]!["measuredValue"]["scale"],
+
+                            "signatureInfos": {
+                                "hash":                 chargyInterfaces.CryptoHashAlgorithms.SHA256,
+                                "hashTruncation":       24,
+                                "algorithm":            chargyInterfaces.CryptoAlgorithms.ECC,
+                                "curve":                "secp192r1",
+                                "format":               chargyInterfaces.SignatureFormats.rs
+                            },
+
+                            "values": [ ]
+
+                        }]
+
+                    }];
+
+                    for (let _measurement of CTRArray)
+                    {
+                        CTR["chargingSessions"][0]!["measurements"][0]!["values"].push({
+                            "timestamp":     this.chargy.moment.unix(_measurement["measuredValue"]["timestampLocal"]["timestamp"]).utc().utcOffset(
+                                                                        _measurement["measuredValue"]["timestampLocal"]["localOffset"] +
+                                                                        _measurement["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
+                            "value":         parseInt(_measurement["measuredValue"]["value"]),
+                            "infoStatus":    _measurement["additionalInfo"]["status"],
+                            "secondsIndex":  _measurement["additionalInfo"]["indexes"]["timer"],
+                            "paginationId":  _measurement["measurementId"],
+                            "logBookIndex":  _measurement["additionalInfo"]["indexes"]["logBook"],
+                            "signatures": [
+                                {
+                                    "r":  _measurement["signature"].substring(0, 48),
+                                    "s":  _measurement["signature"].substring(48)
+                                }
+                            ]
+                        });
                     }
 
-                    return {
-                        status: chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
-                    }
+                    CTR["status"] = chargyInterfaces.SessionVerificationResult.Unvalidated;
 
+                    return CTR;
+
+                }
+
+                return {
+                    status: chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
                 }
 
                 //#endregion
@@ -814,6 +871,7 @@ export class ChargeIT {
                     status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:  "Missing or invalid charge transparency record identification!"
                 }
+
 
                 //#region chargePointInfo
 
@@ -1057,13 +1115,14 @@ export class ChargeIT {
         catch (exception)
         {
             return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
+                status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:    "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                certainty:  formatCertainty/numnerOfFormatChecks
             }
         }
 
         return {
-            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
+            status:  chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
         }
 
     }

@@ -55,6 +55,8 @@ export class ChargyApp {
     private ipcRenderer                                        = require('electron').ipcRenderer; // (window as any)?.electron?.ipcRenderer;
     private commandLineArguments:          Array<string>       = [];
     public  packageJson:                   any                 = {};
+    public  i18n:                          any                 = {};
+    public  UILanguage:                    string              = "de";
     private httpPort:                      number              = 0;
     private httpHost:                      string              = "localhost";
 
@@ -166,6 +168,7 @@ export class ChargyApp {
         this.feedbackHotline           = feedbackHotline != undefined ? feedbackHotline : ["+491728930852",               "+49 172 8930852"];
         this.commandLineArguments      = this.ipcRenderer.sendSync('getCommandLineArguments');
         this.packageJson               = this.ipcRenderer.sendSync('getPackageJson');
+        this.i18n                      = this.ipcRenderer.sendSync('getI18N');
         this.httpHost                  = this.ipcRenderer.sendSync('getHTTPConfig')[0];
         this.httpPort                  = this.ipcRenderer.sendSync('getHTTPConfig')[1];
 
@@ -174,7 +177,9 @@ export class ChargyApp {
         this.asn1                      = require('asn1.js');
         this.base32Decode              = require('base32-decode')
 
-        this.chargy                    = new Chargy(this.elliptic,
+        this.chargy                    = new Chargy(this.i18n,
+                                                    this.UILanguage,
+                                                    this.elliptic,
                                                     this.moment,
                                                     this.asn1,
                                                     this.base32Decode);
@@ -911,7 +916,12 @@ export class ChargyApp {
 
             const http            = require('http');
             const url             = require('url');
-            const chargyHTTP      = new Chargy(require('elliptic'), require('moment'), require('asn1'), require('base32decode'));
+            const chargyHTTP      = new Chargy(this.i18n,
+                                               this.UILanguage,
+                                               require('elliptic'),
+                                               require('moment'),
+                                               require('asn1'),
+                                               require('base32decode'));
             const maxContentSize  = 20*1024*1024;
 
             try
@@ -1947,28 +1957,30 @@ export class ChargyApp {
 
                 //#region Add marker to map
 
-                var leaflet = require('leaflet');
-                var ff      = require('leaflet.awesome-markers');
+                const leaflet = require('leaflet');
+                const ff      = require('leaflet.awesome-markers');
 
-                var redMarker                 = leaflet.AwesomeMarkers?.icon({
+                const ss = ff.toString();
+
+                const redMarker   = leaflet.AwesomeMarkers?.icon({
                     prefix:                     'fa',
                     icon:                       'exclamation',
                     markerColor:                'red',
                     iconColor:                  '#ecc8c3'
                 });
 
-                var greenMarker               = leaflet.AwesomeMarkers?.icon({
+                const greenMarker = leaflet.AwesomeMarkers?.icon({
                     prefix:                     'fa',
                     icon:                       'charging-station',
                     markerColor:                'green',
                     iconColor:                  '#c2ec8e'
                 });
 
-                var markerIcon  = redMarker;
+                let markerIcon = redMarker;
 
                 if (chargingSession.verificationResult)
-                    switch (chargingSession.verificationResult.status)
-                    {
+                {
+                    switch (chargingSession.verificationResult.status) {
 
                         case chargyInterfaces.SessionVerificationResult.UnknownSessionFormat:
                         case chargyInterfaces.SessionVerificationResult.PublicKeyNotFound:
@@ -1982,8 +1994,12 @@ export class ChargyApp {
                             break;
 
                     }
+                }
 
-                var geoLocation  = null;
+             //   if (markerIcon == null)
+             //       markerIcon = L.divIcon({className: 'my-div-icon', html: "here"});
+
+                let geoLocation = null;
 
                 if (chargingSession.chargingPool                != null &&
                     chargingSession.chargingPool.geoLocation    != null)
@@ -2000,8 +2016,12 @@ export class ChargyApp {
                 if (geoLocation != null)
                 {
 
-                    var marker = leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(this.map23);
-                    this.markers.push(marker);
+                    const marker = markerIcon == null
+                                       ? leaflet.marker([geoLocation.lat, geoLocation.lng]).addTo(this.map23)
+                                       : leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(this.map23);
+
+                    if (markerIcon != null)
+                        this.markers.push(marker);
 
                     if (this.minlat > geoLocation.lat)
                         this.minlat = geoLocation.lat;
@@ -2038,7 +2058,7 @@ export class ChargyApp {
 
                 //#region Show verification status
 
-                let verificationStatusDiv = chargingSessionDiv.appendChild(document.createElement('div'));
+                const verificationStatusDiv = chargingSessionDiv.appendChild(document.createElement('div'));
                 verificationStatusDiv.className = "verificationStatus";
 
                 if (chargingSession.verificationResult)
