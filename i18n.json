@@ -10,6 +10,11 @@
         "en": "Missing or invalid EVSE Id!"
     },
 
+    "MissingOrInvalidPlaceInfo": {
+        "de": "Fehlendes oder ungültiges 'placeInfo' JSON-Objekt!",
+        "en": "Missing or invalid 'placeInfo' JSON object!"
+    },
+
     "MissingOrInvalidAddress": {
         "de": "Fehlende oder ungültige Adresse!",
         "en": "Missing or invalid address!"
@@ -55,9 +60,103 @@
         "en": "Inconsistent JSON context information!"
     },
 
-    "MissingOrInvalidMeterInfoP": {
-        "de": "Fehlende oder ungültige Zählerinformationen [%p]!",
-        "en": "Missing or invalid meter information [%p]!"
-    }
+
+    "MissingOrInvalid_SignedMeterValue_MeasurementIdP": {
+        "de": "Fehlende oder ungültige Messwert-Identifikation des %p signierten Messwertes!",
+        "en": "Missing or invalid measurement identification of the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_TimestampP": {
+        "de": "Fehlender oder ungültiger Zeitstempel des %p signierten Messwertes!",
+        "en": "Missing or invalid measurement timestamp of the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_TransactionIdP": {
+        "de": "Fehlender oder ungültiger Transaktions-Identifikation des %p signierten Messwertes!",
+        "en": "Missing or invalid measurement transaction identification of the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_SignatureP": {
+        "de": "Fehlender oder ungültiger kryptographische Signatur des %p signierten Messwertes!",
+        "en": "Missing or invalid cryptographic signature of the %p signed meter value!"
+    },
+
+
+    "MissingOrInvalid_SignedMeterValue_MeterInfoP": {
+        "de": "Fehlende oder ungültige Zählerinformationen im %p signierten Messwert!",
+        "en": "Missing or invalid meter information within the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_MeterInfo_MeterIdP": {
+        "de": "Fehlende oder ungültige Zähleridentifikation im %p signierten Messwert!",
+        "en": "Missing or invalid meter identification within the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_MeterInfo_TypeP": {
+        "de": "Fehlender oder ungültiger Zählertyp im %p signierten Messwert!",
+        "en": "Missing or invalid meter type within the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_MeterInfo_FirmwareVersionP": {
+        "de": "Fehlende oder ungültige Zählerfirmwareversion im %p signierten Messwert!",
+        "en": "Missing or invalid meter firmware version within the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_MeterInfo_PublicKeyP": {
+        "de": "Fehlender oder ungültiger Public-Key des Zählers im %p signierten Messwert!",
+        "en": "Missing or invalid meter public key within the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_MeterInfo_ManufacturerP": {
+        "de": "Fehlender oder ungültiger Zählerhersteller im %p signierten Messwert!",
+        "en": "Missing or invalid meter manufacturer within the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_PublicKeySignaturesP": {
+        "de": "Fehlende oder ungültige Zähler-Public-Key-Signaturen im %p signierten Messwert!",
+        "en": "Missing or invalid meter public key signatures within the %p signed meter value!"
+    },
+
+
+    "MissingOrInvalid_SignedMeterValue_ContractP": {
+        "de": "Fehlende oder ungültige Vertragsinformationen des %p signierten Messwertes!",
+        "en": "Missing or invalid contract information of the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_Contract_IdP": {
+        "de": "Fehlende oder ungültige Vertragsidentifikation des %p signierten Messwertes!",
+        "en": "Missing or invalid contract identification of the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_Contract_TypeP": {
+        "de": "Fehlender oder ungültiger Vertragstyp des %p signierten Messwertes!",
+        "en": "Missing or invalid contract type of the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_Contract_TimestampP": {
+        "de": "Fehlender oder ungültiger Vertragszeitstempel des %p signierten Messwertes!",
+        "en": "Missing or invalid contract timestamp of the %p signed meter value!"
+    },
+
+
+    "MissingOrInvalid_SignedMeterValue_Contract_TimestampLocalP": {
+        "de": "Fehlende oder ungültige lokale Vertragszeitstempelinformationen des %p signierten Messwertes!",
+        "en": "Missing or invalid contract local timestamp information of the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_Contract_TimestampLocal_TimestampP": {
+        "de": "Fehlender oder ungültiger lokaler Vertragszeitstempel des %p signierten Messwertes!",
+        "en": "Missing or invalid contract local timestamp of the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_Contract_TimestampLocal_LocalOffsetP": {
+        "de": "Fehlender oder ungültiger lokaler Offset des Vertragszeitstempels des %p signierten Messwertes!",
+        "en": "Missing or invalid local offset of the contract local timestamp of the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_Contract_TimestampLocal_SeasonOffsetP": {
+        "de": "Fehlender oder ungültiger saisonaler Offset des Vertragszeitstempels des %p signierten Messwertes!",
+        "en": "Missing or invalid season offset of the contract local timestamp of the %p signed meter value!"
+    },
 
 }
