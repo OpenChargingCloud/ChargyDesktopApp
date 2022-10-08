@@ -63,25 +63,24 @@ export class ChargeIT {
                 certainty: 0
             }
 
-        let   warnings                     = new Array<String>();
-        let   errors                       = new Array<String>();
+        const warnings                     = new Array<String>();
+        const errors                       = new Array<String>();
 
         const oldChargeITContainerFormat   = "oldChargeITContainerFormat";
         const oldChargeITMeterValueFormat  = "oldChargeITMeterValueFormat";
 
         const containerFormat              = chargyLib.isMandatoryString(SomeJSON["@context"])
-                                                ? SomeJSON["@context"]?.trim()
-                                                : oldChargeITContainerFormat;
+                                                 ? SomeJSON["@context"]?.trim()
+                                                 : oldChargeITContainerFormat;
 
-        //#region Old container format
+        //#region Old chargeIT container format
 
         if (containerFormat === oldChargeITContainerFormat)
         {
 
             // How sure we are, that this is really a chargeIT transparency format
-            let formatCertainty       = 4;
-            let numberOfFormatChecks  = 14;
-            let secondaryErrors      = 0;
+            let numberOfFormatChecks  = 14 + 2*39; // At least two signed meter values!
+            let secondaryErrors       = 0;
 
             //#region documentation
 
@@ -154,6 +153,7 @@ export class ChargeIT {
             try
             {
 
+                //#region Validate the container format
                 {
 
                     //#region Validate 'placeInfo'
@@ -228,11 +228,14 @@ export class ChargeIT {
                     const signedMeterValues = SomeJSON.signedMeterValues;
                     if (!chargyLib.isMandatoryJSONArray(signedMeterValues) || signedMeterValues.length < 2) {
                         errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidSignedMeterValues"));
+                        secondaryErrors += 2*39;
                     }
                     else
                     {
 
-                        numberOfFormatChecks += 39 * signedMeterValues.length;  // Additional format checks per measurement
+                        // Additional format checks per measurement
+                        // when there are more than 2 signed meter values
+                        numberOfFormatChecks += 39 * (signedMeterValues.length - 2);
 
                         //#region Get and validate consistency of the signedMeterValue context
 
@@ -258,9 +261,13 @@ export class ChargeIT {
 
                         if (consistent) {
 
-                            if (signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0" ||
+                            if (signedMeterValueContext === "https://www.eneco.com/contexts/bsm-ws36a-json-v0" ||
+                                signedMeterValueContext === "https://www.eneco.com/contexts/bsm-ws36a-json-v1" ||
+                                signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0" ||
                                 signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1") {
+
                                 //return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, null, signedMeterValues);
+
                             }
 
                             if (signedMeterValueContext.startsWith("ALFEN")) {
@@ -528,33 +535,34 @@ export class ChargeIT {
 
                         }
 
-                        if (errors.length > 0) return {
-                            status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            errors:     errors,
-                            warings:    warnings,
-                            certainty:  (numberOfFormatChecks - errors.length - secondaryErrors)/numberOfFormatChecks
-                        }
-
                     }
 
                     //#endregion
 
+                    if (errors.length > 0) return {
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        errors:     errors,
+                        warings:    warnings,
+                        certainty: (numberOfFormatChecks - errors.length - secondaryErrors)/numberOfFormatChecks
+                    }
+
                 }
+                //#endregion
 
-
+                //#region Parse the container format
                 {
 
                     const signedMeterValues  = SomeJSON.signedMeterValues;
                     const placeInfo          = SomeJSON.placeInfo;
-                    const evseId             = SomeJSON.placeInfo?.evseId;
-                    const address            = SomeJSON.placeInfo?.address;
-                    const address_street     = SomeJSON.placeInfo?.address?.street;
-                    const address_zipCode    = SomeJSON.placeInfo?.address?.zipCode;
-                    const address_town       = SomeJSON.placeInfo?.address?.town;
-                    const address_country    = SomeJSON.placeInfo?.address?.country ?? "Deutschland"; //ToDo: i18n!
-                    const geoLocation        = SomeJSON.placeInfo?.geoLocation;
-                    const geoLocation_lat    = SomeJSON.placeInfo?.geoLocation?.lat;
-                    const geoLocation_lon    = SomeJSON.placeInfo?.geoLocation?.lon;
+                    const evseId             = SomeJSON.placeInfo.evseId;
+                    const address            = SomeJSON.placeInfo.address;
+                    const address_street     = SomeJSON.placeInfo.address.street;
+                    const address_zipCode    = SomeJSON.placeInfo.address.zipCode;
+                    const address_town       = SomeJSON.placeInfo.address.town;
+                    const address_country    = SomeJSON.placeInfo.address.country ?? "Deutschland"; //ToDo: i18n!
+                    const geoLocation        = SomeJSON.placeInfo.geoLocation;
+                    const geoLocation_lat    = SomeJSON.placeInfo.geoLocation.lat;
+                    const geoLocation_lon    = SomeJSON.placeInfo.geoLocation.lon;
 
 
                     if (chargyLib.isMandatoryJSONArray (signedMeterValues) &&
@@ -575,9 +583,7 @@ export class ChargeIT {
                         )
                     {
 
-
-
-                        //#region Generate default-transparency record
+                        //#region Generate default charge transparency record
 
                         let CTR: chargyInterfaces.IChargeTransparencyRecord = {
 
@@ -686,15 +692,19 @@ export class ChargeIT {
 
                         //#endregion
 
-                        //#region Process 'signedMeterValues'
+                        //#region Parse the signedMeterValues
 
-                        const signedMeterValueContext  = chargyLib.isMandatoryString(signedMeterValues[0]["@context"])
-                                                                ? signedMeterValues[0]["@context"]?.trim()
-                                                                : oldChargeITMeterValueFormat;
+                        const signedMeterValueContext = chargyLib.isMandatoryString(signedMeterValues[0]["@context"])
+                                                            ? signedMeterValues[0]["@context"]?.trim()
+                                                            : oldChargeITMeterValueFormat;
 
-                        if (signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0" ||
+                        if (signedMeterValueContext === "https://www.eneco.com/contexts/bsm-ws36a-json-v0" ||
+                            signedMeterValueContext === "https://www.eneco.com/contexts/bsm-ws36a-json-v1" ||
+                            signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0" ||
                             signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1") {
+
                             return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, null, signedMeterValues);
+
                         }
 
                         if (signedMeterValueContext.startsWith("ALFEN")) {
@@ -711,432 +721,173 @@ export class ChargeIT {
                         if (signedMeterValueContext === oldChargeITMeterValueFormat)
                         {
 
-                            let CTRArray            = [];
-                            let measurementCounter  = 0;
+                            let CTRArray = [];
+
+                            //#region Parse Signed Meter Values
 
                             for (const signedMeterValue of signedMeterValues)
                             {
 
-                                measurementCounter++;
+                                //#region Data
 
-                                const measurementId  = signedMeterValue["measurementId"];
-                                if (!chargyLib.isMandatoryString(measurementId)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasurementIdP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
+                                const measurementId                              = signedMeterValue.measurementId;
+                                const timestamp                                  = signedMeterValue.timestamp;
+                                const transactionId                              = signedMeterValue.transactionId;
+                                const signature                                  = signedMeterValue.signature;
 
-                                const timestamp      = signedMeterValue["timestamp"];
-                                if (!chargyLib.isMandatoryNumber(timestamp)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_TimestampP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
+                                const meterInfo                                  = signedMeterValue.meterInfo;
+                                const meterInfo_meterId                          = meterInfo.meterId;
+                                const meterInfo_type                             = meterInfo.type;
+                                const meterInfo_firmwareVersion                  = meterInfo.firmwareVersion;
+                                const meterInfo_publicKey                        = meterInfo.publicKey;
+                                const meterInfo_manufacturer                     = meterInfo.manufacturer;
 
-                                const transactionId  = signedMeterValue["transactionId"];
-                                if (!chargyLib.isMandatoryString(transactionId)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_TransactionIdP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
+                                const meterInfo_publicKeySignatures              = meterInfo.publicKeySignatures;
 
-                                const signature      = signedMeterValue["signature"];
-                                if (!chargyLib.isMandatoryString(signature)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_SignatureP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
+                                const contract                                   = signedMeterValue.contract;
+                                const contract_id                                = contract.id;
+                                const contract_type                              = contract.type;
+                                const contract_timestamp                         = contract.timestamp;
 
-                                //#region Meter information
+                                const contract_timestampLocal                    = contract.timestampLocal;
+                                const contract_timestampLocal_timestamp          = contract_timestampLocal.timestamp;
+                                const contract_timestampLocal_localOffset        = contract_timestampLocal.localOffset;
+                                const contract_timestampLocal_seasonOffset       = contract_timestampLocal.seasonOffset;
 
-                                const meterInfo                 = signedMeterValue["meterInfo"];
-                                if (!chargyLib.isMandatoryJSONObject(meterInfo)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfoP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
+                                const measuredValue                              = signedMeterValue.measuredValue;
+                                const measuredValue_value                        = measuredValue.value;
+                                const measuredValue_unit                         = measuredValue.unit;
+                                const measuredValue_scale                        = measuredValue.scale;
+                                const measuredValue_valueType                    = measuredValue.valueType;
+                                const measuredValue_unitEncoded                  = measuredValue.unitEncoded;
 
-                                const meterInfo_meterId         = meterInfo["meterId"];
-                                if (!chargyLib.isMandatoryString(meterInfo_meterId)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_MeterIdP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
+                                const measuredValue_timestampLocal               = measuredValue.timestampLocal;
+                                const measuredValue_timestampLocal_timestamp     = measuredValue_timestampLocal.timestamp;
+                                const measuredValue_timestampLocal_localOffset   = measuredValue_timestampLocal.localOffset;
+                                const measuredValue_timestampLocal_seasonOffset  = measuredValue_timestampLocal.seasonOffset;
 
-                                const meterInfo_type            = meterInfo["type"];
-                                if (!chargyLib.isMandatoryString(meterInfo_type)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_TypeP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
+                                const measurand                                  = signedMeterValue.measurand;
+                                const measurand_id                               = measurand.id;
+                                const measurand_name                             = measurand.name;
 
-                                const meterInfo_firmwareVersion = meterInfo["firmwareVersion"];
-                                if (!chargyLib.isMandatoryString(meterInfo_firmwareVersion)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_FirmwareVersionP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
+                                const additionalInfo                             = signedMeterValue.additionalInfo;
+                                const additionalInfo_status                      = additionalInfo.status;
 
-                                const meterInfo_publicKey       = meterInfo["publicKey"];
-                                if (!chargyLib.isMandatoryString(meterInfo_publicKey)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_PublicKeyP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
+                                const additionalInfo_indexes                     = additionalInfo.indexes;
+                                const additionalInfo_indexes_timer               = additionalInfo_indexes.timer;
+                                const additionalInfo_indexes_logBook             = additionalInfo_indexes.logBook;
 
-                                const meterInfo_manufacturer    = meterInfo["manufacturer"];
-                                if (!chargyLib.isMandatoryString(meterInfo_manufacturer)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_ManufacturerP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                //#region Meter information - PublicKey signatures
-
-                                const meterInfo_publicKeySignatures = signedMeterValue?.meterInfo?.publicKeySignatures;
-                                if (chargyLib.isOptionalJSONArray(meterInfo_publicKeySignatures))
-                                {
-                                    console.log(meterInfo_publicKeySignatures.length + " public key signatures found!")
-                                }
+                                const chargePoint                                = signedMeterValue.chargePoint;
+                                const chargePoint_softwareVersion                = chargePoint.softwareVersion;
 
                                 //#endregion
 
-                                //#endregion
+                                if (chargyLib.isMandatoryString    (measurementId)                             &&
+                                    chargyLib.isMandatoryNumber    (timestamp)                                 &&
+                                    chargyLib.isMandatoryString    (transactionId)                             &&
+                                    chargyLib.isMandatoryString    (signature)                                 &&
 
-                                //#region Contract information
+                                    chargyLib.isMandatoryJSONObject(meterInfo)                                 &&
+                                    chargyLib.isMandatoryString    (meterInfo_meterId)                         &&
+                                    chargyLib.isMandatoryString    (meterInfo_type)                            &&
+                                    chargyLib.isMandatoryString    (meterInfo_firmwareVersion)                 &&
+                                    chargyLib.isMandatoryString    (meterInfo_publicKey)                       &&
+                                    chargyLib.isMandatoryString    (meterInfo_manufacturer)                    &&
 
-                                const contract            = signedMeterValue["contract"];
-                                if (!chargyLib.isMandatoryJSONObject(contract)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_ContractP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
+                                    chargyLib.isOptionalJSONArrayOk(meterInfo_publicKeySignatures)             &&
+
+                                    chargyLib.isMandatoryJSONObject(contract)                                  &&
+                                    chargyLib.isMandatoryString    (contract_id)                               &&
+                                    chargyLib.isMandatoryString    (contract_type)                             &&
+                                    chargyLib.isMandatoryNumber    (contract_timestamp)                        &&
+
+                                    chargyLib.isMandatoryJSONObject(contract_timestampLocal)                   &&
+                                    chargyLib.isMandatoryNumber    (contract_timestampLocal_timestamp)         &&
+                                    chargyLib.isMandatoryNumber    (contract_timestampLocal_localOffset)       &&
+                                    chargyLib.isMandatoryNumber    (contract_timestampLocal_seasonOffset)      &&
+
+                                    chargyLib.isMandatoryJSONObject(measuredValue)                             &&
+                                    chargyLib.isMandatoryString    (measuredValue_value)                       &&
+                                    chargyLib.isMandatoryString    (measuredValue_unit)                        &&
+                                    chargyLib.isMandatoryNumber    (measuredValue_scale)                       &&
+                                    chargyLib.isMandatoryString    (measuredValue_valueType)                   &&
+                                    chargyLib.isMandatoryNumber    (measuredValue_unitEncoded)                 &&
+
+                                    chargyLib.isMandatoryJSONObject(measuredValue_timestampLocal)              &&
+                                    chargyLib.isMandatoryNumber    (measuredValue_timestampLocal_timestamp)    &&
+                                    chargyLib.isMandatoryNumber    (measuredValue_timestampLocal_localOffset)  &&
+                                    chargyLib.isMandatoryNumber    (measuredValue_timestampLocal_seasonOffset) &&
+
+                                    chargyLib.isMandatoryJSONObject(measurand)                                 &&
+                                    chargyLib.isMandatoryString    (measurand_id)                              &&
+                                    chargyLib.isMandatoryString    (measurand_name)                            &&
+
+                                    chargyLib.isMandatoryJSONObject(additionalInfo)                            &&
+                                    chargyLib.isMandatoryString    (additionalInfo_status)                     &&
+
+                                    chargyLib.isMandatoryJSONObject(additionalInfo_indexes)                    &&
+                                    chargyLib.isMandatoryNumber    (additionalInfo_indexes_timer)              &&
+                                    chargyLib.isMandatoryString    (additionalInfo_indexes_logBook)            &&
+
+                                    chargyLib.isMandatoryJSONObject(chargePoint)                               &&
+                                    chargyLib.isMandatoryString    (chargePoint_softwareVersion)) {
+
+                                        CTRArray.push({
+                                            "timestamp":            timestamp,
+                                            "meterInfo": {
+                                                "firmwareVersion":      meterInfo_firmwareVersion,
+                                                "publicKey":            meterInfo_publicKey,
+                                                "publicKeySignatures":  meterInfo_publicKeySignatures,
+                                                "meterId":              meterInfo_meterId,
+                                                "type":                 meterInfo_type,
+                                                "manufacturer":         meterInfo_manufacturer
+                                            },
+                                            "transactionId":        transactionId,
+                                            "contract": {
+                                                "type":                 contract_type,
+                                                "timestampLocal": {
+                                                    "timestamp":            contract_timestampLocal_timestamp,
+                                                    "localOffset":          contract_timestampLocal_localOffset,
+                                                    "seasonOffset":         contract_timestampLocal_seasonOffset
+                                                },
+                                                "timestamp":            contract_timestamp,
+                                                "id":                   contract_id
+                                            },
+                                            "measurementId":        measurementId,
+                                            "measuredValue": {
+                                                "timestampLocal": {
+                                                    "timestamp":            measuredValue_timestampLocal_timestamp,
+                                                    "localOffset":          measuredValue_timestampLocal_localOffset,
+                                                    "seasonOffset":         measuredValue_timestampLocal_seasonOffset
+                                                },
+                                                "value":                measuredValue_value,
+                                                "unit":                 measuredValue_unit,
+                                                "scale":                measuredValue_scale,
+                                                "valueType":            measuredValue_valueType,
+                                                "unitEncoded":          measuredValue_unitEncoded
+                                            },
+                                            "measurand": {
+                                                "id":                   measurand_id,
+                                                "name":                 measurand_name
+                                            },
+                                            "additionalInfo": {
+                                                "indexes": {
+                                                    "timer":                additionalInfo_indexes_timer,
+                                                    "logBook":              additionalInfo_indexes_logBook
+                                                },
+                                                "status":               additionalInfo_status
+                                            },
+                                            "chargePoint": {
+                                                "softwareVersion":      chargePoint_softwareVersion
+                                            },
+                                            "signature":            signature
+                                        });
+
                                 }
-                                formatCertainty++;
-
-                                const contract_id         = contract["id"];
-                                if (!chargyLib.isMandatoryString(contract_id)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_IdP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const contract_type       = contract["type"];
-                                if (!chargyLib.isMandatoryString(contract_type)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TypeP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const contract_timestamp  = contract["timestamp"];
-                                if (!chargyLib.isMandatoryNumber(contract_timestamp)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TimestampP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                //#region Contract information - Timestamp local
-
-                                const contract_timestampLocal = contract["timestampLocal"];
-                                if (!chargyLib.isMandatoryJSONObject(contract_timestampLocal)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TimestampLocalP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const contract_timestampLocal_timestamp = contract_timestampLocal["timestamp"];
-                                if (!chargyLib.isMandatoryNumber(contract_timestampLocal_timestamp)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TimestampLocal_TimestampP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const contract_timestampLocal_localOffset = contract_timestampLocal["localOffset"];
-                                if (!chargyLib.isMandatoryNumber(contract_timestampLocal_localOffset)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TimestampLocal_LocalOffsetP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const contract_timestampLocal_seasonOffset = contract_timestampLocal["seasonOffset"];
-                                if (!chargyLib.isMandatoryNumber(contract_timestampLocal_seasonOffset)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TimestampLocal_SeasonOffsetP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                //#endregion
-
-                                //#endregion
-
-                                //#region Measured value
-
-                                const measuredValue              = signedMeterValue["measuredValue"];
-                                if (!chargyLib.isMandatoryJSONObject(measuredValue)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasuredValueP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const measuredValue_value        = measuredValue["value"];
-                                if (!chargyLib.isMandatoryString(measuredValue_value)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasuredValue_ValueP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const measuredValue_unit         = measuredValue["unit"];
-                                if (!chargyLib.isMandatoryString(measuredValue_unit)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasuredValue_UnitP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const measuredValue_scale        = measuredValue["scale"];
-                                if (!chargyLib.isMandatoryNumber(measuredValue_scale)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasuredValue_ScaleP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const measuredValue_valueType    = measuredValue["valueType"];
-                                if (!chargyLib.isMandatoryString(measuredValue_valueType)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasuredValue_ValueTypeP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const measuredValue_unitEncoded  = measuredValue["unitEncoded"];
-                                if (!chargyLib.isMandatoryNumber(measuredValue_unitEncoded)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasuredValue_UnitEncodedP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                //#region Measured Value - Local timestamp
-
-                                const measuredValue_timestampLocal               = measuredValue["timestampLocal"];
-                                if (!chargyLib.isMandatoryJSONObject(measuredValue_timestampLocal)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalidMeasuredValueTimestampLocalP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const measuredValue_timestampLocal_timestamp     = measuredValue_timestampLocal["timestamp"];
-                                if (!chargyLib.isMandatoryNumber(measuredValue_timestampLocal_timestamp)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalidMeasuredValueTimestampLocalTimestampP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const measuredValue_timestampLocal_localOffset   = measuredValue_timestampLocal["localOffset"];
-                                if (!chargyLib.isMandatoryNumber(measuredValue_timestampLocal_localOffset)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalidMeasuredValueTimestampLocalOffsetP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const measuredValue_timestampLocal_seasonOffset  = measuredValue_timestampLocal["seasonOffset"];
-                                if (!chargyLib.isMandatoryNumber(measuredValue_timestampLocal_seasonOffset)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalidMeasuredValueTimestampSeasonOffsetP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                //#endregion
-
-                                //#endregion
-
-                                //#region Measurand
-
-                                const measurand       = signedMeterValue["measurand"];
-                                if (!chargyLib.isMandatoryJSONObject(measurand)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasurandP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const measurand_id    = measurand["id"];
-                                if (!chargyLib.isMandatoryString(measurand_id)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Measurand_IdP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const measurand_name  = measurand["name"];
-                                if (!chargyLib.isMandatoryString(measurand_name)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Measurand_NameP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                //#endregion
-
-                                //#region Additional info
-
-                                const additionalInfo         = signedMeterValue["additionalInfo"];
-                                if (!chargyLib.isMandatoryJSONObject(additionalInfo)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_AdditionalInformationP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const additionalInfo_status  = additionalInfo["status"];
-                                if (!chargyLib.isMandatoryString(additionalInfo_status)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_AdditionalInformation_StatusP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                //#region Additional info - Indexes
-
-                                const additionalInfo_indexes          = additionalInfo["indexes"];
-                                if (!chargyLib.isMandatoryJSONObject(additionalInfo_indexes)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_AdditionalInformation_IndexesP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const additionalInfo_indexes_timer    = additionalInfo_indexes["timer"];
-                                if (!chargyLib.isMandatoryNumber(additionalInfo_indexes_timer)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_AdditionalInformation_TimerP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const additionalInfo_indexes_logBook  = additionalInfo_indexes["logBook"];
-                                if (!chargyLib.isMandatoryString(additionalInfo_indexes_logBook)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_AdditionalInformation_LogBookP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                //#endregion
-
-                                //#endregion
-
-                                //#region ChargePoint information
-
-                                const chargePoint                  = signedMeterValue["chargePoint"];
-                                if (!chargyLib.isMandatoryJSONObject(chargePoint)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_ChargePointInformationP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                const chargePoint_softwareVersion  = chargePoint["softwareVersion"];
-                                if (!chargyLib.isMandatoryString(chargePoint_softwareVersion)) return {
-                                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:    this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_ChargePointInformation_SoftwareVersionP", measurementCounter),
-                                    certainty:  formatCertainty/numberOfFormatChecks
-                                }
-                                formatCertainty++;
-
-                                //#endregion
-
-                                CTRArray.push({
-                                    "timestamp":            timestamp,
-                                    "meterInfo": {
-                                        "firmwareVersion":      meterInfo_firmwareVersion,
-                                        "publicKey":            meterInfo_publicKey,
-                                        "publicKeySignatures":  meterInfo_publicKeySignatures,
-                                        "meterId":              meterInfo_meterId,
-                                        "type":                 meterInfo_type,
-                                        "manufacturer":         meterInfo_manufacturer
-                                    },
-                                    "transactionId":        transactionId,
-                                    "contract": {
-                                        "type":                 contract_type,
-                                        "timestampLocal": {
-                                            "timestamp":            contract_timestampLocal_timestamp,
-                                            "localOffset":          contract_timestampLocal_localOffset,
-                                            "seasonOffset":         contract_timestampLocal_seasonOffset
-                                        },
-                                        "timestamp":            contract_timestamp,
-                                        "id":                   contract_id
-                                    },
-                                    "measurementId":        measurementId,
-                                    "measuredValue": {
-                                        "timestampLocal": {
-                                            "timestamp":            measuredValue_timestampLocal_timestamp,
-                                            "localOffset":          measuredValue_timestampLocal_localOffset,
-                                            "seasonOffset":         measuredValue_timestampLocal_seasonOffset
-                                        },
-                                        "value":                measuredValue_value,
-                                        "unit":                 measuredValue_unit,
-                                        "scale":                measuredValue_scale,
-                                        "valueType":            measuredValue_valueType,
-                                        "unitEncoded":          measuredValue_unitEncoded
-                                    },
-                                    "measurand": {
-                                        "id":                   measurand_id,
-                                        "name":                 measurand_name
-                                    },
-                                    "additionalInfo": {
-                                        "indexes": {
-                                            "timer":                additionalInfo_indexes_timer,
-                                            "logBook":              additionalInfo_indexes_logBook
-                                        },
-                                        "status":               additionalInfo_status
-                                    },
-                                    "chargePoint": {
-                                        "softwareVersion":      chargePoint_softwareVersion
-                                    },
-                                    "signature":            signature
-                                });
 
                             }
 
-                            if (numberOfFormatChecks === formatCertainty)
-                                console.log("All fine: " +  numberOfFormatChecks + " === " + formatCertainty);
-                            else
-                                console.log("All shit: " +  numberOfFormatChecks + " !== " + formatCertainty);
-
-
-                            if (errors.length > 0)
-                                return {
-                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    certainty: 0,
-                                    errors:    errors
-                                }
-
-
-
+                            //#endregion
 
                             let n = CTRArray.length-1;
 
@@ -1320,12 +1071,17 @@ export class ChargeIT {
                         //#endregion
 
                         return {
-                            status: chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
+                            status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            errors:     errors,
+                            warings:    warnings,
+                            certainty: (numberOfFormatChecks - errors.length - secondaryErrors)/numberOfFormatChecks
                         }
 
                     }
 
                 }
+
+                //#endregion
 
             }
             catch (exception)
@@ -1333,7 +1089,9 @@ export class ChargeIT {
                 return {
                     status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:    "Exception occured: " + (exception instanceof Error ? exception.message : exception),
-                    certainty:  formatCertainty/numberOfFormatChecks
+                    errors:     errors,
+                    warings:    warnings,
+                    certainty: (numberOfFormatChecks - errors.length - secondaryErrors)/numberOfFormatChecks
                 }
             }
 
@@ -1341,9 +1099,11 @@ export class ChargeIT {
 
         //#endregion
 
-        //#region Second format
+        //#region New chargeIT container format
 
-        if (containerFormat == "https://www.chargeit-mobility.com/contexts/charging-station-json-v0" ||
+        if (containerFormat == "https://www.eneco.com/contexts/charging-station-json-v0"             ||
+            containerFormat == "https://www.eneco.com/contexts/charging-station-json-v1"             ||
+            containerFormat == "https://www.chargeit-mobility.com/contexts/charging-station-json-v0" ||
             containerFormat == "https://www.chargeit-mobility.com/contexts/charging-station-json-v1")
         {
 
@@ -1632,10 +1392,10 @@ export class ChargeIT {
                 if      (smvContext?.startsWith("https://www.chargeit-mobility.com/contexts/bsm-ws36a-json"))
                     return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, chargingStation_controllerSoftwareVersion, signedMeterValues);
 
-                else if (smvContext?.startsWith("ALFEN"))
+                if (smvContext?.startsWith("ALFEN"))
                     return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
 
-                else return {
+                return {
                     status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 }
 

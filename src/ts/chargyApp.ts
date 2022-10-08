@@ -1132,7 +1132,24 @@ export class ChargyApp {
                           context?: any)
     {
 
-        let text = (result?.message ?? result?.errors?.[0] ?? "Unbekannter Transparenzdatensatz!").trim();
+        let text = "Unbekannter Transparenzdatensatz!";
+
+        if (result?.message !== null &&
+            result?.message !== undefined)
+        {
+            text = result.message.trim();
+        }
+
+        if (result !== null                    &&
+            result !== undefined               &&
+            result.errors                      &&
+            result.errors        !== undefined &&
+            result.errors        !== null      &&
+            result.errors.length   > 0         &&
+            result.errors[0]     !== undefined)
+        {
+            text = result.errors[0].trim();
+        }
 
         this.inputDiv.style.flexDirection            = "";
         this.inputInfosDiv.style.display             = 'flex';

@@ -793,6 +793,20 @@ export function isOptionalJSONArrayError(jsonArray: any) {
 }
 
 /**
+ * Checks, whether the given json array exists and if yes wether it is a valid json object
+ * @param jsonArray a json object
+ * @returns true, when the given json array does not exist or when it exists, that it is a valid json array
+ */
+ export function isOptionalJSONArrayOk(jsonArray: any) {
+
+    if (jsonArray !== undefined && jsonArray !== null)
+        return typeof jsonArray === "object" && Array.isArray(jsonArray);
+
+    return true;
+
+}
+
+/**
  * Ensures, that the given text exists and is a valid string
  * @param text a string
  * @returns true, when the given text exists and is a valid string

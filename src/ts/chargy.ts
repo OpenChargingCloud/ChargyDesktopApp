@@ -705,6 +705,9 @@ export class Chargy {
                     else if (JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
                         processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormatJSON(JSONContent);
 
+                    else if (JSONContext.startsWith("https://www.eneco.com/contexts/charging-station-json"))
+                        processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormatJSON(JSONContent);
+
                     else
                     {
 
