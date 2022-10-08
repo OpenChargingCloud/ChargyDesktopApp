@@ -726,9 +726,28 @@ export function isMandatoryJSONObject(jsonObject: any): jsonObject is any {
  * @param jsonObject a json object
  * @returns true, when the given json object does not exist or when it exists, that it is a valid json object
  */
-export function isOptionalJSONObject(jsonObject: any): jsonObject is any {
-    return jsonObject === undefined || jsonObject === null ||
-          (jsonObject !== undefined && jsonObject !== null && typeof jsonObject === "object" && !Array.isArray(jsonObject));
+export function isOptionalJSONObject(jsonObject: any,
+                                     ok?:    (json: any[]) => void,
+                                     error?: (json: any)   => void) {
+
+    if (jsonObject !== undefined && jsonObject !== null)
+    {
+
+        if (typeof jsonObject === "object" && !Array.isArray(jsonObject))
+        {
+            if (ok !== undefined)
+                ok(jsonObject);
+        }
+        else
+        {
+            if (error !== undefined)
+                error(jsonObject);
+        }
+
+    }
+
+    return false;
+
 }
 
 /**
@@ -736,8 +755,13 @@ export function isOptionalJSONObject(jsonObject: any): jsonObject is any {
  * @param jsonObject a json object
  * @returns true, when the given json array exists and is a valid json object
  */
-export function isMandatoryJSONArray(jsonObject: any): jsonObject is any[] {
-    return jsonObject !== undefined && jsonObject !== null && typeof jsonObject === "object" && Array.isArray(jsonObject);
+export function isMandatoryJSONArray(jsonArray: any): jsonArray is any[] {
+
+    return jsonArray        !== null      &&
+           jsonArray        !== undefined &&
+           typeof jsonArray === "object"  &&
+           Array.isArray(jsonArray);
+
 }
 
 /**
@@ -746,8 +770,26 @@ export function isMandatoryJSONArray(jsonObject: any): jsonObject is any[] {
  * @returns true, when the given json array does not exist or when it exists, that it is a valid json array
  */
 export function isOptionalJSONArray(jsonArray: any): jsonArray is any[] {
-    return jsonArray === undefined || jsonArray === null ||
-          (jsonArray !== undefined && jsonArray !== null && typeof jsonArray === "object" && Array.isArray(jsonArray));
+
+    return jsonArray        !== null      &&
+           jsonArray        !== undefined &&
+           typeof jsonArray === "object"  &&
+           Array.isArray(jsonArray);
+
+}
+
+/**
+ * Checks, whether the given json array exists and if yes wether it is a valid json object
+ * @param jsonArray a json object
+ * @returns true, when the given json array does not exist or when it exists, that it is a valid json array
+ */
+export function isOptionalJSONArrayError(jsonArray: any) {
+
+    if (jsonArray !== undefined && jsonArray !== null)
+        return typeof jsonArray !== "object" || !Array.isArray(jsonArray);
+
+    return false;
+
 }
 
 /**

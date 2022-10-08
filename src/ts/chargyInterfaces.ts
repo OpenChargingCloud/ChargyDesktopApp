@@ -449,6 +449,9 @@ export interface ISessionCryptoResult
     // hopefully one will be the best matching parser.
     certainty?:                 number;
 
+    warings?:                   Array<String>;
+    errors?:                    Array<String>;
+
 }
 
 export function isISessionCryptoResult1(obj: any): obj is ISessionCryptoResult {

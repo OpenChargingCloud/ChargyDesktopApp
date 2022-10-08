@@ -35,6 +35,11 @@
         "en": "Missing or invalid city name!"
     },
 
+    "MissingOrInvalidAddressCountryName": {
+        "de": "Fehlender oder ungültiger Ländername!",
+        "en": "Missing or invalid country name!"
+    },
+
     "MissingOrInvalidGeoLocation": {
         "de": "Fehlende oder ungültige Geokoordinaten!",
         "en": "Missing or invalid geo location!"
@@ -51,8 +56,13 @@
     },
 
     "MissingOrInvalidSignedMeterValues": {
-        "de": "Fehlende oder ungültige signierte Zählerwerte!",
+        "de": "Fehlende oder ungültige signierte Messwerte!",
         "en": "Missing or invalid signed meter values!"
+    },
+
+    "MissingOrInvalidSignedMeterValueP": {
+        "de": "Fehlender oder ungültiger %p. signierter Messwert!",
+        "en": "Missing or invalid %p. signed meter value!"
     },
 
     "InconsistentJSONContextInformation!": {
@@ -112,10 +122,15 @@
         "en": "Missing or invalid meter manufacturer within the %p signed meter value!"
     },
 
-    "MissingOrInvalid_SignedMeterValue_PublicKeySignaturesP": {
+    "Invalid_SignedMeterValue_MeterInfo_PublicKeySignaturesP": {
+        "de": "Ungültige Zähler-Public-Key-Signaturen im %p signierten Messwert!",
+        "en": "Invalid meter public key signatures within the %p signed meter value!"
+    },
+
+    "MissingOrInvalid_SignedMeterValue_MeterInfo_PublicKeySignaturesP": {
         "de": "Fehlende oder ungültige Zähler-Public-Key-Signaturen im %p signierten Messwert!",
         "en": "Missing or invalid meter public key signatures within the %p signed meter value!"
-    },
+    },    
 
 
     "MissingOrInvalid_SignedMeterValue_ContractP": {
@@ -157,6 +172,6 @@
     "MissingOrInvalid_SignedMeterValue_Contract_TimestampLocal_SeasonOffsetP": {
         "de": "Fehlender oder ungültiger saisonaler Offset des Vertragszeitstempels des %p signierten Messwertes!",
         "en": "Missing or invalid season offset of the contract local timestamp of the %p signed meter value!"
-    },
+    }
 
 }
