@@ -718,11 +718,16 @@ export class Chargy {
                         // Some formats do not provide any context or format identifiers...
                         const results = [
                             await new ChargeIT(this).     tryToParseChargeITContainerFormat(JSONContent),
-                            await new Chargepoint01(this).tryToParseChargepointJSON        (JSONContent)
+                            await new Chargepoint01(this).tryToParseChargepointFormat      (JSONContent)
                         ];
 
                         const filteredResults = results.filter((ctr) => {
-                            return chargyInterfaces.isISessionCryptoResult1(ctr);
+
+                            // At this point we currently only know whether the CTR data format is correct,
+                            // but NOT whether the crypto signatures are correct!
+                            return chargyInterfaces.isISessionCryptoResult1(ctr) &&
+                                   ctr.status === chargyInterfaces.SessionVerificationResult.Unvalidated;
+
                         });
 
                         const sortedResults = filteredResults.sort((ctr1, ctr2) => {

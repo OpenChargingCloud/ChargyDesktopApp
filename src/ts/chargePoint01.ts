@@ -28,9 +28,9 @@ export class Chargepoint01 {
         this.chargy  = chargy;
     }
 
-    //#region tryToParseChargepointJSON(SomeJSON)
+    //#region tryToParseChargepointFormat(SomeJSON)
 
-    public async tryToParseChargepointJSON(SomeJSON: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async tryToParseChargepointFormat(SomeJSON: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         try
