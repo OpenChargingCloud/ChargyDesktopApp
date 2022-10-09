@@ -702,11 +702,11 @@ export class Chargy {
                     else if (JSONContext.startsWith("https://open.charging.cloud/contexts/publicKey+json"))
                         processedFile.result = JSONContent as chargyInterfaces.IPublicKeyInfo;
 
-                    else if (JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
-                        processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormatJSON(JSONContent);
-
-                    else if (JSONContext.startsWith("https://www.eneco.com/contexts/charging-station-json"))
-                        processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormatJSON(JSONContent);
+                    else if (JSONContext.startsWith("https://www.eneco.com/contexts/charging-station-json") ||
+                             JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
+                    {
+                        processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormat(JSONContent);
+                    }
 
                     else
                     {
@@ -714,7 +714,7 @@ export class Chargy {
                         let tryNext = true;
 
                         // The older chargeIT mobility format does not provide any context or format identifiers
-                        processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormatJSON(JSONContent);
+                        processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormat(JSONContent);
 
                         if (chargyInterfaces.isISessionCryptoResult1(processedFile.result))
                         {
@@ -733,7 +733,6 @@ export class Chargy {
                             processedFile.result = await new Chargepoint01(this).tryToParseChargepointJSON(JSONContent);
 
                     }
-
 
                 } catch (exception)
                 {

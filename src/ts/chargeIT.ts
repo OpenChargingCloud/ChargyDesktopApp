@@ -46,25 +46,385 @@ export class ChargeIT {
     }
 
 
+    //#region tryToParseOldChargeITMeterValuesFormat(CTR, evseId, address, geoLocation, signedMeterValues)
 
-
-
-    //#region tryToParseChargeITJSON(SomeJSON)
-
-    //private async tryToParseAnonymousFormat(SomeJSON: { signedMeterValues: any[]; placeInfo: any; }) : Promise<IChargeTransparencyRecord|ISessionCryptoResult>
-
-    // The chargeIT mobility data format does not always provide context or format identifiers
-    public async tryToParseChargeITContainerFormatJSON(SomeJSON: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async tryToParseOldChargeITMeterValuesFormat(CTR:                any,
+                                                        evseId:             string,
+                                                        address:            any,
+                                                        geoLocation:        any,
+                                                        signedMeterValues:  Array<any>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
-        if (SomeJSON === undefined || SomeJSON === null || Array.isArray(SomeJSON))
-            return {
-                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                certainty: 0
+        let CTRArray = [];
+
+        //#region Parse Signed Meter Values
+
+        for (const signedMeterValue of signedMeterValues)
+        {
+
+            //#region Data
+
+            const measurementId                              = signedMeterValue.measurementId;
+            const timestamp                                  = signedMeterValue.timestamp;
+            const transactionId                              = signedMeterValue.transactionId;
+            const signature                                  = signedMeterValue.signature;
+
+            const meterInfo                                  = signedMeterValue.meterInfo;
+            const meterInfo_meterId                          = meterInfo.meterId;
+            const meterInfo_type                             = meterInfo.type;
+            const meterInfo_firmwareVersion                  = meterInfo.firmwareVersion;
+            const meterInfo_publicKey                        = meterInfo.publicKey;
+            const meterInfo_manufacturer                     = meterInfo.manufacturer;
+
+            const meterInfo_publicKeySignatures              = meterInfo.publicKeySignatures;
+
+            const contract                                   = signedMeterValue.contract;
+            const contract_id                                = contract.id;
+            const contract_type                              = contract.type;
+            const contract_timestamp                         = contract.timestamp;
+
+            const contract_timestampLocal                    = contract.timestampLocal;
+            const contract_timestampLocal_timestamp          = contract_timestampLocal.timestamp;
+            const contract_timestampLocal_localOffset        = contract_timestampLocal.localOffset;
+            const contract_timestampLocal_seasonOffset       = contract_timestampLocal.seasonOffset;
+
+            const measuredValue                              = signedMeterValue.measuredValue;
+            const measuredValue_value                        = measuredValue.value;
+            const measuredValue_unit                         = measuredValue.unit;
+            const measuredValue_scale                        = measuredValue.scale;
+            const measuredValue_valueType                    = measuredValue.valueType;
+            const measuredValue_unitEncoded                  = measuredValue.unitEncoded;
+
+            const measuredValue_timestampLocal               = measuredValue.timestampLocal;
+            const measuredValue_timestampLocal_timestamp     = measuredValue_timestampLocal.timestamp;
+            const measuredValue_timestampLocal_localOffset   = measuredValue_timestampLocal.localOffset;
+            const measuredValue_timestampLocal_seasonOffset  = measuredValue_timestampLocal.seasonOffset;
+
+            const measurand                                  = signedMeterValue.measurand;
+            const measurand_id                               = measurand.id;
+            const measurand_name                             = measurand.name;
+
+            const additionalInfo                             = signedMeterValue.additionalInfo;
+            const additionalInfo_status                      = additionalInfo.status;
+
+            const additionalInfo_indexes                     = additionalInfo.indexes;
+            const additionalInfo_indexes_timer               = additionalInfo_indexes.timer;
+            const additionalInfo_indexes_logBook             = additionalInfo_indexes.logBook;
+
+            const chargePoint                                = signedMeterValue.chargePoint;
+            const chargePoint_softwareVersion                = chargePoint.softwareVersion;
+
+            //#endregion
+
+            if (chargyLib.isMandatoryString    (measurementId)                             &&
+                chargyLib.isMandatoryNumber    (timestamp)                                 &&
+                chargyLib.isMandatoryString    (transactionId)                             &&
+                chargyLib.isMandatoryString    (signature)                                 &&
+
+                chargyLib.isMandatoryJSONObject(meterInfo)                                 &&
+                chargyLib.isMandatoryString    (meterInfo_meterId)                         &&
+                chargyLib.isMandatoryString    (meterInfo_type)                            &&
+                chargyLib.isMandatoryString    (meterInfo_firmwareVersion)                 &&
+                chargyLib.isMandatoryString    (meterInfo_publicKey)                       &&
+                chargyLib.isMandatoryString    (meterInfo_manufacturer)                    &&
+
+                chargyLib.isOptionalJSONArrayOk(meterInfo_publicKeySignatures)             &&
+
+                chargyLib.isMandatoryJSONObject(contract)                                  &&
+                chargyLib.isMandatoryString    (contract_id)                               &&
+                chargyLib.isMandatoryString    (contract_type)                             &&
+                chargyLib.isMandatoryNumber    (contract_timestamp)                        &&
+
+                chargyLib.isMandatoryJSONObject(contract_timestampLocal)                   &&
+                chargyLib.isMandatoryNumber    (contract_timestampLocal_timestamp)         &&
+                chargyLib.isMandatoryNumber    (contract_timestampLocal_localOffset)       &&
+                chargyLib.isMandatoryNumber    (contract_timestampLocal_seasonOffset)      &&
+
+                chargyLib.isMandatoryJSONObject(measuredValue)                             &&
+                chargyLib.isMandatoryString    (measuredValue_value)                       &&
+                chargyLib.isMandatoryString    (measuredValue_unit)                        &&
+                chargyLib.isMandatoryNumber    (measuredValue_scale)                       &&
+                chargyLib.isMandatoryString    (measuredValue_valueType)                   &&
+                chargyLib.isMandatoryNumber    (measuredValue_unitEncoded)                 &&
+
+                chargyLib.isMandatoryJSONObject(measuredValue_timestampLocal)              &&
+                chargyLib.isMandatoryNumber    (measuredValue_timestampLocal_timestamp)    &&
+                chargyLib.isMandatoryNumber    (measuredValue_timestampLocal_localOffset)  &&
+                chargyLib.isMandatoryNumber    (measuredValue_timestampLocal_seasonOffset) &&
+
+                chargyLib.isMandatoryJSONObject(measurand)                                 &&
+                chargyLib.isMandatoryString    (measurand_id)                              &&
+                chargyLib.isMandatoryString    (measurand_name)                            &&
+
+                chargyLib.isMandatoryJSONObject(additionalInfo)                            &&
+                chargyLib.isMandatoryString    (additionalInfo_status)                     &&
+
+                chargyLib.isMandatoryJSONObject(additionalInfo_indexes)                    &&
+                chargyLib.isMandatoryNumber    (additionalInfo_indexes_timer)              &&
+                chargyLib.isMandatoryString    (additionalInfo_indexes_logBook)            &&
+
+                chargyLib.isMandatoryJSONObject(chargePoint)                               &&
+                chargyLib.isMandatoryString    (chargePoint_softwareVersion)) {
+
+                    CTRArray.push({
+                        "timestamp":            timestamp,
+                        "meterInfo": {
+                            "firmwareVersion":      meterInfo_firmwareVersion,
+                            "publicKey":            meterInfo_publicKey,
+                            "publicKeySignatures":  meterInfo_publicKeySignatures,
+                            "meterId":              meterInfo_meterId,
+                            "type":                 meterInfo_type,
+                            "manufacturer":         meterInfo_manufacturer
+                        },
+                        "transactionId":        transactionId,
+                        "contract": {
+                            "type":                 contract_type,
+                            "timestampLocal": {
+                                "timestamp":            contract_timestampLocal_timestamp,
+                                "localOffset":          contract_timestampLocal_localOffset,
+                                "seasonOffset":         contract_timestampLocal_seasonOffset
+                            },
+                            "timestamp":            contract_timestamp,
+                            "id":                   contract_id
+                        },
+                        "measurementId":        measurementId,
+                        "measuredValue": {
+                            "timestampLocal": {
+                                "timestamp":            measuredValue_timestampLocal_timestamp,
+                                "localOffset":          measuredValue_timestampLocal_localOffset,
+                                "seasonOffset":         measuredValue_timestampLocal_seasonOffset
+                            },
+                            "value":                measuredValue_value,
+                            "unit":                 measuredValue_unit,
+                            "scale":                measuredValue_scale,
+                            "valueType":            measuredValue_valueType,
+                            "unitEncoded":          measuredValue_unitEncoded
+                        },
+                        "measurand": {
+                            "id":                   measurand_id,
+                            "name":                 measurand_name
+                        },
+                        "additionalInfo": {
+                            "indexes": {
+                                "timer":                additionalInfo_indexes_timer,
+                                "logBook":              additionalInfo_indexes_logBook
+                            },
+                            "status":               additionalInfo_status
+                        },
+                        "chargePoint": {
+                            "softwareVersion":      chargePoint_softwareVersion
+                        },
+                        "signature":            signature
+                    });
+
             }
 
-        const warnings                     = new Array<String>();
-        const errors                       = new Array<String>();
+        }
+
+        //#endregion
+
+        let n = CTRArray.length-1;
+
+        CTR["@id"]  = CTRArray[n]!["transactionId"];
+        CTR.begin   = this.chargy.moment.unix(CTRArray[0]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
+        CTR.end     = this.chargy.moment.unix(CTRArray[n]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
+
+        CTR.contract = {
+            "@id":       CTRArray[0]!["contract"]["id"],
+            "@context":  CTRArray[0]!["contract"]["type"]
+        };
+
+        CTR.chargingStationOperators = [{
+
+            "@id":              "chargeITmobilityCSO",
+            "description":      { "de": "chargeIT mobility GmbH - Charging Station Operator Services" },
+
+            "contact": {
+                "email":    "info@chargeit-mobility.com",
+                "web":      "https://www.chargeit-mobility.com",
+                "logoUrl":  "http://www.chargeit-mobility.com/fileadmin/BELECTRIC_Drive/templates/pics/chargeit_logo_408x70.png",
+                "publicKeys": [{
+                    "algorithm":  "secp192r1",
+                    "format":     "DER",
+                    "value":      "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
+                    //"signatures":   [ ]
+                },
+                {
+                    "algorithm":    "secp256k1",
+                    "format":       "DER",
+                    "value":        "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                    //"signatures":   [ ]
+                }
+            ]},
+
+            "support": {
+                "hotline":                  "+49 9321 / 2680 - 700",
+                "email":                    "service@chargeit-mobility.com",
+                "web":                      "https://cso.chargeit.charging.cloud/issues"
+                // "mediationServices":        [ "GraphDefined Mediation" ],
+                // "publicKeys": [
+                //     {
+                //         "algorithm":        "secp256k1",
+                //         "format":           "DER",
+                //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                //         "signatures":       [ ]
+                //     }
+                // ]
+            },
+
+            "privacy": {
+                "contact":                  "Dr. iur. Christian Borchers, datenschutz süd GmbH",
+                "email":                    "datenschutz@chargeit-mobility.com",
+                "web":                      "http://www.chargeit-mobility.com/de/datenschutz/"
+                // "publicKeys": [
+                //     {
+                //         "algorithm":        "secp256k1",
+                //         "format":           "DER",
+                //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                //         "signatures":       [ ]
+                //     }
+                // ]
+            },
+
+            "chargingStations": [
+                {
+                    "@id":                      evseId.substring(0, evseId.lastIndexOf("*")),
+                    // "description": {
+                    //     "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
+                    // },
+                    "firmwareVersion":          CTRArray[0]!["chargePoint"]["softwareVersion"],
+                    "geoLocation":              { "lat": geoLocation.lat, "lng": geoLocation.lon },
+                    "address": {
+                        "street":               address.street,
+                        "postalCode":           address.zipCode,
+                        "city":                 address.town,
+                        "country":              address.country
+                    },
+                    "EVSEs": [
+                        {
+                            "@id":                      evseId,
+                            // "description": {
+                            //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
+                            // },
+                            // "connectors": [{ }],
+                            "meters": [
+                                {
+                                    "@id":                      CTRArray[0]!["meterInfo"]["meterId"],
+                                    "vendor":                   CTRArray[0]!["meterInfo"]["manufacturer"],
+                                    "vendorURL":                "http://www.emh-metering.de",
+                                    "model":                    CTRArray[0]!["meterInfo"]["type"],
+                                    "hardwareVersion":          "1.0",
+                                    "firmwareVersion":          CTRArray[0]!["meterInfo"]["firmwareVersion"],
+                                    "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+                                    "publicKeys": [
+                                        {
+                                            "algorithm":        "secp192r1",
+                                            "format":           "DER",
+                                            "value":            CTRArray[0]!["meterInfo"]["publicKey"].startsWith("04")
+                                                                    ?        CTRArray[0]!["meterInfo"]["publicKey"]
+                                                                    : "04" + CTRArray[0]!["meterInfo"]["publicKey"],
+                                            "signatures":       CTRArray[0]!["meterInfo"]["publicKeySignatures"]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+
+        }];
+
+        CTR.chargingSessions = [{
+
+            "@id":                          CTRArray[n]!["transactionId"],
+            "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
+            "begin":                        this.chargy.moment.unix(CTRArray[0]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+            "end":                          this.chargy.moment.unix(CTRArray[n]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+            "EVSEId":                       evseId,
+
+            "authorizationStart": {
+                "@id":                      CTRArray[0]!["contract"]["id"],
+                "type":                     CTRArray[0]!["contract"]["type"],
+                "timestamp":                this.chargy.moment.unix(CTRArray[0]!["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
+                                                                    CTRArray[0]!["contract"]["timestampLocal"]["localOffset"] +
+                                                                    CTRArray[0]!["contract"]["timestampLocal"]["seasonOffset"]).format(),
+            },
+
+            "measurements": [{
+
+                "energyMeterId":        CTRArray[0]!["meterInfo"]["meterId"],
+                "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
+                "name":                 CTRArray[0]!["measurand"]["name"],
+                "obis":                 chargyLib.parseOBIS(CTRArray[0]!["measurand"]["id"]),
+                "unit":                 CTRArray[0]!["measuredValue"]["unit"],
+                "unitEncoded":          CTRArray[0]!["measuredValue"]["unitEncoded"],
+                "valueType":            CTRArray[0]!["measuredValue"]["valueType"],
+                "scale":                CTRArray[0]!["measuredValue"]["scale"],
+
+                "signatureInfos": {
+                    "hash":                 chargyInterfaces.CryptoHashAlgorithms.SHA256,
+                    "hashTruncation":       24,
+                    "algorithm":            chargyInterfaces.CryptoAlgorithms.ECC,
+                    "curve":                "secp192r1",
+                    "format":               chargyInterfaces.SignatureFormats.rs
+                },
+
+                "values": [ ]
+
+            }]
+
+        }];
+
+        for (const measurement of CTRArray)
+        {
+            CTR["chargingSessions"][0]!["measurements"][0]!["values"].push({
+                "timestamp":     this.chargy.moment.unix(measurement["measuredValue"]["timestampLocal"]["timestamp"]).utc().utcOffset(
+                                                        measurement["measuredValue"]["timestampLocal"]["localOffset"] +
+                                                        measurement["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
+                "value":         parseInt(measurement["measuredValue"]["value"]),
+                "infoStatus":    measurement["additionalInfo"]["status"],
+                "secondsIndex":  measurement["additionalInfo"]["indexes"]["timer"],
+                "paginationId":  measurement["measurementId"],
+                "logBookIndex":  measurement["additionalInfo"]["indexes"]["logBook"],
+                "signatures": [
+                    {
+                        "r":  measurement["signature"].substring(0, 48),
+                        "s":  measurement["signature"].substring(48)
+                    }
+                ]
+            });
+        }
+
+        CTR["status"] = chargyInterfaces.SessionVerificationResult.Unvalidated;
+
+        return CTR;
+
+    }
+
+    //#endregion
+
+
+    //#region tryToParseChargeITContainerFormat(SomeJSON)
+
+    // The chargeIT mobility data format does not always provide context information or format identifiers!
+    public async tryToParseChargeITContainerFormat(SomeJSON: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    {
+
+        const warnings  = new Array<String>();
+        const errors    = new Array<String>();
+
+        if (SomeJSON === undefined ||
+            SomeJSON === null      ||
+            Array.isArray(SomeJSON))
+        {
+            return {
+                status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                errors:     errors,
+                warings:    warnings,
+                certainty:  0
+            }
+        }
 
         const oldChargeITContainerFormat   = "oldChargeITContainerFormat";
         const oldChargeITMeterValueFormat  = "oldChargeITMeterValueFormat";
@@ -73,16 +433,13 @@ export class ChargeIT {
                                                  ? SomeJSON["@context"]?.trim()
                                                  : oldChargeITContainerFormat;
 
+
         //#region Old chargeIT container format
 
         if (containerFormat === oldChargeITContainerFormat)
         {
 
-            // How sure we are, that this is really a chargeIT transparency format
-            let numberOfFormatChecks  = 14 + 2*39; // At least two signed meter values!
-            let secondaryErrors       = 0;
-
-            //#region documentation
+            //#region Documentation
 
             // {
             //     "placeInfo": {
@@ -149,6 +506,10 @@ export class ChargeIT {
             // }
 
             //#endregion
+
+            // How sure we are, that this is really a chargeIT transparency format
+            let numberOfFormatChecks  = 14 + 2*39; // At least two signed meter values!
+            let secondaryErrors       = 0;
 
             try
             {
@@ -579,9 +940,10 @@ export class ChargeIT {
 
                         chargyLib.isMandatoryJSONObject(geoLocation)       &&
                         chargyLib.isMandatoryNumber    (geoLocation_lat)   &&
-                        chargyLib.isMandatoryNumber    (geoLocation_lon)
-                        )
+                        chargyLib.isMandatoryNumber    (geoLocation_lon))
                     {
+
+                        SomeJSON.placeInfo.address.country = address_country;
 
                         //#region Generate default charge transparency record
 
@@ -719,354 +1081,11 @@ export class ChargeIT {
                         }
 
                         if (signedMeterValueContext === oldChargeITMeterValueFormat)
-                        {
-
-                            let CTRArray = [];
-
-                            //#region Parse Signed Meter Values
-
-                            for (const signedMeterValue of signedMeterValues)
-                            {
-
-                                //#region Data
-
-                                const measurementId                              = signedMeterValue.measurementId;
-                                const timestamp                                  = signedMeterValue.timestamp;
-                                const transactionId                              = signedMeterValue.transactionId;
-                                const signature                                  = signedMeterValue.signature;
-
-                                const meterInfo                                  = signedMeterValue.meterInfo;
-                                const meterInfo_meterId                          = meterInfo.meterId;
-                                const meterInfo_type                             = meterInfo.type;
-                                const meterInfo_firmwareVersion                  = meterInfo.firmwareVersion;
-                                const meterInfo_publicKey                        = meterInfo.publicKey;
-                                const meterInfo_manufacturer                     = meterInfo.manufacturer;
-
-                                const meterInfo_publicKeySignatures              = meterInfo.publicKeySignatures;
-
-                                const contract                                   = signedMeterValue.contract;
-                                const contract_id                                = contract.id;
-                                const contract_type                              = contract.type;
-                                const contract_timestamp                         = contract.timestamp;
-
-                                const contract_timestampLocal                    = contract.timestampLocal;
-                                const contract_timestampLocal_timestamp          = contract_timestampLocal.timestamp;
-                                const contract_timestampLocal_localOffset        = contract_timestampLocal.localOffset;
-                                const contract_timestampLocal_seasonOffset       = contract_timestampLocal.seasonOffset;
-
-                                const measuredValue                              = signedMeterValue.measuredValue;
-                                const measuredValue_value                        = measuredValue.value;
-                                const measuredValue_unit                         = measuredValue.unit;
-                                const measuredValue_scale                        = measuredValue.scale;
-                                const measuredValue_valueType                    = measuredValue.valueType;
-                                const measuredValue_unitEncoded                  = measuredValue.unitEncoded;
-
-                                const measuredValue_timestampLocal               = measuredValue.timestampLocal;
-                                const measuredValue_timestampLocal_timestamp     = measuredValue_timestampLocal.timestamp;
-                                const measuredValue_timestampLocal_localOffset   = measuredValue_timestampLocal.localOffset;
-                                const measuredValue_timestampLocal_seasonOffset  = measuredValue_timestampLocal.seasonOffset;
-
-                                const measurand                                  = signedMeterValue.measurand;
-                                const measurand_id                               = measurand.id;
-                                const measurand_name                             = measurand.name;
-
-                                const additionalInfo                             = signedMeterValue.additionalInfo;
-                                const additionalInfo_status                      = additionalInfo.status;
-
-                                const additionalInfo_indexes                     = additionalInfo.indexes;
-                                const additionalInfo_indexes_timer               = additionalInfo_indexes.timer;
-                                const additionalInfo_indexes_logBook             = additionalInfo_indexes.logBook;
-
-                                const chargePoint                                = signedMeterValue.chargePoint;
-                                const chargePoint_softwareVersion                = chargePoint.softwareVersion;
-
-                                //#endregion
-
-                                if (chargyLib.isMandatoryString    (measurementId)                             &&
-                                    chargyLib.isMandatoryNumber    (timestamp)                                 &&
-                                    chargyLib.isMandatoryString    (transactionId)                             &&
-                                    chargyLib.isMandatoryString    (signature)                                 &&
-
-                                    chargyLib.isMandatoryJSONObject(meterInfo)                                 &&
-                                    chargyLib.isMandatoryString    (meterInfo_meterId)                         &&
-                                    chargyLib.isMandatoryString    (meterInfo_type)                            &&
-                                    chargyLib.isMandatoryString    (meterInfo_firmwareVersion)                 &&
-                                    chargyLib.isMandatoryString    (meterInfo_publicKey)                       &&
-                                    chargyLib.isMandatoryString    (meterInfo_manufacturer)                    &&
-
-                                    chargyLib.isOptionalJSONArrayOk(meterInfo_publicKeySignatures)             &&
-
-                                    chargyLib.isMandatoryJSONObject(contract)                                  &&
-                                    chargyLib.isMandatoryString    (contract_id)                               &&
-                                    chargyLib.isMandatoryString    (contract_type)                             &&
-                                    chargyLib.isMandatoryNumber    (contract_timestamp)                        &&
-
-                                    chargyLib.isMandatoryJSONObject(contract_timestampLocal)                   &&
-                                    chargyLib.isMandatoryNumber    (contract_timestampLocal_timestamp)         &&
-                                    chargyLib.isMandatoryNumber    (contract_timestampLocal_localOffset)       &&
-                                    chargyLib.isMandatoryNumber    (contract_timestampLocal_seasonOffset)      &&
-
-                                    chargyLib.isMandatoryJSONObject(measuredValue)                             &&
-                                    chargyLib.isMandatoryString    (measuredValue_value)                       &&
-                                    chargyLib.isMandatoryString    (measuredValue_unit)                        &&
-                                    chargyLib.isMandatoryNumber    (measuredValue_scale)                       &&
-                                    chargyLib.isMandatoryString    (measuredValue_valueType)                   &&
-                                    chargyLib.isMandatoryNumber    (measuredValue_unitEncoded)                 &&
-
-                                    chargyLib.isMandatoryJSONObject(measuredValue_timestampLocal)              &&
-                                    chargyLib.isMandatoryNumber    (measuredValue_timestampLocal_timestamp)    &&
-                                    chargyLib.isMandatoryNumber    (measuredValue_timestampLocal_localOffset)  &&
-                                    chargyLib.isMandatoryNumber    (measuredValue_timestampLocal_seasonOffset) &&
-
-                                    chargyLib.isMandatoryJSONObject(measurand)                                 &&
-                                    chargyLib.isMandatoryString    (measurand_id)                              &&
-                                    chargyLib.isMandatoryString    (measurand_name)                            &&
-
-                                    chargyLib.isMandatoryJSONObject(additionalInfo)                            &&
-                                    chargyLib.isMandatoryString    (additionalInfo_status)                     &&
-
-                                    chargyLib.isMandatoryJSONObject(additionalInfo_indexes)                    &&
-                                    chargyLib.isMandatoryNumber    (additionalInfo_indexes_timer)              &&
-                                    chargyLib.isMandatoryString    (additionalInfo_indexes_logBook)            &&
-
-                                    chargyLib.isMandatoryJSONObject(chargePoint)                               &&
-                                    chargyLib.isMandatoryString    (chargePoint_softwareVersion)) {
-
-                                        CTRArray.push({
-                                            "timestamp":            timestamp,
-                                            "meterInfo": {
-                                                "firmwareVersion":      meterInfo_firmwareVersion,
-                                                "publicKey":            meterInfo_publicKey,
-                                                "publicKeySignatures":  meterInfo_publicKeySignatures,
-                                                "meterId":              meterInfo_meterId,
-                                                "type":                 meterInfo_type,
-                                                "manufacturer":         meterInfo_manufacturer
-                                            },
-                                            "transactionId":        transactionId,
-                                            "contract": {
-                                                "type":                 contract_type,
-                                                "timestampLocal": {
-                                                    "timestamp":            contract_timestampLocal_timestamp,
-                                                    "localOffset":          contract_timestampLocal_localOffset,
-                                                    "seasonOffset":         contract_timestampLocal_seasonOffset
-                                                },
-                                                "timestamp":            contract_timestamp,
-                                                "id":                   contract_id
-                                            },
-                                            "measurementId":        measurementId,
-                                            "measuredValue": {
-                                                "timestampLocal": {
-                                                    "timestamp":            measuredValue_timestampLocal_timestamp,
-                                                    "localOffset":          measuredValue_timestampLocal_localOffset,
-                                                    "seasonOffset":         measuredValue_timestampLocal_seasonOffset
-                                                },
-                                                "value":                measuredValue_value,
-                                                "unit":                 measuredValue_unit,
-                                                "scale":                measuredValue_scale,
-                                                "valueType":            measuredValue_valueType,
-                                                "unitEncoded":          measuredValue_unitEncoded
-                                            },
-                                            "measurand": {
-                                                "id":                   measurand_id,
-                                                "name":                 measurand_name
-                                            },
-                                            "additionalInfo": {
-                                                "indexes": {
-                                                    "timer":                additionalInfo_indexes_timer,
-                                                    "logBook":              additionalInfo_indexes_logBook
-                                                },
-                                                "status":               additionalInfo_status
-                                            },
-                                            "chargePoint": {
-                                                "softwareVersion":      chargePoint_softwareVersion
-                                            },
-                                            "signature":            signature
-                                        });
-
-                                }
-
-                            }
-
-                            //#endregion
-
-                            let n = CTRArray.length-1;
-
-                            CTR["@id"]  = CTRArray[n]!["transactionId"];
-                            CTR.begin   = this.chargy.moment.unix(CTRArray[0]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
-                            CTR.end     = this.chargy.moment.unix(CTRArray[n]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
-
-                            CTR.contract = {
-                                    "@id":       CTRArray[0]!["contract"]["id"],
-                                    "@context":  CTRArray[0]!["contract"]["type"]
-                            };
-
-                            CTR.chargingStationOperators = [{
-
-                                "@id":              "chargeITmobilityCSO",
-                                "description":      { "de": "chargeIT mobility GmbH - Charging Station Operator Services" },
-
-                                "contact": {
-                                    "email":    "info@chargeit-mobility.com",
-                                    "web":      "https://www.chargeit-mobility.com",
-                                    "logoUrl":  "http://www.chargeit-mobility.com/fileadmin/BELECTRIC_Drive/templates/pics/chargeit_logo_408x70.png",
-                                    "publicKeys": [{
-                                        "algorithm":  "secp192r1",
-                                        "format":     "DER",
-                                        "value":      "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
-                                        //"signatures":   [ ]
-                                    },
-                                    {
-                                        "algorithm":    "secp256k1",
-                                        "format":       "DER",
-                                        "value":        "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
-                                        //"signatures":   [ ]
-                                    }
-                                ]},
-
-                                "support": {
-                                    "hotline":                  "+49 9321 / 2680 - 700",
-                                    "email":                    "service@chargeit-mobility.com",
-                                    "web":                      "https://cso.chargeit.charging.cloud/issues"
-                                    // "mediationServices":        [ "GraphDefined Mediation" ],
-                                    // "publicKeys": [
-                                    //     {
-                                    //         "algorithm":        "secp256k1",
-                                    //         "format":           "DER",
-                                    //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
-                                    //         "signatures":       [ ]
-                                    //     }
-                                    // ]
-                                },
-
-                                "privacy": {
-                                    "contact":                  "Dr. iur. Christian Borchers, datenschutz süd GmbH",
-                                    "email":                    "datenschutz@chargeit-mobility.com",
-                                    "web":                      "http://www.chargeit-mobility.com/de/datenschutz/"
-                                    // "publicKeys": [
-                                    //     {
-                                    //         "algorithm":        "secp256k1",
-                                    //         "format":           "DER",
-                                    //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
-                                    //         "signatures":       [ ]
-                                    //     }
-                                    // ]
-                                },
-
-                                "chargingStations": [
-                                    {
-                                        "@id":                      evseId.substring(0, evseId.lastIndexOf("*")),
-                                        // "description": {
-                                        //     "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
-                                        // },
-                                        "firmwareVersion":          CTRArray[0]!["chargePoint"]["softwareVersion"],
-                                        "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
-                                        "address": {
-                                            "street":               address_street,
-                                            "postalCode":           address_zipCode,
-                                            "city":                 address_town,
-                                            "country":              "Germany"
-                                        },
-                                        "EVSEs": [
-                                            {
-                                                "@id":                      evseId,
-                                                // "description": {
-                                                //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
-                                                // },
-                                                // "connectors": [{ }],
-                                                "meters": [
-                                                    {
-                                                        "@id":                      CTRArray[0]!["meterInfo"]["meterId"],
-                                                        "vendor":                   CTRArray[0]!["meterInfo"]["manufacturer"],
-                                                        "vendorURL":                "http://www.emh-metering.de",
-                                                        "model":                    CTRArray[0]!["meterInfo"]["type"],
-                                                        "hardwareVersion":          "1.0",
-                                                        "firmwareVersion":          CTRArray[0]!["meterInfo"]["firmwareVersion"],
-                                                        "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
-                                                        "publicKeys": [
-                                                            {
-                                                                "algorithm":        "secp192r1",
-                                                                "format":           "DER",
-                                                                "value":            CTRArray[0]!["meterInfo"]["publicKey"].startsWith("04")
-                                                                                        ?        CTRArray[0]!["meterInfo"]["publicKey"]
-                                                                                        : "04" + CTRArray[0]!["meterInfo"]["publicKey"],
-                                                                "signatures":       CTRArray[0]!["meterInfo"]["publicKeySignatures"]
-                                                            }
-                                                        ]
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-
-                            }];
-
-                            CTR.chargingSessions = [{
-
-                                "@id":                          CTRArray[n]!["transactionId"],
-                                "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
-                                "begin":                        this.chargy.moment.unix(CTRArray[0]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
-                                "end":                          this.chargy.moment.unix(CTRArray[n]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
-                                "EVSEId":                       evseId,
-
-                                "authorizationStart": {
-                                    "@id":                      CTRArray[0]!["contract"]["id"],
-                                    "type":                     CTRArray[0]!["contract"]["type"],
-                                    "timestamp":                this.chargy.moment.unix(CTRArray[0]!["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
-                                                                                        CTRArray[0]!["contract"]["timestampLocal"]["localOffset"] +
-                                                                                        CTRArray[0]!["contract"]["timestampLocal"]["seasonOffset"]).format(),
-                                },
-
-                                "measurements": [{
-
-                                    "energyMeterId":        CTRArray[0]!["meterInfo"]["meterId"],
-                                    "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
-                                    "name":                 CTRArray[0]!["measurand"]["name"],
-                                    "obis":                 chargyLib.parseOBIS(CTRArray[0]!["measurand"]["id"]),
-                                    "unit":                 CTRArray[0]!["measuredValue"]["unit"],
-                                    "unitEncoded":          CTRArray[0]!["measuredValue"]["unitEncoded"],
-                                    "valueType":            CTRArray[0]!["measuredValue"]["valueType"],
-                                    "scale":                CTRArray[0]!["measuredValue"]["scale"],
-
-                                    "signatureInfos": {
-                                        "hash":                 chargyInterfaces.CryptoHashAlgorithms.SHA256,
-                                        "hashTruncation":       24,
-                                        "algorithm":            chargyInterfaces.CryptoAlgorithms.ECC,
-                                        "curve":                "secp192r1",
-                                        "format":               chargyInterfaces.SignatureFormats.rs
-                                    },
-
-                                    "values": [ ]
-
-                                }]
-
-                            }];
-
-                            for (const measurement of CTRArray)
-                            {
-                                CTR["chargingSessions"][0]!["measurements"][0]!["values"].push({
-                                    "timestamp":     this.chargy.moment.unix(measurement["measuredValue"]["timestampLocal"]["timestamp"]).utc().utcOffset(
-                                                                            measurement["measuredValue"]["timestampLocal"]["localOffset"] +
-                                                                            measurement["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
-                                    "value":         parseInt(measurement["measuredValue"]["value"]),
-                                    "infoStatus":    measurement["additionalInfo"]["status"],
-                                    "secondsIndex":  measurement["additionalInfo"]["indexes"]["timer"],
-                                    "paginationId":  measurement["measurementId"],
-                                    "logBookIndex":  measurement["additionalInfo"]["indexes"]["logBook"],
-                                    "signatures": [
-                                        {
-                                            "r":  measurement["signature"].substring(0, 48),
-                                            "s":  measurement["signature"].substring(48)
-                                        }
-                                    ]
-                                });
-                            }
-
-                            CTR["status"] = chargyInterfaces.SessionVerificationResult.Unvalidated;
-
-                            return CTR;
-
-                        }
+                            return await this.tryToParseOldChargeITMeterValuesFormat(CTR,
+                                                                                     evseId,
+                                                                                     address,
+                                                                                     geoLocation,
+                                                                                     signedMeterValues);
 
                         //#endregion
 
@@ -1107,296 +1126,305 @@ export class ChargeIT {
             containerFormat == "https://www.chargeit-mobility.com/contexts/charging-station-json-v1")
         {
 
-            //#region documentation
-
-            // {
-            //     "placeInfo": {
-            //         "geoLocation": {
-            //             "lat": 49.731421,
-            //             "lon": 10.147718
-            //         },
-            //         "address": {
-            //             "street": "Steigweg 24",
-            //             "town": "Kitzingen",
-            //             "zipCode": "97318"
-            //         },
-            //         "evseId": "DE*BDO*E2323234064*1"
-            //     },
-            //     "signedMeterValues": [
-            //         {
-            //             "payload": "AP;0;3;AJ2J7LYMGCIWT4AHUJPPFIIVB3FGRV2JQ2HVZG2I;BIHEIWSHAAA2WZUZOYYDCNWTWAFACRC2I4ADGAEDQ4AAAABABMI5UAEVRZFV4AIAAEEAB7Y6AD4N2AIAAAAAAABQGQ3DKNCGIZATKOJVGU4DAAAAAAAAAAAWAAAAAKYAAAAA====;X7KCDU5IJHGUW64LDYHYR7IXRPPSKCMWAMQOVZVRNGRX6BEIHX3TFKUDJGEMUI5W5CJFTPDEWR7F6===;",
-            //             "format": "ALFEN",
-            //             "formatVersion": "0",
-            //             "encoding": "HEX",
-            //             "manufacturer": "Alfen BV"
-            //         },
-            //         {
-            //             "payload": "AP;1;3;AJ2J7LYMGCIWT4AHUJPPFIIVB3FGRV2JQ2HVZG2I;BIHEIWSHAAA2WZUZOYYDCNWTWAFACRC2I4ADGAEDQ4AAAAAQFRGNUAFWZFFV4AIAAEEAB7Y6AA7ASAQAAAAAAABQGQ3DKNCGIZATKOJVGU4DAAAAAAAAAAAWAAAAALAAAAAA====;FXINYN5UF2LKAS633476F7V2GQGBP22KBCZD3TOSJCFLCFGYAAYTVJFIA7637NKQ22CZSEB2AOJJO===;",
-            //             "format": "ALFEN",
-            //             "formatVersion": "0",
-            //             "encoding": "HEX",
-            //             "manufacturer": "Alfen BV"
-            //         }
-            //     ]
-            // }
-
-            //#endregion
+            let numberOfFormatChecks  = 81;
+            let secondaryErrors       = 0;
 
             try
             {
 
-                const id = SomeJSON["@id"];
-                if (!chargyLib.isMandatoryString(id)) return {
-                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    this.chargy.GetLocalizedMessage("Missing or invalid charge transparency record identification!"),
-                    certainty:  1
-                }
+                const id                                         = SomeJSON["@id"];
+
+                const chargePointInfo                            = SomeJSON.chargePointInfo;
+                const evseId                                     = SomeJSON.chargePointInfo?.evseId;
+
+                const placeInfo                                  = SomeJSON.chargePointInfo?.placeInfo;
+                const geoLocation                                = SomeJSON.chargePointInfo?.placeInfo?.geoLocation;
+                const geoLocation_lat                            = SomeJSON.chargePointInfo?.placeInfo?.geoLocation?.lat;
+                const geoLocation_lon                            = SomeJSON.chargePointInfo?.placeInfo?.geoLocation?.lon;
+
+                const address                                    = SomeJSON.chargePointInfo?.placeInfo?.address;
+                const address_street                             = SomeJSON.chargePointInfo?.placeInfo?.address?.street;
+                const address_zipCode                            = SomeJSON.chargePointInfo?.placeInfo?.address?.zipCode;
+                const address_town                               = SomeJSON.chargePointInfo?.placeInfo?.address?.town;
+                const address_country                            = SomeJSON.chargePointInfo?.placeInfo?.address?.country ?? "Deutschland";
+
+                const chargingStationInfo                        = SomeJSON.chargingStationInfo;
+                const chargingStation_manufacturer               = SomeJSON.chargingStationInfo?.manufacturer;
+                const chargingStation_type                       = SomeJSON.chargingStationInfo?.type;
+                const chargingStation_serialNumber               = SomeJSON.chargingStationInfo?.serialNumber;
+                const chargingStation_controllerSoftwareVersion  = SomeJSON.chargingStationInfo?.controllerSoftwareVersion;
+                const chargingStation_compliance                 = SomeJSON.chargingStationInfo?.compliance;
+
+                const signedMeterValues                          = SomeJSON.signedMeterValues;
+
+
+                if (!chargyLib.isMandatoryString(id))
+                    errors.push(this.chargy.GetLocalizedMessage("Missing or invalid charge transparency record identification!"));
 
                 //#region chargePointInfo
 
-                const evseId                                   = SomeJSON?.chargePointInfo?.evseId;
-                if (!chargyLib.isMandatoryString(evseId)) return {
-                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Missing or invalid EVSE Id!",
-                    certainty:  1
+                if (!chargyLib.isMandatoryJSONObject(chargePointInfo))
+                {
+                    errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidChargePointInfo"));
+                    secondaryErrors += 19;
                 }
+                else
+                {
 
+                    if (!chargyLib.isMandatoryString(evseId))
+                        errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidEVSEIdentification"));
 
-                const geoLocation_lat                          = SomeJSON.chargePointInfo?.placeInfo?.geoLocation?.lat;
-                if (!chargyLib.isOptionalNumber(geoLocation_lat)) return {
-                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Invalid geo location latitude!",
-                    certainty:  1
-                }
+                    //#region placeInfo
 
-                const geoLocation_lon                          = SomeJSON.chargePointInfo?.placeInfo?.geoLocation?.lon;
-                if (!chargyLib.isOptionalNumber(geoLocation_lon)) return {
-                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Invalid geo location longitude!",
-                    certainty:  1
-                }
+                    if (!chargyLib.isMandatoryJSONObject(placeInfo))
+                    {
+                        errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidPlaceInfo"));
+                        secondaryErrors += 8;
+                    }
+                    else
+                    {
 
+                        //#region geoLocation
 
-                const address_street                           = SomeJSON.chargePointInfo?.placeInfo?.address?.street;
-                if (!chargyLib.isOptionalString(address_street)) return {
-                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Invalid address street!",
-                    certainty:  1
-                }
+                        if (!chargyLib.isMandatoryJSONObject(geoLocation))
+                        {
+                            errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidGeoLocation"));
+                            secondaryErrors += 2;
+                        }
+                        else
+                        {
 
-                const address_zipCode                          = SomeJSON.chargePointInfo?.placeInfo?.address?.zipCode;
-                if (!chargyLib.isOptionalString(address_zipCode)) return {
-                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Invalid address zipCode!",
-                    certainty:  1
-                }
+                            if (!chargyLib.isMandatoryNumber(geoLocation_lat))
+                                errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidGeoLocationLatitude"));
 
-                const address_town                             = SomeJSON.chargePointInfo?.placeInfo?.address?.town;
-                if (!chargyLib.isOptionalString(address_town)) return {
-                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Invalid address town!",
-                    certainty:  1
-                }
+                            if (!chargyLib.isMandatoryNumber(geoLocation_lon))
+                                errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidGeoLocationLongitude"));
 
-                const address_country                          = SomeJSON.chargePointInfo?.placeInfo?.address?.country;
-                if (!chargyLib.isOptionalString(address_country)) return {
-                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Invalid address country!",
-                    certainty:  1
+                        }
+
+                        //#endregion
+
+                        //#region address
+
+                        if (!chargyLib.isMandatoryJSONObject(address))
+                        {
+                            errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidAddress"));
+                            secondaryErrors += 4;
+                        }
+                        else
+                        {
+
+                            if (!chargyLib.isMandatoryString(address_street))
+                                errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidAddressStreetName"));
+
+                            if (!chargyLib.isMandatoryString(address_zipCode))
+                                errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidAddressZIPCode"));
+
+                            if (!chargyLib.isMandatoryString(address_town))
+                                errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidAddressCityName"));
+
+                            if (!chargyLib.isMandatoryString(address_country))
+                                errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidAddressCountryName"));
+
+                        }
+
+                        //#endregion
+
+                    }
+
+                    //#endregion
+
                 }
 
                 //#endregion
 
                 //#region chargingStationInfo
 
-                const chargingStation_manufacturer               = SomeJSON.chargingStationInfo?.manufacturer;
-                if (!chargyLib.isOptionalString(chargingStation_manufacturer)) return {
-                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Invalid charging station manufacturer!",
-                    certainty:  1
+                if (!chargyLib.isMandatoryJSONObject(chargingStationInfo))
+                {
+                    errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidChargingStationInfo"));
+                    secondaryErrors += 5;
                 }
-
-                const chargingStation_type                       = SomeJSON.chargingStationInfo?.type;
-                if (!chargyLib.isOptionalString(chargingStation_type)) return {
-                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Invalid charging station type!",
-                    certainty:  1
-                }
-
-                const chargingStation_serialNumber               = SomeJSON.chargingStationInfo?.serialNumber;
-                if (!chargyLib.isOptionalString(chargingStation_serialNumber)) return {
-                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Invalid charging station serial number!",
-                    certainty:  1
-                }
-
-                const chargingStation_controllerSoftwareVersion  = SomeJSON.chargingStationInfo?.controllerSoftwareVersion;
-                if (!chargyLib.isOptionalString(chargingStation_controllerSoftwareVersion)) return {
-                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Invalid charging station controller software version!",
-                    certainty:  1
-                }
-
-                const chargingStation_compliance                 = SomeJSON.chargingStationInfo?.compliance;
-                if (!chargyLib.isOptionalString(chargingStation_compliance)) return {
-                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Invalid charging station compliance!",
-                    certainty:  1
-                }
-
-                //#endregion
-
-                const signedMeterValues = SomeJSON?.signedMeterValues as Array<any>;
-                if (signedMeterValues == undefined || signedMeterValues == null || !Array.isArray(signedMeterValues)) return {
-                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Invalid signed meter values!",
-                    certainty:  1
-                }
-
-                const smvContext = chargyLib.isMandatoryString(signedMeterValues[0]["@context"])
-                                       ? signedMeterValues[0]["@context"]?.trim()
-                                       : chargyLib.isMandatoryString(signedMeterValues[0]?.format)
-                                             ? signedMeterValues[0]?.format?.trim()
-                                             : null;
-
-                for (let i = 1; i < signedMeterValues.length; i++)
+                else
                 {
 
-                    let context = chargyLib.isMandatoryString(signedMeterValues[i]["@context"])
-                                      ? signedMeterValues[i]["@context"]?.trim()
-                                      : chargyLib.isMandatoryString(signedMeterValues[i]?.format)
-                                            ? signedMeterValues[i]?.format?.trim()
-                                            : null;
+                    if (!chargyLib.isOptionalString(chargingStation_manufacturer))
+                        errors.push(this.chargy.GetLocalizedMessage("Invalid charging station manufacturer!"));
 
-                    if (smvContext !== context) return {
-                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:    "Inconsistent signed meter value format!",
-                        certainty:  1
-                    }
+                    if (!chargyLib.isOptionalString(chargingStation_type))
+                        errors.push(this.chargy.GetLocalizedMessage("Invalid charging station type!"));
+
+                    if (!chargyLib.isOptionalString(chargingStation_serialNumber))
+                        errors.push(this.chargy.GetLocalizedMessage("Invalid charging station serial number!"));
+
+                    if (!chargyLib.isOptionalString(chargingStation_controllerSoftwareVersion))
+                        errors.push(this.chargy.GetLocalizedMessage("Invalid charging station controller software version!"));
+
+                    if (!chargyLib.isOptionalString(chargingStation_compliance))
+                        errors.push(this.chargy.GetLocalizedMessage("Invalid charging station compliance!"));
 
                 }
 
-
-                //#region Generate default-transparency record
-
-                let CTR: chargyInterfaces.IChargeTransparencyRecord = {
-
-                    "@id":              "",
-                    "@context":         "https://open.charging.cloud/contexts/CTR+json",
-
-                    "description": {
-                        "de":           "Alle Ladevorgänge"
-                    },
-
-                    "chargingStationOperators": [
-                        {
-
-                            "@id":                      "chargeITmobilityCSO",
-                            "@context":                 "",
-                            //"eMobilityIds":             [ "DE*BDO", "DE*LVF", "+49*822" ],
-                            "description": {
-                                "de":                   "chargeIT mobility GmbH - Charging Station Operator Services"
-                            },
-
-                            "contact": {
-                                "email":                    "info@chargeit-mobility.com",
-                                "web":                      "https://www.chargeit-mobility.com",
-                                "logoUrl":                  "http://www.chargeit-mobility.com/fileadmin/BELECTRIC_Drive/templates/pics/chargeit_logo_408x70.png",
-                                "publicKeys": [
-                                    {
-                                        "algorithm":        "secp192r1",
-                                        "format":           "DER",
-                                        "value":            "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
-                                        "signatures": [
-                                            {
-                                                "keyId":      "...",
-                                                "algorithm":  "secp192r1",
-                                                "format":     "DER",
-                                                "value":      "????"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "algorithm":        "secp256k1",
-                                        "format":           "DER",
-                                        "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
-                                        "signatures":       [ ]
-                                    }
-                                ]
-                            },
-
-                            "support": {
-                                "hotline":                  "+49 9321 / 2680 - 700",
-                                "email":                    "service@chargeit-mobility.com",
-                                "web":                      "https://cso.chargeit.charging.cloud/issues"
-                                // "mediationServices":        [ "GraphDefined Mediation" ],
-                                // "publicKeys": [
-                                //     {
-                                //         "algorithm":        "secp256k1",
-                                //         "format":           "DER",
-                                //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
-                                //         "signatures":       [ ]
-                                //     }
-                                // ]
-                            },
-
-                            "privacy": {
-                                "contact":                  "Dr. iur. Christian Borchers, datenschutz süd GmbH",
-                                "email":                    "datenschutz@chargeit-mobility.com",
-                                "web":                      "http://www.chargeit-mobility.com/de/datenschutz/"
-                                // "publicKeys": [
-                                //     {
-                                //         "algorithm":        "secp256k1",
-                                //         "format":           "DER",
-                                //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
-                                //         "signatures":       [ ]
-                                //     }
-                                // ]
-                            },
-
-                            "chargingStations": [
-                                {
-                                    "@id":                      evseId.substring(0, evseId.lastIndexOf("*")),
-                                    //"@context":                 "",
-                                    //"description":              { },
-                                    //"firmwareVersion":          "", //CTRArray[0]["chargePoint"]["softwareVersion"],
-                                    "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
-                                    "address": {
-                                        //"@context":             "",
-                                        "street":               address_street,
-                                        "postalCode":           address_zipCode,
-                                        "city":                 address_town,
-                                        "country":              "Germany"
-                                    },
-                                    "EVSEs": [
-                                        {
-                                            "@id":                      evseId,
-                                            //"@context":                 "",
-                                            // "description": {
-                                            //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
-                                            // },
-                                            //"connectors":               [  ],
-                                            "meters":                   [ ]
-                                        }
-                                    ]
-                                }
-                            ]
-
-                        }
-                    ]
-
-                };
-
                 //#endregion
 
-                if      (smvContext?.startsWith("https://www.chargeit-mobility.com/contexts/bsm-ws36a-json"))
-                    return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, chargingStation_controllerSoftwareVersion, signedMeterValues);
 
-                if (smvContext?.startsWith("ALFEN"))
-                    return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
+                if (!chargyLib.isMandatoryJSONArray(signedMeterValues) || signedMeterValues.length < 2) {
+                    errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidSignedMeterValues"));
+                    secondaryErrors += 2*39;
+                }
+                else
+                {
+
+                    const smvContext = chargyLib.isMandatoryString(signedMeterValues[0]["@context"])
+                                        ? signedMeterValues[0]["@context"]?.trim()
+                                        : chargyLib.isMandatoryString(signedMeterValues[0]?.format)
+                                                ? signedMeterValues[0]?.format?.trim()
+                                                : null;
+
+                    for (let i = 1; i < signedMeterValues.length; i++)
+                    {
+
+                        let context = chargyLib.isMandatoryString(signedMeterValues[i]["@context"])
+                                        ? signedMeterValues[i]["@context"]?.trim()
+                                        : chargyLib.isMandatoryString(signedMeterValues[i]?.format)
+                                                ? signedMeterValues[i]?.format?.trim()
+                                                : null;
+
+                        if (smvContext !== context) return {
+                            status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:    "Inconsistent signed meter value format!",
+                            certainty:  1
+                        }
+
+                    }
+
+
+                    //#region Generate default-transparency record
+
+                    let CTR: chargyInterfaces.IChargeTransparencyRecord = {
+
+                        "@id":              "",
+                        "@context":         "https://open.charging.cloud/contexts/CTR+json",
+
+                        "description": {
+                            "de":           "Alle Ladevorgänge"
+                        },
+
+                        "chargingStationOperators": [
+                            {
+
+                                "@id":                      "chargeITmobilityCSO",
+                                "@context":                 "",
+                                //"eMobilityIds":             [ "DE*BDO", "DE*LVF", "+49*822" ],
+                                "description": {
+                                    "de":                   "chargeIT mobility GmbH - Charging Station Operator Services"
+                                },
+
+                                "contact": {
+                                    "email":                    "info@chargeit-mobility.com",
+                                    "web":                      "https://www.chargeit-mobility.com",
+                                    "logoUrl":                  "http://www.chargeit-mobility.com/fileadmin/BELECTRIC_Drive/templates/pics/chargeit_logo_408x70.png",
+                                    "publicKeys": [
+                                        {
+                                            "algorithm":        "secp192r1",
+                                            "format":           "DER",
+                                            "value":            "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
+                                            "signatures": [
+                                                {
+                                                    "keyId":      "...",
+                                                    "algorithm":  "secp192r1",
+                                                    "format":     "DER",
+                                                    "value":      "????"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "algorithm":        "secp256k1",
+                                            "format":           "DER",
+                                            "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                                            "signatures":       [ ]
+                                        }
+                                    ]
+                                },
+
+                                "support": {
+                                    "hotline":                  "+49 9321 / 2680 - 700",
+                                    "email":                    "service@chargeit-mobility.com",
+                                    "web":                      "https://cso.chargeit.charging.cloud/issues"
+                                    // "mediationServices":        [ "GraphDefined Mediation" ],
+                                    // "publicKeys": [
+                                    //     {
+                                    //         "algorithm":        "secp256k1",
+                                    //         "format":           "DER",
+                                    //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                                    //         "signatures":       [ ]
+                                    //     }
+                                    // ]
+                                },
+
+                                "privacy": {
+                                    "contact":                  "Dr. iur. Christian Borchers, datenschutz süd GmbH",
+                                    "email":                    "datenschutz@chargeit-mobility.com",
+                                    "web":                      "http://www.chargeit-mobility.com/de/datenschutz/"
+                                    // "publicKeys": [
+                                    //     {
+                                    //         "algorithm":        "secp256k1",
+                                    //         "format":           "DER",
+                                    //         "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+                                    //         "signatures":       [ ]
+                                    //     }
+                                    // ]
+                                },
+
+                                "chargingStations": [
+                                    {
+                                        "@id":                      evseId.substring(0, evseId.lastIndexOf("*")),
+                                        //"@context":                 "",
+                                        //"description":              { },
+                                        //"firmwareVersion":          "", //CTRArray[0]["chargePoint"]["softwareVersion"],
+                                        "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
+                                        "address": {
+                                            //"@context":             "",
+                                            "street":               address_street,
+                                            "postalCode":           address_zipCode,
+                                            "city":                 address_town,
+                                            "country":              "Germany"
+                                        },
+                                        "EVSEs": [
+                                            {
+                                                "@id":                      evseId,
+                                                //"@context":                 "",
+                                                // "description": {
+                                                //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
+                                                // },
+                                                //"connectors":               [  ],
+                                                "meters":                   [ ]
+                                            }
+                                        ]
+                                    }
+                                ]
+
+                            }
+                        ]
+
+                    };
+
+                    //#endregion
+
+                    if      (smvContext?.startsWith("https://www.chargeit-mobility.com/contexts/bsm-ws36a-json"))
+                        return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, chargingStation_controllerSoftwareVersion, signedMeterValues);
+
+                    if (smvContext?.startsWith("ALFEN"))
+                        return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
+
+
+                }
 
                 return {
-                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    errors:     errors,
+                    warings:    warnings,
+                    certainty: (numberOfFormatChecks - errors.length - secondaryErrors)/numberOfFormatChecks
                 }
 
             }
@@ -1405,7 +1433,9 @@ export class ChargeIT {
                 return {
                     status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:    "Exception occured: " + (exception instanceof Error ? exception.message : exception),
-                    certainty:  1
+                    errors:     errors,
+                    warings:    warnings,
+                    certainty: (numberOfFormatChecks - errors.length - secondaryErrors)/numberOfFormatChecks
                 }
             }
 
@@ -1413,14 +1443,17 @@ export class ChargeIT {
 
         //#endregion
 
-
-
         return {
-            status:  chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
+            status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+            message:    "No chargeIT charge transparency record",
+            errors:     errors,
+            warings:    warnings,
+            certainty:  0
         }
 
     }
 
     //#endregion
+
 
 }
