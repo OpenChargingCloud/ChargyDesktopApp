@@ -489,8 +489,9 @@ export class Chargy {
 
         if (FileInfos == null || FileInfos.length == 0)
             return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Keine Transparenzdatensätze gefunden!",
+                status:    chargyInterfaces.SessionVerificationResult.NoChargeTransparencyRecordsFound,
+                message:   this.GetLocalizedMessage("NoChargeTransparencyRecordsFound"),
+                certainty: 0
             }
 
         //#endregion
@@ -566,8 +567,9 @@ export class Chargy {
                 {
                     processedFile.result = {
                         status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:    "Unbekanntes oder ungültiges XML-Transparenzdatensatzformat!",
-                        exception:  exception
+                        message:    this.GetLocalizedMessage("UnknownOrInvalidXMLChargeTransparencyFormat"),
+                        exception:  exception,
+                        certainty: 0
                     }
                 }
             }
@@ -670,7 +672,8 @@ export class Chargy {
                                     oid:          Curve_OID,
                                     name:         Curve
                                 },
-                                value:  chargyLib.buf2hex(publicKeyDER.publicKey.data)
+                                value:  chargyLib.buf2hex(publicKeyDER.publicKey.data),
+                                certainty: 0
                             }
                         ]
                     };
@@ -679,9 +682,10 @@ export class Chargy {
                 catch (exception)
                 {
                     processedFile.result = {
-                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:    "Unbekanntes oder ungültiges Public-Key-Datenformat!",
-                        exception:  exception
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidPublicKey,
+                        message:    this.GetLocalizedMessage("UnknownOrInvalidPublicKeyFormat"),
+                        exception:  exception,
+                        certainty: 0
                     }
                 }
 
@@ -711,44 +715,51 @@ export class Chargy {
                     else
                     {
 
-                        let tryNext = true;
+                        // Some formats do not provide any context or format identifiers...
+                        const results = [
+                            await new ChargeIT(this).     tryToParseChargeITContainerFormat(JSONContent),
+                            await new Chargepoint01(this).tryToParseChargepointJSON        (JSONContent)
+                        ];
 
-                        // The older chargeIT mobility format does not provide any context or format identifiers
-                        processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormat(JSONContent);
+                        const filteredResults = results.filter((ctr) => {
+                            return chargyInterfaces.isISessionCryptoResult1(ctr);
+                        });
 
-                        if (chargyInterfaces.isISessionCryptoResult1(processedFile.result))
-                        {
-                            if (processedFile.result.status == chargyInterfaces.SessionVerificationResult.InvalidSessionFormat)
-                            {
-                                tryNext = false;
+                        const sortedResults = filteredResults.sort((ctr1, ctr2) => {
+
+                            if (ctr1.certainty > ctr2.certainty) {
+                                return 1;
                             }
-                            else
-                            {
-                                tryNext = false;
-                            }
-                        }
 
-                        // The current chargepoint format does not provide any context or format identifiers
-                        if (tryNext)
-                            processedFile.result = await new Chargepoint01(this).tryToParseChargepointJSON(JSONContent);
+                            if (ctr1.certainty < ctr2.certainty) {
+                                return -1;
+                            }
+
+                            return 0;
+
+                        });
+
+                        if (sortedResults.length >= 1)
+                            processedFile.result = sortedResults[0]!;
 
                     }
 
-                } catch (exception)
-                {
+                }
+                catch (exception) {
                     processedFile.result = {
                         status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:    "Unbekanntes oder ungültiges JSON-Transparenzdatensatzformat!",
-                        exception:  exception
+                        message:    this.GetLocalizedMessage("UnknownOrInvalidJSONChargeTransparencyFormat"),
+                        exception:  exception,
+                        certainty:  0
                     }
                 }
             }
 
-            if (processedFile.result == undefined)
-            {
+            if (processedFile.result == undefined) {
                 processedFile.result = {
-                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:  "Unbekanntes oder ungültiges Transparenzdatensatzformat!",
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
+                    certainty: 0
                 }
             }
 
@@ -769,8 +780,9 @@ export class Chargy {
 
             if (chargyInterfaces.IsAPublicKeyLookup(processedFiles[0]?.result))
                 return {
-                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:  "Unbekanntes oder ungültiges Transparenzdatensatzformat!",
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
+                    certainty: 0
                 };
 
             return processedFiles[0]!.result;
@@ -786,7 +798,8 @@ export class Chargy {
 
             let mergedCTR:chargyInterfaces.IChargeTransparencyRecord = {
                 "@id":      "",
-                "@context": ""
+                "@context": "",
+                certainty: 0
             };
 
             for (const processedFile of processedFiles)
@@ -898,8 +911,9 @@ export class Chargy {
         //#endregion
 
         return {
-            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-            message:  "Keine Transparenzdatensätze gefunden!"
+            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+            message:   this.GetLocalizedMessage("NoChargeTransparencyRecordsFound"),
+            certainty: 0
         }
 
     }
@@ -915,8 +929,9 @@ export class Chargy {
 
         if (!chargyInterfaces.IsAChargeTransparencyRecord(CTR))
             return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Unbekanntes Transparenzdatensatzformat!"
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.GetLocalizedMessage("UnknownOrInvalidJSONChargeTransparencyFormat"),
+                certainty: 0
             }
 
         //#endregion
@@ -1221,8 +1236,9 @@ export class Chargy {
         catch (exception)
         {
             return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                certainty: 0
             }
         }
 
@@ -1250,7 +1266,9 @@ export class Chargy {
             chargingSession.measurements == null)
         {
             return {
-                status: chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
+                certainty: 0
             }
         }
 
@@ -1283,7 +1301,9 @@ export class Chargy {
 
             default:
                 return {
-                    status: chargyInterfaces.SessionVerificationResult.UnknownSessionFormat
+                    status:    chargyInterfaces.SessionVerificationResult.UnknownSessionFormat,
+                    message:   this.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
+                    certainty: 0
                 }
 
         }

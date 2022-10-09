@@ -711,13 +711,16 @@ export class Chargepoint01 {
         catch (exception)
         {
             return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                certainty: 0
             }
         }
 
         return {
-            status:  chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
+            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+            message:   this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
+            certainty: 0
         }
 
     }
@@ -792,7 +795,9 @@ export class ChargePointCrypt01 extends ACrypt {
     {
 
         return {
-            status: chargyInterfaces.SessionVerificationResult.UnknownSessionFormat
+            status:    chargyInterfaces.SessionVerificationResult.UnknownSessionFormat,
+            message:   this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
+            certainty: 0
         }
 
     }
@@ -804,7 +809,9 @@ export class ChargePointCrypt01 extends ACrypt {
             chargingSession.ctr === undefined)
         {
             return {
-                status:  chargyInterfaces.SessionVerificationResult.InvalidSignature
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSignature,
+                message:   this.chargy.GetLocalizedMessage("InvalidSignature"),
+                certainty: 0
             }
         }
 
@@ -866,7 +873,9 @@ export class ChargePointCrypt01 extends ACrypt {
 
             if (publicKeys.length == 0)
                 return {
-                    status: chargyInterfaces.SessionVerificationResult.PublicKeyNotFound
+                    status:    chargyInterfaces.SessionVerificationResult.PublicKeyNotFound,
+                    message:   this.chargy.GetLocalizedMessage("PublicKeyNotFound"),
+                    certainty: 0
                 }
 
             //#endregion
@@ -882,8 +891,6 @@ export class ChargePointCrypt01 extends ACrypt {
                 let sha256Value: string|null = null;
                 let sha385Value: string|null = null;
                 let sha512Value: string|null = null;
-
-                
 
                 for (const publicKey of publicKeys)
                 {
@@ -1001,7 +1008,9 @@ export class ChargePointCrypt01 extends ACrypt {
                                 measurementValue.result?.status !== chargyInterfaces.VerificationResult.NoOperation)
                             {
                                 return {
-                                    status: chargyInterfaces.SessionVerificationResult.InvalidSignature
+                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSignature,
+                                    message:   this.chargy.GetLocalizedMessage("InvalidSignature"),
+                                    certainty: 0
                                 }
                             }
                         }
@@ -1104,15 +1113,17 @@ export class ChargePointCrypt01 extends ACrypt {
             //#endregion
 
             return {
-                status: sessionResult
+                status:    sessionResult,
+                certainty: .5
             }
 
         }
         catch (exception)
         {
             return {
-                status:  chargyInterfaces.SessionVerificationResult.InvalidSignature,
-                message: "Exception occured: " + (exception instanceof Error ? exception.message : exception)
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSignature,
+                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                certainty: 0
             }
         }
 

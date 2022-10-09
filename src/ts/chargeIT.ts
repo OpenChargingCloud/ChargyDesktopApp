@@ -421,7 +421,7 @@ export class ChargeIT {
             return {
                 status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 errors:     errors,
-                warings:    warnings,
+                warnings:   warnings,
                 certainty:  0
             }
         }
@@ -903,7 +903,7 @@ export class ChargeIT {
                     if (errors.length > 0) return {
                         status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         errors:     errors,
-                        warings:    warnings,
+                        warnings:   warnings,
                         certainty: (numberOfFormatChecks - errors.length - secondaryErrors)/numberOfFormatChecks
                     }
 
@@ -1048,7 +1048,9 @@ export class ChargeIT {
                                     ]
 
                                 }
-                            ]
+                            ],
+
+                            certainty: 0
 
                         };
 
@@ -1092,7 +1094,7 @@ export class ChargeIT {
                         return {
                             status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             errors:     errors,
-                            warings:    warnings,
+                            warnings:   warnings,
                             certainty: (numberOfFormatChecks - errors.length - secondaryErrors)/numberOfFormatChecks
                         }
 
@@ -1109,7 +1111,7 @@ export class ChargeIT {
                     status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:    "Exception occured: " + (exception instanceof Error ? exception.message : exception),
                     errors:     errors,
-                    warings:    warnings,
+                    warnings:   warnings,
                     certainty: (numberOfFormatChecks - errors.length - secondaryErrors)/numberOfFormatChecks
                 }
             }
@@ -1405,7 +1407,9 @@ export class ChargeIT {
                                 ]
 
                             }
-                        ]
+                        ],
+
+                        certainty: 0
 
                     };
 
@@ -1423,7 +1427,7 @@ export class ChargeIT {
                 return {
                     status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     errors:     errors,
-                    warings:    warnings,
+                    warnings:   warnings,
                     certainty: (numberOfFormatChecks - errors.length - secondaryErrors)/numberOfFormatChecks
                 }
 
@@ -1434,7 +1438,7 @@ export class ChargeIT {
                     status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                     message:    "Exception occured: " + (exception instanceof Error ? exception.message : exception),
                     errors:     errors,
-                    warings:    warnings,
+                    warnings:   warnings,
                     certainty: (numberOfFormatChecks - errors.length - secondaryErrors)/numberOfFormatChecks
                 }
             }
@@ -1447,7 +1451,7 @@ export class ChargeIT {
             status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
             message:    "No chargeIT charge transparency record",
             errors:     errors,
-            warings:    warnings,
+            warnings:   warnings,
             certainty:  0
         }
 

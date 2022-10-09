@@ -70,7 +70,9 @@ export class GDFCrypt01 extends ACrypt {
     {
 
         return {
-            status: chargyInterfaces.SessionVerificationResult.UnknownSessionFormat
+            status:    chargyInterfaces.SessionVerificationResult.UnknownSessionFormat,
+            message:   this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
+            certainty: 0
         }
 
     }
@@ -120,7 +122,8 @@ export class GDFCrypt01 extends ACrypt {
         }
 
         return {
-            status: sessionResult
+            status:    sessionResult,
+            certainty: .5
         } ;
 
     }

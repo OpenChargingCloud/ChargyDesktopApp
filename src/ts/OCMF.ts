@@ -90,14 +90,17 @@ export class OCMF {
             let MeterFirmware      :string = OCMFData.MF != null ? OCMFData.MF.trim() : ""; // Software version of the device.
 
             return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
+                certainty: 0
             }
 
         } catch (exception)
         {
             return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                certainty: 0
             }
         }
 
@@ -303,8 +306,9 @@ export class OCMF {
 
                 if (!OCMFData.RD || OCMFData.RD.length == 0)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Each OCMF data set must have at least one meter reading!"
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   "Each OCMF data set must have at least one meter reading!",
+                        certainty: 0
                     }
 
                 for (let reading of OCMFData.RD)
@@ -369,8 +373,9 @@ export class OCMF {
         catch (exception)
         {
             return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                certainty: 0
             }
         }
 
@@ -402,8 +407,9 @@ export class OCMF {
 
                 if (OCMFSections[0] !== "OCMF")
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "The given data does not have a valid OCMF header!"
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   "The given data does not have a valid OCMF header!",
+                        certainty: 0
                     }
 
                 let OCMFVersion           = "";
@@ -459,21 +465,24 @@ export class OCMF {
                 catch (exception)
                 {
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Could not parse the given OCMF data!"
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   "Could not parse the given OCMF data!",
+                        certainty: 0
                     }
                 }
 
                 if (OCMFData      == null || Object.keys(OCMFData).length === 0)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Could not parse the given OCMF data!"
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   "Could not parse the given OCMF data!",
+                        certainty: 0
                     }
 
                 if (OCMFSignature == null || Object.keys(OCMFSignature).length === 0)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Could not parse the given OCMF signature!"
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   "Could not parse the given OCMF signature!",
+                        certainty: 0
                     }
 
                 if (commonVersion == "")
@@ -490,16 +499,18 @@ export class OCMF {
 
             else
                 return {
-                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:  "The given data is not valid OCMF!"
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   "The given data is not valid OCMF!",
+                    certainty: 0
                 }
 
         }
 
         if (OCMFDataList.length == 1)
             return {
-                status:   chargyInterfaces.SessionVerificationResult.AtLeastTwoMeasurementsRequired,
-                message:  "At least two OCMF measurements are required!"
+                status:    chargyInterfaces.SessionVerificationResult.AtLeastTwoMeasurementsRequired,
+                message:   "At least two OCMF measurements are required!",
+                certainty: 0
             }
 
         if (OCMFDataList.length >= 2)
@@ -515,16 +526,18 @@ export class OCMF {
 
                 default:
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Unknown OCMF version!"
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   "Unknown OCMF version!",
+                        certainty: 0
                     }
 
             }
         }
 
         return {
-            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-            message:  "Unknown OCMF version!"
+            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+            message:   "Unknown OCMF version!",
+            certainty: 0
         }
 
     }

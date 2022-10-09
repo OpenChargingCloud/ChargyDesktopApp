@@ -347,34 +347,42 @@ ipcMain.on('setVerificationResult', (event, result) => {
             {
 
                 case 0:
-                    status = "Unknown session format";
+                    status = "No charge transparency records found";
                     break;
 
                 case 1:
-                    status = "Invalid session format";
+                    status = "Unknown session format";
                     break;
 
                 case 2:
-                    status = "Public key not found";
+                    status = "Invalid session format";
                     break;
 
                 case 3:
-                    status = "Invalid public key";
+                    status = "Public key not found";
                     break;
 
                 case 4:
-                    status = "Invalid signature";
+                    status = "Invalid public key";
                     break;
 
                 case 5:
-                    status = "Valid signature";
+                    status = "Invalid signature";
                     break;
 
                 case 6:
-                    status = "Inconsistent timestamps";
+                    status = "Unvalidated";
                     break;
 
                 case 7:
+                    status = "Valid signature";
+                    break;
+
+                case 8:
+                    status = "Inconsistent timestamps";
+                    break;
+
+                case 9:
                     status = "At least two measurements required";
                     break;
 

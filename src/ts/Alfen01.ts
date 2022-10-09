@@ -94,8 +94,9 @@ export class Alfen01  {
 
                 if (elements?.length != 6 && elements?.length != 7)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Invalid number of array elements!"
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   "Invalid number of array elements!",
+                        certainty: 0
                     };
 
                 const FormatId               = elements[0];                                       //  2 bytes
@@ -110,8 +111,9 @@ export class Alfen01  {
                     common.PublicKey = elements[3] ?? "";
                 else if (elements[3] !== common.PublicKey)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent public keys!"
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   "Inconsistent public keys!",
+                        certainty: 0
                     };
 
                 if (FormatId              !== "AP" ||
@@ -123,8 +125,9 @@ export class Alfen01  {
                     Signature.byteLength  !== 48)
                 {
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Invalid data format!"
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   "Invalid data format!",
+                        certainty: 0
                     };
                 }
 
@@ -160,7 +163,8 @@ export class Alfen01  {
                 else if (AdapterId !== common.AdapterId)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent adapter identification!"
+                        message:  "Inconsistent adapter identification!",
+                        certainty: 0
                     };
 
                 if (common.AdapterFWVersion === "")
@@ -168,7 +172,8 @@ export class Alfen01  {
                 else if (AdapterFWVersion !== common.AdapterFWVersion)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent adapter firmware version!"
+                        message:  "Inconsistent adapter firmware version!",
+                        certainty: 0
                     };
 
                 if (common.AdapterFWChecksum === "")
@@ -176,7 +181,8 @@ export class Alfen01  {
                 else if (AdapterFWChecksum !== common.AdapterFWChecksum)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent adapter firmware checksum!"
+                        message:  "Inconsistent adapter firmware checksum!",
+                        certainty: 0
                     };
 
                 if (common.MeterId === "")
@@ -184,7 +190,8 @@ export class Alfen01  {
                 else if (MeterId !== common.MeterId)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent meter identification!"
+                        message:  "Inconsistent meter identification!",
+                        certainty: 0
                     };
 
                 if (common.ObisId === "")
@@ -192,7 +199,8 @@ export class Alfen01  {
                 else if (ObisId !== common.ObisId)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent OBIS identification!"
+                        message:  "Inconsistent OBIS identification!",
+                        certainty: 0
                     };
 
                 if (common.UnitEncoded === 0)
@@ -200,7 +208,8 @@ export class Alfen01  {
                 else if (UnitEncoded !== common.UnitEncoded)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent unit (encoded) value!"
+                        message:  "Inconsistent unit (encoded) value!",
+                        certainty: 0
                     };
 
                 if (common.Scalar === "")
@@ -208,7 +217,8 @@ export class Alfen01  {
                 else if (Scalar !== common.Scalar)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement scaler!"
+                        message:  "Inconsistent measurement scaler!",
+                        certainty: 0
                     };
 
                 if (common.UID === "")
@@ -216,7 +226,8 @@ export class Alfen01  {
                 else if (UID !== common.UID)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent user identification!"
+                        message:  "Inconsistent user identification!",
+                        certainty: 0
                     };
 
                 if (common.SessionId === 0)
@@ -224,13 +235,15 @@ export class Alfen01  {
                 else if (SessionId !== common.SessionId)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent charging session identification!"
+                        message:  "Inconsistent charging session identification!",
+                        certainty: 0
                     };
 
                 if (previousTimestamp !== "" && previousTimestamp > Timestamp)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InconsistentTimestamps,
-                        message:  "Inconsistent timestamps!"
+                        message:  "Inconsistent timestamps!",
+                        certainty: 0
                     };
                 else
                     previousTimestamp = Timestamp;
@@ -408,8 +421,9 @@ export class Alfen01  {
         catch (exception)
         {
             return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                certainty: 0
             }
         }
 
@@ -489,7 +503,9 @@ export class AlfenCrypt01 extends ACrypt {
     {
 
         return {
-            status: chargyInterfaces.SessionVerificationResult.UnknownSessionFormat
+            status:    chargyInterfaces.SessionVerificationResult.UnknownSessionFormat,
+            message:   this.chargy.GetLocalizedMessage("UnknownSessionFormat"),
+            certainty: 0
         }
 
     }
@@ -539,7 +555,8 @@ export class AlfenCrypt01 extends ACrypt {
         }
 
         return {
-            status: sessionResult
+            status:    sessionResult,
+            certainty: .5
         }
 
     }

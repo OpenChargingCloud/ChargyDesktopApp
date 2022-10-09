@@ -104,12 +104,16 @@ export class BSMCrypt01 extends ACrypt {
 
     //#region tryToParseBSM_WS36aMeasurements(Measurements)
 
-    public async tryToParseBSM_WS36aMeasurements(CTR: chargyInterfaces.IChargeTransparencyRecord, EVSEId: String, ExpectedCscSwVersion: string|null, Measurements: Array<any>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async tryToParseBSM_WS36aMeasurements(CTR:                   chargyInterfaces.IChargeTransparencyRecord,
+                                                 EVSEId:                string,
+                                                 ExpectedCscSwVersion:  string|null,
+                                                 Measurements:          Array<any>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         if (!Array.isArray(Measurements) || Measurements.length < 2) return {
-            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-            message:  "Invalid signed meter values format!"
+            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+            message:   "Invalid signed meter values format!",
+            certainty: 0
         }
 
         //#region Documentation
@@ -385,54 +389,64 @@ export class BSMCrypt01 extends ACrypt {
 
             if (!chargyLib.isMandatoryString(common.context)) return {
                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Missing or invalid measurements format identification!"
+                message:  "Missing or invalid measurements format identification!",
+                certainty: 0
             }
 
             if (!chargyLib.isMandatoryString(common.meterFirmwareVersion)) return {
                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid meter firmeware version!"
+                message:  "Invalid meter firmeware version!",
+                certainty: 0
             }
 
             if (!chargyLib.isMandatoryString(common.meterPublicKey)) return {
                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid meter public key!"
+                message:  "Invalid meter public key!",
+                certainty: 0
             }
 
             if (!chargyLib.isMandatoryString(common.meterId)) return {
                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid meter identification!"
+                message:  "Invalid meter identification!",
+                certainty: 0
             }
 
             if (!chargyLib.isMandatoryString(common.meterManufacturer)) return {
                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid meter manufacturer!"
+                message:  "Invalid meter manufacturer!",
+                certainty: 0
             }
 
             if (!chargyLib.isMandatoryString(common.meterType)) return {
                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid meter type!"
+                message:  "Invalid meter type!",
+                certainty: 0
             }
 
 
             if (!chargyLib.isMandatoryString(common.contractId)) return {
                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid contract identification!"
+                message:  "Invalid contract identification!",
+                certainty: 0
             }
 
             if (!chargyLib.isOptionalString(common.contractType)) return {
                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid contract type!"
+                message:  "Invalid contract type!",
+                certainty: 0
             }
 
 
             if (!chargyLib.isMandatoryString(common.valueMeasurandId)) return {
                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid measurand identification!"
+                message:  "Invalid measurand identification!",
+                certainty: 0
             }
 
             if (!chargyLib.isMandatoryString(common.valueMeasurandName)) return {
                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid measurand name!"
+                message:  "Invalid measurand name!",
+                certainty: 0
             }
 
 
@@ -491,7 +505,8 @@ export class BSMCrypt01 extends ACrypt {
                 if (currentMeasurement["@context"] !== common.context)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent @context!"
+                        message:  "Inconsistent @context!",
+                        certainty: 0
                     };
 
                 let currentId = currentMeasurement["@id"];
@@ -515,7 +530,8 @@ export class BSMCrypt01 extends ACrypt {
                     {
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measurement identifications!"
+                            message:  "Inconsistent measurement identifications!",
+                            certainty: 0
                         };
                     }
 
@@ -526,7 +542,8 @@ export class BSMCrypt01 extends ACrypt {
                 if (previousTime !== "" && currentMeasurement.time <= previousTime)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement timestamps!"
+                        message:  "Inconsistent measurement timestamps!",
+                        certainty: 0
                     };
                 previousTime = currentMeasurement.time;
 
@@ -534,7 +551,8 @@ export class BSMCrypt01 extends ACrypt {
                 if (previousValue !== "" && currentMeasurement.value?.measuredValue?.value < previousValue)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement values!"
+                        message:  "Inconsistent measurement values!",
+                        certainty: 0
                     };
                 previousValue = currentMeasurement.value?.measuredValue?.value;
 
@@ -545,37 +563,43 @@ export class BSMCrypt01 extends ACrypt {
                     if (currentMeasurement.meterInfo?.firmwareVersion    !== common.meterFirmwareVersion)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent meterInfo.firmwareVersion!"
+                            message:  "Inconsistent meterInfo.firmwareVersion!",
+                            certainty: 0
                         };
 
                     if (currentMeasurement.meterInfo?.publicKey          !== common.meterPublicKey)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent meterInfo.publicKey!"
+                            message:  "Inconsistent meterInfo.publicKey!",
+                            certainty: 0
                         };
 
                     if (currentMeasurement.meterInfo?.meterId            !== common.meterId)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent meterInfo.meterId!"
+                            message:  "Inconsistent meterInfo.meterId!",
+                            certainty: 0
                         };
 
                     if (currentMeasurement.meterInfo?.meterId            !== currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name === "MA1")[0]?.measuredValue?.value)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent meterInfo.meterId!"
+                            message:  "Inconsistent meterInfo.meterId!",
+                            certainty: 0
                         };
 
                     if (currentMeasurement.meterInfo?.manufacturer       !== common.meterManufacturer)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent meterInfo.manufacturer!"
+                            message:  "Inconsistent meterInfo.manufacturer!",
+                            certainty: 0
                         };
 
                     if (currentMeasurement.meterInfo?.type               !== common.meterType)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent meterInfo.type!"
+                            message:  "Inconsistent meterInfo.type!",
+                            certainty: 0
                         };
 
                 }
@@ -585,7 +609,8 @@ export class BSMCrypt01 extends ACrypt {
                     if (currentMeasurement.operatorInfo                  !== common.operatorInfo)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent operatorInfo!"
+                            message:  "Inconsistent operatorInfo!",
+                            certainty: 0
                         };
                 }
 
@@ -595,19 +620,22 @@ export class BSMCrypt01 extends ACrypt {
                     if (currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('contract-id:')).length == 0)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent contract information!"
+                            message:  "Inconsistent contract information!",
+                            certainty: 0
                         };
 
                     if (currentMeasurement.contract.id                   !== common.contractId)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent contract.id!"
+                            message:  "Inconsistent contract.id!",
+                            certainty: 0
                         };
 
                     if (currentMeasurement.contract.type                 !== common.contractType)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent contract.type!"
+                            message:  "Inconsistent contract.type!",
+                            certainty: 0
                         };
 
                     let contractInfo = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('contract-id:'))[0]?.measuredValue?.value;
@@ -618,13 +646,15 @@ export class BSMCrypt01 extends ACrypt {
                         if ( currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contractType + ":" + common.contractId)
                             return {
                                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:  "Inconsistent contract information!"
+                                message:  "Inconsistent contract information!",
+                                certainty: 0
                             };
 
                         if (!currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contractId)
                             return {
                                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:  "Inconsistent contract information!"
+                                message:  "Inconsistent contract information!",
+                                certainty: 0
                             };
 
                     }
@@ -646,13 +676,15 @@ export class BSMCrypt01 extends ACrypt {
                     if (measurand.id !== common.valueMeasurandId || measurand.id !== rcrInAdditional.measurand.id)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measurand.id!"
+                            message:  "Inconsistent measurand.id!",
+                            certainty: 0
                         };
 
                     if (measurand.name !== common.valueMeasurandName || measurand.name !== rcrInAdditional.measurand.name)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measurand.name!"
+                            message:  "Inconsistent measurand.name!",
+                            certainty: 0
                         };
 
                 }
@@ -665,31 +697,36 @@ export class BSMCrypt01 extends ACrypt {
                     if (measuredValue.value !== rcrInAdditional.measuredValue.value)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measuredValue.value!"
+                            message:  "Inconsistent measuredValue.value!",
+                            certainty: 0
                         };
 
                     if (measuredValue.scale !== common.measuredValueScale || measuredValue.scale !== rcrInAdditional.measuredValue.scale)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measuredValue.scale!"
+                            message:  "Inconsistent measuredValue.scale!",
+                            certainty: 0
                         };
 
                     if (measuredValue.unit !== common.measuredValueUnit || measuredValue.unit !== rcrInAdditional.measuredValue.unit)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measuredValue.unit!"
+                            message:  "Inconsistent measuredValue.unit!",
+                            certainty: 0
                         };
 
                     if (measuredValue.unitEncoded !== common.measuredValueUnitEncoded || measuredValue.unitEncoded !== rcrInAdditional.measuredValue.unitEncoded)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measuredValue.unitEncoded!"
+                            message:  "Inconsistent measuredValue.unitEncoded!",
+                            certainty: 0
                         };
 
                     if (measuredValue.valueType !== common.measuredValueValueType || measuredValue.valueType !== rcrInAdditional.measuredValue.valueType)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measuredValue.valueType!"
+                            message:  "Inconsistent measuredValue.valueType!",
+                            certainty: 0
                         };
 
                 }
@@ -700,7 +737,8 @@ export class BSMCrypt01 extends ACrypt {
                     if (currentMeasurement.chargePoint?.softwareVersion  !== common.chargePointSoftwareVersion)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent chargePoint.softwareVersion!"
+                            message:  "Inconsistent chargePoint.softwareVersion!",
+                            certainty: 0
                         };
                 }
 
@@ -715,7 +753,8 @@ export class BSMCrypt01 extends ACrypt {
                     if (evse__id !== 'unknown' && EVSEId !== evse__id)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent EVSE identification!"
+                            message:  "Inconsistent EVSE identification!",
+                            certainty: 0
                         };
 
                 }
@@ -731,13 +770,15 @@ export class BSMCrypt01 extends ACrypt {
                     if (ExpectedCscSwVersion !== null && ExpectedCscSwVersion !== csc_sw_version)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Unexpected charging station controller software version!"
+                            message:  "Unexpected charging station controller software version!",
+                            certainty: 0
                         };
 
                     if (previousCscSwVersion !== null && previousCscSwVersion !== csc_sw_version)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent charging station controller software version!"
+                            message:  "Inconsistent charging station controller software version!",
+                            certainty: 0
                         };
 
                     previousCscSwVersion = csc_sw_version;
@@ -791,7 +832,8 @@ export class BSMCrypt01 extends ACrypt {
                 if (previousRCR !== -1 && RCR[4] < previousRCR)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement value!"
+                        message:  "Inconsistent measurement value!",
+                        certainty: 0
                     };
                 previousRCR = RCR[4];
 
@@ -799,14 +841,16 @@ export class BSMCrypt01 extends ACrypt {
                 if (RCnt !== currentMeasurement.measurementId)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement identification!"
+                        message:  "Inconsistent measurement identification!",
+                        certainty: 0
                     };
 
 
                 if (previousRCnt !== -1 && RCnt != previousRCnt + 1)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement snapshot counter!"
+                        message:  "Inconsistent measurement snapshot counter!",
+                        certainty: 0
                     };
                 previousRCnt = RCnt;
 
@@ -814,7 +858,8 @@ export class BSMCrypt01 extends ACrypt {
                 if (previousOS !== -1 && OS <= previousOS)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement operation-seconds counter!"
+                        message:  "Inconsistent measurement operation-seconds counter!",
+                        certainty: 0
                     };
                 previousOS = OS;
 
@@ -822,7 +867,8 @@ export class BSMCrypt01 extends ACrypt {
                 if (previousEpoch !== -1 && Epoch <= previousEpoch)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement epochs!"
+                        message:  "Inconsistent measurement epochs!",
+                        certainty: 0
                     };
                 previousEpoch = Epoch;
 
@@ -834,14 +880,16 @@ export class BSMCrypt01 extends ACrypt {
                 if (currentMeasurement.time !== measurementTimestamp3)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement timestamp!"
+                        message:  "Inconsistent measurement timestamp!",
+                        certainty: 0
                     };
 
 
                 if (common.MA1 !== null && MA1 !== common.MA1)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement meter address 1!"
+                        message:  "Inconsistent measurement meter address 1!",
+                        certainty: 0
                     };
                 common.MA1 = MA1;
 
@@ -849,7 +897,8 @@ export class BSMCrypt01 extends ACrypt {
                 if (common.epochSetCnt !== -1 && EpochSetCnt !== common.epochSetCnt)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement epoch set counter!"
+                        message:  "Inconsistent measurement epoch set counter!",
+                        certainty: 0
                     };
                 common.epochSetCnt = EpochSetCnt;
 
@@ -857,7 +906,8 @@ export class BSMCrypt01 extends ACrypt {
                 if (common.epochSetOS !== -1 && EpochSetOS !== common.epochSetOS)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement epoch set operation-seconds!"
+                        message:  "Inconsistent measurement epoch set operation-seconds!",
+                        certainty: 0
                     };
                 common.epochSetOS = EpochSetOS;
 
@@ -897,7 +947,8 @@ export class BSMCrypt01 extends ACrypt {
             if (common.dataSets[0].TypParsed !== "START" && common.dataSets[0].TypParsed !== "TURN ON")
                 return {
                     status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:  "Invalid start snapshot!"
+                    message:  "Invalid start snapshot!",
+                    certainty: 0
                 };
 
             for (let i=1; i<common.dataSets.length-1; i++)
@@ -905,14 +956,16 @@ export class BSMCrypt01 extends ACrypt {
                 if (common.dataSets[i].TypParsed !== "CURRENT")
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Invalid intermediate snapshot!"
+                        message:  "Invalid intermediate snapshot!",
+                        certainty: 0
                     };
             }
 
             if (common.dataSets[n].TypParsed !== "END"   && common.dataSets[n].TypParsed !== "TURN OFF")
                 return {
                     status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:  "Invalid end snapshot!"
+                    message:  "Invalid end snapshot!",
+                    certainty: 0
                 };
 
             //#endregion
@@ -1283,7 +1336,8 @@ export class BSMCrypt01 extends ACrypt {
         {
             return {
                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
+                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                certainty: 0
             }
         }
 
@@ -1307,7 +1361,8 @@ export class BSMCrypt01 extends ACrypt {
     {
 
         return {
-            status: chargyInterfaces.SessionVerificationResult.UnknownSessionFormat
+            status:    chargyInterfaces.SessionVerificationResult.UnknownSessionFormat,
+            certainty: 0
         }
 
     }
@@ -1357,7 +1412,8 @@ export class BSMCrypt01 extends ACrypt {
         }
 
         return {
-            status: sessionResult
+            status:    sessionResult,
+            certainty: 0
         }
 
     }

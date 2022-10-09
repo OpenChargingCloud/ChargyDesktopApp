@@ -4,6 +4,42 @@
         "en": "General Error!"
     },
 
+    "NoChargeTransparencyRecordsFound": {
+        "de": "Keine Transparenzdatensätze gefunden!",
+        "en": "No charge transparency records found!"
+    },
+
+    "UnknownOrInvalidChargeTransparencyRecord": {
+        "de": "Unbekannter oder ungültiger Transparenzdatensatz!",
+        "en": "Unknown or invalid charge transparency record!"
+    },
+
+    "UnknownOrInvalidXMLChargeTransparencyFormat": {
+        "de": "Unbekanntes oder ungültiges XML-Transparenzdatensatzformat!",
+        "en": "Unknown or invalid XML charge transparency format!"
+    },
+
+    "UnknownOrInvalidJSONChargeTransparencyFormat": {
+        "de": "Unbekanntes oder ungültiges JSON-Transparenzdatensatzformat!",
+        "en": "Unknown or invalid JSON charge transparency format!"
+    },
+
+    "PublicKeyNotFound": {
+        "de": "Kein PublicKey gefunden!",
+        "en": "No public key found!"
+    },
+
+    "UnknownOrInvalidPublicKeyFormat": {
+        "de": "Unbekanntes oder ungültiges PublicKey-Format!",
+        "en": "Unknown or invalid public key format!"
+    },
+
+    "UnknownOrInvalidChargingSessionFormat": {
+        "de": "Unbekanntes oder ungültiges Ladevorgangsformat!",
+        "en": "Unknown or invalid charging session format!"
+    },
+
+
 
     "MissingOrInvalidEVSEId": {
         "de": "Fehlende oder ungültige EVSE Id!",

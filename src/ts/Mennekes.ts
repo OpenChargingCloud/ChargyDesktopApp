@@ -28,15 +28,17 @@ export class Mennekes {
         {
 
             return {
-                status: chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                certainty: 0
             }
 
         }
         catch (exception)
         {
             return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                certainty: 0
             }
         }
 

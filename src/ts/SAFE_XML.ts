@@ -93,8 +93,9 @@ export class SAFEXML  {
 
                                 default:
                                     return {
-                                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                        message:  "Unkown signed data encoding within the given SAFE XML!"
+                                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                        message:   "Unkown signed data encoding within the given SAFE XML!",
+                                        certainty: 0
                                     }
 
                             }
@@ -107,8 +108,9 @@ export class SAFEXML  {
                                         commonFormat = "alfen";
                                     else if (commonFormat != "alfen")
                                         return {
-                                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                            message:  "Invalid mixture of different signed data formats within the given SAFE XML!"
+                                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                            message:   "Invalid mixture of different signed data formats within the given SAFE XML!",
+                                            certainty: 0
                                         }
                                     break;
 
@@ -117,23 +119,26 @@ export class SAFEXML  {
                                         commonFormat = "ocmf";
                                     else if (commonFormat != "ocmf")
                                         return {
-                                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                            message:  "Invalid mixture of different signed data formats within the given SAFE XML!"
+                                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                            message:   "Invalid mixture of different signed data formats within the given SAFE XML!",
+                                            certainty: 0
                                         }
                                     break;
 
                                 default:
                                     return {
-                                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                        message:  "Unkown signed data formats within the given SAFE XML!"
+                                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                        message:   "Unkown signed data formats within the given SAFE XML!",
+                                        certainty: 0
                                     }
 
                             }
 
                             if (chargyLib.IsNullOrEmpty(signedDataValue))
                                 return {
-                                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:  "The signed data value within the given SAFE XML must not be empty!"
+                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                    message:   "The signed data value within the given SAFE XML must not be empty!",
+                                    certainty: 0
                                 }
 
                             signedValues.push(signedDataValue);
@@ -141,8 +146,9 @@ export class SAFEXML  {
                         }
                         else
                             return {
-                                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:  "The signed data tag within the given SAFE XML must not be empty!"
+                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                message:   "The signed data tag within the given SAFE XML must not be empty!",
+                                certainty: 0
                             }
 
                         //#endregion
@@ -179,16 +185,18 @@ export class SAFEXML  {
 
                                 default:
                                     return {
-                                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                        message:  "Unkown public key encoding within the given SAFE XML!"
+                                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                        message:   "Unkown public key encoding within the given SAFE XML!",
+                                        certainty: 0
                                     }
 
                             }
 
                             if (chargyLib.IsNullOrEmpty(publicKeyValue))
                                 return {
-                                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:  "The public key within the given SAFE XML must not be empty!"
+                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                    message:   "The public key within the given SAFE XML must not be empty!",
+                                    certainty: 0
                                 }
 
                             else if (commonPublicKey == "")
@@ -196,8 +204,9 @@ export class SAFEXML  {
 
                             else if (publicKeyValue != commonPublicKey)
                                 return {
-                                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:  "Invalid mixture of different public keys within the given SAFE XML!"
+                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                    message:   "Invalid mixture of different public keys within the given SAFE XML!",
+                                    certainty: 0
                                 }
 
                         }
@@ -220,15 +229,18 @@ export class SAFEXML  {
             }
 
             return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
+                certainty: 0
             }
 
         }
         catch (exception)
         {
             return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Exception occured: " + (exception instanceof Error ? exception.message : exception)
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                certainty: 0
             }
         }
 

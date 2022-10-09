@@ -1181,8 +1181,9 @@ export class ChargyApp {
         catch (exception)
         {
             this.doGlobalError({
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Unbekannter Transparenzdatensatz!"
+                status:    chargyInterfaces.SessionVerificationResult.UnknownSessionFormat,
+                message:   this.chargy.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
+                certainty: 0
             });
         }
     }
@@ -2455,8 +2456,9 @@ export class ChargyApp {
         {
             this.doGlobalError({
                 status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:    "Ungültiger Transparenzdatensatz!",
-                exception:  exception
+                message:    this.chargy.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
+                exception:  exception,
+                certainty:  0
             });
         }
 

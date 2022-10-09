@@ -96,6 +96,7 @@ export interface CheckMeterPublicKeySignatureFunc {
 
 export interface IChargeTransparencyRecord
 {
+
     "@id":                      string;
     "@context":                 string;
     begin?:                     string;
@@ -111,6 +112,16 @@ export interface IChargeTransparencyRecord
     mediationServices?:         Array<IMediationService>;
     verificationResult?:        ISessionCryptoResult;
     invalidDataSets?:           Array<IExtendedFileInfo>;
+
+    // How sure we are that this result is correct!
+    // (JSON) transparency records might not always include an unambiguously
+    // format identifier. So multiple chargy parsers might be candidates, but
+    // hopefully one will be the best matching parser.
+    certainty:                  number;
+
+    warnings?:                  Array<String>;
+    errors?:                    Array<String>;
+
 }
 
 export interface IContract
@@ -135,6 +146,7 @@ export interface IPublicKeyInfo
     algorithm:                  string|IOIDInfo;
     value:                      string;
     signatures?:                Array<IPublicKeysignature>;
+    certainty:                  number;
 }
 
 export interface IPublicKeysignature
@@ -447,9 +459,9 @@ export interface ISessionCryptoResult
     // (JSON) transparency records might not always include an unambiguously
     // format identifier. So multiple chargy parsers might be candidates, but
     // hopefully one will be the best matching parser.
-    certainty?:                 number;
+    certainty:                  number;
 
-    warings?:                   Array<String>;
+    warnings?:                  Array<String>;
     errors?:                    Array<String>;
 
 }
@@ -530,7 +542,9 @@ export enum InformationRelevance {
     Important
 }
 
+// Remember to update main.cjs "setVerificationResult" when you edit this enum!
 export enum SessionVerificationResult {
+    NoChargeTransparencyRecordsFound,
     UnknownSessionFormat,
     InvalidSessionFormat,
     PublicKeyNotFound,
