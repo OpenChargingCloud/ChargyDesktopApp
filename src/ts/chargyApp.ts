@@ -26,12 +26,6 @@ import * as L                 from 'leaflet';
 // import { readSync } from "fs";
 // import { version } from "punycode";
 
-export function OpenLink(url: string)
-{
-    if (url.startsWith("https://"))
-        require('electron').shell.openExternal(url);
-}
-
 export class ChargyApp {
 
     //#region Data

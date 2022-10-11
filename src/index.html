@@ -35,6 +35,13 @@
     <link rel="stylesheet" href="css/chargy.css"                  type="text/css" />
 
     <script type="module" src="build/chargyApp-bundle.js"></script>
+    <script>
+        function OpenLink(url)
+        {
+            if (url.startsWith("https://"))
+                require('electron').shell.openExternal(url);
+        }
+    </script>
 
   </head>
 
