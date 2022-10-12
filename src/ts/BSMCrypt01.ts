@@ -110,253 +110,17 @@ export class BSMCrypt01 extends ACrypt {
                                                  Measurements:          Array<any>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
-        if (!Array.isArray(Measurements) || Measurements.length < 2) return {
+        if (!Array.isArray(Measurements)) return {
             status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-            message:   "Invalid signed meter values format!",
+            message:   this.chargy.GetLocalizedMessage("MissingOrInvalidSignedMeterValues"),
             certainty: 0
         }
 
-        //#region Documentation
-
-        // {
-        //     "@context":    "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1",
-        //     "@id":         "001BZR1521070006-22979",
-        //     "time":        "2021-01-01T10:05:52+01:00",
-        //     "meterInfo": {
-        //         "firmwareVersion":  "1.9:32CA:AFF4, 6d1dd3c",
-        //         "publicKey":        "3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254",
-        //         "meterId":          "001BZR1521070006",
-        //         "manufacturer":     "BAUER Electronic",
-        //         "type":             "BSM-WS36A-H01-1311-0000"
-        //     },
-        //     "contract": {
-        //         "id":                "12345678abcdef",
-        //         "type":              "rfid",
-        //     },
-        //     "measurementId":         22979,
-        //     "value": {
-        //         "measurand": {
-        //             "id":            "1-0:1.8.0*198",
-        //             "name":          "RCR"
-        //         },
-        //         "measuredValue": {
-        //             "scale":         0,
-        //             "unit":          "WATT_HOUR",
-        //             "unitEncoded":   30,
-        //             "value":         160,
-        //             "valueType":     "UnsignedInteger32"
-        //         }
-        //     },
-
-        //#region Additional values
-
-        //   "additionalValues": [
-        //     {
-        //       "measurand": {
-        //         "name": "Typ"
-        //       },
-        //       "measuredValue": {
-        //         "scale": 0,
-        //         "unitEncoded": 255,
-        //         "value": 2,
-        //         "valueType": "UnsignedInteger32"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "id": "1-0:1.8.0*198",
-        //         "name": "RCR"
-        //       },
-        //       "measuredValue": {
-        //         "scale": 0,
-        //         "unit": "WATT_HOUR",
-        //         "unitEncoded": 30,
-        //         "value": 160,
-        //         "valueType": "UnsignedInteger32"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "id": "1-0:1.8.0*255",
-        //         "name": "TotWhImp"
-        //       },
-        //       "measuredValue": {
-        //         "scale": 0,
-        //         "unit": "WATT_HOUR",
-        //         "unitEncoded": 30,
-        //         "value": 52610,
-        //         "valueType": "UnsignedInteger32"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "id": "1-0:1.7.0*255",
-        //         "name": "W"
-        //       },
-        //       "measuredValue": {
-        //         "scale": 1,
-        //         "unit": "WATT",
-        //         "unitEncoded": 27,
-        //         "value": 0,
-        //         "valueType": "Integer32"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "id": "1-0:0.0.0*255",
-        //         "name": "MA1"
-        //       },
-        //       "measuredValue": {
-        //         "unitEncoded": 255,
-        //         "value": "001BZR1521070006",
-        //         "valueType": "String",
-        //         "valueEncoding": "ISO-8859-1"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "name": "RCnt"
-        //       },
-        //       "measuredValue": {
-        //         "scale": 0,
-        //         "unitEncoded": 255,
-        //         "value": 22979,
-        //         "valueType": "UnsignedInteger32"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "name": "OS"
-        //       },
-        //       "measuredValue": {
-        //         "scale": 0,
-        //         "unit": "SECOND",
-        //         "unitEncoded": 7,
-        //         "value": 1867722,
-        //         "valueType": "UnsignedInteger32"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "name": "Epoch"
-        //       },
-        //       "measuredValue": {
-        //         "scale": 0,
-        //         "unit": "SECOND",
-        //         "unitEncoded": 7,
-        //         "value": 1609491952,
-        //         "valueType": "UnsignedInteger32"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "name": "TZO"
-        //       },
-        //       "measuredValue": {
-        //         "scale": 0,
-        //         "unit": "MINUTE",
-        //         "unitEncoded": 6,
-        //         "value": 60,
-        //         "valueType": "Integer32"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "name": "EpochSetCnt"
-        //       },
-        //       "measuredValue": {
-        //         "scale": 0,
-        //         "unitEncoded": 255,
-        //         "value": 2814,
-        //         "valueType": "UnsignedInteger32"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "name": "EpochSetOS"
-        //       },
-        //       "measuredValue": {
-        //         "scale": 0,
-        //         "unit": "SECOND",
-        //         "unitEncoded": 7,
-        //         "value": 1867371,
-        //         "valueType": "UnsignedInteger32"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "name": "DI"
-        //       },
-        //       "measuredValue": {
-        //         "scale": 0,
-        //         "unitEncoded": 255,
-        //         "value": 1,
-        //         "valueType": "UnsignedInteger32"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "name": "DO"
-        //       },
-        //       "measuredValue": {
-        //         "scale": 0,
-        //         "unitEncoded": 255,
-        //         "value": 0,
-        //         "valueType": "UnsignedInteger32"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "name": "Meta1"
-        //       },
-        //       "measuredValue": {
-        //         "unitEncoded": 255,
-        //         "value": "contract-id: rfid:12345678abcdef",
-        //         "valueType": "String",
-        //         "valueEncoding": "ISO-8859-1"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "name": "Meta2"
-        //       },
-        //       "measuredValue": {
-        //         "unitEncoded": 255,
-        //         "value": "evse-id: DE*BDO*E8025334492*2",
-        //         "valueType": "String",
-        //         "valueEncoding": "ISO-8859-1"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "name": "Meta3"
-        //       },
-        //       "measuredValue": {
-        //         "unitEncoded": 255,
-        //         "value": "csc-sw-version: v1.2.34",
-        //         "valueType": "String",
-        //         "valueEncoding": "ISO-8859-1"
-        //       }
-        //     },
-        //     {
-        //       "measurand": {
-        //         "name": "Evt"
-        //       },
-        //       "measuredValue": {
-        //         "scale": 0,
-        //         "unitEncoded": 255,
-        //         "value": 0,
-        //         "valueType": "UnsignedInteger32"
-        //       }
-        //     }
-        //   ],
-
-        //#endregion
-
-        //     "signature": "3044022062f36e0583471d4f438da9da549be550cdbdfa4f9d77f3d4c53339f18c66850a02200e997ccb47cb33b1fb6c504b081b097cb65231b041c9f882122cc8298f575501"
-        // }
-
-        //#endregion
+        if (Measurements.length < 2) return {
+            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+            message:   this.chargy.GetLocalizedMessage("AtLeastTwoSignedMeterValuesRequired"),
+            certainty: 0
+        }
 
         try
         {
@@ -364,88 +128,90 @@ export class BSMCrypt01 extends ACrypt {
             //#region Verify values
 
             let common = {
-                context:                     Measurements[0]["@context"],
-                meterFirmwareVersion:        Measurements[0].meterInfo?.firmwareVersion,
-                meterPublicKey:              Measurements[0].meterInfo?.publicKey,
-                meterId:                     Measurements[0].meterInfo?.meterId,
-                meterManufacturer:           Measurements[0].meterInfo?.manufacturer,
-                meterType:                   Measurements[0].meterInfo?.type,
-                operatorInfo:                Measurements[0].operatorInfo,
-                contractId:                  Measurements[0].contract?.id,
-                contractType:                Measurements[0].contract?.type,
-                valueMeasurandId:            Measurements[0].value?.measurand?.id, // OBIS Id
-                valueMeasurandName:          Measurements[0].value?.measurand?.name,
-                measuredValueScale:          Measurements[0].value?.measuredValue?.scale,
-                measuredValueUnit:           Measurements[0].value?.measuredValue?.unit,
-                measuredValueUnitEncoded:    Measurements[0].value?.measuredValue?.unitEncoded,
-                measuredValueValueType:      Measurements[0].value?.measuredValue?.valueType,
-                chargePointSoftwareVersion:  Measurements[0].chargePoint?.softwareVersion,
-                MA1:                         null as string|null,
-                epochSetCnt:                 -1,
-                epochSetOS:                  -1,
-                dataSets:                    [] as any[]
+                context:                          Measurements[0]["@context"],
+                meterFirmwareVersion:             Measurements[0].meterInfo?.firmwareVersion,
+                meterPublicKey:                   Measurements[0].meterInfo?.publicKey,
+                meterId:                          Measurements[0].meterInfo?.meterId,
+                meterManufacturer:                Measurements[0].meterInfo?.manufacturer,
+                meterType:                        Measurements[0].meterInfo?.type,
+                operatorInfo:                     Measurements[0].operatorInfo,
+                contractId:                       Measurements[0].contract?.id,
+                contractType:                     Measurements[0].contract?.type,
+                value_measurandId:                Measurements[0].value?.measurand?.id, // OBIS Id
+                value_measurandName:              Measurements[0].value?.measurand?.name,
+                value_measuredValueScale:         Measurements[0].value?.measuredValue?.scale,
+                value_measuredValueUnit:          Measurements[0].value?.measuredValue?.unit,
+                value_measuredValueUnitEncoded:   Measurements[0].value?.measuredValue?.unitEncoded,
+                value_measuredValueValueType:     Measurements[0].value?.measuredValue?.valueType,
+                value_displayedFormatPrefix:      "kilo",
+                value_displayedFormatPrecision:   2,
+                chargePointSoftwareVersion:       Measurements[0].chargePoint?.softwareVersion,
+                MA1:                              null as string|null,
+                epochSetCnt:                      -1,
+                epochSetOS:                       -1,
+                dataSets:                         [] as any[]
             };
 
 
             if (!chargyLib.isMandatoryString(common.context)) return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Missing or invalid measurements format identification!",
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_JSONContextP", 1),
                 certainty: 0
             }
 
             if (!chargyLib.isMandatoryString(common.meterFirmwareVersion)) return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid meter firmeware version!",
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_FirmwareVersionP", 1),
                 certainty: 0
             }
 
             if (!chargyLib.isMandatoryString(common.meterPublicKey)) return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid meter public key!",
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_PublicKeyP", 1),
                 certainty: 0
             }
 
             if (!chargyLib.isMandatoryString(common.meterId)) return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid meter identification!",
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_MeterIdP", 1),
                 certainty: 0
             }
 
             if (!chargyLib.isMandatoryString(common.meterManufacturer)) return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid meter manufacturer!",
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_ManufacturerP", 1),
                 certainty: 0
             }
 
             if (!chargyLib.isMandatoryString(common.meterType)) return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid meter type!",
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_TypeP", 1),
                 certainty: 0
             }
 
 
             if (!chargyLib.isMandatoryString(common.contractId)) return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid contract identification!",
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_IdP", 1),
                 certainty: 0
             }
 
             if (!chargyLib.isOptionalString(common.contractType)) return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid contract type!",
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TypeP", 1),
                 certainty: 0
             }
 
 
-            if (!chargyLib.isMandatoryString(common.valueMeasurandId)) return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid measurand identification!",
+            if (!chargyLib.isMandatoryString(common.value_measurandId)) return {
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   "Invalid value measurand identification!",
                 certainty: 0
             }
 
-            if (!chargyLib.isMandatoryString(common.valueMeasurandName)) return {
-                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:  "Invalid measurand name!",
+            if (!chargyLib.isMandatoryString(common.value_measurandName)) return {
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   "Invalid value measurand name!",
                 certainty: 0
             }
 
@@ -493,19 +259,23 @@ export class BSMCrypt01 extends ACrypt {
             let previousOS              = -1;
             let previousEpoch           = -1;
 
-	    let previousCscSwVersion: string|null = null;
+            let previousCscSwVersion: string|null = null;
 
             //#endregion
 
+            let measurementCounter = 0;
+
             for (const currentMeasurement of Measurements)
             {
+
+                measurementCounter++;
 
                 //#region Validate common values
 
                 if (currentMeasurement["@context"] !== common.context)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent @context!",
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_JSONContextP", measurementCounter),
                         certainty: 0
                     };
 
@@ -529,8 +299,8 @@ export class BSMCrypt01 extends ACrypt {
                         parseInt(previousParts[1], 10) >= parseInt(currentParts[1], 10))
                     {
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measurement identifications!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeasurementIdP", measurementCounter),
                             certainty: 0
                         };
                     }
@@ -541,8 +311,8 @@ export class BSMCrypt01 extends ACrypt {
 
                 if (previousTime !== "" && currentMeasurement.time <= previousTime)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement timestamps!",
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_TimestampP", measurementCounter),
                         certainty: 0
                     };
                 previousTime = currentMeasurement.time;
@@ -550,8 +320,8 @@ export class BSMCrypt01 extends ACrypt {
 
                 if (previousValue !== "" && currentMeasurement.value?.measuredValue?.value < previousValue)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement values!",
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   "Inconsistent measurement values!",
                         certainty: 0
                     };
                 previousValue = currentMeasurement.value?.measuredValue?.value;
@@ -562,8 +332,8 @@ export class BSMCrypt01 extends ACrypt {
 
                     if (currentMeasurement.meterInfo?.firmwareVersion    !== common.meterFirmwareVersion)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent meterInfo.firmwareVersion!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   "Inconsistent meterInfo.firmwareVersion!",
                             certainty: 0
                         };
 
@@ -673,14 +443,14 @@ export class BSMCrypt01 extends ACrypt {
 
                     const measurand = currentMeasurement.value.measurand
 
-                    if (measurand.id !== common.valueMeasurandId || measurand.id !== rcrInAdditional.measurand.id)
+                    if (measurand.id !== common.value_measurandId || measurand.id !== rcrInAdditional.measurand.id)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measurand.id!",
                             certainty: 0
                         };
 
-                    if (measurand.name !== common.valueMeasurandName || measurand.name !== rcrInAdditional.measurand.name)
+                    if (measurand.name !== common.value_measurandName || measurand.name !== rcrInAdditional.measurand.name)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measurand.name!",
@@ -701,28 +471,28 @@ export class BSMCrypt01 extends ACrypt {
                             certainty: 0
                         };
 
-                    if (measuredValue.scale !== common.measuredValueScale || measuredValue.scale !== rcrInAdditional.measuredValue.scale)
+                    if (measuredValue.scale !== common.value_measuredValueScale || measuredValue.scale !== rcrInAdditional.measuredValue.scale)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.scale!",
                             certainty: 0
                         };
 
-                    if (measuredValue.unit !== common.measuredValueUnit || measuredValue.unit !== rcrInAdditional.measuredValue.unit)
+                    if (measuredValue.unit !== common.value_measuredValueUnit || measuredValue.unit !== rcrInAdditional.measuredValue.unit)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.unit!",
                             certainty: 0
                         };
 
-                    if (measuredValue.unitEncoded !== common.measuredValueUnitEncoded || measuredValue.unitEncoded !== rcrInAdditional.measuredValue.unitEncoded)
+                    if (measuredValue.unitEncoded !== common.value_measuredValueUnitEncoded || measuredValue.unitEncoded !== rcrInAdditional.measuredValue.unitEncoded)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.unitEncoded!",
                             certainty: 0
                         };
 
-                    if (measuredValue.valueType !== common.measuredValueValueType || measuredValue.valueType !== rcrInAdditional.measuredValue.valueType)
+                    if (measuredValue.valueType !== common.value_measuredValueValueType || measuredValue.valueType !== rcrInAdditional.measuredValue.valueType)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.valueType!",
@@ -1007,12 +777,12 @@ export class BSMCrypt01 extends ACrypt {
                          "phenomena": [
                              {
                                 "name":              "Real Energy Imported",
-                                "obis":              common.valueMeasurandId,
-                                "unit":              common.measuredValueUnit,
-                                "unitEncoded":       common.measuredValueUnitEncoded,
-                                "valueType":         common.measuredValueValueType,
+                                "obis":              common.value_measurandId,
+                                "unit":              common.value_measuredValueUnit,
+                                "unitEncoded":       common.value_measuredValueUnitEncoded,
+                                "valueType":         common.value_measuredValueValueType,
                                 "value":             "value",
-                                "scale":             common.measuredValueScale
+                                "scale":             common.value_measuredValueScale
                              },
                              {
                                 "name":              "Total Watt-hours Imported",

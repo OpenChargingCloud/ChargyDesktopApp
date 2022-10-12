@@ -96,6 +96,11 @@
         "en": "Missing or invalid signed meter values!"
     },
 
+    "AtLeastTwoSignedMeterValuesRequired": {
+        "de": "Mindestens zwei signierte Messwerte werden benötigt!",
+        "en": "At least two signed meter values are required!"
+    },
+
     "MissingOrInvalidSignedMeterValueP": {
         "de": "Fehlender oder ungültiger %p. signierter Messwert!",
         "en": "Missing or invalid %p. signed meter value!"
@@ -107,7 +112,22 @@
     },
 
 
+    "MissingOrInvalid_SignedMeterValue_JSONContextP": {
+        "de": "Fehlende oder ungültige Datenformatkennzeichnung (JSON Context) des %p. signierten Messwertes!",
+        "en": "Missing or invalid measurement identification (JSON context) of the %p. signed meter value!"
+    },
+
+    "Inconsistent_SignedMeterValue_JSONContextP": {
+        "de": "Inkonsistente Datenformatkennzeichnung (JSON Context) des %p. signierten Messwertes!",
+        "en": "Inconsistent measurement identification (JSON context) of the %p. signed meter value!"
+    },
+
     "MissingOrInvalid_SignedMeterValue_MeasurementIdP": {
+        "de": "Fehlende oder ungültige Messwert-Identifikation des %p. signierten Messwertes!",
+        "en": "Missing or invalid measurement identification of the %p. signed meter value!"
+    },
+
+    "Inconsistent_SignedMeterValue_MeasurementIdP": {
         "de": "Fehlende oder ungültige Messwert-Identifikation des %p. signierten Messwertes!",
         "en": "Missing or invalid measurement identification of the %p. signed meter value!"
     },
@@ -115,6 +135,11 @@
     "MissingOrInvalid_SignedMeterValue_TimestampP": {
         "de": "Fehlender oder ungültiger Zeitstempel des %p. signierten Messwertes!",
         "en": "Missing or invalid measurement timestamp of the %p. signed meter value!"
+    },
+
+    "Inconsistent_SignedMeterValue_TimestampP": {
+        "de": "Inkonsistenter Zeitstempel des %p. signierten Messwertes!",
+        "en": "Inconsistent measurement timestamp of the %p. signed meter value!"
     },
 
     "MissingOrInvalid_SignedMeterValue_TransactionIdP": {
