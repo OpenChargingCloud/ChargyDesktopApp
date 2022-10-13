@@ -537,12 +537,15 @@ export class BSMCrypt01 extends ACrypt {
 
                     const csc_sw_version = (signedCSCSWVersion[0].measuredValue.value as String).replace('csc-sw-version:', '').trim();
 
-                    if (ExpectedCscSwVersion !== null && ExpectedCscSwVersion !== csc_sw_version)
-                        return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Unexpected charging station controller software version!",
-                            certainty: 0
-                        };
+                    // Just check that all measurements are done with the same
+                    // charging controller software version.
+                    //
+                    // The document header also contains this information but
+                    // in a combined form of the actual version and a build
+                    // timestamp. As this information is not signed and just
+                    // informative, we are ignoring it as a sound comparison of
+                    // software versions is hard to do when it comes to suffixs
+                    // for release candidates, betas, ...
 
                     if (previousCscSwVersion !== null && previousCscSwVersion !== csc_sw_version)
                         return {
