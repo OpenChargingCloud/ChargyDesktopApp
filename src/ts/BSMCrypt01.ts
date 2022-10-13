@@ -514,12 +514,16 @@ export class BSMCrypt01 extends ACrypt {
 
                 }
 
-                if (currentMeasurement.chargePoint)
-                {
-                    if (currentMeasurement.chargePoint?.softwareVersion !== common.chargePoint_softwareVersion)
-                        warnings.push(this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"))
+                if (currentMeasurement.chargePoint) {
+                    if (currentMeasurement.chargePoint?.softwareVersion !== common.chargePoint_softwareVersion) return {
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"),
+                        certainty: 0
+                    };
                 }
 
+
+                //#region Find "evse-id:" within the "Meta" data blocks
 
                 let signedEVSEId = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('evse-id:'));
                 if (signedEVSEId.length == 1)
@@ -527,15 +531,17 @@ export class BSMCrypt01 extends ACrypt {
 
                     const evse__id = (signedEVSEId[0].measuredValue.value as String).replace('evse-id:', '').trim();
 
-                    if (evse__id !== 'unknown' && EVSEId !== evse__id)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessage("Inconsistent_EVSE_Identification"),
-                            certainty: 0
-                        };
+                    if (evse__id !== 'unknown' && EVSEId !== evse__id) return {
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   this.chargy.GetLocalizedMessage("Inconsistent_EVSE_Identification"),
+                        certainty: 0
+                    };
 
                 }
 
+                //#endregion
+
+                //#region Find "csc-sw-version:" within the "Meta" data blocks
 
                 let signedCSCSWVersion = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('csc-sw-version:'));
                 if (signedCSCSWVersion.length == 1)
@@ -543,23 +549,28 @@ export class BSMCrypt01 extends ACrypt {
 
                     const csc_sw_version = (signedCSCSWVersion[0]?.measuredValue?.value as String)?.replace('csc-sw-version:', '')?.trim();
 
-                    if (ExpectedCscSwVersion !== null && ExpectedCscSwVersion !== csc_sw_version)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"),
-                            certainty: 0
-                        };
+                    // Just check that all measurements are done with the same
+                    // charging controller software version.
+                    if (previousCscSwVersion !== null && previousCscSwVersion !== csc_sw_version) return {
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"),
+                        certainty: 0
+                    };
 
-                    if (previousCscSwVersion !== null && previousCscSwVersion !== csc_sw_version)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"),
-                            certainty: 0
-                        };
+                    // The document header also contains this information but
+                    // in a combined form of the actual version and a build
+                    // timestamp. As this information is not signed and just
+                    // informative, we are ignoring it as a sound comparison of
+                    // software versions is hard to do when it comes to suffixs
+                    // for release candidates, betas, ...
+                    if (ExpectedCscSwVersion !== null && ExpectedCscSwVersion !== csc_sw_version)
+                        warnings.push(this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"));
 
                     previousCscSwVersion = csc_sw_version;
 
                 }
+
+                //#endregion
 
                 //#endregion
 

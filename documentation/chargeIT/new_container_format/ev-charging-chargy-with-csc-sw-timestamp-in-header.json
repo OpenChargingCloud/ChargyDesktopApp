@@ -1,0 +1,485 @@
+{
+  "@context": "https://www.chargeit-mobility.com/contexts/charging-station-json-v1",
+  "@id": "29596515-a37d-433c-a217-4be8e9d090ed",
+  "chargePointInfo": {
+    "placeInfo": {
+      "geoLocation": {
+        "lat": 48.03552,
+        "lon": 10.50669
+      },
+      "address": {
+        "street": "Breitenbergstr. 2",
+        "town": "Mindelheim",
+        "zipCode": "87719"
+      }
+    },
+    "evseId": "DE*BDO*E8025334492*2"
+  },
+  "chargingStationInfo": {
+    "manufacturer": "chargeIT mobility GmbH",
+    "type": "CIT Lades\u00e4ule online",
+    "serialNumber": "2020-24-T-042",
+    "controllerSoftwareVersion": "v1.2.34-20221013152542",
+    "compliance": "See https://www.chargeit-mobility.com/wp-content/uploads/chargeIT-Baumusterpr%C3%BCfbescheinigung-Lades%C3%A4ule-Online.pdf for type examination certificate"
+  },
+  "signedMeterValues": [
+    {
+      "@context": "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1",
+      "@id": "001BZR1521070006-22978",
+      "time": "2021-01-01T10:00:27+01:00",
+      "meterInfo": {
+        "firmwareVersion": "1.9:32CA:AFF4, 6d1dd3c",
+        "publicKey": "3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254",
+        "meterId": "001BZR1521070006",
+        "manufacturer": "BAUER Electronic",
+        "type": "BSM-WS36A-H01-1311-0000"
+      },
+      "contract": {
+        "id": "12345678abcdef",
+        "type": "rfid"
+      },
+      "measurementId": 22978,
+      "value": {
+        "measurand": {
+          "id": "1-0:1.8.0*198",
+          "name": "RCR"
+        },
+        "measuredValue": {
+          "scale": 0,
+          "unit": "WATT_HOUR",
+          "unitEncoded": 30,
+          "value": 0,
+          "valueType": "UnsignedInteger32"
+        }
+      },
+      "additionalValues": [
+        {
+          "measurand": {
+            "name": "Typ"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 1,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:1.8.0*198",
+            "name": "RCR"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "WATT_HOUR",
+            "unitEncoded": 30,
+            "value": 0,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:1.8.0*255",
+            "name": "TotWhImp"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "WATT_HOUR",
+            "unitEncoded": 30,
+            "value": 52440,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:1.7.0*255",
+            "name": "W"
+          },
+          "measuredValue": {
+            "scale": 1,
+            "unit": "WATT",
+            "unitEncoded": 27,
+            "value": 0,
+            "valueType": "Integer32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:0.0.0*255",
+            "name": "MA1"
+          },
+          "measuredValue": {
+            "value": "001BZR1521070006",
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "RCnt"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 22978,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "OS"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "SECOND",
+            "unitEncoded": 7,
+            "value": 1867397,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Epoch"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "SECOND",
+            "unitEncoded": 7,
+            "value": 1609491627,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "TZO"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "MINUTE",
+            "unitEncoded": 6,
+            "value": 60,
+            "valueType": "Integer32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "EpochSetCnt"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 2814,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "EpochSetOS"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "SECOND",
+            "unitEncoded": 7,
+            "value": 1867371,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "DI"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 1,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "DO"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 0,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Meta1"
+          },
+          "measuredValue": {
+            "value": "contract-id: rfid:12345678abcdef",
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Meta2"
+          },
+          "measuredValue": {
+            "value": "evse-id: DE*BDO*E8025334492*2",
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Meta3"
+          },
+          "measuredValue": {
+            "value": "csc-sw-version: v1.2.34",
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Evt"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 0,
+            "valueType": "UnsignedInteger32"
+          }
+        }
+      ],
+      "signature": "3046022100abf6b2c50a4021f58d075e1df434dc96f1625df66142ec32c6ab831942631c3e022100f863e4aeccee44755302a38b4a08431835b645247b1db2cfecceaa7fe017cb4a"
+    },
+    {
+      "@context": "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1",
+      "@id": "001BZR1521070006-22979",
+      "time": "2021-01-01T10:05:52+01:00",
+      "meterInfo": {
+        "firmwareVersion": "1.9:32CA:AFF4, 6d1dd3c",
+        "publicKey": "3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254",
+        "meterId": "001BZR1521070006",
+        "manufacturer": "BAUER Electronic",
+        "type": "BSM-WS36A-H01-1311-0000"
+      },
+      "contract": {
+        "id": "12345678abcdef",
+        "type": "rfid"
+      },
+      "measurementId": 22979,
+      "value": {
+        "measurand": {
+          "id": "1-0:1.8.0*198",
+          "name": "RCR"
+        },
+        "measuredValue": {
+          "scale": 0,
+          "unit": "WATT_HOUR",
+          "unitEncoded": 30,
+          "value": 160,
+          "valueType": "UnsignedInteger32"
+        }
+      },
+      "additionalValues": [
+        {
+          "measurand": {
+            "name": "Typ"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 2,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:1.8.0*198",
+            "name": "RCR"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "WATT_HOUR",
+            "unitEncoded": 30,
+            "value": 160,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:1.8.0*255",
+            "name": "TotWhImp"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "WATT_HOUR",
+            "unitEncoded": 30,
+            "value": 52610,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:1.7.0*255",
+            "name": "W"
+          },
+          "measuredValue": {
+            "scale": 1,
+            "unit": "WATT",
+            "unitEncoded": 27,
+            "value": 0,
+            "valueType": "Integer32"
+          }
+        },
+        {
+          "measurand": {
+            "id": "1-0:0.0.0*255",
+            "name": "MA1"
+          },
+          "measuredValue": {
+            "unitEncoded": 255,
+            "value": "001BZR1521070006",
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "RCnt"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 22979,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "OS"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "SECOND",
+            "unitEncoded": 7,
+            "value": 1867722,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Epoch"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "SECOND",
+            "unitEncoded": 7,
+            "value": 1609491952,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "TZO"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "MINUTE",
+            "unitEncoded": 6,
+            "value": 60,
+            "valueType": "Integer32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "EpochSetCnt"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 2814,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "EpochSetOS"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unit": "SECOND",
+            "unitEncoded": 7,
+            "value": 1867371,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "DI"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 1,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "DO"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 0,
+            "valueType": "UnsignedInteger32"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Meta1"
+          },
+          "measuredValue": {
+            "unitEncoded": 255,
+            "value": "contract-id: rfid:12345678abcdef",
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Meta2"
+          },
+          "measuredValue": {
+            "unitEncoded": 255,
+            "value": "evse-id: DE*BDO*E8025334492*2",
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Meta3"
+          },
+          "measuredValue": {
+            "unitEncoded": 255,
+            "value": "csc-sw-version: v1.2.34",
+            "valueType": "String",
+            "valueEncoding": "ISO-8859-1"
+          }
+        },
+        {
+          "measurand": {
+            "name": "Evt"
+          },
+          "measuredValue": {
+            "scale": 0,
+            "unitEncoded": 255,
+            "value": 0,
+            "valueType": "UnsignedInteger32"
+          }
+        }
+      ],
+      "signature": "3044022062f36e0583471d4f438da9da549be550cdbdfa4f9d77f3d4c53339f18c66850a02200e997ccb47cb33b1fb6c504b081b097cb65231b041c9f882122cc8298f575501"
+    }
+  ]
+}
