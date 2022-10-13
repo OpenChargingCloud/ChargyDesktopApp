@@ -428,6 +428,13 @@ export enum CryptoHashAlgorithms {
     SHA512
 }
 
+export enum DisplayPrefixes {
+    NULL,
+    KILO,
+    MEGA,
+    GIGA
+}
+
 
 export interface IMeasurementValue
 {
@@ -438,6 +445,8 @@ export interface IMeasurementValue
 
     timestamp:                  string;
     value:                      number;
+    value_displayPrefix:        DisplayPrefixes;
+    value_displayPrecision:     number;
     infoStatus?:                string;
     secondsIndex?:              number;
     paginationId?:              number|string;

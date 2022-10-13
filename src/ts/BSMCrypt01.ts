@@ -23,13 +23,27 @@ import * as chargyLib         from './chargyLib'
 
 export interface IBSMMeasurementValue extends chargyInterfaces.IMeasurementValue
 {
+
     Typ:                        number,
+
     RCR:                        number,
     RCR_SF:                     number,
+    RCR_Unit:                   string,
+    RCR_Prefix:                 chargyInterfaces.DisplayPrefixes,
+    RCR_Precision:              number,
+
     TotWhImp:                   number,
     TotWhImp_SF:                number,
+    TotWhImp_Unit:              string,
+    TotWhImp_Prefix:            chargyInterfaces.DisplayPrefixes,
+    TotWhImp_Precision:         number,
+
     W:                          number,
     W_SF:                       number,
+    W_Unit:                     string,
+    W_Prefix:                   chargyInterfaces.DisplayPrefixes,
+    W_Precision:                number,
+
     MA1:                        string,
     RCnt:                       number,
     OS:                         number,
@@ -43,6 +57,7 @@ export interface IBSMMeasurementValue extends chargyInterfaces.IMeasurementValue
     Meta2:                      string,
     Meta3:                      string,
     Evt:                        number
+
 }
 
 export interface IBSMCrypt01Result extends chargyInterfaces.ICryptoResult
@@ -102,6 +117,24 @@ export class BSMCrypt01 extends ACrypt {
     }
 
 
+    private PrefixConverter(input: string): chargyInterfaces.DisplayPrefixes {
+        switch(input.toLowerCase()) {
+            case "kilo":  return chargyInterfaces.DisplayPrefixes.KILO; break;
+            case "mega":  return chargyInterfaces.DisplayPrefixes.MEGA; break;
+            case "giga":  return chargyInterfaces.DisplayPrefixes.GIGA; break;
+            default:      return chargyInterfaces.DisplayPrefixes.NULL;
+        }
+    }
+
+    private UnitConverter(input: string): string{
+        switch(input.toUpperCase()) {
+            case "WATT_HOUR":  return "Wh"; break;
+            case "WATT":       return "W";  break;
+            default:           return "";
+        }
+    }
+
+
     //#region tryToParseBSM_WS36aMeasurements(Measurements)
 
     public async tryToParseBSM_WS36aMeasurements(CTR:                   chargyInterfaces.IChargeTransparencyRecord,
@@ -137,17 +170,17 @@ export class BSMCrypt01 extends ACrypt {
                 meterInfo_meterId:                 Measurements[0].meterInfo?.meterId,
                 meterInfo_manufacturer:            Measurements[0].meterInfo?.manufacturer,
                 meterInfo_type:                    Measurements[0].meterInfo?.type,
-                operatorInfo:                      Measurements[0].operatorInfo,
+                //operatorInfo:                      Measurements[0].operatorInfo,
                 contract_id:                       Measurements[0].contract?.id,
                 contract_type:                     Measurements[0].contract?.type,
-                value_measurand_id:                Measurements[0].value?.measurand?.id, // OBIS Id
+                value_measurand_id:                Measurements[0].value?.measurand?.id,               // OBIS Id
                 value_measurand_name:              Measurements[0].value?.measurand?.name,
                 value_measuredValue_scale:         Measurements[0].value?.measuredValue?.scale,
                 value_measuredValue_unit:          Measurements[0].value?.measuredValue?.unit,
                 value_measuredValue_unitEncoded:   Measurements[0].value?.measuredValue?.unitEncoded,
                 value_measuredValue_valueType:     Measurements[0].value?.measuredValue?.valueType,
-                value_displayedFormat_prefix:      "kilo",
-                value_displayedFormat_precision:   2,
+                value_displayedFormat_prefix:      Measurements[0].value?.displayedFormat?.prefix,     // "kilo"
+                value_displayedFormat_precision:   Measurements[0].value?.displayedFormat?.precision,  // 2
                 chargePoint_softwareVersion:       Measurements[0].chargePoint?.softwareVersion,
                 MA1:                               null as string|null,
                 epochSetCnt:                       -1,
@@ -336,99 +369,93 @@ export class BSMCrypt01 extends ACrypt {
                     if (currentMeasurement.meterInfo?.firmwareVersion    !== common.meterInfo_firmwareVersion)
                         return {
                             status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   "Inconsistent meterInfo.firmwareVersion!",
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_FirmwareVersionP", measurementCounter),
                             certainty: 0
                         };
 
                     if (currentMeasurement.meterInfo?.publicKey          !== common.meterInfo_publicKey)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent meterInfo.publicKey!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_PublicKeyP", measurementCounter),
                             certainty: 0
                         };
 
                     if (currentMeasurement.meterInfo?.meterId            !== common.meterInfo_meterId)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent meterInfo.meterId!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_MeterIdP", measurementCounter),
                             certainty: 0
                         };
 
-                    if (currentMeasurement.meterInfo?.meterId            !== currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name === "MA1")[0]?.measuredValue?.value)
+                    if (currentMeasurement.meterInfo?.meterId            !== currentMeasurement.additionalValues?.filter((element: any) => element?.measurand?.name === "MA1")[0]?.measuredValue?.value)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent meterInfo.meterId!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_MeterIdP", measurementCounter),
                             certainty: 0
                         };
 
                     if (currentMeasurement.meterInfo?.manufacturer       !== common.meterInfo_manufacturer)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent meterInfo.manufacturer!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_ManufacturerP", measurementCounter),
                             certainty: 0
                         };
 
                     if (currentMeasurement.meterInfo?.type               !== common.meterInfo_type)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent meterInfo.type!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_TypeP", measurementCounter),
                             certainty: 0
                         };
 
                 }
 
-                if (currentMeasurement.operatorInfo)
-                {
-                    if (currentMeasurement.operatorInfo                  !== common.operatorInfo)
-                        return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent operatorInfo!",
-                            certainty: 0
-                        };
-                }
+                // if (currentMeasurement.operatorInfo)
+                // {
+                //     if (currentMeasurement.operatorInfo                  !== common.operatorInfo)
+                //         return {
+                //             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                //             message:  "Inconsistent operatorInfo!",
+                //             certainty: 0
+                //         };
+                // }
 
                 if (currentMeasurement.contract)
                 {
 
-                    if (currentMeasurement.additionalValues?.filter((element: any) => element?.measurand?.name?.startsWith('Meta') && element?.measuredValue?.value?.startsWith('contract-id:')).length == 0)
-                        return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent contract information!",
-                            certainty: 0
-                        };
+                    if (currentMeasurement.additionalValues?.filter((element: any) => element?.measurand?.name?.startsWith('Meta') && element?.measuredValue?.value?.startsWith('contract-id:')).length == 0) return {
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP", measurementCounter),
+                        certainty: 0
+                    };
 
-                    if (currentMeasurement.contract.id                   !== common.contract_id)
-                        return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent contract.id!",
-                            certainty: 0
-                        };
+                    if (currentMeasurement.contract.id   !== common.contract_id) return {
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP", measurementCounter),
+                        certainty: 0
+                    };
 
-                    if (currentMeasurement.contract.type                 !== common.contract_type)
-                        return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent contract.type!",
-                            certainty: 0
-                        };
+                    if (currentMeasurement.contract.type !== common.contract_type) return {
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_TypeP", measurementCounter),
+                        certainty: 0
+                    };
 
                     let contractInfo = currentMeasurement.additionalValues?.filter((element: any) => element?.measurand?.name?.startsWith('Meta') && element?.measuredValue?.value?.startsWith('contract-id:'))[0]?.measuredValue?.value;
-
                     if (contractInfo != null)
                     {
 
-                        if ( currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contract_type + ":" + common.contract_id)
-                            return {
-                                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:  "Inconsistent contract information!",
-                                certainty: 0
-                            };
+                        if ( currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contract_type + ":" + common.contract_id) return {
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP", measurementCounter),
+                            certainty: 0
+                        };
 
-                        if (!currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contract_id)
-                            return {
-                                status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:  "Inconsistent contract information!",
-                                certainty: 0
-                            };
+                        if (!currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contract_id) return {
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP", measurementCounter),
+                            certainty: 0
+                        };
 
                     }
 
@@ -448,15 +475,15 @@ export class BSMCrypt01 extends ACrypt {
 
                     if (measurand.id !== common.value_measurand_id || measurand.id !== rcrInAdditional.measurand.id)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measurand.id!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurand_IdentificationP", measurementCounter),
                             certainty: 0
                         };
 
                     if (measurand.name !== common.value_measurand_name || measurand.name !== rcrInAdditional.measurand.name)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measurand.name!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurand_NameP", measurementCounter),
                             certainty: 0
                         };
 
@@ -469,48 +496,38 @@ export class BSMCrypt01 extends ACrypt {
 
                     if (measuredValue.value !== rcrInAdditional.measuredValue.value)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measuredValue.value!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValueP", measurementCounter),
                             certainty: 0
                         };
 
                     if (measuredValue.scale !== common.value_measuredValue_scale || measuredValue.scale !== rcrInAdditional.measuredValue.scale)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measuredValue.scale!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_ScaleP", measurementCounter),
                             certainty: 0
                         };
 
                     if (measuredValue.unit !== common.value_measuredValue_unit || measuredValue.unit !== rcrInAdditional.measuredValue.unit)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measuredValue.unit!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_UnitP", measurementCounter),
                             certainty: 0
                         };
 
                     if (measuredValue.unitEncoded !== common.value_measuredValue_unitEncoded || measuredValue.unitEncoded !== rcrInAdditional.measuredValue.unitEncoded)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measuredValue.unitEncoded!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_UnitEncodedP", measurementCounter),
                             certainty: 0
                         };
 
                     if (measuredValue.valueType !== common.value_measuredValue_valueType || measuredValue.valueType !== rcrInAdditional.measuredValue.valueType)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent measuredValue.valueType!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_TypeP", measurementCounter),
                             certainty: 0
                         };
-
-                }
-
-                if (currentMeasurement.value.displayedFormat)
-                {
-
-                    const displayedFormat = currentMeasurement.value.displayedFormat;
-
-                    //value_displayedFormatPrefix:      "kilo",
-                    //value_displayedFormatPrecision:   2,
 
                 }
 
@@ -522,8 +539,7 @@ export class BSMCrypt01 extends ACrypt {
                     };
                 }
 
-
-                //#region Find "evse-id:" within the "Meta" data blocks
+                //#region Find "evse-id:"        within the "Meta" data blocks
 
                 let signedEVSEId = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('evse-id:'));
                 if (signedEVSEId.length == 1)
@@ -580,83 +596,82 @@ export class BSMCrypt01 extends ACrypt {
                 {
                     switch (additionalValue.measurand?.name)
                     {
-                        case "Typ":          Typ          =   additionalValue.measuredValue?.value;       break;
+                        case "Typ":          Typ          =   additionalValue.measuredValue?.value;         break;
                         case "RCR":          RCR          = [ additionalValue.measurand?.id,
                                                               additionalValue.measuredValue?.scale,
                                                               additionalValue.measuredValue?.unit,
                                                               additionalValue.measuredValue?.unitEncoded,
                                                               additionalValue.measuredValue?.value,
-                                                              additionalValue.measuredValue?.valueType ]; break;
+                                                              additionalValue.measuredValue?.valueType,
+                                                              additionalValue.displayedFormat?.prefix,
+                                                              additionalValue.displayedFormat?.precision ];   break;
                         case "TotWhImp":     TotWhImp     = [ additionalValue.measurand?.id,
                                                               additionalValue.measuredValue?.scale,
                                                               additionalValue.measuredValue?.unit,
                                                               additionalValue.measuredValue?.unitEncoded,
                                                               additionalValue.measuredValue?.value,
-                                                              additionalValue.measuredValue?.valueType ]; break;
+                                                              additionalValue.measuredValue?.valueType,
+                                                              additionalValue.displayedFormat?.prefix,
+                                                              additionalValue.displayedFormat?.precision ]; break;
                         case "W":            W            = [ additionalValue.measurand?.id,
                                                               additionalValue.measuredValue?.scale,
                                                               additionalValue.measuredValue?.unit,
                                                               additionalValue.measuredValue?.unitEncoded,
                                                               additionalValue.measuredValue?.value,
-                                                              additionalValue.measuredValue?.valueType ]; break;
-                        case "MA1":          MA1          =   additionalValue.measuredValue?.value;       break;
-                        case "RCnt":         RCnt         =   additionalValue.measuredValue?.value;       break;
-                        case "OS":           OS           =   additionalValue.measuredValue?.value;       break;
-                        case "Epoch":        Epoch        =   additionalValue.measuredValue?.value;       break;
-                        case "TZO":          TZO          =   additionalValue.measuredValue?.value;       break;
-                        case "EpochSetCnt":  EpochSetCnt  =   additionalValue.measuredValue?.value;       break;
-                        case "EpochSetOS":   EpochSetOS   =   additionalValue.measuredValue?.value;       break;
-                        case "DI":           DI           =   additionalValue.measuredValue?.value;       break;
-                        case "DO":           DO           =   additionalValue.measuredValue?.value;       break;
-                        case "Meta1":        Meta1        =   additionalValue.measuredValue?.value ?? ""; break;
-                        case "Meta2":        Meta2        =   additionalValue.measuredValue?.value ?? ""; break;
-                        case "Meta3":        Meta3        =   additionalValue.measuredValue?.value ?? ""; break;
-                        case "Evt":          Evt          =   additionalValue.measuredValue?.value;       break;
+                                                              additionalValue.measuredValue?.valueType,
+                                                              additionalValue.displayedFormat?.prefix,
+                                                              additionalValue.displayedFormat?.precision ]; break;
+                        case "MA1":          MA1          =   additionalValue.measuredValue?.value;         break;
+                        case "RCnt":         RCnt         =   additionalValue.measuredValue?.value;         break;
+                        case "OS":           OS           =   additionalValue.measuredValue?.value;         break;
+                        case "Epoch":        Epoch        =   additionalValue.measuredValue?.value;         break;
+                        case "TZO":          TZO          =   additionalValue.measuredValue?.value;         break;
+                        case "EpochSetCnt":  EpochSetCnt  =   additionalValue.measuredValue?.value;         break;
+                        case "EpochSetOS":   EpochSetOS   =   additionalValue.measuredValue?.value;         break;
+                        case "DI":           DI           =   additionalValue.measuredValue?.value;         break;
+                        case "DO":           DO           =   additionalValue.measuredValue?.value;         break;
+                        case "Meta1":        Meta1        =   additionalValue.measuredValue?.value ?? "";   break;
+                        case "Meta2":        Meta2        =   additionalValue.measuredValue?.value ?? "";   break;
+                        case "Meta3":        Meta3        =   additionalValue.measuredValue?.value ?? "";   break;
+                        case "Evt":          Evt          =   additionalValue.measuredValue?.value;         break;
                     }
                 }
 
 
-                if (previousRCR !== -1 && RCR[4] < previousRCR)
-                    return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement value!",
-                        certainty: 0
-                    };
+                if (previousRCR !== -1 && RCR[4] < previousRCR) return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurement_ValueP", measurementCounter),
+                    certainty: 0
+                };
                 previousRCR = RCR[4];
 
+                if (RCnt !== currentMeasurement.measurementId) return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeasurementIdP", measurementCounter),
+                    certainty: 0
+                };
 
-                if (RCnt !== currentMeasurement.measurementId)
-                    return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement identification!",
-                        certainty: 0
-                    };
-
-
-                if (previousRCnt !== -1 && RCnt != previousRCnt + 1)
-                    return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement snapshot counter!",
-                        certainty: 0
-                    };
+                // Snapshot counter
+                if (previousRCnt !== -1 && RCnt != previousRCnt + 1) return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_CounterP", measurementCounter),
+                    certainty: 0
+                };
                 previousRCnt = RCnt;
 
-
-                if (previousOS !== -1 && OS <= previousOS)
-                    return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement operation-seconds counter!",
-                        certainty: 0
-                    };
+                // Uptime counter
+                if (previousOS !== -1 && OS <= previousOS) return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_OperationSecondsCounterP", measurementCounter),
+                    certainty: 0
+                };
                 previousOS = OS;
 
-
-                if (previousEpoch !== -1 && Epoch <= previousEpoch)
-                    return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement epochs!",
-                        certainty: 0
-                    };
+                if (previousEpoch !== -1 && Epoch <= previousEpoch) return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_UNIXEpochP", measurementCounter),
+                    certainty: 0
+                };
                 previousEpoch = Epoch;
 
 
@@ -664,38 +679,32 @@ export class BSMCrypt01 extends ACrypt {
                 const measurementTimestamp2 = measurementTimestamp1.substring(0, measurementTimestamp1.indexOf('.'));
                 const measurementTimestamp3 = measurementTimestamp2 + (TZO > 0 ? "+" : "-") + (Math.abs(TZO) / 60).toString().padStart(2, '0') + ":" + (Math.abs(TZO) % 60).toString().padStart(2, '0');
 
-                if (currentMeasurement.time !== measurementTimestamp3)
-                    return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement timestamp!",
-                        certainty: 0
-                    };
+                if (currentMeasurement.time !== measurementTimestamp3) return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_TimestampP", measurementCounter),
+                    certainty: 0
+                };
 
-
-                if (common.MA1 !== null && MA1 !== common.MA1)
-                    return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement meter address 1!",
-                        certainty: 0
-                    };
+                // Meter Address 1 == Meter Id
+                if (common.MA1 !== null && MA1 !== common.MA1) return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_MeterIdP", measurementCounter),
+                    certainty: 0
+                };
                 common.MA1 = MA1;
 
-
-                if (common.epochSetCnt !== -1 && EpochSetCnt !== common.epochSetCnt)
-                    return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement epoch set counter!",
-                        certainty: 0
-                    };
+                if (common.epochSetCnt !== -1 && EpochSetCnt !== common.epochSetCnt) return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_EpochSet_CounterP", measurementCounter),
+                    certainty: 0
+                };
                 common.epochSetCnt = EpochSetCnt;
 
-
-                if (common.epochSetOS !== -1 && EpochSetOS !== common.epochSetOS)
-                    return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement epoch set operation-seconds!",
-                        certainty: 0
-                    };
+                if (common.epochSetOS !== -1 && EpochSetOS !== common.epochSetOS) return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_EpochSet_OperationSecondsP", measurementCounter),
+                    certainty: 0
+                };
                 common.epochSetOS = EpochSetOS;
 
                 //#endregion
@@ -720,10 +729,12 @@ export class BSMCrypt01 extends ACrypt {
                     Meta3:           Meta3,
                     Evt:             Evt,
                     time:            currentMeasurement.time,
-                    value:           currentMeasurement.value?.measuredValue?.value,
+                    value:           currentMeasurement.value?.measuredValue?.  value,
+                    valuePrefix:     this.PrefixConverter(currentMeasurement.value?.displayedFormat?.prefix   ?? "kilo"),
+                    valuePrecision:  currentMeasurement.value?.displayedFormat?.precision                     ?? 2,
                     measurementId:   currentMeasurement.measurementId,
                     signature:       currentMeasurement.signature
-                });
+                }); // as IBSMMeasurementValue);
 
             }
 
@@ -731,29 +742,25 @@ export class BSMCrypt01 extends ACrypt {
 
             var n = common.dataSets.length-1;
 
-            if (common.dataSets[0].TypParsed !== "START" && common.dataSets[0].TypParsed !== "TURN ON")
-                return {
-                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:  "Invalid start snapshot!",
+            if (common.dataSets[0].TypParsed !== "START" && common.dataSets[0].TypParsed !== "TURN ON") return {
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_EnergyMeterValueP", 1),
+                certainty: 0
+            };
+
+            for (let i=1; i<common.dataSets.length-1; i++) {
+                if (common.dataSets[i].TypParsed !== "CURRENT") return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_EnergyMeterValueP", measurementCounter + 1),
                     certainty: 0
                 };
-
-            for (let i=1; i<common.dataSets.length-1; i++)
-            {
-                if (common.dataSets[i].TypParsed !== "CURRENT")
-                    return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Invalid intermediate snapshot!",
-                        certainty: 0
-                    };
             }
 
-            if (common.dataSets[n].TypParsed !== "END"   && common.dataSets[n].TypParsed !== "TURN OFF")
-                return {
-                    status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:  "Invalid end snapshot!",
-                    certainty: 0
-                };
+            if (common.dataSets[n].TypParsed !== "END"   && common.dataSets[n].TypParsed !== "TURN OFF") return {
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_EnergyMeterValueP", n+1),
+                certainty: 0
+            };
 
             //#endregion
 
@@ -781,10 +788,7 @@ export class BSMCrypt01 extends ACrypt {
 
                 "authorizationStart": {
                     "@id":                      common.contract_id,
-                    "@context":                 common.contract_type,
-                   //  "timestamp":                this.moment.unix(CTRArray[0]["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
-                   //                                               CTRArray[0]["contract"]["timestampLocal"]["localOffset"] +
-                   //                                               CTRArray[0]["contract"]["timestampLocal"]["seasonOffset"]).format(),
+                    "@context":                 common.contract_type
                 },
 
                 "measurements": [
@@ -795,29 +799,35 @@ export class BSMCrypt01 extends ACrypt {
                              {
                                 "name":              "Real Energy Imported",
                                 "obis":              common.value_measurand_id,
-                                "unit":              common.value_measuredValue_unit,
+                                "unit":              this.UnitConverter  (common.value_measuredValue_unit),
                                 "unitEncoded":       common.value_measuredValue_unitEncoded,
                                 "valueType":         common.value_measuredValue_valueType,
                                 "value":             "value",
-                                "scale":             common.value_measuredValue_scale
+                                "scale":             common.value_measuredValue_scale,
+                                "formatPrefix":      this.PrefixConverter(common.value_displayedFormat_prefix),
+                                "formatPrecision":   common.value_displayedFormat_precision
                              },
                              {
                                 "name":              "Total Watt-hours Imported",
                                 "obis":              TotWhImp[0],
-                                "unit":              TotWhImp[2],
+                                "unit":              this.UnitConverter  (TotWhImp[2]),
                                 "unitEncoded":       TotWhImp[3],
                                 "valueType":         TotWhImp[5],
                                 "value":             "TotWhImp",
-                                "scale":             TotWhImp[1]
+                                "scale":             TotWhImp[1],
+                                "formatPrefix":      this.PrefixConverter(TotWhImp[6]),
+                                "formatPrecision":   TotWhImp[7],
                              },
                              {
                                 "name":              "Total Real Power",
                                 "obis":              W[0],
-                                "unit":              W[2],
+                                "unit":              this.UnitConverter  (W[2]),
                                 "unitEncoded":       W[3],
                                 "valueType":         W[5],
                                 "value":             "W",
-                                "scale":             W[1]
+                                "scale":             W[1],
+                                "formatPrefix":      this.PrefixConverter(W[6]),
+                                "formatPrecision":   W[7]
                              }
                          ],
                          "values": [ ]
@@ -832,34 +842,50 @@ export class BSMCrypt01 extends ACrypt {
                 let ASN1Signature = ASN1_SignatureSchema.decode(Buffer.from(dataSet.signature, 'hex'), 'der');
 
                 let bsmMeasurementValue: IBSMMeasurementValue = {
-                    timestamp:     dataSet.time,
-                    Typ:           dataSet.Typ,
-                    value:         dataSet.value,
-                    RCR:           dataSet.RCR[4],
-                    RCR_SF:        dataSet.RCR[1],
-                    TotWhImp:      dataSet.TotWhImp[4],
-                    TotWhImp_SF:   dataSet.TotWhImp[1],
-                    W:             dataSet.W[4],
-                    W_SF:          dataSet.W[1],
-                    MA1:           dataSet.MA1,
-                    RCnt:          dataSet.RCnt,
-                    OS:            dataSet.OS,
-                    Epoch:         dataSet.Epoch,
-                    TZO:           dataSet.TZO,
-                    EpochSetCnt:   dataSet.EpochSetCnt,
-                    EpochSetOS:    dataSet.EpochSetOS,
-                    DI:            dataSet.DI,
-                    DO:            dataSet.DO,
-                    Meta1:         dataSet.Meta1,
-                    Meta2:         dataSet.Meta2,
-                    Meta3:         dataSet.Meta3,
-                    Evt:           dataSet.Evt,
-                    signatures: [
-                        {
-                            r:  ASN1Signature.r.toString(16),
-                            s:  ASN1Signature.s.toString(16)
-                        }
-                    ]
+
+                    timestamp:                                 dataSet.time,
+                    Typ:                                       dataSet.Typ,
+                    value:                                     dataSet.value,
+                    value_displayPrefix:                       dataSet.valuePrefix,
+                    value_displayPrecision:                    dataSet.valuePrecision,
+
+                    RCR:                                       dataSet.RCR[4],
+                    RCR_SF:                                    dataSet.RCR[1],
+                    RCR_Unit:             this.UnitConverter  (dataSet.RCR[2]),
+                    RCR_Prefix:           this.PrefixConverter(dataSet.RCR[6]),
+                    RCR_Precision:                             dataSet.RCR[7],
+
+                    TotWhImp:                                  dataSet.TotWhImp[4],
+                    TotWhImp_SF:                               dataSet.TotWhImp[1],
+                    TotWhImp_Unit:        this.UnitConverter  (dataSet.TotWhImp[2]),
+                    TotWhImp_Prefix:      this.PrefixConverter(dataSet.TotWhImp[6]),
+                    TotWhImp_Precision:                        dataSet.TotWhImp[7],
+
+                    W:                                         dataSet.W[4],
+                    W_SF:                                      dataSet.W[1],
+                    W_Unit:               this.UnitConverter  (dataSet.W[2]),
+                    W_Prefix:             this.PrefixConverter(dataSet.W[6]),
+                    W_Precision:                               dataSet.W[7],
+
+                    MA1:                                       dataSet.MA1,
+                    RCnt:                                      dataSet.RCnt,
+                    OS:                                        dataSet.OS,
+                    Epoch:                                     dataSet.Epoch,
+                    TZO:                                       dataSet.TZO,
+                    EpochSetCnt:                               dataSet.EpochSetCnt,
+                    EpochSetOS:                                dataSet.EpochSetOS,
+                    DI:                                        dataSet.DI,
+                    DO:                                        dataSet.DO,
+                    Meta1:                                     dataSet.Meta1,
+                    Meta2:                                     dataSet.Meta2,
+                    Meta3:                                     dataSet.Meta3,
+                    Evt:                                       dataSet.Evt,
+
+                    signatures: [{
+                        r:  ASN1Signature.r.toString(16),
+                        s:  ASN1Signature.s.toString(16)
+                    }]
+
                 };
 
             (session?.measurements[0]!.values as any[])?.push(bsmMeasurementValue);
@@ -867,7 +893,6 @@ export class BSMCrypt01 extends ACrypt {
             }
 
             CTR.chargingSessions.push(session as any as chargyInterfaces.IChargingSession);
-
 
 
             CTR["@id"] = common.dataSets[0]
@@ -900,219 +925,26 @@ export class BSMCrypt01 extends ACrypt {
             }
 
             (CTR!.chargingStationOperators![0]!.chargingStations![0]!.EVSEs[0]?.meters)?.push({
-                "@id":                      common.meterInfo_meterId,
-                model:                      common.meterInfo_type,
-                vendor:                     common.meterInfo_manufacturer,
-                vendorURL:                  "https://www.bzr-bauer.de",
-                firmwareVersion:            common.meterInfo_firmwareVersion,
-                //hardwareVersion?:           string;
-                signatureInfos:             {
-                                                hash:            chargyInterfaces.CryptoHashAlgorithms.SHA256,
-                                                hashTruncation:  0,
-                                                algorithm:       chargyInterfaces.CryptoAlgorithms.ECC,
-                                                curve:           "secp256r1",
-                                                format:          chargyInterfaces.SignatureFormats.rs
-                                            },
-                signatureFormat:            "BSMCrypt01",
-                publicKeys:                 [{
-                                                algorithm:       "secp256r1",
-                                                format:          "DER",
-                                                value:           common.meterInfo_publicKey
-                                            }]
+                "@id":               common.meterInfo_meterId,
+                model:               common.meterInfo_type,
+                vendor:              common.meterInfo_manufacturer,
+                vendorURL:           "https://www.bzr-bauer.de",
+                firmwareVersion:     common.meterInfo_firmwareVersion,
+                //hardwareVersion?:    string;
+                signatureInfos:      {
+                                         hash:            chargyInterfaces.CryptoHashAlgorithms.SHA256,
+                                         hashTruncation:  0,
+                                         algorithm:       chargyInterfaces.CryptoAlgorithms.ECC,
+                                         curve:           "secp256r1",
+                                         format:          chargyInterfaces.SignatureFormats.rs
+                                     },
+                signatureFormat:     "BSMCrypt01",
+                publicKeys:          [{
+                                         algorithm:       "secp256r1",
+                                         format:          "DER",
+                                         value:           common.meterInfo_publicKey
+                                     }]
             });
-
-            // var EVSE = {};
-
-            // if (CTR.chargingStationOperators != undefined)
-            // {
-            //     for (const chargingStationOperator of CTR.chargingStationOperators)
-            //     {
-            //         if (chargingStationOperator.chargingStations != undefined)
-            //         {
-            //             for (const chargingStation of chargingStationOperator.chargingStations)
-            //             {
-            //                 if (chargingStation.EVSEs != undefined)
-            //                 {
-            //                     for (const EVSE of chargingStation.EVSEs)
-            //                     {
-            //                         if (EVSE["@id"] == common.e)
-            //                     }
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
-
-
-            // "meters": [
-            //     {
-            //         //"@context":                 "",
-            //         "@id":                      "", //CTRArray[0]["meterInfo"]["meterId"],
-            //         "vendor":                   "", //CTRArray[0]["meterInfo"]["manufacturer"],
-            //         "vendorURL":                "", //"http://www.emh-metering.de",
-            //         "model":                    "", //CTRArray[0]["meterInfo"]["type"],
-            //         "description":              { },
-            //         "hardwareVersion":          "", //"1.0",
-            //         "firmwareVersion":          "", //CTRArray[0]["meterInfo"]["firmwareVersion"],
-            //         "signatureInfos":           {
-            //             "hash":                     "",
-            //             "hashTruncation":           0,
-            //             "algorithm":                "",
-            //             "curve":                    "",
-            //             "format":                   SignatureFormats.DER
-            //         },
-            //         "signatureFormat":          "", //"https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
-            //         "publicKeys": [
-            //             {
-            //                 //"@id":              "",
-            //                 "algorithm":        "", //"secp192r1",
-            //                 "format":           "", //"DER",
-            //                 "value":            "", //CTRArray[0]["meterInfo"]["publicKey"].startsWith("04")
-            //                                         //?        CTRArray[0]["meterInfo"]["publicKey"]
-            //                                         //: "04" + CTRArray[0]["meterInfo"]["publicKey"],
-            //                 "signatures":       "", //CTRArray[0]["meterInfo"]["publicKeySignatures"]
-            //                 "previousValue":    ""
-            //             }
-            //         ]
-            //     }
-            // ]
-
-
-            // var _CTR: any = { //IChargeTransparencyRecord = {
-
-            //      "@id":              Content["@id"],
-            //      "@context":         "https://open.charging.cloud/contexts/CTR+json",
-
-            //      "chargingPools": [
-            //          {
-            //              //"@id":                      "DE*GEF*POOL*1",
-            //              //"description":              { "de": "GraphDefined Virtual Charging Pool - CI-Tests Pool 1" },
-            //              "chargingStations": [
-            //                  {
-
-            //                      //"@id":                      "DE*GEF*STATION*1*A",
-            //                      //"description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A" },
-            //                      "firmwareVersion":          common.ChargePointSoftwareVersion,
-            //                      "geoLocation": {
-            //                          "lat":                  Content.placeInfo?.geoLocation?.lat,
-            //                          "lng":                  Content.placeInfo?.geoLocation?.lon
-            //                      },
-            //                      "address": {
-            //                          "street":               Content.placeInfo?.address?.street,
-            //                          "postalCode":           Content.placeInfo?.address?.zipCode,
-            //                          "city":                 Content.placeInfo?.address?.town
-            //                      },
-            //                      "manufacturer": {
-            //                          //"hardwareVersion":      "",
-            //                          //"firmwareVersion":      "",
-            //                          "calibrationLaw":       common.OperatorInfo,
-            //                      },
-
-            //                      "EVSEs": [
-            //                          {
-            //                              "@id":                      Content.placeInfo.evseId,
-            //                              //"description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A / EVSE 1" },
-            //                              //"sockets": [
-            //                              //    {
-            //                              //        "type":             "type2",
-            //                              //        "cableAttached":    false
-            //                              //    }
-            //                              //],
-            //                              "meters": [
-            //                                  {
-            //                                      "@id":                      common.MeterId,
-            //                                      "vendor":                   common.MeterManufacturer,  //ToDo: Change me to "manufacturer", but check other implementations!
-            //                                      //"vendorURL":                "http://www.emh-metering.de",
-            //                                      "model":                    common.MeterType,
-            //                                      //"hardwareVersion":          "1.0",
-            //                                      "firmwareVersion":          common.MeterFirmwareVersion,
-            //                                      //"adapterId":                common.AdapterId,
-            //                                      //"adapterFWVersion":         common.MeterFirmwareVersion,
-            //                                      //"adapterFWChecksum":        common.AdapterFWChecksum,
-            //                                      "signatureFormat":          common.Context,            //ToDo: Move me into "signatureInfos"!
-            //                                      "signatureInfos": {
-            //                                         "hash":                  "SHA256",
-            //                                         "algorithm":             "ECC",
-            //                                         "curve":                 "secp256r1",
-            //                                         "format":                "rs",
-            //                                         "encoding":              "hex"
-            //                                      },
-            //                                      "publicKeys": [
-            //                                          {
-            //                                              "value":            common.MeterPublicKey,
-            //                                              "algorithm":        "secp256r1",
-            //                                              "format":           "DER",
-            //                                              "encoding":         "HEX"
-            //                                              //"signatures":       CTRArray[0]["meterInfo"]["publicKeySignatures"]
-            //                                          }
-            //                                      ]
-            //                                  }
-            //                              ]
-            //                          }
-            //                      ]
-            //                  }
-            //              ],
-            //          }
-            //      ],
-
-            //      "chargingSessions": [
-            //          {
-
-            //              "@id":                          Content["@id"],
-            //              "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/bsm-ws36a-v0+json",
-            //              "begin":                        common.dataSets[0].time,
-            //              "end":                          common.dataSets[n].time,
-            //              "EVSEId":                       Content.placeInfo.evseId,
-
-            //              "authorizationStart": {
-            //                  "@id":                      common.ContractId,
-            //                 //  "type":                     CTRArray[0]["contract"]["type"],
-            //                 //  "timestamp":                this.moment.unix(CTRArray[0]["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
-            //                 //                                               CTRArray[0]["contract"]["timestampLocal"]["localOffset"] +
-            //                 //                                               CTRArray[0]["contract"]["timestampLocal"]["seasonOffset"]).format(),
-            //              },
-
-            //              "measurements": [
-            //                  {
-            //                      "energyMeterId":        common.MeterId,
-            //                      //"@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/bsm-ws36a-v0+json",
-            //                      "phenomena": [
-            //                          {
-            //                             "name":              "Real Energy Imported",
-            //                             "obis":              common.ValueMeasurandId,
-            //                             "unit":              common.MeasuredValueUnit,
-            //                             "unitEncoded":       common.MeasuredValueUnitEncoded,
-            //                             "valueType":         common.MeasuredValueValueType,
-            //                             "value":             "value",
-            //                             "scale":             common.MeasuredValueScale
-            //                          },
-            //                          {
-            //                             "name":              "Total Watt-hours Imported",
-            //                             "obis":              TotWhImp[0],
-            //                             "unit":              TotWhImp[2],
-            //                             "unitEncoded":       TotWhImp[3],
-            //                             "valueType":         TotWhImp[5],
-            //                             "value":             "TotWhImp",
-            //                             "scale":             TotWhImp[1]
-            //                          },
-            //                          {
-            //                             "name":              "Total Real Power",
-            //                             "obis":              W[0],
-            //                             "unit":              W[2],
-            //                             "unitEncoded":       W[3],
-            //                             "valueType":         W[5],
-            //                             "value":             "W",
-            //                             "scale":             W[1]
-            //                          }
-            //                      ],
-            //                      "values": [ ]
-            //                  }
-            //              ]
-
-            //          }
-            //      ]
-
-            // };
 
             CTR["status"] = chargyInterfaces.SessionVerificationResult.Unvalidated;
 
@@ -1226,9 +1058,9 @@ export class BSMCrypt01 extends ACrypt {
             status:        chargyInterfaces.VerificationResult.InvalidSignature,
             ArraySize:     requiredSize,
             Typ:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.Typ,          0, 255,   0),
-            RCR:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.RCR,          measurementValue.RCR_SF,  30,   6),
+            RCR:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.RCR,          measurementValue.RCR_SF,       30,   6),
             TotWhImp:      chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.TotWhImp,     measurementValue.TotWhImp_SF,  30,  12),
-            W:             chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.W,            measurementValue.W_SF,  27,  18),
+            W:             chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.W,            measurementValue.W_SF,         27,  18),
             MA1:           chargyLib.SetText_withLength(cryptoBuffer, measurementValue.MA1,                   24),
             RCnt:          chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.RCnt,         0, 255,  24 + MA1_length),
             OS:            chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.OS,           0,   7,  30 + MA1_length),
@@ -1242,19 +1074,6 @@ export class BSMCrypt01 extends ACrypt {
             Meta2:         chargyLib.SetText_withLength(cryptoBuffer, measurementValue.Meta2,                 72 + MA1_length + Meta1_length),
             Meta3:         chargyLib.SetText_withLength(cryptoBuffer, measurementValue.Meta3,                 72 + MA1_length + Meta1_length + Meta2_length),
             Evt:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.Evt,          0, 255,  72 + MA1_length + Meta1_length + Meta2_length + Meta3_length),
-            //status:                       VerificationResult.InvalidSignature,
-            //meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
-            //timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            //infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
-            //secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
-            //paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
-            //obis:                         SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
-            //unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-            //scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
-            //value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
-            //logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
-            //authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
-            //authorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
         };
 
         // Only the first 24 bytes/192 bits are used!
@@ -1553,23 +1372,26 @@ export class BSMCrypt01 extends ACrypt {
 
             // https://github.com/chargeITmobility/bsm-python-private/blob/30abc7ba958c936fdb952ed1f121e45d0818419c/doc/examples/snapshots.md#verifying-a-snapshot-with-the-bsm-tool
 
-            this.CreateLine("Snapshot-Typ", this.ParseTyp(measurementValue.Typ),                 result.Typ         || "", infoDiv, PlainTextDiv);
-            this.CreateLine("RCR",          measurementValue.RCR * 10 + " Wh",                   result.RCR         || "", infoDiv, PlainTextDiv);
-            this.CreateLine("TotWhImp",     measurementValue.TotWhImp * 10 + " Wh",              result.TotWhImp    || "", infoDiv, PlainTextDiv);
-            this.CreateLine("W",            measurementValue.W + " Watt",                        result.W           || "", infoDiv, PlainTextDiv);
-            this.CreateLine("MA1",          measurementValue.MA1,                                result.MA1         || "", infoDiv, PlainTextDiv);
-            this.CreateLine("RCnt",         measurementValue.RCnt,                               result.RCnt        || "", infoDiv, PlainTextDiv);
-            this.CreateLine("OS",           measurementValue.OS,                                 result.OS          || "", infoDiv, PlainTextDiv);
-            this.CreateLine("Zeitstempel",  chargyLib.UTC2human(measurementValue.Epoch),         result.Epoch       || "", infoDiv, PlainTextDiv);
-            this.CreateLine("TZO",          measurementValue.TZO + " Minuten",                   result.TZO         || "", infoDiv, PlainTextDiv);
-            this.CreateLine("EpochSetCnt",  measurementValue.EpochSetCnt,                        result.EpochSetCnt || "", infoDiv, PlainTextDiv);
-            this.CreateLine("EpochSetOS",   measurementValue.EpochSetOS,                         result.EpochSetOS  || "", infoDiv, PlainTextDiv);
-            this.CreateLine("DI",           measurementValue.DI,                                 result.DI          || "", infoDiv, PlainTextDiv);
-            this.CreateLine("DO",           measurementValue.DO,                                 result.DO          || "", infoDiv, PlainTextDiv);
-            this.CreateLine("Meta1",        measurementValue.Meta1,                              result.Meta1       || "", infoDiv, PlainTextDiv);
-            this.CreateLine("Meta2",        measurementValue.Meta2,                              result.Meta2       || "", infoDiv, PlainTextDiv);
-            this.CreateLine("Meta3",        measurementValue.Meta3,                              result.Meta3       || "", infoDiv, PlainTextDiv);
-            this.CreateLine("Evt",          this.ParseEvents(measurementValue.Evt).join("<br>"), result.Evt         || "", infoDiv, PlainTextDiv);
+            this.CreateLine("Snapshot-Typ", this.ParseTyp(measurementValue.Typ),                                                                                             result.Typ         || "", infoDiv, PlainTextDiv);
+            //this.CreateLine("RCR",         (measurementValue.RCR      * 10).toFixed(measurementValue.RCR_Precision)      + " " + measurementValue.RCR_Prefix      + "Wh",    result.RCR         || "", infoDiv, PlainTextDiv);
+            //this.CreateLine("TotWhImp",    (measurementValue.TotWhImp * 10).toFixed(measurementValue.TotWhImp_Precision) + " " + measurementValue.TotWhImp_Prefix + "Wh",    result.TotWhImp    || "", infoDiv, PlainTextDiv);
+            //this.CreateLine("W",            measurementValue.W.             toFixed(measurementValue.W_Precision)        + " " + measurementValue.W_Prefix        + "Watt",  result.W           || "", infoDiv, PlainTextDiv);
+            this.CreateLine("RCR",          measurementValue.RCR      * 10 + " " + measurementValue.RCR_Unit,       result.RCR         || "", infoDiv, PlainTextDiv);
+            this.CreateLine("TotWhImp",     measurementValue.TotWhImp * 10 + " " + measurementValue.TotWhImp_Unit,  result.TotWhImp    || "", infoDiv, PlainTextDiv);
+            this.CreateLine("W",            measurementValue.W             + " " + measurementValue.W_Unit,         result.W           || "", infoDiv, PlainTextDiv);
+            this.CreateLine("MA1",          measurementValue.MA1,                                                                                                            result.MA1         || "", infoDiv, PlainTextDiv);
+            this.CreateLine("RCnt",         measurementValue.RCnt,                                                                                                           result.RCnt        || "", infoDiv, PlainTextDiv);
+            this.CreateLine("OS",           measurementValue.OS,                                                                                                             result.OS          || "", infoDiv, PlainTextDiv);
+            this.CreateLine("Zeitstempel",  chargyLib.UTC2human(measurementValue.Epoch),                                                                                     result.Epoch       || "", infoDiv, PlainTextDiv);
+            this.CreateLine("TZO",          measurementValue.TZO + " Minuten",                                                                                               result.TZO         || "", infoDiv, PlainTextDiv);
+            this.CreateLine("EpochSetCnt",  measurementValue.EpochSetCnt,                                                                                                    result.EpochSetCnt || "", infoDiv, PlainTextDiv);
+            this.CreateLine("EpochSetOS",   measurementValue.EpochSetOS,                                                                                                     result.EpochSetOS  || "", infoDiv, PlainTextDiv);
+            this.CreateLine("DI",           measurementValue.DI,                                                                                                             result.DI          || "", infoDiv, PlainTextDiv);
+            this.CreateLine("DO",           measurementValue.DO,                                                                                                             result.DO          || "", infoDiv, PlainTextDiv);
+            this.CreateLine("Meta1",        measurementValue.Meta1,                                                                                                          result.Meta1       || "", infoDiv, PlainTextDiv);
+            this.CreateLine("Meta2",        measurementValue.Meta2,                                                                                                          result.Meta2       || "", infoDiv, PlainTextDiv);
+            this.CreateLine("Meta3",        measurementValue.Meta3,                                                                                                          result.Meta3       || "", infoDiv, PlainTextDiv);
+            this.CreateLine("Evt",          this.ParseEvents(measurementValue.Evt).join("<br>"),                                                                             result.Evt         || "", infoDiv, PlainTextDiv);
 
         }
 

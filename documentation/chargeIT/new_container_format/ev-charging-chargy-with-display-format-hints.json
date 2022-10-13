@@ -293,6 +293,10 @@
           "unitEncoded": 30,
           "value": 15,
           "valueType": "UnsignedInteger32"
+        },
+        "displayedFormat": {
+          "prefix": "kilo",
+          "precision": 2
         }
       },
       "additionalValues": [
@@ -318,6 +322,10 @@
             "unitEncoded": 30,
             "value": 15,
             "valueType": "UnsignedInteger32"
+          },
+          "displayedFormat": {
+            "prefix": "kilo",
+            "precision": 2
           }
         },
         {
@@ -331,6 +339,10 @@
             "unitEncoded": 30,
             "value": 10000,
             "valueType": "UnsignedInteger32"
+          },
+          "displayedFormat": {
+            "prefix": "kilo",
+            "precision": 2
           }
         },
         {
@@ -344,6 +356,10 @@
             "unitEncoded": 27,
             "value": 0,
             "valueType": "Integer32"
+          },
+          "displayedFormat": {
+            "prefix": "kilo",
+            "precision": 3
           }
         },
         {

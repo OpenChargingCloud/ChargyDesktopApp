@@ -142,6 +142,31 @@
         "en": "Inconsistent measurement timestamp of the %p. signed meter value!"
     },
 
+    "Inconsistent_SignedMeterValue_OperationSecondsCounterP": {
+        "de": "Inkonsistenter Betriebssekundenzähler des %p. signierten Messwertes!",
+        "en": "Inconsistent operation seconds counter of the %p. signed meter value!"
+    },
+
+    "Inconsistent_SignedMeterValue_UNIXEpochP": {
+        "de": "Inkonsistenter UNIX-Epoche des %p. signierten Messwertes!",
+        "en": "Inconsistent UNIX epoch of the %p. signed meter value!"
+    },
+
+    "Inconsistent_SignedMeterValue_EpochSet_CounterP": {
+        "de": "Inkonsistenter UNIX-Epoche-Einstellungszähler des %p. signierten Messwertes!",
+        "en": "Inconsistent UNIX epoch set counter of the %p. signed meter value!"
+    },
+
+    "Inconsistent_SignedMeterValue_EpochSet_OperationSecondsP": {
+        "de": "Inkonsistenter UNIX-Epoche-Einstellungszeitstempel des %p. signierten Messwertes!",
+        "en": "Inconsistent UNIX epoch set timestamp of the %p. signed meter value!"
+    },
+
+    "Inconsistent_SignedMeterValue_CounterP": {
+        "de": "Inkonsistenter Zähler des %p. signierten Messwertes!",
+        "en": "Inconsistent measurement counter of the %p. signed meter value!"
+    },
+
     "MissingOrInvalid_SignedMeterValue_TransactionIdP": {
         "de": "Fehlender oder ungültiger Transaktions-Identifikation des %p. signierten Messwertes!",
         "en": "Missing or invalid measurement transaction identification of the %p. signed meter value!"
@@ -163,9 +188,19 @@
         "en": "Missing or invalid meter identification within the %p. signed meter value!"
     },
 
+    "Inconsistent_SignedMeterValue_MeterInfo_MeterIdP": {
+        "de": "Inkonsistente Zähleridentifikation im %p. signierten Messwert!",
+        "en": "Inconsistent meter identification within the %p. signed meter value!"
+    },
+
     "MissingOrInvalid_SignedMeterValue_MeterInfo_TypeP": {
         "de": "Fehlender oder ungültiger Zählertyp im %p. signierten Messwert!",
         "en": "Missing or invalid meter type within the %p. signed meter value!"
+    },
+
+    "Inconsistent_SignedMeterValue_MeterInfo_TypeP": {
+        "de": "Inkonsistenter Zählertyp im %p. signierten Messwert!",
+        "en": "Inconsistent meter type within the %p. signed meter value!"
     },
 
     "MissingOrInvalid_SignedMeterValue_MeterInfo_FirmwareVersionP": {
@@ -173,14 +208,29 @@
         "en": "Missing or invalid meter firmware version within the %p. signed meter value!"
     },
 
+    "Inconsistent_SignedMeterValue_MeterInfo_FirmwareVersionP": {
+        "de": "Inkonsistente Zählerfirmwareversion im %p. signierten Messwert!",
+        "en": "Inconsistent meter firmware version within the %p. signed meter value!"
+    },
+
     "MissingOrInvalid_SignedMeterValue_MeterInfo_PublicKeyP": {
         "de": "Fehlender oder ungültiger Public-Key des Zählers im %p. signierten Messwert!",
         "en": "Missing or invalid meter public key within the %p. signed meter value!"
     },
 
+    "Inconsistent_SignedMeterValue_MeterInfo_PublicKeyP": {
+        "de": "Inkonsistenter Public-Key des Zählers im %p. signierten Messwert!",
+        "en": "Inconsistent meter public key within the %p. signed meter value!"
+    },
+
     "MissingOrInvalid_SignedMeterValue_MeterInfo_ManufacturerP": {
         "de": "Fehlender oder ungültiger Zählerhersteller im %p. signierten Messwert!",
         "en": "Missing or invalid meter manufacturer within the %p. signed meter value!"
+    },
+
+    "Inconsistent_SignedMeterValue_MeterInfo_ManufacturerP": {
+        "de": "Inkonsistenter Zählerhersteller im %p. signierten Messwert!",
+        "en": "Inconsistent meter manufacturer within the %p. signed meter value!"
     },
 
     "Invalid_SignedMeterValue_MeterInfo_PublicKeySignaturesP": {
@@ -204,14 +254,29 @@
         "en": "Missing or invalid contract identification of the %p. signed meter value!"
     },
 
+    "Inconsistent_SignedMeterValue_Contract_IdP": {
+        "de": "Inkonsistente Vertragsidentifikation des %p. signierten Messwertes!",
+        "en": "Inconsistent contract identification of the %p. signed meter value!"
+    },
+
     "MissingOrInvalid_SignedMeterValue_Contract_TypeP": {
         "de": "Fehlender oder ungültiger Vertragstyp des %p. signierten Messwertes!",
         "en": "Missing or invalid contract type of the %p. signed meter value!"
     },
 
+    "Inconsistent_SignedMeterValue_Contract_TypeP": {
+        "de": "Inkonsistenter Vertragstyp des %p. signierten Messwertes!",
+        "en": "Inconsistent contract type of the %p. signed meter value!"
+    },
+
     "MissingOrInvalid_SignedMeterValue_Contract_TimestampP": {
         "de": "Fehlender oder ungültiger Vertragszeitstempel des %p. signierten Messwertes!",
         "en": "Missing or invalid contract timestamp of the %p. signed meter value!"
+    },
+
+    "Inconsistent_SignedMeterValue_Contract_TimestampP": {
+        "de": "Inkonsistenter Vertragszeitstempel des %p. signierten Messwertes!",
+        "en": "Inconsistent contract timestamp of the %p. signed meter value!"
     },
 
 
@@ -241,18 +306,61 @@
         "en": "Missing or invalid measurand identification of the %p. signed meter value!"
     },
 
+    "Inconsistent_Measurand_IdentificationP": {
+        "de": "Inkonsistente Identifikation der Messgröße des %p. signierten Messwertes!",
+        "en": "Inconsistent measurand identification of the %p. signed meter value!"
+    },
+
     "MissingOrInvalid_Measurand_NameP": {
         "de": "Fehlender oder ungültiger Name der Messgröße des %p. signierten Messwertes!",
         "en": "Missing or invalid measurand name of the %p. signed meter value!"
     },
 
+    "Inconsistent_Measurand_NameP": {
+        "de": "Inkonsistenter Name der Messgröße des %p. signierten Messwertes!",
+        "en": "Inconsistent measurand name of the %p. signed meter value!"
+    },
 
 
+
+
+    "Inconsistent_EnergyMeterValueP": {
+        "de": "Inkonsistente %p. Stromzählerwert!",
+        "en": "Inconsistent %p. energy meter value!"
+    },
 
     "Inconsistent_Measurement_ValueP": {
         "de": "Inkonsistenter %p. Messwert!",
         "en": "Inconsistent %p. meter value!"
     },
+
+
+
+    "Inconsistent_SignedMeterValueP": {
+        "de": "Inkonsistenter %p. Messwert!",
+        "en": "Inconsistent %p. meter value!"
+    },
+
+    "Inconsistent_SignedMeterValue_ScaleP": {
+        "de": "Inkonsistenter Skalierungsfaktor des %p. Messwertes!",
+        "en": "Inconsistent scaling factor of the %p. meter value!"
+    },
+
+    "Inconsistent_SignedMeterValue_UnitP": {
+        "de": "Inkonsistenter Unit des %p. Messwertes!",
+        "en": "Inconsistent unit of the %p. meter value!"
+    },
+
+    "Inconsistent_SignedMeterValue_UnitEncodedP": {
+        "de": "Inkonsistenter enkodierte Unit des %p. Messwertes!",
+        "en": "Inconsistent encoded unit of the %p. meter value!"
+    },
+
+    "Inconsistent_SignedMeterValue_TypeP": {
+        "de": "Inkonsistenter Typ des %p. Messwertes!",
+        "en": "Inconsistent type of the %p. meter value!"
+    },
+
 
 
     "Inconsistent_ChargingStation_FirmwareVersion": {

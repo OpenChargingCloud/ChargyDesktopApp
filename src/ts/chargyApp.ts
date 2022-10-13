@@ -2286,10 +2286,12 @@ export class ChargyApp {
 
                         let MeasurementValuesDiv         = chargyLib.CreateDiv(this.evseTarifInfosDiv,     "measurementValues");
                         let previousValue                = 0;
+                        let measurementCounter           = 0;
 
                         for (let measurementValue of measurement.values)
                         {
 
+                            measurementCounter++;
                             measurementValue.measurement     = measurement;
 
                             let MeasurementValueDiv          = chargyLib.CreateDiv(MeasurementValuesDiv, "measurementValue");
@@ -2303,53 +2305,160 @@ export class ChargyApp {
                                                                          timestamp.format('HH:mm:ss') + " Uhr");
 
 
+                            //#region Show current energy value
+
+                            var currentValue                 = measurementValue.value * Math.pow(10, measurementValue.measurement.scale);
+
+                            // switch (measurement.unit)
+                            // {
+
+                            //     case "kWh":
+                            //     case "KILO_WATT_HOURS":
+                            //         currentValue = (currentValue * Math.pow(10, measurementValue.measurement.scale));
+                            //         break;
+
+                            //     // "WATT_HOURS"
+                            //     default:
+                            //         currentValue = (currentValue / 1000 * Math.pow(10, measurementValue.measurement.scale));
+                            //         break;
+
+                            // }
+
+
+                            // Display the energy value differently from its native energy meter representation.
+                            // This can be a regulatory requirement based on the calibration law.
+                            if (measurementValue.value_displayPrefix &&
+                                measurementValue.value_displayPrecision)
+                            {
+                                if (measurement.unit === "kWh" || measurement.unit === "KILO_WATT_HOURS")
+                                {
+                                    switch (measurementValue.value_displayPrefix)
+                                    {
+                                        case chargyInterfaces.DisplayPrefixes.KILO:
+                                            currentValue = parseFloat((currentValue             ).toFixed(measurementValue.value_displayPrecision));
+                                            break;
+                                        case chargyInterfaces.DisplayPrefixes.MEGA:
+                                            currentValue = parseFloat((currentValue /       1000).toFixed(measurementValue.value_displayPrecision));
+                                            break;
+                                        case chargyInterfaces.DisplayPrefixes.GIGA:
+                                            currentValue = parseFloat((currentValue /    1000000).toFixed(measurementValue.value_displayPrecision));
+                                            break;
+                                        default:
+                                            currentValue = parseFloat((currentValue *       1000).toFixed(measurementValue.value_displayPrecision));
+                                    }
+                                }
+                                else // Wh
+                                {
+                                    switch (measurementValue.value_displayPrefix)
+                                    {
+                                        case chargyInterfaces.DisplayPrefixes.KILO:
+                                            currentValue = parseFloat((currentValue /       1000).toFixed(measurementValue.value_displayPrecision));
+                                            break;
+                                        case chargyInterfaces.DisplayPrefixes.MEGA:
+                                            currentValue = parseFloat((currentValue /    1000000).toFixed(measurementValue.value_displayPrecision));
+                                            break;
+                                        case chargyInterfaces.DisplayPrefixes.GIGA:
+                                            currentValue = parseFloat((currentValue / 1000000000).toFixed(measurementValue.value_displayPrecision));
+                                            break;
+                                        default:
+                                            currentValue = parseFloat((currentValue             ).toFixed(measurementValue.value_displayPrecision));
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                currentValue = parseFloat(currentValue.toFixed(Math.abs(measurementValue.measurement.scale)));
+                            }
+
+
                             // Show energy counter value
-                            let value2Div                    = chargyLib.CreateDiv(MeasurementValueDiv, "value1",
-                                                                         parseFloat((measurementValue.value * Math.pow(10, measurementValue.measurement.scale)).toFixed(Math.abs(measurementValue.measurement.scale))).toString());
+                            chargyLib.CreateDiv(MeasurementValueDiv, "value1", currentValue.toString());
+                                                                    //     parseFloat((measurementValue.value * Math.pow(10, measurementValue.measurement.scale)).toFixed(Math.abs(measurementValue.measurement.scale))).toString());
 
-                            switch (measurement.unit)
+
+                            //#endregion
+
+                            //#region Show kWh or Wh
+
+                            // Display the energy unit differently from its native energy meter representation.
+                            // This can be a regulatory requirement based on the calibration law.
+                            if (measurementValue.value_displayPrefix)
                             {
+                                switch (measurementValue.value_displayPrefix)
+                                {
 
-                                case "kWh":
-                                case "KILO_WATT_HOURS":
-                                    chargyLib.CreateDiv(MeasurementValueDiv, "unit1", "kWh");
-                                    break;
+                                    case chargyInterfaces.DisplayPrefixes.KILO:
+                                        chargyLib.CreateDiv(MeasurementValueDiv, "unit1", "kWh");
+                                        break;
 
-                                // "WATT_HOURS"
-                                default:
-                                    chargyLib.CreateDiv(MeasurementValueDiv, "unit1", "Wh");
-                                    break;
+                                    case chargyInterfaces.DisplayPrefixes.MEGA:
+                                        chargyLib.CreateDiv(MeasurementValueDiv, "unit1", "MWh");
+                                        break;
 
+                                    case chargyInterfaces.DisplayPrefixes.GIGA:
+                                        chargyLib.CreateDiv(MeasurementValueDiv, "unit1", "GWh");
+                                        break;
+
+                                    default:
+                                        chargyLib.CreateDiv(MeasurementValueDiv, "unit1", "Wh");
+                                        break;
+
+                                }
+                            }
+                            else
+                            {
+                                switch (measurement.unit)
+                                {
+
+                                    case "kWh":
+                                    case "KILO_WATT_HOURS":
+                                        chargyLib.CreateDiv(MeasurementValueDiv, "unit1", "kWh");
+                                        break;
+
+                                    // "WATT_HOURS"
+                                    default:
+                                        chargyLib.CreateDiv(MeasurementValueDiv, "unit1", "Wh");
+                                        break;
+
+                                }
                             }
 
+                            //#endregion
 
-                            // Show energy difference
-                            var currentValue                 = measurementValue.value;
+                            //#region Show energy difference
 
-                            switch (measurement.unit)
+                            // Difference
+                            chargyLib.CreateDiv(MeasurementValueDiv, "value2",
+                                      measurementCounter > 1
+                                          ? "+" + (measurementValue.value_displayPrecision
+                                                       ? parseFloat((currentValue - previousValue).toFixed(Math.abs(measurementValue.value_displayPrecision)))
+                                                       : parseFloat((currentValue - previousValue).toFixed(Math.abs(measurementValue.measurement.scale))))
+                                          : "0");
+
+                            // Unit
+                            if (measurementCounter <= 1)
+                                chargyLib.CreateDiv(MeasurementValueDiv, "unit2",  "");
+                            else
                             {
+                                switch (measurement.unit)
+                                {
 
-                                case "kWh":
-                                case "KILO_WATT_HOURS":
-                                    currentValue = parseFloat((currentValue * Math.pow(10, measurementValue.measurement.scale)).toFixed(Math.abs(measurementValue.measurement.scale)));
-                                    break;
+                                    case "kWh":
+                                    case "KILO_WATT_HOURS":
+                                        chargyLib.CreateDiv(MeasurementValueDiv, "unit2", "kWh");
+                                        break;
 
-                                // "WATT_HOURS"
-                                default:
-                                    currentValue = parseFloat((currentValue / 1000 * Math.pow(10, measurementValue.measurement.scale)).toFixed(Math.abs(measurementValue.measurement.scale)));
-                                    break;
+                                    // "WATT_HOURS"
+                                    default:
+                                        chargyLib.CreateDiv(MeasurementValueDiv, "unit2",  "Wh");
+                                        break;
 
+                                }
                             }
 
-                            let valueDiv                     = chargyLib.CreateDiv(MeasurementValueDiv, "value2",
-                                                                         previousValue > 0
-                                                                             ? "+" + parseFloat((currentValue - previousValue).toFixed(Math.abs(measurementValue.measurement.scale)))
-                                                                             : "0");
+                            previousValue = currentValue;
 
-                            let unitDiv                      = chargyLib.CreateDiv(MeasurementValueDiv, "unit2",
-                                                                         previousValue > 0
-                                                                             ? "kWh"
-                                                                             : "");
+                            //#endregion
 
                             //#region Show signature status
 
@@ -2433,8 +2542,6 @@ export class ChargyApp {
                                                                          icon);
 
                             //#endregion
-
-                            previousValue                    = currentValue;
 
                         }
 
