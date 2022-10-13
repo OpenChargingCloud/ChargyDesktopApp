@@ -2185,33 +2185,30 @@ export class ChargyApp {
                 for (var measurement of chargingSession.measurements)
                 {
 
-                    measurement.chargingSession      = chargingSession;
+                    measurement.chargingSession   = chargingSession;
 
-                    let headline                     = chargyLib.CreateDiv(this.evseTarifInfosDiv);
-                    headline.id                      = "headline";
-                    headline.innerHTML               = "Informationen zum Ladevorgang";
+                    const headline                = chargyLib.CreateDiv(this.evseTarifInfosDiv);
+                    headline.id                   = "headline";
+                    headline.innerHTML            = "Informationen zum Ladevorgang";
 
-                    let MeasurementInfoDiv           = chargyLib.CreateDiv(this.evseTarifInfosDiv,  "measurementInfos");
+                    const MeasurementInfoDiv      = chargyLib.CreateDiv(this.evseTarifInfosDiv,  "measurementInfos");
 
                     //#region Show charging station infos
 
                     if (measurement.chargingSession.chargingStation != null)
                     {
 
-                        let ChargingStationDiv       = chargyLib.CreateDiv(MeasurementInfoDiv,  "chargingStation");
-                        let ChargingStationHeadline  = chargyLib.CreateDiv(ChargingStationDiv,  "chargingStationHeadline",
-                                                                 "Ladestation");
+                        const chargingStationDiv  = chargyLib.CreateDiv(MeasurementInfoDiv,  "chargingStation");
+                                                    chargyLib.CreateDiv(chargingStationDiv,  "chargingStationHeadline",  "Ladestation");
 
-                        if (measurement.chargingSession.chargingStation["@id"]?.length > 0)
-                        {
-                            chargyLib.CreateDiv2(ChargingStationDiv,  "chargingStationId",
+                        if (measurement.chargingSession.chargingStation["@id"]?.length > 0) {
+                            chargyLib.CreateDiv2(chargingStationDiv,  "chargingStationId",
                                        "Identifikation",    measurement.chargingSession.chargingStation["@id"]);
                         }
 
                         if (measurement.chargingSession.chargingStation.firmwareVersion &&
-                            measurement.chargingSession.chargingStation.firmwareVersion.length > 0)
-                        {
-                            chargyLib.CreateDiv2(ChargingStationDiv,  "firmwareVersion",
+                            measurement.chargingSession.chargingStation.firmwareVersion.length > 0) {
+                            chargyLib.CreateDiv2(chargingStationDiv,  "firmwareVersion",
                                        "Firmware-Version",  measurement.chargingSession.chargingStation.firmwareVersion);
                         }
 
@@ -2221,37 +2218,35 @@ export class ChargyApp {
 
                     //#region Show meter infos...
 
-                    let meterDiv       = chargyLib.CreateDiv(MeasurementInfoDiv,  "meter");
-                    let meterHeadline  = chargyLib.CreateDiv(meterDiv,            "meterHeadline",
-                                                                        "Energiezähler");
+                    const meterDiv  = chargyLib.CreateDiv(MeasurementInfoDiv,  "meter");
+                                      chargyLib.CreateDiv(meterDiv,            "meterHeadline",  "Energiezähler");
 
-                    var meter          = this.chargy.GetMeter(measurement.energyMeterId);
-
+                    const meter = this.chargy.GetMeter(measurement.energyMeterId);
                     if (meter != null)
                     {
 
                         chargyLib.CreateDiv2(meterDiv,         "meterId",
-                                   "Seriennummer",   measurement.energyMeterId);
+                                             "Seriennummer",    measurement.energyMeterId);
 
                         if (meter.vendor?.length > 0)
                             chargyLib.CreateDiv2(meterDiv,            "meterVendor",
-                                       "Zählerhersteller",  meter.vendorURL != undefined && meter.vendorURL?.length > 0
-                                                                ? "<a href=\"javascript:OpenLink('" + meter.vendorURL + "')\">" + meter.vendor + "</a>"
-                                                                : meter.vendor);
+                                                 "Zählerhersteller",   meter.vendorURL != undefined && meter.vendorURL?.length > 0
+                                                                           ? "<a href=\"javascript:OpenLink('" + meter.vendorURL + "')\">" + meter.vendor + "</a>"
+                                                                           : meter.vendor);
 
                         if (meter.model?.length > 0)
                             chargyLib.CreateDiv2(meterDiv,            "meterModel",
-                                       "Model",             meter.modelURL != undefined && meter.modelURL?.length > 0
-                                                                ? "<a href=\"javascript:OpenLink('" + meter.modelURL + "')\">" + meter.model + "</a>"
-                                                                : meter.model);
+                                                 "Model",              meter.modelURL != undefined && meter.modelURL?.length > 0
+                                                                           ? "<a href=\"javascript:OpenLink('" + meter.modelURL + "')\">" + meter.model + "</a>"
+                                                                           : meter.model);
 
                         if (meter.hardwareVersion && meter.hardwareVersion?.length > 0)
                             chargyLib.CreateDiv2(meterDiv,            "meterHardwareVersion",
-                                       "Hardware Version",  meter.hardwareVersion);
+                                                 "Hardware Version",   meter.hardwareVersion);
 
                         if (meter.firmwareVersion?.length > 0)
                             chargyLib.CreateDiv2(meterDiv,            "meterFirmwareVersion",
-                                       "Firmware Version",  meter.firmwareVersion);
+                                                 "Firmware Version",   meter.firmwareVersion);
 
                     }
 
@@ -2261,17 +2256,17 @@ export class ChargyApp {
 
                     else
                         chargyLib.CreateDiv2(meterDiv,              "meterId",
-                                   "Zählerseriennummer",  measurement.energyMeterId);
+                                             "Zählerseriennummer",   measurement.energyMeterId);
 
                     //#endregion
 
                     //#region Show measurement infos
 
-                    chargyLib.CreateDiv2(meterDiv,              "measurement",
-                               "Messung",             measurement.phenomena?.[0]?.name ?? measurement.name);
+                    chargyLib.CreateDiv2(meterDiv,         "measurement",
+                                         "Messung",         measurement.phenomena?.[0]?.name ?? measurement.name);
 
-                    chargyLib.CreateDiv2(meterDiv,              "OBIS",
-                               "OBIS-Kennzahl",       measurement.phenomena?.[0]?.obis ?? measurement.obis);
+                    chargyLib.CreateDiv2(meterDiv,         "OBIS",
+                                         "OBIS-Kennzahl",   measurement.phenomena?.[0]?.obis ?? measurement.obis);
 
                     //#endregion
 
@@ -2280,50 +2275,36 @@ export class ChargyApp {
                     if (measurement.values && measurement.values.length > 0)
                     {
 
-                        let meterHeadline                = chargyLib.CreateDiv(this.evseTarifInfosDiv,  "measurementsHeadline",
-                                                                     "Messwerte");
-                        meterHeadline.id                 = "measurementValues-headline";
+                        let meterHeadline                 = chargyLib.CreateDiv(this.evseTarifInfosDiv,
+                                                                                "measurementsHeadline",
+                                                                                "Messwerte");
+                        meterHeadline.id                  = "measurementValues-headline";
 
-                        let MeasurementValuesDiv         = chargyLib.CreateDiv(this.evseTarifInfosDiv,     "measurementValues");
-                        let previousValue                = 0;
-                        let measurementCounter           = 0;
+                        let MeasurementValuesDiv          = chargyLib.CreateDiv(this.evseTarifInfosDiv, "measurementValues");
+                        let previousValue                 = 0;
+                        let measurementCounter            = 0;
 
                         for (let measurementValue of measurement.values)
                         {
 
                             measurementCounter++;
-                            measurementValue.measurement     = measurement;
+                            measurementValue.measurement  = measurement;
 
-                            let MeasurementValueDiv          = chargyLib.CreateDiv(MeasurementValuesDiv, "measurementValue");
-                            MeasurementValueDiv.onclick      = (ev: MouseEvent) => {
+                            const MeasurementValueDiv     = chargyLib.CreateDiv(MeasurementValuesDiv, "measurementValue");
+                            MeasurementValueDiv.onclick   = (ev: MouseEvent) => {
                                 this.showMeasurementCryptoDetails(measurementValue);
                             };
 
-                            var timestamp                    = chargyLib.parseUTC(measurementValue.timestamp);
+                            //#region Show the timestamp
 
-                            let timestampDiv                 = chargyLib.CreateDiv(MeasurementValueDiv, "timestamp",
-                                                                         timestamp.format('HH:mm:ss') + " Uhr");
+                            chargyLib.CreateDiv(MeasurementValueDiv, "timestamp",
+                                                chargyLib.parseUTC(measurementValue.timestamp).format('HH:mm:ss') + " Uhr");
 
+                            //#endregion
 
                             //#region Show current energy value
 
-                            var currentValue                 = measurementValue.value * Math.pow(10, measurementValue.measurement.scale);
-
-                            // switch (measurement.unit)
-                            // {
-
-                            //     case "kWh":
-                            //     case "KILO_WATT_HOURS":
-                            //         currentValue = (currentValue * Math.pow(10, measurementValue.measurement.scale));
-                            //         break;
-
-                            //     // "WATT_HOURS"
-                            //     default:
-                            //         currentValue = (currentValue / 1000 * Math.pow(10, measurementValue.measurement.scale));
-                            //         break;
-
-                            // }
-
+                            let currentValue  = measurementValue.value * Math.pow(10, measurementValue.measurement.scale);
 
                             // Display the energy value differently from its native energy meter representation.
                             // This can be a regulatory requirement based on the calibration law.
@@ -2370,15 +2351,13 @@ export class ChargyApp {
                                 currentValue = parseFloat(currentValue.toFixed(Math.abs(measurementValue.measurement.scale)));
                             }
 
-
-                            // Show energy counter value
-                            chargyLib.CreateDiv(MeasurementValueDiv, "value1", currentValue.toString());
-                                                                    //     parseFloat((measurementValue.value * Math.pow(10, measurementValue.measurement.scale)).toFixed(Math.abs(measurementValue.measurement.scale))).toString());
-
+                            // Show energy value
+                            chargyLib.CreateDiv(MeasurementValueDiv, "value1",
+                                                currentValue.toString());
 
                             //#endregion
 
-                            //#region Show kWh or Wh
+                            //#region Show energy unit (kWh or Wh...)
 
                             // Display the energy unit differently from its native energy meter representation.
                             // This can be a regulatory requirement based on the calibration law.
