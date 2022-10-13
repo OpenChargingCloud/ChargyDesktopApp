@@ -106,20 +106,20 @@
         "en": "Missing or invalid %p. signed meter value!"
     },
 
-    "InconsistentJSONContextInformation!": {
-        "de": "Inkonsistente JSON Context information!",
-        "en": "Inconsistent JSON context information!"
+    "InconsistentJSONContextInformation": {
+        "de": "Inkonsistente Datenformatkennzeichnung (JSON Context) der signierten Messwerte!",
+        "en": "Inconsistent JSON context of the signed meter values!"
     },
 
 
     "MissingOrInvalid_SignedMeterValue_JSONContextP": {
         "de": "Fehlende oder ungültige Datenformatkennzeichnung (JSON Context) des %p. signierten Messwertes!",
-        "en": "Missing or invalid measurement identification (JSON context) of the %p. signed meter value!"
+        "en": "Missing or invalid measurement data format identification (JSON context) of the %p. signed meter value!"
     },
 
     "Inconsistent_SignedMeterValue_JSONContextP": {
         "de": "Inkonsistente Datenformatkennzeichnung (JSON Context) des %p. signierten Messwertes!",
-        "en": "Inconsistent measurement identification (JSON context) of the %p. signed meter value!"
+        "en": "Inconsistent measurement data format identification (JSON context) of the %p. signed meter value!"
     },
 
     "MissingOrInvalid_SignedMeterValue_MeasurementIdP": {
@@ -233,6 +233,37 @@
     "MissingOrInvalid_SignedMeterValue_Contract_TimestampLocal_SeasonOffsetP": {
         "de": "Fehlender oder ungültiger saisonaler Offset des Vertragszeitstempels des %p. signierten Messwertes!",
         "en": "Missing or invalid season offset of the contract local timestamp of the %p. signed meter value!"
+    },
+
+
+    "MissingOrInvalid_Measurand_IdentificationP": {
+        "de": "Fehlender oder ungültiger Identifikation der Messgröße des %p. signierten Messwertes!",
+        "en": "Missing or invalid measurand identification of the %p. signed meter value!"
+    },
+
+    "MissingOrInvalid_Measurand_NameP": {
+        "de": "Fehlender oder ungültiger Name der Messgröße des %p. signierten Messwertes!",
+        "en": "Missing or invalid measurand name of the %p. signed meter value!"
+    },
+
+
+
+
+    "Inconsistent_Measurement_ValueP": {
+        "de": "Inkonsistenter %p. Messwert!",
+        "en": "Inconsistent %p. meter value!"
+    },
+
+
+    "Inconsistent_ChargingStation_FirmwareVersion": {
+        "de": "Inkonsistente Firmwareversion der Ladestation!",
+        "en": "Inconsistent charging station firmware version!"
+    },
+
+    "Inconsistent_EVSE_Identification": {
+        "de": "Inkonsistente Identifikation des Ladepunktes (EVSE)!",
+        "en": "Inconsistent charge point (EVSE) identification!"
     }
+
 
 }

@@ -110,6 +110,9 @@ export class BSMCrypt01 extends ACrypt {
                                                  Measurements:          Array<any>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
+        const errors    = new Array<String>();
+        const warnings  = new Array<String>();
+
         if (!Array.isArray(Measurements)) return {
             status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
             message:   this.chargy.GetLocalizedMessage("MissingOrInvalidSignedMeterValues"),
@@ -128,28 +131,28 @@ export class BSMCrypt01 extends ACrypt {
             //#region Verify values
 
             let common = {
-                context:                          Measurements[0]["@context"],
-                meterFirmwareVersion:             Measurements[0].meterInfo?.firmwareVersion,
-                meterPublicKey:                   Measurements[0].meterInfo?.publicKey,
-                meterId:                          Measurements[0].meterInfo?.meterId,
-                meterManufacturer:                Measurements[0].meterInfo?.manufacturer,
-                meterType:                        Measurements[0].meterInfo?.type,
-                operatorInfo:                     Measurements[0].operatorInfo,
-                contractId:                       Measurements[0].contract?.id,
-                contractType:                     Measurements[0].contract?.type,
-                value_measurandId:                Measurements[0].value?.measurand?.id, // OBIS Id
-                value_measurandName:              Measurements[0].value?.measurand?.name,
-                value_measuredValueScale:         Measurements[0].value?.measuredValue?.scale,
-                value_measuredValueUnit:          Measurements[0].value?.measuredValue?.unit,
-                value_measuredValueUnitEncoded:   Measurements[0].value?.measuredValue?.unitEncoded,
-                value_measuredValueValueType:     Measurements[0].value?.measuredValue?.valueType,
-                value_displayedFormatPrefix:      "kilo",
-                value_displayedFormatPrecision:   2,
-                chargePointSoftwareVersion:       Measurements[0].chargePoint?.softwareVersion,
-                MA1:                              null as string|null,
-                epochSetCnt:                      -1,
-                epochSetOS:                       -1,
-                dataSets:                         [] as any[]
+                context:                           Measurements[0]["@context"],
+                meterInfo_firmwareVersion:         Measurements[0].meterInfo?.firmwareVersion,
+                meterInfo_publicKey:               Measurements[0].meterInfo?.publicKey,
+                meterInfo_meterId:                 Measurements[0].meterInfo?.meterId,
+                meterInfo_manufacturer:            Measurements[0].meterInfo?.manufacturer,
+                meterInfo_type:                    Measurements[0].meterInfo?.type,
+                operatorInfo:                      Measurements[0].operatorInfo,
+                contract_id:                       Measurements[0].contract?.id,
+                contract_type:                     Measurements[0].contract?.type,
+                value_measurand_id:                Measurements[0].value?.measurand?.id, // OBIS Id
+                value_measurand_name:              Measurements[0].value?.measurand?.name,
+                value_measuredValue_scale:         Measurements[0].value?.measuredValue?.scale,
+                value_measuredValue_unit:          Measurements[0].value?.measuredValue?.unit,
+                value_measuredValue_unitEncoded:   Measurements[0].value?.measuredValue?.unitEncoded,
+                value_measuredValue_valueType:     Measurements[0].value?.measuredValue?.valueType,
+                value_displayedFormat_prefix:      "kilo",
+                value_displayedFormat_precision:   2,
+                chargePoint_softwareVersion:       Measurements[0].chargePoint?.softwareVersion,
+                MA1:                               null as string|null,
+                epochSetCnt:                       -1,
+                epochSetOS:                        -1,
+                dataSets:                          [] as any[]
             };
 
 
@@ -159,59 +162,59 @@ export class BSMCrypt01 extends ACrypt {
                 certainty: 0
             }
 
-            if (!chargyLib.isMandatoryString(common.meterFirmwareVersion)) return {
+            if (!chargyLib.isMandatoryString(common.meterInfo_firmwareVersion)) return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_FirmwareVersionP", 1),
                 certainty: 0
             }
 
-            if (!chargyLib.isMandatoryString(common.meterPublicKey)) return {
+            if (!chargyLib.isMandatoryString(common.meterInfo_publicKey)) return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_PublicKeyP", 1),
                 certainty: 0
             }
 
-            if (!chargyLib.isMandatoryString(common.meterId)) return {
+            if (!chargyLib.isMandatoryString(common.meterInfo_meterId)) return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_MeterIdP", 1),
                 certainty: 0
             }
 
-            if (!chargyLib.isMandatoryString(common.meterManufacturer)) return {
+            if (!chargyLib.isMandatoryString(common.meterInfo_manufacturer)) return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_ManufacturerP", 1),
                 certainty: 0
             }
 
-            if (!chargyLib.isMandatoryString(common.meterType)) return {
+            if (!chargyLib.isMandatoryString(common.meterInfo_type)) return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_TypeP", 1),
                 certainty: 0
             }
 
 
-            if (!chargyLib.isMandatoryString(common.contractId)) return {
+            if (!chargyLib.isMandatoryString(common.contract_id)) return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_IdP", 1),
                 certainty: 0
             }
 
-            if (!chargyLib.isOptionalString(common.contractType)) return {
+            if (!chargyLib.isOptionalString(common.contract_type)) return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TypeP", 1),
                 certainty: 0
             }
 
 
-            if (!chargyLib.isMandatoryString(common.value_measurandId)) return {
+            if (!chargyLib.isMandatoryString(common.value_measurand_id)) return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:   "Invalid value measurand identification!",
+                message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_Measurand_IdentificationP", 1),
                 certainty: 0
             }
 
-            if (!chargyLib.isMandatoryString(common.value_measurandName)) return {
+            if (!chargyLib.isMandatoryString(common.value_measurand_name)) return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:   "Invalid value measurand name!",
+                message:   this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_Measurand_NameP", 1),
                 certainty: 0
             }
 
@@ -321,7 +324,7 @@ export class BSMCrypt01 extends ACrypt {
                 if (previousValue !== "" && currentMeasurement.value?.measuredValue?.value < previousValue)
                     return {
                         status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   "Inconsistent measurement values!",
+                        message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurement_ValueP", measurementCounter),
                         certainty: 0
                     };
                 previousValue = currentMeasurement.value?.measuredValue?.value;
@@ -330,21 +333,21 @@ export class BSMCrypt01 extends ACrypt {
                 if (currentMeasurement.meterInfo)
                 {
 
-                    if (currentMeasurement.meterInfo?.firmwareVersion    !== common.meterFirmwareVersion)
+                    if (currentMeasurement.meterInfo?.firmwareVersion    !== common.meterInfo_firmwareVersion)
                         return {
                             status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:   "Inconsistent meterInfo.firmwareVersion!",
                             certainty: 0
                         };
 
-                    if (currentMeasurement.meterInfo?.publicKey          !== common.meterPublicKey)
+                    if (currentMeasurement.meterInfo?.publicKey          !== common.meterInfo_publicKey)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent meterInfo.publicKey!",
                             certainty: 0
                         };
 
-                    if (currentMeasurement.meterInfo?.meterId            !== common.meterId)
+                    if (currentMeasurement.meterInfo?.meterId            !== common.meterInfo_meterId)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent meterInfo.meterId!",
@@ -358,14 +361,14 @@ export class BSMCrypt01 extends ACrypt {
                             certainty: 0
                         };
 
-                    if (currentMeasurement.meterInfo?.manufacturer       !== common.meterManufacturer)
+                    if (currentMeasurement.meterInfo?.manufacturer       !== common.meterInfo_manufacturer)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent meterInfo.manufacturer!",
                             certainty: 0
                         };
 
-                    if (currentMeasurement.meterInfo?.type               !== common.meterType)
+                    if (currentMeasurement.meterInfo?.type               !== common.meterInfo_type)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent meterInfo.type!",
@@ -387,40 +390,40 @@ export class BSMCrypt01 extends ACrypt {
                 if (currentMeasurement.contract)
                 {
 
-                    if (currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('contract-id:')).length == 0)
+                    if (currentMeasurement.additionalValues?.filter((element: any) => element?.measurand?.name?.startsWith('Meta') && element?.measuredValue?.value?.startsWith('contract-id:')).length == 0)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent contract information!",
                             certainty: 0
                         };
 
-                    if (currentMeasurement.contract.id                   !== common.contractId)
+                    if (currentMeasurement.contract.id                   !== common.contract_id)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent contract.id!",
                             certainty: 0
                         };
 
-                    if (currentMeasurement.contract.type                 !== common.contractType)
+                    if (currentMeasurement.contract.type                 !== common.contract_type)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent contract.type!",
                             certainty: 0
                         };
 
-                    let contractInfo = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('contract-id:'))[0]?.measuredValue?.value;
+                    let contractInfo = currentMeasurement.additionalValues?.filter((element: any) => element?.measurand?.name?.startsWith('Meta') && element?.measuredValue?.value?.startsWith('contract-id:'))[0]?.measuredValue?.value;
 
                     if (contractInfo != null)
                     {
 
-                        if ( currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contractType + ":" + common.contractId)
+                        if ( currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contract_type + ":" + common.contract_id)
                             return {
                                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                 message:  "Inconsistent contract information!",
                                 certainty: 0
                             };
 
-                        if (!currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contractId)
+                        if (!currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contract_id)
                             return {
                                 status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                 message:  "Inconsistent contract information!",
@@ -443,14 +446,14 @@ export class BSMCrypt01 extends ACrypt {
 
                     const measurand = currentMeasurement.value.measurand
 
-                    if (measurand.id !== common.value_measurandId || measurand.id !== rcrInAdditional.measurand.id)
+                    if (measurand.id !== common.value_measurand_id || measurand.id !== rcrInAdditional.measurand.id)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measurand.id!",
                             certainty: 0
                         };
 
-                    if (measurand.name !== common.value_measurandName || measurand.name !== rcrInAdditional.measurand.name)
+                    if (measurand.name !== common.value_measurand_name || measurand.name !== rcrInAdditional.measurand.name)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measurand.name!",
@@ -462,7 +465,7 @@ export class BSMCrypt01 extends ACrypt {
                 if (currentMeasurement.value.measuredValue)
                 {
 
-                    const measuredValue = currentMeasurement.value.measuredValue
+                    const measuredValue = currentMeasurement.value.measuredValue;
 
                     if (measuredValue.value !== rcrInAdditional.measuredValue.value)
                         return {
@@ -471,28 +474,28 @@ export class BSMCrypt01 extends ACrypt {
                             certainty: 0
                         };
 
-                    if (measuredValue.scale !== common.value_measuredValueScale || measuredValue.scale !== rcrInAdditional.measuredValue.scale)
+                    if (measuredValue.scale !== common.value_measuredValue_scale || measuredValue.scale !== rcrInAdditional.measuredValue.scale)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.scale!",
                             certainty: 0
                         };
 
-                    if (measuredValue.unit !== common.value_measuredValueUnit || measuredValue.unit !== rcrInAdditional.measuredValue.unit)
+                    if (measuredValue.unit !== common.value_measuredValue_unit || measuredValue.unit !== rcrInAdditional.measuredValue.unit)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.unit!",
                             certainty: 0
                         };
 
-                    if (measuredValue.unitEncoded !== common.value_measuredValueUnitEncoded || measuredValue.unitEncoded !== rcrInAdditional.measuredValue.unitEncoded)
+                    if (measuredValue.unitEncoded !== common.value_measuredValue_unitEncoded || measuredValue.unitEncoded !== rcrInAdditional.measuredValue.unitEncoded)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.unitEncoded!",
                             certainty: 0
                         };
 
-                    if (measuredValue.valueType !== common.value_measuredValueValueType || measuredValue.valueType !== rcrInAdditional.measuredValue.valueType)
+                    if (measuredValue.valueType !== common.value_measuredValue_valueType || measuredValue.valueType !== rcrInAdditional.measuredValue.valueType)
                         return {
                             status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                             message:  "Inconsistent measuredValue.valueType!",
@@ -501,20 +504,24 @@ export class BSMCrypt01 extends ACrypt {
 
                 }
 
+                if (currentMeasurement.value.displayedFormat)
+                {
+
+                    const displayedFormat = currentMeasurement.value.displayedFormat;
+
+                    //value_displayedFormatPrefix:      "kilo",
+                    //value_displayedFormatPrecision:   2,
+
+                }
 
                 if (currentMeasurement.chargePoint)
                 {
-                    if (currentMeasurement.chargePoint?.softwareVersion  !== common.chargePointSoftwareVersion)
-                        return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent chargePoint.softwareVersion!",
-                            certainty: 0
-                        };
+                    if (currentMeasurement.chargePoint?.softwareVersion !== common.chargePoint_softwareVersion)
+                        warnings.push(this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"))
                 }
 
 
-                let signedEVSEId       = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('evse-id:'));
-
+                let signedEVSEId = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('evse-id:'));
                 if (signedEVSEId.length == 1)
                 {
 
@@ -522,8 +529,8 @@ export class BSMCrypt01 extends ACrypt {
 
                     if (evse__id !== 'unknown' && EVSEId !== evse__id)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent EVSE identification!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessage("Inconsistent_EVSE_Identification"),
                             certainty: 0
                         };
 
@@ -531,23 +538,22 @@ export class BSMCrypt01 extends ACrypt {
 
 
                 let signedCSCSWVersion = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('csc-sw-version:'));
-
                 if (signedCSCSWVersion.length == 1)
                 {
 
-                    const csc_sw_version = (signedCSCSWVersion[0].measuredValue.value as String).replace('csc-sw-version:', '').trim();
+                    const csc_sw_version = (signedCSCSWVersion[0]?.measuredValue?.value as String)?.replace('csc-sw-version:', '')?.trim();
 
                     if (ExpectedCscSwVersion !== null && ExpectedCscSwVersion !== csc_sw_version)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Unexpected charging station controller software version!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"),
                             certainty: 0
                         };
 
                     if (previousCscSwVersion !== null && previousCscSwVersion !== csc_sw_version)
                         return {
-                            status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:  "Inconsistent charging station controller software version!",
+                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            message:   this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"),
                             certainty: 0
                         };
 
@@ -756,15 +762,15 @@ export class BSMCrypt01 extends ACrypt {
 
             let session = {
 
-                "@id":                          common.meterId + "-" + common.dataSets[0]["Epoch"],
+                "@id":                          common.meterInfo_meterId + "-" + common.dataSets[0]["Epoch"],
                 "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/bsm-ws36a-v0+json",
                 "begin":                        common.dataSets[0].time,
                 "end":                          common.dataSets[n].time,
                 "EVSEId":                       CTR.chargingStationOperators![0]!["chargingStations"]![0]!["EVSEs"]![0]!["@id"],
 
                 "authorizationStart": {
-                    "@id":                      common.contractId,
-                    "@context":                 common.contractType,
+                    "@id":                      common.contract_id,
+                    "@context":                 common.contract_type,
                    //  "timestamp":                this.moment.unix(CTRArray[0]["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
                    //                                               CTRArray[0]["contract"]["timestampLocal"]["localOffset"] +
                    //                                               CTRArray[0]["contract"]["timestampLocal"]["seasonOffset"]).format(),
@@ -772,17 +778,17 @@ export class BSMCrypt01 extends ACrypt {
 
                 "measurements": [
                     {
-                         "energyMeterId":        common.meterId,
+                         "energyMeterId":        common.meterInfo_meterId,
                     //     //"@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/bsm-ws36a-v0+json",
                          "phenomena": [
                              {
                                 "name":              "Real Energy Imported",
-                                "obis":              common.value_measurandId,
-                                "unit":              common.value_measuredValueUnit,
-                                "unitEncoded":       common.value_measuredValueUnitEncoded,
-                                "valueType":         common.value_measuredValueValueType,
+                                "obis":              common.value_measurand_id,
+                                "unit":              common.value_measuredValue_unit,
+                                "unitEncoded":       common.value_measuredValue_unitEncoded,
+                                "valueType":         common.value_measuredValue_valueType,
                                 "value":             "value",
-                                "scale":             common.value_measuredValueScale
+                                "scale":             common.value_measuredValue_scale
                              },
                              {
                                 "name":              "Total Watt-hours Imported",
@@ -872,22 +878,22 @@ export class BSMCrypt01 extends ACrypt {
 
             if (CTR.contract == null || CTR.contract == undefined)
                 CTR.contract = {
-                    "@id":       common.contractId,
-                    "@context":  common.contractType,
+                    "@id":       common.contract_id,
+                    "@context":  common.contract_type,
                 };
             else
             {
                 //ToDo: What to do when there are different values?!
-                CTR.contract["@id"]      = common.contractId;
-                CTR.contract["@context"] = common.contractType;
+                CTR.contract["@id"]      = common.contract_id;
+                CTR.contract["@context"] = common.contract_type;
             }
 
             (CTR!.chargingStationOperators![0]!.chargingStations![0]!.EVSEs[0]?.meters)?.push({
-                "@id":                      common.meterId,
-                model:                      common.meterType,
-                vendor:                     common.meterManufacturer,
+                "@id":                      common.meterInfo_meterId,
+                model:                      common.meterInfo_type,
+                vendor:                     common.meterInfo_manufacturer,
                 vendorURL:                  "https://www.bzr-bauer.de",
-                firmwareVersion:            common.meterFirmwareVersion,
+                firmwareVersion:            common.meterInfo_firmwareVersion,
                 //hardwareVersion?:           string;
                 signatureInfos:             {
                                                 hash:            chargyInterfaces.CryptoHashAlgorithms.SHA256,
@@ -900,7 +906,7 @@ export class BSMCrypt01 extends ACrypt {
                 publicKeys:                 [{
                                                 algorithm:       "secp256r1",
                                                 format:          "DER",
-                                                value:           common.meterPublicKey
+                                                value:           common.meterInfo_publicKey
                                             }]
             });
 

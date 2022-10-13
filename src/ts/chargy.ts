@@ -725,19 +725,19 @@ export class Chargy {
 
                             // At this point we currently only know whether the CTR data format is correct,
                             // but NOT whether the crypto signatures are correct!
-                            return chargyInterfaces.isISessionCryptoResult1(ctr) &&
-                                   ctr.status === chargyInterfaces.SessionVerificationResult.Unvalidated;
+                            return chargyInterfaces.isISessionCryptoResult1(ctr);// &&
+                                   //ctr.status === chargyInterfaces.SessionVerificationResult.Unvalidated;
 
                         });
 
                         const sortedResults = filteredResults.sort((ctr1, ctr2) => {
 
                             if (ctr1.certainty > ctr2.certainty) {
-                                return 1;
+                                return -1;
                             }
 
                             if (ctr1.certainty < ctr2.certainty) {
-                                return -1;
+                                return 1;
                             }
 
                             return 0;

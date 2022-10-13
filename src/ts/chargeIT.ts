@@ -411,8 +411,8 @@ export class ChargeIT {
     public async tryToParseChargeITContainerFormat(SomeJSON: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
-        const warnings  = new Array<String>();
         const errors    = new Array<String>();
+        const warnings  = new Array<String>();
 
         if (SomeJSON === undefined ||
             SomeJSON === null      ||
