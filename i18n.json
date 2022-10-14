@@ -301,6 +301,12 @@
     },
 
 
+    "MissingOrInvalid_SignedMeterValue_ValueP": {
+        "de": "Fehlender oder ungültiger Wert des %p. signierten Messwertes!",
+        "en": "Missing or invalid value of the %p. signed meter value!"
+    },
+
+
     "MissingOrInvalid_Measurand_IdentificationP": {
         "de": "Fehlender oder ungültiger Identifikation der Messgröße des %p. signierten Messwertes!",
         "en": "Missing or invalid measurand identification of the %p. signed meter value!"
