@@ -117,31 +117,13 @@ export class BSMCrypt01 extends ACrypt {
     }
 
 
-    private PrefixConverter(input: string): chargyInterfaces.DisplayPrefixes {
-        switch(input?.toLowerCase()) {
-            case "kilo":  return chargyInterfaces.DisplayPrefixes.KILO; break;
-            case "mega":  return chargyInterfaces.DisplayPrefixes.MEGA; break;
-            case "giga":  return chargyInterfaces.DisplayPrefixes.GIGA; break;
-            default:      return chargyInterfaces.DisplayPrefixes.NULL;
-        }
-    }
-
-    private UnitConverter(input: string): string{
-        switch(input?.toUpperCase()) {
-            case "WATT_HOUR":  return "Wh"; break;
-            case "WATT":       return "W";  break;
-            default:           return "";
-        }
-    }
-
-
-    //#region tryToParseBSM_WS36aMeasurements(Measurements)
-
     public async tryToParseBSM_WS36aMeasurements(CTR:                   chargyInterfaces.IChargeTransparencyRecord,
                                                  ExpectedEVSEId:        string,
                                                  ExpectedCscSwVersion:  string|null,
                                                  Measurements:          Array<any>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
+
+        //#region Initial checks
 
         if (!Array.isArray(Measurements)) return {
             status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
@@ -169,6 +151,8 @@ export class BSMCrypt01 extends ACrypt {
         // How sure we are, that this is really a BSM meter value format
         let numberOfFormatChecks  = 2*39; // At least two signed meter values!
         let secondaryErrors       = 0;
+
+        //#endregion
 
         try
         {
@@ -1039,8 +1023,6 @@ export class BSMCrypt01 extends ACrypt {
 
     }
 
-    //#endregion
-
 
     GenerateKeyPair()//options?: elliptic.ec.GenKeyPairOptions)
     {
@@ -1631,6 +1613,23 @@ export class BSMCrypt01 extends ACrypt {
 
 
     //#region Helper methods
+
+    private PrefixConverter(input: string): chargyInterfaces.DisplayPrefixes {
+        switch(input?.toLowerCase()) {
+            case "kilo":  return chargyInterfaces.DisplayPrefixes.KILO; break;
+            case "mega":  return chargyInterfaces.DisplayPrefixes.MEGA; break;
+            case "giga":  return chargyInterfaces.DisplayPrefixes.GIGA; break;
+            default:      return chargyInterfaces.DisplayPrefixes.NULL;
+        }
+    }
+
+    private UnitConverter(input: string): string{
+        switch(input?.toUpperCase()) {
+            case "WATT_HOUR":  return "Wh"; break;
+            case "WATT":       return "W";  break;
+            default:           return "";
+        }
+    }
 
     public ParseTyp(value: number) : string
     {
