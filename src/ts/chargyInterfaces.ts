@@ -452,6 +452,9 @@ export interface IMeasurementValue
     paginationId?:              number|string;
     logBookIndex?:              string;
 
+    errors?:                    Array<string>;
+    warnings?:                  Array<string>;
+
     signatures:                 Array<ISignature|ISignatureRS>;
     result?:                    ICryptoResult;
 
@@ -487,6 +490,8 @@ export function isISessionCryptoResult2(obj: any): obj is ISessionCryptoResult {
 export interface ICryptoResult
 {
     status:                     VerificationResult;
+    errors?:                    Array<string>;
+    warnings?:                  Array<string>;
 }
 
 export function isICryptoResult(obj: any): obj is ICryptoResult {
@@ -586,7 +591,9 @@ export enum VerificationResult {
     ValidSignature,
     ValidStartValue,
     ValidIntermediateValue,
-    ValidStopValue
+    ValidStopValue,
+
+    ValidationError
 
 }
 

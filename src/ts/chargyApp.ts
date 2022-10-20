@@ -2447,6 +2447,28 @@ export class ChargyApp {
                                 switch (measurementValue.result.status)
                                 {
 
+                                    case chargyInterfaces.VerificationResult.ValidationError:
+
+                                        icon = '<i class="fas fa-times-circle"></i> ';
+
+                                        // Format validation errors...
+                                        if      (measurementValue.errors                    &&
+                                                 measurementValue.errors.length         > 0 &&
+                                                 measurementValue.errors[0]            != null)
+                                            icon += measurementValue.errors[0];
+
+                                        // Validation errors...
+                                        else if (measurementValue.result                    &&
+                                                 measurementValue.result.errors             &&
+                                                 measurementValue.result.errors.length  > 0 &&
+                                                 measurementValue.result.errors[0]     != null)
+                                            icon += measurementValue.result.errors[0];
+
+                                        else
+                                            icon += this.chargy.GetLocalizedMessage("GeneralError");
+
+                                        break;
+
                                     case chargyInterfaces.VerificationResult.UnknownCTRFormat:
                                         icon = '<i class="fas fa-times-circle"></i> Unbekanntes Transparenzdatenformat';
                                         break;
@@ -2516,9 +2538,9 @@ export class ChargyApp {
 
                                 }
 
-                            let verificationStatusDiv        = chargyLib.CreateDiv(MeasurementValueDiv,
-                                                                         "verificationStatus",
-                                                                         icon);
+                            chargyLib.CreateDiv(MeasurementValueDiv,
+                                                "verificationStatus",
+                                                icon);
 
                             //#endregion
 

@@ -356,16 +356,20 @@ export class BSMCrypt01 extends ACrypt {
             for (const currentMeasurement of Measurements)
             {
 
+                let currentErrors:   Array<string>  = [];
+                let currentWarnings: Array<string>  = [];
+
                 measurementCounter++;
 
                 //#region Validate common values
 
-                if (currentMeasurement["@context"] !== common.context)
-                    return {
-                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_JSONContextP", measurementCounter),
-                        certainty: 0
-                    };
+            //    currentErrors.push("lala #" + measurementCounter);
+
+                if (currentMeasurement["@context"] !== common.context) return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_JSONContextP", measurementCounter),
+                    certainty: 0
+                };
 
                 let currentId = currentMeasurement["@id"];
                 if (previousId !== "" && typeof currentId === 'string')
@@ -547,11 +551,12 @@ export class BSMCrypt01 extends ACrypt {
                     const measuredValue = currentMeasurement.value.measuredValue;
 
                     if (measuredValue.value !== rcrInAdditional.measuredValue.value)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValueP", measurementCounter),
-                            certainty: 0
-                        };
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValueP", measurementCounter));
+                        //return {
+                        //    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        //    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValueP", measurementCounter),
+                        //    certainty: 0
+                        //};
 
                     if (measuredValue.scale !== common.value_measuredValue_scale || measuredValue.scale !== rcrInAdditional.measuredValue.scale)
                         return {
@@ -782,10 +787,12 @@ export class BSMCrypt01 extends ACrypt {
                     Evt:             Evt,
                     time:            currentMeasurement.time,
                     value:           currentMeasurement.value?.measuredValue?.  value,
-                    valuePrefix:     this.PrefixConverter(currentMeasurement.value?.displayedFormat?.prefix   ?? "kilo"),
-                    valuePrecision:  currentMeasurement.value?.displayedFormat?.precision                     ?? 2,
+                    valuePrefix:     this.PrefixConverter(currentMeasurement.value?.displayedFormat?.prefix ?? "kilo"),
+                    valuePrecision:  currentMeasurement.value?.displayedFormat?.precision                   ?? 2,
                     measurementId:   currentMeasurement.measurementId,
-                    signature:       currentMeasurement.signature
+                    signature:       currentMeasurement.signature,
+                    errors:          currentErrors,
+                    warnings:        currentWarnings
                 }); // as IBSMMeasurementValue);
 
             }
@@ -934,6 +941,9 @@ export class BSMCrypt01 extends ACrypt {
                     Meta3:                                     dataSet.Meta3,
                     Evt:                                       dataSet.Evt,
 
+                    errors:                                    dataSet.errors,
+                    warnings:                                  dataSet.warnings,
+
                     signatures: [{
                         r:  ASN1Signature.r.toString(16),
                         s:  ASN1Signature.s.toString(16)
@@ -941,7 +951,7 @@ export class BSMCrypt01 extends ACrypt {
 
                 };
 
-            (session?.measurements[0]!.values as any[])?.push(bsmMeasurementValue);
+                (session?.measurements[0]!.values as any[])?.push(bsmMeasurementValue);
 
             }
 
@@ -1068,7 +1078,6 @@ export class BSMCrypt01 extends ACrypt {
                         await this.VerifyMeasurement(measurementValue as IBSMMeasurementValue);
                     }
 
-
                     // Find an overall result...
                     sessionResult = chargyInterfaces.SessionVerificationResult.ValidSignature;
 
@@ -1187,8 +1196,16 @@ export class BSMCrypt01 extends ACrypt {
 
         function setResult(verificationResult: chargyInterfaces.VerificationResult)
         {
-            cryptoResult.status     = verificationResult;
-            measurementValue.result = cryptoResult;
+            cryptoResult.status        = verificationResult;
+            measurementValue.result    = cryptoResult;
+            return cryptoResult;
+        }
+
+        function setErrorResult(errorMessage: string)
+        {
+            cryptoResult.status        = chargyInterfaces.VerificationResult.ValidationError;
+            cryptoResult.errors?.push(errorMessage);
+            measurementValue.result    = cryptoResult;
             return cryptoResult;
         }
 
@@ -1357,8 +1374,16 @@ export class BSMCrypt01 extends ACrypt {
                                                verify       (cryptoResult.sha256value,
                                                              cryptoResult.signature))
                                 {
+
+                                    if (measurementValue.errors && measurementValue.errors.length > 0)
+                                        return setResult(chargyInterfaces.VerificationResult.ValidationError);
+
                                     return setResult(chargyInterfaces.VerificationResult.ValidSignature);
+
                                 }
+
+                                if (measurementValue.errors && measurementValue.errors.length > 0)
+                                    return setResult(chargyInterfaces.VerificationResult.ValidationError);
 
                                 return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
 
@@ -1396,7 +1421,7 @@ export class BSMCrypt01 extends ACrypt {
 
     }
 
-    async ViewMeasurement(measurementValue:      IBSMMeasurementValue,
+    async ViewMeasurement(measurementValue:    IBSMMeasurementValue,
                           introDiv:              HTMLDivElement,
                           infoDiv:               HTMLDivElement,
                           PlainTextDiv:          HTMLDivElement,
