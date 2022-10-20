@@ -529,19 +529,11 @@ export class BSMCrypt01 extends ACrypt {
 
                     const measurand = currentMeasurement.value.measurand
 
-                    if (measurand.id !== common.value_measurand_id || measurand.id !== rcrInAdditional.measurand.id)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurand_IdentificationP", measurementCounter),
-                            certainty: 0
-                        };
+                    if (measurand.id   !== common.value_measurand_id   || measurand.id   !== rcrInAdditional.measurand.id)
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurand_IdentificationP", measurementCounter));
 
                     if (measurand.name !== common.value_measurand_name || measurand.name !== rcrInAdditional.measurand.name)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurand_NameP", measurementCounter),
-                            certainty: 0
-                        };
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurand_NameP",           measurementCounter));
 
                 }
 
@@ -550,51 +542,25 @@ export class BSMCrypt01 extends ACrypt {
 
                     const measuredValue = currentMeasurement.value.measuredValue;
 
-                    if (measuredValue.value !== rcrInAdditional.measuredValue.value)
-                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValueP", measurementCounter));
-                        //return {
-                        //    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        //    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValueP", measurementCounter),
-                        //    certainty: 0
-                        //};
+                    if (measuredValue.value       !== rcrInAdditional.measuredValue.value)
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValueP",             measurementCounter));
 
-                    if (measuredValue.scale !== common.value_measuredValue_scale || measuredValue.scale !== rcrInAdditional.measuredValue.scale)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_ScaleP", measurementCounter),
-                            certainty: 0
-                        };
+                    if (measuredValue.scale       !== common.value_measuredValue_scale       || measuredValue.scale       !== rcrInAdditional.measuredValue.scale)
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_ScaleP",       measurementCounter));
 
-                    if (measuredValue.unit !== common.value_measuredValue_unit || measuredValue.unit !== rcrInAdditional.measuredValue.unit)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_UnitP", measurementCounter),
-                            certainty: 0
-                        };
+                    if (measuredValue.unit        !== common.value_measuredValue_unit        || measuredValue.unit        !== rcrInAdditional.measuredValue.unit)
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_UnitP",        measurementCounter));
 
                     if (measuredValue.unitEncoded !== common.value_measuredValue_unitEncoded || measuredValue.unitEncoded !== rcrInAdditional.measuredValue.unitEncoded)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_UnitEncodedP", measurementCounter),
-                            certainty: 0
-                        };
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_UnitEncodedP", measurementCounter));
 
-                    if (measuredValue.valueType !== common.value_measuredValue_valueType || measuredValue.valueType !== rcrInAdditional.measuredValue.valueType)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_TypeP", measurementCounter),
-                            certainty: 0
-                        };
+                    if (measuredValue.valueType   !== common.value_measuredValue_valueType   || measuredValue.valueType   !== rcrInAdditional.measuredValue.valueType)
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_TypeP",        measurementCounter));
 
                 }
 
-                if (currentMeasurement.chargePoint) {
-                    if (currentMeasurement.chargePoint?.softwareVersion !== common.chargePoint_softwareVersion) return {
-                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"),
-                        certainty: 0
-                    };
-                }
+                if (currentMeasurement.chargePoint && currentMeasurement.chargePoint.softwareVersion !== common.chargePoint_softwareVersion)
+                    currentErrors.push(this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"));
 
                 //#region Find "evse-id:"        within the "Meta" data blocks
 
@@ -604,11 +570,8 @@ export class BSMCrypt01 extends ACrypt {
 
                     const evse__id = (signedEVSEId[0].measuredValue.value as String).replace('evse-id:', '').trim();
 
-                    if (evse__id !== 'unknown' && ExpectedEVSEId !== evse__id) return {
-                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   this.chargy.GetLocalizedMessage("Inconsistent_EVSE_Identification"),
-                        certainty: 0
-                    };
+                    if (evse__id !== 'unknown' && ExpectedEVSEId !== evse__id)
+                        currentErrors.push(this.chargy.GetLocalizedMessage("Inconsistent_EVSE_Identification"));
 
                 }
 
@@ -624,11 +587,8 @@ export class BSMCrypt01 extends ACrypt {
 
                     // Just check that all measurements are done with the same
                     // charging controller software version.
-                    if (previousCscSwVersion !== null && previousCscSwVersion !== csc_sw_version) return {
-                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"),
-                        certainty: 0
-                    };
+                    if (previousCscSwVersion !== null && previousCscSwVersion !== csc_sw_version)
+                        currentErrors.push(this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"));
 
                     // The document header also contains this information but
                     // in a combined form of the actual version and a build
@@ -637,7 +597,7 @@ export class BSMCrypt01 extends ACrypt {
                     // software versions is hard to do when it comes to suffixs
                     // for release candidates, betas, ...
                     if (ExpectedCscSwVersion !== null && ExpectedCscSwVersion !== csc_sw_version)
-                        warnings.push(this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"));
+                        currentWarnings.push(this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"));
 
                     previousCscSwVersion = csc_sw_version;
 
@@ -695,40 +655,25 @@ export class BSMCrypt01 extends ACrypt {
                 }
 
 
-                if (previousRCR !== -1 && RCR[4] < previousRCR) return {
-                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurement_ValueP", measurementCounter),
-                    certainty: 0
-                };
+                if (previousRCR !== -1 && RCR[4] < previousRCR)
+                    currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurement_ValueP", measurementCounter));
                 previousRCR = RCR[4];
 
-                if (RCnt !== currentMeasurement.measurementId) return {
-                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeasurementIdP", measurementCounter),
-                    certainty: 0
-                };
+                if (RCnt !== currentMeasurement.measurementId)
+                    currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeasurementIdP", measurementCounter));
 
                 // Snapshot counter
-                if (previousRCnt !== -1 && RCnt != previousRCnt + 1) return {
-                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_CounterP", measurementCounter),
-                    certainty: 0
-                };
+                if (previousRCnt !== -1 && RCnt != previousRCnt + 1)
+                    currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_CounterP", measurementCounter));
                 previousRCnt = RCnt;
 
                 // Uptime counter
-                if (previousOS !== -1 && OS <= previousOS) return {
-                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_OperationSecondsCounterP", measurementCounter),
-                    certainty: 0
-                };
+                if (previousOS !== -1 && OS <= previousOS)
+                    currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_OperationSecondsCounterP", measurementCounter));
                 previousOS = OS;
 
-                if (previousEpoch !== -1 && Epoch <= previousEpoch) return {
-                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_UNIXEpochP", measurementCounter),
-                    certainty: 0
-                };
+                if (previousEpoch !== -1 && Epoch <= previousEpoch)
+                    currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_UNIXEpochP", measurementCounter));
                 previousEpoch = Epoch;
 
 
@@ -736,32 +681,20 @@ export class BSMCrypt01 extends ACrypt {
                 const measurementTimestamp2 = measurementTimestamp1.substring(0, measurementTimestamp1.indexOf('.'));
                 const measurementTimestamp3 = measurementTimestamp2 + (TZO > 0 ? "+" : "-") + (Math.abs(TZO) / 60).toString().padStart(2, '0') + ":" + (Math.abs(TZO) % 60).toString().padStart(2, '0');
 
-                if (currentMeasurement.time !== measurementTimestamp3) return {
-                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_TimestampP", measurementCounter),
-                    certainty: 0
-                };
+                if (currentMeasurement.time !== measurementTimestamp3)
+                    currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_TimestampP", measurementCounter));
 
                 // Meter Address 1 == Meter Id
-                if (common.MA1 !== null && MA1 !== common.MA1) return {
-                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_MeterIdP", measurementCounter),
-                    certainty: 0
-                };
+                if (common.MA1 !== null && MA1 !== common.MA1)
+                    currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_MeterIdP", measurementCounter));
                 common.MA1 = MA1;
 
-                if (common.epochSetCnt !== -1 && EpochSetCnt !== common.epochSetCnt) return {
-                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_EpochSet_CounterP", measurementCounter),
-                    certainty: 0
-                };
+                if (common.epochSetCnt !== -1 && EpochSetCnt !== common.epochSetCnt)
+                    currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_EpochSet_CounterP", measurementCounter));
                 common.epochSetCnt = EpochSetCnt;
 
-                if (common.epochSetOS !== -1 && EpochSetOS !== common.epochSetOS) return {
-                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_EpochSet_OperationSecondsP", measurementCounter),
-                    certainty: 0
-                };
+                if (common.epochSetOS !== -1 && EpochSetOS !== common.epochSetOS)
+                    currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_EpochSet_OperationSecondsP", measurementCounter));
                 common.epochSetOS = EpochSetOS;
 
                 //#endregion
@@ -801,25 +734,16 @@ export class BSMCrypt01 extends ACrypt {
 
             var n = common.dataSets.length-1;
 
-            if (common.dataSets[0].TypParsed !== "START" && common.dataSets[0].TypParsed !== "TURN ON") return {
-                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_EnergyMeterValueP", 1),
-                certainty: 0
-            };
+            if (common.dataSets[0].TypParsed !== "START" && common.dataSets[0].TypParsed !== "TURN ON")
+                errors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_EnergyMeterValueP", 1));
 
             for (let i=1; i<common.dataSets.length-1; i++) {
-                if (common.dataSets[i].TypParsed !== "CURRENT") return {
-                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_EnergyMeterValueP", measurementCounter + 1),
-                    certainty: 0
-                };
+                if (common.dataSets[i].TypParsed !== "CURRENT")
+                    errors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_EnergyMeterValueP", measurementCounter + 1));
             }
 
-            if (common.dataSets[n].TypParsed !== "END"   && common.dataSets[n].TypParsed !== "TURN OFF") return {
-                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_EnergyMeterValueP", n+1),
-                certainty: 0
-            };
+            if (common.dataSets[n].TypParsed !== "END"   && common.dataSets[n].TypParsed !== "TURN OFF")
+                errors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_EnergyMeterValueP", n+1));
 
             //#endregion
 
