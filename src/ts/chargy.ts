@@ -28,6 +28,7 @@ import { Mennekes }                           from './Mennekes'
 import { OCMF }                               from './OCMF'
 import { OCMFv1_0 }                           from './OCMFv1_0'
 import { SAFEXML }                            from './SAFE_XML'
+import { XMLContainer }                       from './XMLContainer'
 import * as chargyInterfaces                  from './chargyInterfaces'
 import * as chargyLib                         from './chargyLib'
 
@@ -542,6 +543,8 @@ export class Chargy {
                             // XML namespace. Therefore we have to guess the format.
                             case "":
                                 processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
+
+                                processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
                                 break;
 
                         }
@@ -558,6 +561,8 @@ export class Chargy {
                         // The SAFE transparency software v1.0 does not understand its own
                         // XML namespace. Therefore we have to guess the format.
                         processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
+
+                        processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
 
                     }
 

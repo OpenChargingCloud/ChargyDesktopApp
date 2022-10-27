@@ -87,8 +87,8 @@ export class SAFEXML  {
                                     signedDataValue = Buffer.from(signedDataValue, 'base64').toString().trim();
                                     break;
 
-                                case "hex":
-                                    signedDataValue = Buffer.from(signedDataValue, 'hex').toString().trim();
+                                case "hex": // Some people put whitespaces, '-' or ':' into the hex format!
+                                    signedDataValue = Buffer.from(signedDataValue.replace(/[^a-fA-F0-9]/g, ''), 'hex').toString().trim();
                                     break;
 
                                 default:
@@ -107,6 +107,17 @@ export class SAFEXML  {
                                     if (commonFormat == "")
                                         commonFormat = "alfen";
                                     else if (commonFormat != "alfen")
+                                        return {
+                                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                            message:   "Invalid mixture of different signed data formats within the given SAFE XML!",
+                                            certainty: 0
+                                        }
+                                    break;
+
+                                case "edl":
+                                    if (commonFormat == "")
+                                        commonFormat = "edl";
+                                    else if (commonFormat != "edl")
                                         return {
                                             status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                                             message:   "Invalid mixture of different signed data formats within the given SAFE XML!",

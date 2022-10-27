@@ -204,6 +204,10 @@ export class EMHCrypt01 extends ACrypt {
 
     }
 
+
+    //ToDo: Parse EMH-EDL into Chargy JSON data structures!
+
+
     async VerifyMeasurement(measurementValue:  IEMHMeasurementValue): Promise<IEMHCrypt01Result>
     {
 
