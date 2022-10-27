@@ -2406,7 +2406,7 @@ export class ChargyApp {
 
                             //#region Show energy difference
 
-                            // Difference
+                            // Difference (will use the same DisplayPrefix like the plain value!)
                             chargyLib.CreateDiv(MeasurementValueDiv, "value2",
                                       measurementCounter > 1
                                           ? "+" + (measurementValue.value_displayPrecision
@@ -2419,15 +2419,21 @@ export class ChargyApp {
                                 chargyLib.CreateDiv(MeasurementValueDiv, "unit2",  "");
                             else
                             {
-                                switch (measurement.unit)
+                                switch (measurementValue.value_displayPrefix)
                                 {
 
-                                    case "kWh":
-                                    case "KILO_WATT_HOURS":
+                                    case chargyInterfaces.DisplayPrefixes.GIGA:
+                                        chargyLib.CreateDiv(MeasurementValueDiv, "unit2", "GWh");
+                                        break;
+
+                                    case chargyInterfaces.DisplayPrefixes.MEGA:
+                                        chargyLib.CreateDiv(MeasurementValueDiv, "unit2", "MWh");
+                                        break;
+
+                                    case chargyInterfaces.DisplayPrefixes.KILO:
                                         chargyLib.CreateDiv(MeasurementValueDiv, "unit2", "kWh");
                                         break;
 
-                                    // "WATT_HOURS"
                                     default:
                                         chargyLib.CreateDiv(MeasurementValueDiv, "unit2",  "Wh");
                                         break;

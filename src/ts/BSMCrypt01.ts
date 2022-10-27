@@ -109,7 +109,7 @@ export class BSMCrypt01 extends ACrypt {
 
     readonly curve = new this.chargy.elliptic.ec('p256');
 
-    constructor(chargy:  Chargy) {
+    constructor(chargy: Chargy) {
 
         super("ECC secp256r1",
               chargy);
@@ -1345,7 +1345,7 @@ export class BSMCrypt01 extends ACrypt {
 
     }
 
-    async ViewMeasurement(measurementValue:    IBSMMeasurementValue,
+    async ViewMeasurement(measurementValue:      IBSMMeasurementValue,
                           introDiv:              HTMLDivElement,
                           infoDiv:               HTMLDivElement,
                           PlainTextDiv:          HTMLDivElement,
