@@ -827,7 +827,9 @@ export class BSMCrypt01 extends ACrypt {
 
                 try
                 {
-                    ASN1_SignatureSchema.decode(Buffer.from(dataSet.signature, 'hex'), 'der');
+
+                    ASN1Signature = ASN1_SignatureSchema.decode(Buffer.from(dataSet.signature, 'hex'), 'der');
+
                 }
                 catch (exception)
                 {
