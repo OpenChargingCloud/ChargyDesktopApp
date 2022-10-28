@@ -1105,16 +1105,16 @@ export class ChargyApp {
 
         this.leaflet = L;
         const mapDiv = document.getElementById('map') as HTMLElement;
-        this.map23     = L.map(mapDiv);
+        this.map23   = L.map(mapDiv);
         this.map23.setView([49.7325504, 10.1424442], 10);
 
         L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-            attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
-            tileSize: 512,
-            maxZoom: 18,
-            zoomOffset: -1,
-            id: 'mapbox/light-v10',
-            accessToken: 'pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w'
+            attribution:  '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
+            tileSize:      512,
+            maxZoom:        18,
+            zoomOffset:     -1,
+            id:           'mapbox/light-v10',
+            accessToken:  'pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w'
         }).addTo(this.map23);
 
     }

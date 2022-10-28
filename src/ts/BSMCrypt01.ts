@@ -823,7 +823,19 @@ export class BSMCrypt01 extends ACrypt {
             for (let dataSet of common.dataSets)
             {
 
-                let ASN1Signature = ASN1_SignatureSchema.decode(Buffer.from(dataSet.signature, 'hex'), 'der');
+                let ASN1Signature:any = {};
+
+                try
+                {
+                    ASN1_SignatureSchema.decode(Buffer.from(dataSet.signature, 'hex'), 'der');
+                }
+                catch (exception)
+                {
+                    // Note: Some manipulations will not result in an invalid signature and
+                    //       may also not cause an invalid signature validation. This is caused
+                    //       by the mathematical nature of these big numbers and not a bug!
+                    errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_SignatureP", 1))
+                }
 
                 let bsmMeasurementValue: IBSMMeasurementValue = {
 
@@ -869,13 +881,13 @@ export class BSMCrypt01 extends ACrypt {
                     warnings:                                  dataSet.warnings,
 
                     signatures: [{
-                        r:  ASN1Signature.r.toString(16),
-                        s:  ASN1Signature.s.toString(16)
+                        r:  ASN1Signature?.r?.toString(16) ?? "-",
+                        s:  ASN1Signature?.s?.toString(16) ?? "-"
                     }]
 
                 };
 
-                (session?.measurements[0]!.values as any[])?.push(bsmMeasurementValue);
+                (session.measurements[0]!.values as any[])?.push(bsmMeasurementValue);
 
             }
 
