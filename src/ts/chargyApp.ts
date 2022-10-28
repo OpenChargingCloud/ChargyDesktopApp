@@ -2424,9 +2424,10 @@ export class ChargyApp {
                             // Difference (will use the same DisplayPrefix like the plain value!)
                             chargyLib.CreateDiv(MeasurementValueDiv, "value2",
                                       measurementCounter > 1
-                                          ? "+" + (measurementValue.value_displayPrecision
-                                                       ? parseFloat((currentValue - previousValue).toFixed(Math.abs(measurementValue.value_displayPrecision)))
-                                                       : parseFloat((currentValue - previousValue).toFixed(Math.abs(measurementValue.measurement.scale))))
+                                          ? (currentValue - previousValue >= 0 ? "+" : "") +
+                                            (measurementValue.value_displayPrecision
+                                                 ? parseFloat((currentValue - previousValue).toFixed(Math.abs(measurementValue.value_displayPrecision)))
+                                                 : parseFloat((currentValue - previousValue).toFixed(Math.abs(measurementValue.measurement.scale))))
                                           : "0");
 
                             // Unit
