@@ -39,6 +39,21 @@
         "en": "Unknown or invalid charging session format!"
     },
 
+    "ValidChargingSession": {
+        "de": "Gültiger Ladevorgang",
+        "en": "Valid charging session"
+    },
+
+    "ValidChargingSessionShort": {
+        "de": "Gültig",
+        "en": "Valid"
+    },
+
+    "InvalidChargingSession": {
+        "de": "Ungültiger Ladevorgang!",
+        "en": "Invalid charging session!"
+    },
+
 
 
     "MissingOrInvalidEVSEId": {

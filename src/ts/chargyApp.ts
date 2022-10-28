@@ -736,10 +736,6 @@ export class ChargyApp {
             this.fileInput.value                         = "";
             this.evseTarifInfosDiv.innerHTML             = "";
 
-            // Clear the map and reset zoom bounds...
-            while(this.markers.length > 0)
-                this.map23.removeLayer(this.markers.pop());
-
             this.minlat = +1000;
             this.maxlat = -1000;
             this.minlng = +1000;
@@ -1969,32 +1965,44 @@ export class ChargyApp {
 
                 //#region Add marker to map
 
-                const leaflet = require('leaflet');
-                const ff      = require('leaflet.awesome-markers');
+                // First clear the map...
+                while(this.markers.length > 0)
+                    this.map23.removeLayer(this.markers.pop());
 
-                const ss = ff.toString();
+                const leaflet       = require('leaflet');
+                const markers       = require('leaflet.awesome-markers');
 
-                const redMarker   = leaflet.AwesomeMarkers?.icon({
-                    prefix:                     'fa',
-                    icon:                       'exclamation',
-                    markerColor:                'red',
-                    iconColor:                  '#ecc8c3'
+                const redMarker     = leaflet.AwesomeMarkers?.icon({
+                    prefix:               'fa',
+                    icon:                 'exclamation',
+                    markerColor:          'red',
+                    iconColor:            '#ecc8c3'
                 });
 
-                const greenMarker = leaflet.AwesomeMarkers?.icon({
-                    prefix:                     'fa',
-                    icon:                       'charging-station',
-                    markerColor:                'green',
-                    iconColor:                  '#c2ec8e'
+                const orangeMarker  = leaflet.AwesomeMarkers?.icon({
+                    prefix:               'fa',
+                    icon:                 'question',
+                    markerColor:          'orange',
+                    iconColor:            '#ae6a0a'
                 });
 
-                let markerIcon = redMarker;
+                const greenMarker   = leaflet.AwesomeMarkers?.icon({
+                    prefix:               'fa',
+                    icon:                 'charging-station',
+                    markerColor:          'green',
+                    iconColor:            '#c2ec8e'
+                });
+
+                let markerIcon      = redMarker;
 
                 if (chargingSession.verificationResult)
                 {
                     switch (chargingSession.verificationResult.status) {
 
                         case chargyInterfaces.SessionVerificationResult.UnknownSessionFormat:
+                            markerIcon = orangeMarker;
+                            break;
+
                         case chargyInterfaces.SessionVerificationResult.PublicKeyNotFound:
                         case chargyInterfaces.SessionVerificationResult.InvalidPublicKey:
                         case chargyInterfaces.SessionVerificationResult.InvalidSignature:
@@ -2025,7 +2033,9 @@ export class ChargyApp {
                     geoLocation = chargingSession.chargingStation.geoLocation;
                 }
 
-                if (geoLocation != null)
+                if (geoLocation     != null &&
+                    geoLocation.lat != 0    &&
+                    geoLocation.lng != 0 )
                 {
 
                     const marker = markerIcon == null
@@ -2052,14 +2062,17 @@ export class ChargyApp {
                         {
 
                             case chargyInterfaces.SessionVerificationResult.UnknownSessionFormat:
+                                marker.bindPopup(this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"));
+                                break;
+
                             case chargyInterfaces.SessionVerificationResult.PublicKeyNotFound:
                             case chargyInterfaces.SessionVerificationResult.InvalidPublicKey:
                             case chargyInterfaces.SessionVerificationResult.InvalidSignature:
-                                marker.bindPopup("Ungültiger Ladevorgang!");
+                                marker.bindPopup(this.chargy.GetLocalizedMessage("InvalidChargingSession"));
                                 break;
 
                             case chargyInterfaces.SessionVerificationResult.ValidSignature:
-                                marker.bindPopup("Gültiger Ladevorgang!");
+                                marker.bindPopup(this.chargy.GetLocalizedMessage("ValidChargingSession"));
                                 break;
 
                         }
@@ -2078,18 +2091,21 @@ export class ChargyApp {
                     {
 
                         case chargyInterfaces.SessionVerificationResult.UnknownSessionFormat:
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("InvalidChargingSessionShort");
+                            break;
+
                         case chargyInterfaces.SessionVerificationResult.PublicKeyNotFound:
                         case chargyInterfaces.SessionVerificationResult.InvalidPublicKey:
                         case chargyInterfaces.SessionVerificationResult.InvalidSignature:
-                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Ungültig';
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("InvalidChargingSessionShort");
                             break;
 
                         case chargyInterfaces.SessionVerificationResult.ValidSignature:
-                            verificationStatusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Gültig';
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + this.chargy.GetLocalizedMessage("ValidChargingSessionShort");
                             break;
 
                         default:
-                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Ungültig';
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("InvalidChargingSessionShort");
                             break;
 
                     }
