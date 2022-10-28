@@ -363,13 +363,8 @@ export class BSMCrypt01 extends ACrypt {
 
                 //#region Validate common values
 
-            //    currentErrors.push("lala #" + measurementCounter);
-
-                if (currentMeasurement["@context"] !== common.context) return {
-                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_JSONContextP", measurementCounter),
-                    certainty: 0
-                };
+                if (currentMeasurement["@context"] !== common.context)
+                    currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_JSONContextP", measurementCounter));
 
                 let currentId = currentMeasurement["@id"];
                 if (previousId !== "" && typeof currentId === 'string')
@@ -390,11 +385,7 @@ export class BSMCrypt01 extends ACrypt {
                         // are numeric too.
                         parseInt(previousParts[1], 10) >= parseInt(currentParts[1], 10))
                     {
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeasurementIdP", measurementCounter),
-                            certainty: 0
-                        };
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeasurementIdP", measurementCounter));
                     }
 
                 }
@@ -402,20 +393,11 @@ export class BSMCrypt01 extends ACrypt {
 
 
                 if (previousTime !== "" && currentMeasurement.time <= previousTime)
-                    return {
-                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_TimestampP", measurementCounter),
-                        certainty: 0
-                    };
+                    currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_TimestampP", measurementCounter));
                 previousTime = currentMeasurement.time;
 
-
                 if (previousValue !== "" && currentMeasurement.value?.measuredValue?.value < previousValue)
-                    return {
-                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurement_ValueP", measurementCounter),
-                        certainty: 0
-                    };
+                    currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurement_ValueP", measurementCounter));
                 previousValue = currentMeasurement.value?.measuredValue?.value;
 
 
@@ -423,46 +405,22 @@ export class BSMCrypt01 extends ACrypt {
                 {
 
                     if (currentMeasurement.meterInfo?.firmwareVersion    !== common.meterInfo_firmwareVersion)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_FirmwareVersionP", measurementCounter),
-                            certainty: 0
-                        };
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_FirmwareVersionP", measurementCounter));
 
                     if (currentMeasurement.meterInfo?.publicKey          !== common.meterInfo_publicKey)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_PublicKeyP", measurementCounter),
-                            certainty: 0
-                        };
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_PublicKeyP",       measurementCounter));
 
                     if (currentMeasurement.meterInfo?.meterId            !== common.meterInfo_meterId)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_MeterIdP", measurementCounter),
-                            certainty: 0
-                        };
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_MeterIdP",         measurementCounter));
 
                     if (currentMeasurement.meterInfo?.meterId            !== currentMeasurement.additionalValues?.filter((element: any) => element?.measurand?.name === "MA1")[0]?.measuredValue?.value)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_MeterIdP", measurementCounter),
-                            certainty: 0
-                        };
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_MeterIdP",         measurementCounter));
 
                     if (currentMeasurement.meterInfo?.manufacturer       !== common.meterInfo_manufacturer)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_ManufacturerP", measurementCounter),
-                            certainty: 0
-                        };
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_ManufacturerP",    measurementCounter));
 
                     if (currentMeasurement.meterInfo?.type               !== common.meterInfo_type)
-                        return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_TypeP", measurementCounter),
-                            certainty: 0
-                        };
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_TypeP",            measurementCounter));
 
                 }
 
@@ -479,39 +437,24 @@ export class BSMCrypt01 extends ACrypt {
                 if (currentMeasurement.contract)
                 {
 
-                    if (currentMeasurement.additionalValues?.filter((element: any) => element?.measurand?.name?.startsWith('Meta') && element?.measuredValue?.value?.startsWith('contract-id:')).length == 0) return {
-                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP", measurementCounter),
-                        certainty: 0
-                    };
+                    if (currentMeasurement.additionalValues?.filter((element: any) => element?.measurand?.name?.startsWith('Meta') && element?.measuredValue?.value?.startsWith('contract-id:')).length == 0)
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP",      measurementCounter));
 
-                    if (currentMeasurement.contract.id   !== common.contract_id) return {
-                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP", measurementCounter),
-                        certainty: 0
-                    };
+                    if (currentMeasurement.contract.id   !== common.contract_id)
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP",      measurementCounter));
 
-                    if (currentMeasurement.contract.type !== common.contract_type) return {
-                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_TypeP", measurementCounter),
-                        certainty: 0
-                    };
+                    if (currentMeasurement.contract.type !== common.contract_type)
+                        currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_TypeP",    measurementCounter));
 
                     let contractInfo = currentMeasurement.additionalValues?.filter((element: any) => element?.measurand?.name?.startsWith('Meta') && element?.measuredValue?.value?.startsWith('contract-id:'))[0]?.measuredValue?.value;
                     if (contractInfo != null)
                     {
 
-                        if ( currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contract_type + ":" + common.contract_id) return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP", measurementCounter),
-                            certainty: 0
-                        };
+                        if ( currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contract_type + ":" + common.contract_id)
+                            currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP",  measurementCounter));
 
-                        if (!currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contract_id) return {
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP", measurementCounter),
-                            certainty: 0
-                        };
+                        if (!currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contract_id)
+                            currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP",  measurementCounter));
 
                     }
 
@@ -778,7 +721,7 @@ export class BSMCrypt01 extends ACrypt {
                 "measurements": [
                     {
                          "energyMeterId":        common.meterInfo_meterId,
-                    //     //"@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/bsm-ws36a-v0+json",
+                    //     //"@context":             "https://open.charging.cloud/contexts/energyMeter/signatureFormat/bsm-ws36a-v0+json",
                          "phenomena": [
                              {
                                 "name":              "Real Energy Imported",
