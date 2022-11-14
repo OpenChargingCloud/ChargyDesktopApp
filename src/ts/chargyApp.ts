@@ -311,7 +311,7 @@ export class ChargyApp {
 
                 let sendIssue = new XMLHttpRequest();
 
-                sendIssue.open("ADD",
+                sendIssue.open("SUBMIT",
                                this.issueURL,
                                true);
                 sendIssue.setRequestHeader('Content-type', 'application/json');
