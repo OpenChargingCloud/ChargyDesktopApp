@@ -170,7 +170,7 @@ sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware
 sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\ ChargePoint\ Edition\/appIcons\/chargepoint.png/g'  /usr/share/applications/chargytransparenzsoftware.desktop
 
 # ...or the following work-around for Eneco
-sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\ Eneco\ Edition\/appIcons\/ENECO_eMobility_Icon.png/g'  /usr/share/applications/chargytransparenzsoftware.desktop
+sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\ Eneco\ Edition\/appIcons\/ENECO_eMobility_Icon2.png/g'  /usr/share/applications/chargytransparenzsoftware.desktop
 
 mkdir /etc/skel/.config/autostart
 cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/.config/autostart/
