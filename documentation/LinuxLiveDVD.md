@@ -125,7 +125,7 @@ sudo mount --bind /tmp new/tmp
 sudo mount --bind /var/tmp new/var/tmp
 sudo mount --bind /var/cache new/var/cache
 
-sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_1.4.0_amd64.deb new/opt/
+sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_1.4.3_amd64.deb new/opt/
 ```
 
 ### Change root into the new Linux system and update all software packages
