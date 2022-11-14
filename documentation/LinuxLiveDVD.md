@@ -78,7 +78,16 @@ We use [Ubuntu 20.04.4 (amd64)](https://releases.ubuntu.com/20.04.4/ubuntu-20.04
 
 ```
 wget https://old-releases.ubuntu.com/releases/focal/ubuntu-20.04.4-desktop-amd64.iso
+```
 
+Better verify the ISO image via SHA256 (twice!). You may not notice a currupt file immediately, but it will cause a lot of headaches...
+```
+$ sha256sum  ubuntu-20.04.4-desktop-amd64.iso
+f92f7dca5bb6690e1af0052687ead49376281c7b64fbe4179cc44025965b7d1c  ubuntu-20.04.4-desktop-amd64.iso
+```
+
+Now we can start to build the new Linux image...
+```
 mkdir ChargyLive
 cd ChargyLive
 
