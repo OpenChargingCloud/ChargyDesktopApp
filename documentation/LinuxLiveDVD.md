@@ -77,7 +77,7 @@ sudo apt install ./chargytransparenzsoftware_X.Y.Z_amd64.deb
 We use [Ubuntu 20.04.4 (amd64)](https://releases.ubuntu.com/20.04.4/ubuntu-20.04.4-desktop-amd64.iso) as the base for our ISO image. We expect this ChargyDesktopApp git repository located at *../ChargyDesktopApp*.
 
 ```
-wget https://releases.ubuntu.com/20.04.4/ubuntu-20.04.4-desktop-amd64.iso
+wget https://old-releases.ubuntu.com/releases/focal/ubuntu-20.04.4-desktop-amd64.iso
 
 mkdir ChargyLive
 cd ChargyLive
