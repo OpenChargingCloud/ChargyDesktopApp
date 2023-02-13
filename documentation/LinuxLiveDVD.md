@@ -77,15 +77,24 @@ sudo apt install ./chargytransparenzsoftware_X.Y.Z_amd64.deb
 We use [Ubuntu 20.04.4 (amd64)](https://releases.ubuntu.com/20.04.4/ubuntu-20.04.4-desktop-amd64.iso) as the base for our ISO image. We expect this ChargyDesktopApp git repository located at *../ChargyDesktopApp*.
 
 ```
-wget https://releases.ubuntu.com/20.04.4/ubuntu-20.04.4-desktop-amd64.iso
+wget https://old-releases.ubuntu.com/releases/focal/ubuntu-20.04.4-desktop-amd64.iso
+```
 
+Better verify the ISO image via SHA256 (twice!). You may not notice a currupt file immediately, but it will cause a lot of headaches...
+```
+$ sha256sum  ubuntu-20.04.4-desktop-amd64.iso
+f92f7dca5bb6690e1af0052687ead49376281c7b64fbe4179cc44025965b7d1c  ubuntu-20.04.4-desktop-amd64.iso
+```
+
+Now we can start to build the new Linux image...
+```
 mkdir ChargyLive
 cd ChargyLive
 
 sudo modprobe loop
 sudo modprobe iso9660
 mkdir source
-sudo mount -t iso9660 ../ubuntu-20.04.4-desktop-amd64.iso source -o ro,loop
+sudo mount -t iso9660 ubuntu-20.04.4-desktop-amd64.iso source -o ro,loop
 mkdir ubuntu-livecd
 cp -a source/. ubuntu-livecd
 sudo chmod -R u+w ubuntu-livecd 
@@ -116,7 +125,7 @@ sudo mount --bind /tmp new/tmp
 sudo mount --bind /var/tmp new/var/tmp
 sudo mount --bind /var/cache new/var/cache
 
-sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_1.4.0_amd64.deb new/opt/
+sudo cp ../ChargyDesktopApp/dist/chargytransparenzsoftware_1.4.3_amd64.deb new/opt/
 ```
 
 ### Change root into the new Linux system and update all software packages
@@ -152,7 +161,7 @@ echo "yes" >> /etc/skel/.config/gnome-initial-setup-done
 ### Install Chargy Transparency Software
 Install Chargy and make it easily accessible from the Desktop and via AutoStart.
 ```
-apt install -y /opt/chargytransparenzsoftware_1.4.0_amd64.deb
+apt install -y /opt/chargytransparenzsoftware_1.4.3_amd64.deb
 
 # If the Chargy application icon is broken, try the following work-around for chargeIT
 sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\ chargeIT\ Edition\/appIcons\/chargepoint.png/g'  /usr/share/applications/chargytransparenzsoftware.desktop
@@ -161,7 +170,7 @@ sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware
 sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\ ChargePoint\ Edition\/appIcons\/chargepoint.png/g'  /usr/share/applications/chargytransparenzsoftware.desktop
 
 # ...or the following work-around for Eneco
-sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\ Eneco\ Edition\/appIcons\/ENECO_eMobility_Icon.png/g'  /usr/share/applications/chargytransparenzsoftware.desktop
+sed -i 's/Icon=chargytransparenzsoftware/Icon=\/opt\/Chargy\ Transparenzsoftware\ Eneco\ Edition\/appIcons\/ENECO_eMobility_Icon2.png/g'  /usr/share/applications/chargytransparenzsoftware.desktop
 
 mkdir /etc/skel/.config/autostart
 cp /usr/share/applications/chargytransparenzsoftware.desktop /etc/skel/.config/autostart/
@@ -261,7 +270,7 @@ rmdir new
 ### Create ISO image
 ```
 sudo genisoimage \
-    -o "Chargy Transparenzsoftware Live v1.4.0.iso" \
+    -o "Chargy Transparenzsoftware Live v1.4.3.iso" \
     -b isolinux/isolinux.bin \
     -c isolinux/boot.cat \
     -no-emul-boot \
