@@ -215,20 +215,8 @@ export function parseHexString(str: string): number[] {
 }
 
 export function createHexString(arr: Iterable<number>) {
-
-    let result = "";
-
-    for (let i in arr) {
-        let str = arr[i].toString(16);
-        str = str.length == 0 ? "00" :
-              str.length == 1 ? "0" + str : 
-              str.length == 2 ? str :
-              str.substring(str.length-2, str.length);
-        result += str;
-    }
-
-    return result;
-
+    const hexChars = Array.from(arr, (num) => num.toString(16).padStart(2, "0"));
+    return hexChars.join("");
 }
 
 export function buf2hex(buffer: ArrayBuffer) {

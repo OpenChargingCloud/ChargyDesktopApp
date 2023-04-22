@@ -350,7 +350,7 @@ export class OCMF {
                         "errorFlags":       ErrorFlags,         // ""
                         "status":           Status,             // "G"
                         "signatures": [{
-                            "value": OCMFData["__signature"]["SD"]
+                            "value": OCMFData.signature["SD"]
                         }]
                     });
 
@@ -412,9 +412,9 @@ export class OCMF {
                         certainty: 0
                     }
 
-                let OCMFVersion           = "";
-                let OCMFData:Object       = {};
-                let OCMFSignature:Object  = {};
+                let OCMFVersion        = "";
+                let OCMFData:any       = {};
+                let OCMFSignature:any  = {};
 
                 try
                 {
@@ -459,7 +459,7 @@ export class OCMF {
 
                     OCMFData       = JSON.parse(OCMFSections[1] ?? "{}");
                     OCMFSignature  = JSON.parse(OCMFSections[2] ?? "{}");
-                    OCMFVersion    = OCMFData["FV"] != null ? OCMFData["FV"].trim() : ""; 
+                    OCMFVersion    = OCMFData.FV != null ? OCMFData.FV.trim() : ""; 
 
                 }
                 catch (exception)

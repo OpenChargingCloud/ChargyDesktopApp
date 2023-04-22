@@ -544,7 +544,8 @@ export class Chargy {
                             case "":
                                 processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
-                                processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
+                                if (processedFile.result == null)
+                                    processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
                                 break;
 
                         }
@@ -562,7 +563,8 @@ export class Chargy {
                         // XML namespace. Therefore we have to guess the format.
                         processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
-                        processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
+                        if (processedFile.result == null)
+                            processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
 
                     }
 

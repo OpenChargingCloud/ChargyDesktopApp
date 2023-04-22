@@ -893,7 +893,7 @@ export class BSMCrypt01 extends ACrypt {
                                      }]
             });
 
-            CTR["status"] = chargyInterfaces.SessionVerificationResult.Unvalidated;
+            CTR.status = chargyInterfaces.SessionVerificationResult.Unvalidated;
 
             //#endregion
 

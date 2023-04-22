@@ -10,7 +10,7 @@
         "emitDecoratorMetadata":              true,
         "experimentalDecorators":             true,
         "removeComments":                     false,
-        "suppressImplicitAnyIndexErrors":     true,
+        // "suppressImplicitAnyIndexErrors":     true,
         "preserveConstEnums":                 true,
 
         /* Strict Type-Checking Options */

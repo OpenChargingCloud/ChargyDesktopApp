@@ -121,6 +121,7 @@ export interface IChargeTransparencyRecord
 
     warnings?:                  Array<String>;
     errors?:                    Array<String>;
+    status?:                    SessionVerificationResult;
 
 }
 
