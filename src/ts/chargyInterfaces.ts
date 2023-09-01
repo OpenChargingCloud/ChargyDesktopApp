@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { ACrypt }  from './ACrypt'
+import { ACrypt }  from './ACrypt.js'
 
 export function IsAChargeTransparencyRecord(data: IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult|undefined): data is IChargeTransparencyRecord
 {
@@ -121,6 +121,7 @@ export interface IChargeTransparencyRecord
 
     warnings?:                  Array<String>;
     errors?:                    Array<String>;
+    status?:                    SessionVerificationResult;
 
 }
 

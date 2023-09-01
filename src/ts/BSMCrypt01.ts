@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy'
-import { ACrypt }             from './ACrypt'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
+import { Chargy }             from './chargy.js'
+import { ACrypt }             from './ACrypt.js'
+import * as chargyInterfaces  from './chargyInterfaces.js'
+import * as chargyLib         from './chargyLib.js'
 
 
 export interface IBSMMeasurementValue extends chargyInterfaces.IMeasurementValue
@@ -1553,7 +1553,7 @@ export class BSMCrypt01 extends ACrypt {
     public ParseEvents(value: number) : string[]
     {
 
-        let events = [];
+        let events: string[] = [];
 
         if ((value & (1 <<  1)) != 0) events.push("Power Failure");
         if ((value & (1 <<  2)) != 0) events.push("Under Voltage");

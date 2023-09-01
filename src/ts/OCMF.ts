@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy'
-import * as ocmfTypes         from './OCMFTypes'
-import * as chargyInterfaces  from './chargyInterfaces'
+import { Chargy }             from './chargy.js'
+import * as ocmfTypes         from './OCMFTypes.js'
+import * as chargyInterfaces  from './chargyInterfaces.js'
 
 
 export class OCMF {
@@ -350,7 +350,7 @@ export class OCMF {
                         "errorFlags":       ErrorFlags,         // ""
                         "status":           Status,             // "G"
                         "signatures": [{
-                            "value": OCMFData["__signature"]["SD"]
+                            "value": OCMFData["signature"]["SD"]
                         }]
                     });
 
@@ -413,7 +413,7 @@ export class OCMF {
                     }
 
                 let OCMFVersion           = "";
-                let OCMFData:Object       = {};
+                let OCMFData:any          = {};
                 let OCMFSignature:Object  = {};
 
                 try

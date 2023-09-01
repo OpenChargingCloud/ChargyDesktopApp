@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
+import { Chargy }             from './chargy.js'
+import * as chargyInterfaces  from './chargyInterfaces.js'
+import * as chargyLib         from './chargyLib.js'
 
 import * as L                 from 'leaflet';
 
@@ -269,7 +269,7 @@ export class ChargyApp {
                 //#region Collect issue data...
 
                 const newIssueForm  = document.getElementById('newIssueForm') as HTMLFormElement;
-                let   data          = {};
+                let   data:any      = {};
 
                 data["timestamp"]                  = new Date().toISOString();
                 data["chargyVersion"]              = this.appVersion;
@@ -791,8 +791,8 @@ export class ChargyApp {
             {
                 linkButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
                     ev.preventDefault();
-                    const link = linkButton.attributes["href"].nodeValue;
-                    if (link.startsWith("http://") || link.startsWith("https://")) {
+                    const link = linkButton.getAttribute("href");
+                    if (link && (link.startsWith("http://") || link.startsWith("https://"))) {
                         shell.openExternal(link);
                     }
                 }

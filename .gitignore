@@ -13,4 +13,6 @@ src/css/*.css.map
 !src/css/leaflet.awesome-markers.css
 src/js/*.js
 src/js/*.js.map
+src/ts/*.js
+src/ts/*.js.map
 .DS_Store

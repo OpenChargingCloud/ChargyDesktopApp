@@ -3,14 +3,14 @@
     "compilerOptions": {
 
         "target":                             "es6",
-        "module":                             "es2020",  // es6. ES2020 adds support for dynamic imports & import.meta
+        "module":                             "NodeNext",  // es6. ES2020 adds support for dynamic imports & import.meta
         "lib":                                ["dom", "es2020"],
-        "moduleResolution":                   "node", //node12 for Node.js’ ECMAScript Module Support
+        "moduleResolution":                   "NodeNext",
         "sourceMap":                          true,
         "emitDecoratorMetadata":              true,
         "experimentalDecorators":             true,
         "removeComments":                     false,
-        "suppressImplicitAnyIndexErrors":     true,
+        // "suppressImplicitAnyIndexErrors":     true,
         "preserveConstEnums":                 true,
 
         /* Strict Type-Checking Options */

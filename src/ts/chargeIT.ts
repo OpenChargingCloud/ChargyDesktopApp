@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy'
-import { Alfen01 }            from './Alfen01'
-import { BSMCrypt01 }         from './BSMCrypt01'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
-import { ChargyApp }          from './chargyApp'
+import { Chargy }             from './chargy.js'
+import { Alfen01 }            from './Alfen01.js'
+import { BSMCrypt01 }         from './BSMCrypt01.js'
+import * as chargyInterfaces  from './chargyInterfaces.js'
+import * as chargyLib         from './chargyLib.js'
+import { ChargyApp }          from './chargyApp.js'
 
 export class ChargeIT {
 

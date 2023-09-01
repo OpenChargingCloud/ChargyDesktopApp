@@ -182,7 +182,7 @@ export function hex2bin(hex: string, Reverse?: Boolean) : string {
     if (Reverse)
     {
 
-        let reversed = [];
+        let reversed: string[] = [];
 
         for (let i = 0; i < hex.length; i += 2)
             reversed.push(hex.substring(i, i + 2));
@@ -218,8 +218,8 @@ export function createHexString(arr: Iterable<number>) {
 
     let result = "";
 
-    for (let i in arr) {
-        let str = arr[i].toString(16);
+    for (let value of arr) {
+        let str = value.toString(16);
         str = str.length == 0 ? "00" :
               str.length == 1 ? "0" + str : 
               str.length == 2 ? str :
@@ -655,7 +655,7 @@ export function pad(text: string|undefined, paddingValue: number) {
  */
 export async function sha256(message: string|DataView): Promise<string> {
 
-    let hashBuffer = null;
+    let hashBuffer: ArrayBuffer | null = null;
 
     if (typeof message === 'string')
         hashBuffer = await crypto.subtle.digest('SHA-256', Buffer.from(message, 'utf8'));
@@ -676,7 +676,7 @@ export async function sha256(message: string|DataView): Promise<string> {
  */
 export async function sha384(message: string|DataView): Promise<string> {
 
-    let hashBuffer = null;
+    let hashBuffer: ArrayBuffer | null = null;
 
     if (typeof message === 'string')
         hashBuffer = await crypto.subtle.digest('SHA-384', Buffer.from(message, 'utf8'));
@@ -697,7 +697,7 @@ export async function sha384(message: string|DataView): Promise<string> {
  */
 export async function sha512(message: string|DataView): Promise<string> {
 
-    let hashBuffer = null;
+    let hashBuffer: ArrayBuffer | null = null;
 
     if (typeof message === 'string')
         hashBuffer = await crypto.subtle.digest('SHA-512', Buffer.from(message, 'utf8'));

@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy'
-import { Alfen01 }            from './Alfen01'
-import { OCMF }               from './OCMF'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
+import { Chargy }             from './chargy.js'
+import { Alfen01 }            from './Alfen01.js'
+import { OCMF }               from './OCMF.js'
+import * as chargyInterfaces  from './chargyInterfaces.js'
+import * as chargyLib         from './chargyLib.js'
 
 export class SAFEXML  {
 
