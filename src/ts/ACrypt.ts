@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy.js'
-import { secp224k1 }          from './secp224k1.js'
-import * as chargyInterfaces  from './chargyInterfaces.js'
-import * as chargyLib         from './chargyLib.js'
+import { Chargy }             from './chargy'
+import { secp224k1 }          from './secp224k1'
+import * as chargyInterfaces  from './chargyInterfaces'
+import * as chargyLib         from './chargyLib'
 
 export abstract class ACrypt {
 

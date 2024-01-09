@@ -18,19 +18,19 @@
 import { Buffer }                             from 'node:buffer';
 import { fileTypeFromBuffer }                 from 'file-type';
 
-import { Alfen01, AlfenCrypt01 }              from './Alfen01.js'
-import { BSMCrypt01 }                         from './BSMCrypt01.js'
-import { ChargeIT }                           from './chargeIT.js'
-import { Chargepoint01, ChargePointCrypt01 }  from './chargePoint01.js'
-import { EMHCrypt01 }                         from './EMHCrypt01.js'
-import { GDFCrypt01 }                         from './GDFCrypt01.js'
-import { Mennekes }                           from './Mennekes.js'
-import { OCMF }                               from './OCMF.js'
-import { OCMFv1_0 }                           from './OCMFv1_0.js'
-import { SAFEXML }                            from './SAFE_XML.js'
-import { XMLContainer }                       from './XMLContainer.js'
-import * as chargyInterfaces                  from './chargyInterfaces.js'
-import * as chargyLib                         from './chargyLib.js'
+import { Alfen01, AlfenCrypt01 }              from './Alfen01'
+import { BSMCrypt01 }                         from './BSMCrypt01'
+import { ChargeIT }                           from './chargeIT'
+import { Chargepoint01, ChargePointCrypt01 }  from './chargePoint01'
+import { EMHCrypt01 }                         from './EMHCrypt01'
+import { GDFCrypt01 }                         from './GDFCrypt01'
+import { Mennekes }                           from './Mennekes'
+import { OCMF }                               from './OCMF'
+import { OCMFv1_0 }                           from './OCMFv1_0'
+import { SAFEXML }                            from './SAFE_XML'
+import { XMLContainer }                       from './XMLContainer'
+import * as chargyInterfaces                  from './chargyInterfaces'
+import * as chargyLib                         from './chargyLib'
 
 export class Chargy {
 
@@ -544,7 +544,11 @@ export class Chargy {
                             case "":
                                 processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
-                                processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
+                                if (processedFile.result.status)
+                                    processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
+
+                                var xxx = 23;
+
                                 break;
 
                         }
@@ -562,7 +566,10 @@ export class Chargy {
                         // XML namespace. Therefore we have to guess the format.
                         processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
-                        processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
+                        if (processedFile.result.status)
+                            processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
+
+                        var xxx = 23;
 
                     }
 

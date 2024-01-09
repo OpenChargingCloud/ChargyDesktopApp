@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy.js'
-import * as ocmfTypes         from './OCMFTypes.js'
-import * as chargyInterfaces  from './chargyInterfaces.js'
+import { Chargy }             from './chargy'
+import * as ocmfTypes         from './OCMFTypes'
+import * as chargyInterfaces  from './chargyInterfaces'
 
 
 export class OCMF {
@@ -28,10 +28,10 @@ export class OCMF {
         this.chargy  = chargy;
     }
 
-    //#region tryToParseOCMFv0_1(OCMFData, PublicKey?)
+    //#region tryToParseOCMFv0_1(OCMFDataList, PublicKey?)
 
-    private async tryToParseOCMFv0_1(OCMFData:    ocmfTypes.IOCMFData_v0_1,
-                                     PublicKey?:  string) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    private async tryToParseOCMFv0_1(OCMFDataList:  ocmfTypes.IOCMFData_v0_1,
+                                     PublicKey?:    string) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         // {
@@ -65,10 +65,10 @@ export class OCMF {
         try
         {
 
-            let VendorInformation  :string = OCMFData.VI != null ? OCMFData.VI.trim() : ""; // Some text about the manufacturer, model, variant, ... of e.g. the vendor.
-            let VendorVersion      :string = OCMFData.VV != null ? OCMFData.VV.trim() : ""; // Software version of the vendor.
+            let VendorInformation  :string = OCMFDataList.VI != null ? OCMFDataList.VI.trim() : ""; // Some text about the manufacturer, model, variant, ... of e.g. the vendor.
+            let VendorVersion      :string = OCMFDataList.VV != null ? OCMFDataList.VV.trim() : ""; // Software version of the vendor.
 
-            let paging             :string = OCMFData.PG != null ? OCMFData.PG.trim() : ""; // Paging, as this data might be part of a larger context.
+            let paging             :string = OCMFDataList.PG != null ? OCMFDataList.PG.trim() : ""; // Paging, as this data might be part of a larger context.
             let transactionType     = ocmfTypes.OCMFTransactionTypes.undefined;
             switch (paging[0]?.toLowerCase())
             {
@@ -84,10 +84,10 @@ export class OCMF {
             }
             let pagingId            = paging.substring(1);
 
-            let MeterVendor        :string = OCMFData.MV != null ? OCMFData.MV.trim() : ""; // Vendor of the device, optional.
-            let MeterModel         :string = OCMFData.MM != null ? OCMFData.MM.trim() : ""; // Model of the device, optional.
-            let MeterSerial        :string = OCMFData.MS != null ? OCMFData.MS.trim() : ""; // Serialnumber of the device, might be optional.
-            let MeterFirmware      :string = OCMFData.MF != null ? OCMFData.MF.trim() : ""; // Software version of the device.
+            let MeterVendor        :string = OCMFDataList.MV != null ? OCMFDataList.MV.trim() : ""; // Vendor of the device, optional.
+            let MeterModel         :string = OCMFDataList.MM != null ? OCMFDataList.MM.trim() : ""; // Model of the device, optional.
+            let MeterSerial        :string = OCMFDataList.MS != null ? OCMFDataList.MS.trim() : ""; // Serialnumber of the device, might be optional.
+            let MeterFirmware      :string = OCMFDataList.MF != null ? OCMFDataList.MF.trim() : ""; // Software version of the device.
 
             return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
@@ -108,10 +108,10 @@ export class OCMF {
 
     //#endregion
 
-    //#region tryToParseOCMFv1_0(OCMFData, PublicKey?)
+    //#region tryToParseOCMFv1_0(OCMFDataList, PublicKey?)
 
-    public async tryToParseOCMF(OCMFValues:  ocmfTypes.IOCMFData_v1_0[],
-                                PublicKey?:  string) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async tryToParseOCMF(OCMFDataList:  ocmfTypes.IOCMFData_v1_0_Signed[],
+                                PublicKey?:    string) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         try
@@ -132,7 +132,7 @@ export class OCMF {
                     "username":  "",
                     "email":     ""
                 },
-    
+
                 "EVSEs": [{
                     "@id": "DE*BDO*E8025334492*2",
                     "meters": [{
@@ -149,22 +149,22 @@ export class OCMF {
                             "value":            "049EA8697F5C3126E86A37295566D560DE8EA690325791C9CBA79D30612B8EA8E00908FBAD5374812D55DCC3D809C3A36C",
                         }]
                     }]
-    
+
                 }],
-    
+
                 "chargingSessions": [{
-    
+
                     "@id":                  "1554181214441:-1965658344385548683:2",
                     "@context":             "https://open.charging.cloud/contexts/SessionSignatureFormats/OCMFv1.0+json",
                     "begin":                null,
                     "end":                  null,
                     "EVSEId":               "DE*BDO*E8025334492*2",
-    
+
                     "authorizationStart": {
                         "@id":              "8057F5AA592904",
                         "type":             "RFID_TAG_ID"
                     },
-    
+
                     "signatureInfos": {
                         "hash":             "SHA512",
                         "hashTruncation":   "24",
@@ -172,9 +172,9 @@ export class OCMF {
                         "curve":            "secp192r1",
                         "format":           "rs"
                     },
-    
+
                     "measurements": [//{
-    
+
                         // "energyMeterId":    "0901454D48000083E076",
                         // "@context":         "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/OCMFv1.0+json",
                         // "name":             "ENERGY_TOTAL",
@@ -191,7 +191,7 @@ export class OCMF {
                         //     "curve":           "secp192r1",
                         //     "format":          "rs"
                         // },
-    
+
                         // "values": [
                         // {
                         //     "timestamp":        "2019-04-02T07:00:19+02:00",
@@ -218,15 +218,15 @@ export class OCMF {
                         //     }]
                         // }
                     ]
-    
+
                 }]
-    
+
              //   }]
             };
 
-            // [  // Not standard compliant use of an array!
+            // {
             //
-            //   {
+            //     "data": {
             //
             //       "FV": "1.0",
             //       "GI": "SEAL AG",
@@ -255,26 +255,24 @@ export class OCMF {
             //           "RT": "AC",
             //           "EF": "",
             //           "ST": "G"
-            //       }],
+            //       }]
             //
-            //       "__signature": {      // Not standard compliant property key!
-            //           "SD": "304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"
-            //       }
+            //     },
             //
-            //   },
+            //     "signature": {
+            //       "SD": "304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"
+            //     }
             //
-            //   [...]
-            //
-            // ]
+            // }
 
-            for (let OCMFData of OCMFValues)
+            for (let ocmf of OCMFDataList)
             {
 
-                let GatewayInformation :string    = OCMFData.GI != null ? OCMFData.GI.trim() : ""; // Some text about the manufacturer, model, variant, ... of e.g. the gateway.
-                let GatewaySerial      :string    = OCMFData.GS != null ? OCMFData.GS.trim() : ""; // Serial number of the gateway, might be mandatory.
-                let GatewayVersion     :string    = OCMFData.GV != null ? OCMFData.GV.trim() : ""; // Software version of the gateway.
+                let GatewayInformation :string    = ocmf.data.GI != null ? ocmf.data.GI.trim() : ""; // Some text about the manufacturer, model, variant, ... of e.g. the gateway.
+                let GatewaySerial      :string    = ocmf.data.GS != null ? ocmf.data.GS.trim() : ""; // Serial number of the gateway, might be mandatory.
+                let GatewayVersion     :string    = ocmf.data.GV != null ? ocmf.data.GV.trim() : ""; // Software version of the gateway.
 
-                let paging             :string    = OCMFData.PG != null ? OCMFData.PG.trim() : ""; // Paging, as this data might be part of a larger context.
+                let paging             :string    = ocmf.data.PG != null ? ocmf.data.PG.trim() : ""; // Paging, as this data might be part of a larger context.
                 let TransactionType               = ocmfTypes.OCMFTransactionTypes.undefined;
                 switch (paging[0]?.toLowerCase())
                 {
@@ -290,28 +288,28 @@ export class OCMF {
                 }
                 let Pagination                    = paging.substring(1);
 
-                let MeterVendor         :string   = OCMFData.MV != null ? OCMFData.MV.trim() : "";    // Vendor of the device, optional.
-                let MeterModel          :string   = OCMFData.MM != null ? OCMFData.MM.trim() : "";    // Model of the device, optional.
-                let MeterSerial         :string   = OCMFData.MS != null ? OCMFData.MS.trim() : "";    // Serialnumber of the device, might be optional.
-                let MeterFirmware       :string   = OCMFData.MF != null ? OCMFData.MF.trim() : "";    // Software version of the device.
+                let MeterVendor         :string   = ocmf.data.MV != null ? ocmf.data.MV.trim() : "";    // Vendor of the device, optional.
+                let MeterModel          :string   = ocmf.data.MM != null ? ocmf.data.MM.trim() : "";    // Model of the device, optional.
+                let MeterSerial         :string   = ocmf.data.MS != null ? ocmf.data.MS.trim() : "";    // Serialnumber of the device, might be optional.
+                let MeterFirmware       :string   = ocmf.data.MF != null ? ocmf.data.MF.trim() : "";    // Software version of the device.
 
-                let IdentificationStatus:boolean  = OCMFData.IS != null ? OCMFData.IS        : false; // true, if user is assigned, else false.
-                let IdentificationLevel :string   = OCMFData.IL != null ? OCMFData.IL.trim() : "";    // optional
-                let IdentificationFlags :string[] = OCMFData.IF != null ? OCMFData.IF        : [];    // optional
-                let IdentificationType  :string   = OCMFData.IT != null ? OCMFData.IT.trim() : "";    // The type of the authentication data.
-                let IdentificationData  :string   = OCMFData.ID != null ? OCMFData.ID.trim() : "";    // The authentication data.
+                let IdentificationStatus:boolean  = ocmf.data.IS != null ? ocmf.data.IS        : false; // true, if user is assigned, else false.
+                let IdentificationLevel :string   = ocmf.data.IL != null ? ocmf.data.IL.trim() : "";    // optional
+                let IdentificationFlags :string[] = ocmf.data.IF != null ? ocmf.data.IF        : [];    // optional
+                let IdentificationType  :string   = ocmf.data.IT != null ? ocmf.data.IT.trim() : "";    // The type of the authentication data.
+                let IdentificationData  :string   = ocmf.data.ID != null ? ocmf.data.ID.trim() : "";    // The authentication data.
 
-                let ChargePointIdType   :string   = OCMFData.CT != null ? OCMFData.CT.trim() : "";    // Type of the following ChargePointId: EVSEId|ChargingStationId|...
-                let ChargePointId       :string   = OCMFData.CI != null ? OCMFData.CI.trim() : "";    // The identification of the charge point
+                let ChargePointIdType   :string   = ocmf.data.CT != null ? ocmf.data.CT.trim() : "";    // Type of the following ChargePointId: EVSEId|ChargingStationId|...
+                let ChargePointId       :string   = ocmf.data.CI != null ? ocmf.data.CI.trim() : "";    // The identification of the charge point
 
-                if (!OCMFData.RD || OCMFData.RD.length == 0)
+                if (!ocmf.data.RD || ocmf.data.RD.length == 0)
                     return {
                         status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:   "Each OCMF data set must have at least one meter reading!",
                         certainty: 0
                     }
 
-                for (let reading of OCMFData.RD)
+                for (let reading of ocmf.data.RD)
                 {
 
                     let metaTimestamp       = reading.TM.split(' ');
@@ -350,7 +348,7 @@ export class OCMF {
                         "errorFlags":       ErrorFlags,         // ""
                         "status":           Status,             // "G"
                         "signatures": [{
-                            "value": OCMFData["signature"]["SD"]
+                            "value": ocmf.signature["SD"]
                         }]
                     });
 
@@ -359,11 +357,11 @@ export class OCMF {
                 CTR.begin = CTR.chargingSessions[0].begin;
                 CTR.end   = CTR.chargingSessions[0].end;
 
-                CTR.chargingSessions[0].authorizationStart["@id"] = OCMFData.ID;
-                CTR.chargingSessions[0].authorizationStart["type"] = OCMFData.IT;
-                CTR.chargingSessions[0].authorizationStart["IS"] = OCMFData.IS;
-                CTR.chargingSessions[0].authorizationStart["IL"] = OCMFData.IL;
-                CTR.chargingSessions[0].authorizationStart["IF"] = OCMFData.IF;
+                CTR.chargingSessions[0].authorizationStart["@id"]  = ocmf.data.ID;
+                CTR.chargingSessions[0].authorizationStart["type"] = ocmf.data.IT;
+                CTR.chargingSessions[0].authorizationStart["IS"]   = ocmf.data.IS;
+                CTR.chargingSessions[0].authorizationStart["IL"]   = ocmf.data.IL;
+                CTR.chargingSessions[0].authorizationStart["IF"]   = ocmf.data.IF;
 
             }
 
@@ -391,30 +389,30 @@ export class OCMF {
     {
 
         let commonVersion          = "";
-        let OCMFDataList:Object[]  = [];
+        let ocmfDataList:Object[]  = [];
 
         if (typeof OCMFValues === 'string')
             OCMFValues = [ OCMFValues ];
 
-        for (let OCMFValue of OCMFValues)
+        for (let ocmfValue of OCMFValues)
         {
 
             // OCMF|{"FV":"1.0","GI":"SEAL AG","GS":"1850006a","GV":"1.34","PG":"T9289","MV":"Carlo Gavazzi","MM":"EM340-DIN.AV2.3.X.S1.PF","MS":"******240084S","MF":"B4","IS":true,"IL":"TRUSTED","IF":["OCCP_AUTH"],"IT":"ISO14443","ID":"56213C05","RD":[{"TM":"2019-06-26T08:57:44,337+0000 U","TX":"B","RV":268.978,"RI":"1-b:1.8.0","RU":"kWh","RT":"AC","EF":"","ST":"G"}]}|{"SD":"304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"}
-            let OCMFSections = OCMFValue.split('|');
+            const ocmfSections = ocmfValue.split('|');
 
-            if (OCMFSections.length == 3)
+            if (ocmfSections.length == 3)
             {
 
-                if (OCMFSections[0] !== "OCMF")
+                if (ocmfSections[0] !== "OCMF")
                     return {
                         status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:   "The given data does not have a valid OCMF header!",
                         certainty: 0
                     }
 
-                let OCMFVersion           = "";
-                let OCMFData:any          = {};
-                let OCMFSignature:Object  = {};
+                let ocmfVersion           = "";
+                let ocmfData:     any     = {};
+                let ocmfSignature:Object  = {};
 
                 try
                 {
@@ -457,9 +455,9 @@ export class OCMF {
                     //     "SD": "304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"
                     // }
 
-                    OCMFData       = JSON.parse(OCMFSections[1] ?? "{}");
-                    OCMFSignature  = JSON.parse(OCMFSections[2] ?? "{}");
-                    OCMFVersion    = OCMFData["FV"] != null ? OCMFData["FV"].trim() : ""; 
+                    ocmfData       = JSON.parse(ocmfSections[1] ?? "{}");
+                    ocmfSignature  = JSON.parse(ocmfSections[2] ?? "{}");
+                    ocmfVersion    = ocmfData["FV"] != null ? ocmfData["FV"].trim() : ""; 
 
                 }
                 catch (exception)
@@ -471,14 +469,14 @@ export class OCMF {
                     }
                 }
 
-                if (OCMFData      == null || Object.keys(OCMFData).length === 0)
+                if (ocmfData      == null || Object.keys(ocmfData).length === 0)
                     return {
                         status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:   "Could not parse the given OCMF data!",
                         certainty: 0
                     }
 
-                if (OCMFSignature == null || Object.keys(OCMFSignature).length === 0)
+                if (ocmfSignature == null || Object.keys(ocmfSignature).length === 0)
                     return {
                         status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:   "Could not parse the given OCMF signature!",
@@ -486,14 +484,12 @@ export class OCMF {
                     }
 
                 if (commonVersion == "")
-                    commonVersion = OCMFVersion;
+                    commonVersion = ocmfVersion;
                 else
-                    if (OCMFVersion != commonVersion)
+                    if (ocmfVersion != commonVersion)
                         "Invalid mixture of different OCMF versions within the given SAFE XML!";
 
-                OCMFData["__signature"] = OCMFSignature;
-
-                OCMFDataList.push(OCMFData);
+                ocmfDataList.push({ "data": ocmfData, "signature": ocmfSignature });
 
             }
 
@@ -506,14 +502,14 @@ export class OCMF {
 
         }
 
-        if (OCMFDataList.length == 1)
+        if (ocmfDataList.length == 1)
             return {
                 status:    chargyInterfaces.SessionVerificationResult.AtLeastTwoMeasurementsRequired,
                 message:   "At least two OCMF measurements are required!",
                 certainty: 0
             }
 
-        if (OCMFDataList.length >= 2)
+        if (ocmfDataList.length >= 2)
         {
             switch (commonVersion)
             {
@@ -522,7 +518,7 @@ export class OCMF {
                 //     return await this.tryToParseOCMFv0_1(OCMFDataList as IOCMFData_v0_1[], PublicKey);
 
                 case "1.0":
-                    return await this.tryToParseOCMF(OCMFDataList as ocmfTypes.IOCMFData_v1_0[], PublicKey);
+                    return await this.tryToParseOCMF(ocmfDataList as ocmfTypes.IOCMFData_v1_0_Signed[], PublicKey);
 
                 default:
                     return {

@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy.js'
-import * as chargyInterfaces  from './chargyInterfaces.js'
-import * as chargyLib         from './chargyLib.js'
+import { Chargy }             from './chargy'
+import * as chargyInterfaces  from './chargyInterfaces'
+import * as chargyLib         from './chargyLib'
 
 import * as L                 from 'leaflet';
 

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy.js'
-import * as chargyInterfaces  from './chargyInterfaces.js'
-import * as chargyLib         from './chargyLib.js'
-import { EMHCrypt01 }         from './EMHCrypt01.js'
-import { Alfen01 }            from './Alfen01.js'
-import { OCMF }               from './OCMF.js'
+import { Chargy }             from './chargy'
+import * as chargyInterfaces  from './chargyInterfaces'
+import * as chargyLib         from './chargyLib'
+import { EMHCrypt01 }         from './EMHCrypt01'
+import { Alfen01 }            from './Alfen01'
+import { OCMF }               from './OCMF'
 
 interface XMLContainerCommonFormat {
     publicKey:             string;

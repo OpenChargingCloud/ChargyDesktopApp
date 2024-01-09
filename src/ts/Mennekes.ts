@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as chargyInterfaces  from './chargyInterfaces.js'
+import * as chargyInterfaces  from './chargyInterfaces'
 
 export class Mennekes {
 

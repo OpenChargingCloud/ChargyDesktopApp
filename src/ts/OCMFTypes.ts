@@ -84,3 +84,14 @@ export interface IOCMFData_v1_0 extends IOCMFData {
     GS:         string,
     GV:         string,
 }
+
+export interface IOCMFData_v0_1_Signed {
+    data:       IOCMFData_v0_1,
+    signature:  any
+}
+
+export interface IOCMFData_v1_0_Signed {
+    data:       IOCMFData_v1_0,
+    signature:  any
+}
+
