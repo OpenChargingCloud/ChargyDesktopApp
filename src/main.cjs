@@ -7,8 +7,8 @@ const fs                                      = require('fs');
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
-let applicationEdition    = "Eneco Edition";
-let copyright             = "&copy; 2018-2022 GraphDefined GmbH";
+let applicationEdition    = "LichtBlick Edition";
+let copyright             = "&copy; 2018-2024 GraphDefined GmbH";
 let applicationFileName   = "";
 let appAsarFileName       = "";
 let commandLineArguments  = [];

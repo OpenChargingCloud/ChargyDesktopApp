@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2018-2022 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2024 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -43,9 +43,9 @@ export class ChargyApp {
     public  copyright:                     string              = "";
     public  appVersion:                    string              = "";
     public  versionsURL:                   string              = "";
-    public  feedbackEMail:                 string[]            = [];
-    public  feedbackHotline:               string[]            = [];
-    public  issueURL:                      string              = "";
+    public  defaultFeedbackEMail:          string[]            = [];
+    public  defaultFeedbackHotline:        string[]            = [];
+    public  defaultIssueURL:               string              = "";
     private ipcRenderer                                        = require('electron').ipcRenderer; // (window as any)?.electron?.ipcRenderer;
     private commandLineArguments:          Array<string>       = [];
     public  packageJson:                   any                 = {};
@@ -96,70 +96,85 @@ export class ChargyApp {
     private overlayOkButton:               HTMLButtonElement;
     private issueTrackerDiv:               HTMLDivElement;
     private privacyStatement:              HTMLDivElement;
+
+    private showFeedbackSection:           Boolean;
     private feedbackMethodsDiv:            HTMLDivElement;
+    private feedbackEMailAnchor:           HTMLAnchorElement;
+    private feedbackHotlineAnchor:         HTMLAnchorElement;
     private showIssueTrackerButton:        HTMLButtonElement;
     private issueTrackerText:              HTMLDivElement;
+    private sendIssueButton:               HTMLButtonElement;
+    private issueBackButton:               HTMLButtonElement;
+
     private showPrivacyStatement:          HTMLButtonElement;
     private privacyStatementAccepted:      HTMLInputElement;
-    private sendIssueButton:               HTMLButtonElement;
     private softwareInfosDiv:              HTMLDivElement;
     private openSourceLibsDiv:             HTMLDivElement;
-    private issueBackButton:               HTMLButtonElement;
 
     //#endregion
 
-    constructor(versionsURL?:      string,
-                feedbackEMail?:    string[],
-                feedbackHotline?:  string[],
-                issueURL?:         string) {
+    constructor(versionsURL?:          string,
+                showFeedbackSection?:  Boolean,
+                feedbackEMail?:        string[],
+                feedbackHotline?:      string[],
+                issueURL?:             string) {
 
-        this.appDiv                    = document.getElementById('app')                                   as HTMLDivElement;
-        this.headlineDiv               = document.getElementById('headline')                              as HTMLDivElement;
-        this.verifyframeDiv            = document.getElementById('verifyframe')                           as HTMLDivElement;
+        this.appDiv                    = document.getElementById('app')                                      as HTMLDivElement;
+        this.headlineDiv               = document.getElementById('headline')                                 as HTMLDivElement;
+        this.verifyframeDiv            = document.getElementById('verifyframe')                              as HTMLDivElement;
 
-        this.aboutScreenDiv            = document.getElementById('aboutScreen')                           as HTMLDivElement;
-        this.updateAvailableScreen     = document.getElementById('updateAvailableScreen')                 as HTMLDivElement;
-        this.applicationHashDiv        = document.getElementById('applicationHash')                       as HTMLDivElement;
-        this.chargingSessionScreenDiv  = document.getElementById('chargingSessionScreen')                 as HTMLDivElement;
-        this.invalidDataSetsScreenDiv  = document.getElementById('invalidDataSetsScreen')                 as HTMLDivElement;
-        this.evseTarifInfosDiv         = document.getElementById('evseTarifInfos')                        as HTMLDivElement;
-        this.inputDiv                  = document.getElementById('input')                                 as HTMLDivElement;
-        this.inputInfosDiv             = document.getElementById('inputInfos')                            as HTMLDivElement;
-        this.errorTextDiv              = document.getElementById('errorText')                             as HTMLDivElement;
-        this.feedbackDiv               = document.getElementById('feedback')                              as HTMLDivElement;
-        this.inputButtonsDiv           = document.getElementById('inputButtons')                          as HTMLDivElement;
-        this.exportButtonDiv           = document.getElementById('exportButtonDiv')                       as HTMLDivElement;
-        this.issueTrackerDiv           = document.getElementById('issueTracker')                          as HTMLDivElement;
-        this.overlayDiv                = document.getElementById('overlay')                               as HTMLDivElement;
-        this.applicationHashValueDiv   = this.applicationHashDiv.querySelector("#value")                  as HTMLDivElement;
-        this.privacyStatement          = this.issueTrackerDiv.querySelector("#privacyStatement")          as HTMLDivElement;
-        this.feedbackMethodsDiv        = this.feedbackDiv.querySelector("#feedbackMethods")               as HTMLDivElement;
-        this.issueTrackerText          = this.issueTrackerDiv.querySelector("#issueTrackerText")          as HTMLDivElement;
-        this.softwareInfosDiv          = this.aboutScreenDiv.querySelector("#softwareInfos")              as HTMLDivElement;
-        this.openSourceLibsDiv         = this.aboutScreenDiv.querySelector("#openSourceLibs")             as HTMLDivElement;
+        this.updateAvailableScreen     = document.getElementById('updateAvailableScreen')                    as HTMLDivElement;
+        this.chargingSessionScreenDiv  = document.getElementById('chargingSessionScreen')                    as HTMLDivElement;
+        this.invalidDataSetsScreenDiv  = document.getElementById('invalidDataSetsScreen')                    as HTMLDivElement;
+        this.evseTarifInfosDiv         = document.getElementById('evseTarifInfos')                           as HTMLDivElement;
+        this.inputDiv                  = document.getElementById('input')                                    as HTMLDivElement;
+        this.inputInfosDiv             = document.getElementById('inputInfos')                               as HTMLDivElement;
+        this.errorTextDiv              = document.getElementById('errorText')                                as HTMLDivElement;
+        this.overlayDiv                = document.getElementById('overlay')                                  as HTMLDivElement;
 
-        this.updateAvailableButton     = document.getElementById('updateAvailableButton')                 as HTMLButtonElement;
-        this.aboutButton               = document.getElementById('aboutButton')                           as HTMLButtonElement;
-        this.fullScreenButton          = document.getElementById('fullScreenButton')                      as HTMLButtonElement;
-        this.appQuitButton             = document.getElementById('appQuitButton')                         as HTMLButtonElement;
-        this.overlayOkButton           = document.getElementById('overlayOkButton')                       as HTMLButtonElement;
-        this.fileInputButton           = document.getElementById('fileInputButton')                       as HTMLButtonElement;
-        this.pasteButton               = document.getElementById('pasteButton')                           as HTMLButtonElement;
-        this.backButton                = this.inputButtonsDiv.querySelector("#backButton")                as HTMLButtonElement;
-        this.exportButton              = this.exportButtonDiv.querySelector("#exportButton")              as HTMLButtonElement;
-        this.showPrivacyStatement      = this.issueTrackerDiv.querySelector("#showPrivacyStatement")      as HTMLButtonElement;
-        this.privacyStatementAccepted  = this.issueTrackerDiv.querySelector("#privacyStatementAccepted")  as HTMLInputElement;
-        this.sendIssueButton           = this.issueTrackerDiv.querySelector("#sendIssueButton")           as HTMLButtonElement;
-        this.showIssueTrackerButton    = this.feedbackMethodsDiv.querySelector("#showIssueTracker")       as HTMLButtonElement;
-        this.issueBackButton           = this.issueTrackerDiv.querySelector("#issueBackButton")           as HTMLButtonElement;
+        this.applicationHashDiv        = document.getElementById('applicationHash')                          as HTMLDivElement;
+        this.applicationHashValueDiv   = this.applicationHashDiv.querySelector("#value")                     as HTMLDivElement;
+
+        this.showFeedbackSection       = showFeedbackSection ?? false;
+        this.feedbackDiv               = document.getElementById('feedback')                                 as HTMLDivElement;
+        this.feedbackMethodsDiv        = this.feedbackDiv.       querySelector("#feedbackMethods")           as HTMLDivElement;
+        this.showIssueTrackerButton    = this.feedbackMethodsDiv.querySelector("#showIssueTracker")          as HTMLButtonElement;
+        this.feedbackEMailAnchor       = this.feedbackMethodsDiv.querySelector("#eMail")                     as HTMLAnchorElement;
+        this.feedbackHotlineAnchor     = this.feedbackMethodsDiv.querySelector("#hotline")                   as HTMLAnchorElement;
+
+        this.issueTrackerDiv           = document.getElementById('issueTracker')                             as HTMLDivElement;
+        this.issueTrackerText          = this.issueTrackerDiv.   querySelector("#issueTrackerText")          as HTMLDivElement;
+        this.privacyStatement          = this.issueTrackerDiv.   querySelector("#privacyStatement")          as HTMLDivElement;
+        this.issueBackButton           = this.issueTrackerDiv.   querySelector("#issueBackButton")           as HTMLButtonElement;
+        this.showPrivacyStatement      = this.issueTrackerDiv.   querySelector("#showPrivacyStatement")      as HTMLButtonElement;
+        this.privacyStatementAccepted  = this.issueTrackerDiv.   querySelector("#privacyStatementAccepted")  as HTMLInputElement;
+        this.sendIssueButton           = this.issueTrackerDiv.   querySelector("#sendIssueButton")           as HTMLButtonElement;
+
+        this.aboutScreenDiv            = document.getElementById('aboutScreen')                              as HTMLDivElement;
+        this.softwareInfosDiv          = this.aboutScreenDiv.    querySelector("#softwareInfos")             as HTMLDivElement;
+        this.openSourceLibsDiv         = this.aboutScreenDiv.    querySelector("#openSourceLibs")            as HTMLDivElement;
+
+        this.updateAvailableButton     = document.getElementById('updateAvailableButton')                    as HTMLButtonElement;
+        this.aboutButton               = document.getElementById('aboutButton')                              as HTMLButtonElement;
+        this.fullScreenButton          = document.getElementById('fullScreenButton')                         as HTMLButtonElement;
+        this.appQuitButton             = document.getElementById('appQuitButton')                            as HTMLButtonElement;
+        this.overlayOkButton           = document.getElementById('overlayOkButton')                          as HTMLButtonElement;
+        this.fileInputButton           = document.getElementById('fileInputButton')                          as HTMLButtonElement;
+        this.pasteButton               = document.getElementById('pasteButton')                              as HTMLButtonElement;
+
+        this.inputButtonsDiv           = document.getElementById('inputButtons')                             as HTMLDivElement;
+        this.backButton                = this.inputButtonsDiv.   querySelector("#backButton")                as HTMLButtonElement;
+
+        this.exportButtonDiv           = document.getElementById('exportButtonDiv')                          as HTMLDivElement;
+        this.exportButton              = this.exportButtonDiv.   querySelector("#exportButton")              as HTMLButtonElement;
 
         this.appVersion                = this.ipcRenderer.sendSync('getAppVersion')     ?? "";
         this.appEdition                = this.ipcRenderer.sendSync('getAppEdition')     ?? "";
-        this.copyright                 = this.ipcRenderer.sendSync('getCopyright')      ?? "&copy; 2018-2022 GraphDefined GmbH";
-        this.versionsURL               = versionsURL                                    ?? "https://open.charging.cloud/chargy/versions";
-        this.issueURL                  = issueURL                                       ?? "https://open.charging.cloud/chargy/issues";
-        this.feedbackEMail             = feedbackEMail   != undefined ? feedbackEMail   : ["support@open.charging.cloud", "?subject=Chargy%20Supportanfrage"];
-        this.feedbackHotline           = feedbackHotline != undefined ? feedbackHotline : ["+491728930852",               "+49 172 8930852"];
+        this.copyright                 = this.ipcRenderer.sendSync('getCopyright')      ?? "&copy; 2018-2024 GraphDefined GmbH";
+        this.versionsURL               = versionsURL                                    ?? "https://open.charging.cloud/chargy/desktop/versions";
+        this.defaultIssueURL           = issueURL                                       ?? "https://open.charging.cloud/chargy/desktop/issues";
+        this.defaultFeedbackEMail      = feedbackEMail   != undefined ? feedbackEMail   : ["support@open.charging.cloud", "?subject=Chargy%20Support"];
+        this.defaultFeedbackHotline    = feedbackHotline != undefined ? feedbackHotline : ["+491728930852",               "+49 172 8930852"];
         this.commandLineArguments      = this.ipcRenderer.sendSync('getCommandLineArguments');
         this.packageJson               = this.ipcRenderer.sendSync('getPackageJson');
         this.i18n                      = this.ipcRenderer.sendSync('getI18N');
@@ -227,23 +242,7 @@ export class ChargyApp {
 
         //#region Set infos of the feedback section
 
-        this.showIssueTrackerButton.onclick = (ev: MouseEvent) => {
-            this.issueTrackerDiv.style.display   = 'block';
-            this.privacyStatement.style.display  = "none";
-            this.issueTrackerText.scrollTop = 0;
-        }
-
-        if (this.feedbackEMail && this.feedbackEMail.length == 2)
-        {
-            (this.feedbackMethodsDiv.querySelector("#eMail")   as HTMLAnchorElement).href       = "mailto:" + this.feedbackEMail[0] + this.feedbackEMail[1];
-            (this.feedbackMethodsDiv.querySelector("#eMail")   as HTMLAnchorElement).innerHTML += this.feedbackEMail[0];
-        }
-
-        if (this.feedbackHotline && this.feedbackHotline.length == 2)
-        {
-            (this.feedbackMethodsDiv.querySelector("#hotline") as HTMLAnchorElement).href       = "tel:" + this.feedbackHotline[0];
-            (this.feedbackMethodsDiv.querySelector("#hotline") as HTMLAnchorElement).innerHTML += this.feedbackHotline[1];
-        }
+        this.UpdateFeedbackSection();
 
         //#endregion
 
@@ -312,7 +311,7 @@ export class ChargyApp {
                 let sendIssue = new XMLHttpRequest();
 
                 sendIssue.open("SUBMIT",
-                               this.issueURL,
+                               this.defaultIssueURL,
                                true);
                 sendIssue.setRequestHeader('Content-type', 'application/json');
 
@@ -1114,6 +1113,57 @@ export class ChargyApp {
 
     }
 
+
+    //#region UpdateFeedbackSection()
+
+    public UpdateFeedbackSection(FeedbackEMail?:   String[],
+                                 FeedbackHotline?: String[]) {
+
+        if (!this.showFeedbackSection)
+        {
+            this.feedbackDiv.style.display = "none";
+            return;
+        }
+
+        this.feedbackDiv.style.display = "block";
+
+        //#region Issue Tracker
+
+        this.showIssueTrackerButton.onclick = (ev: MouseEvent) => {
+            this.issueTrackerDiv.style.display   = 'block';
+            this.privacyStatement.style.display  = "none";
+            this.issueTrackerText.scrollTop = 0;
+        }
+
+        //#endregion
+
+        //#region Feedback E-Mail
+
+        const feedbackEMail   = FeedbackEMail   ?? this.defaultFeedbackEMail;
+
+        if (feedbackEMail && feedbackEMail.length == 2)
+        {
+            this.feedbackEMailAnchor.href       = "mailto:" + feedbackEMail[0] + feedbackEMail[1];
+            this.feedbackEMailAnchor.innerHTML += feedbackEMail[0];
+        }
+
+        //#endregion
+
+        //#region Feedback Hotline
+
+        const feedbackHotline = FeedbackHotline ?? this.defaultFeedbackHotline;
+
+        if (feedbackHotline && feedbackHotline.length == 2)
+        {
+            this.feedbackHotlineAnchor.href       = "tel:" + feedbackHotline[0];
+            this.feedbackHotlineAnchor.innerHTML += feedbackHotline[1];
+        }
+
+        //#endregion
+
+    }
+
+    //#endregion
 
     //#region doGlobalError(...)
 
@@ -2661,10 +2711,13 @@ export class ChargyApp {
 // Remember to set Customer Mapbox Access Token and MapId!
 // Remember to set the "applicationEdition" in main.cjs
 
-const app = new ChargyApp("https://eneco.ops.charging.cloud/chargy/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
-                          ["support-business@eneco.com", "?subject=Chargy%20Supportanfrage"],
-                          ["+4993219319101",             "+49 9321 9319 101"],
-                          "https://eneco.ops.charging.cloud/chargy/issues");
+const app = new ChargyApp(
+                "https://lichtblick.charging.cloud/chargy/desktop/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
+                false, // Show Feedback Section
+                ["support.emobility@lichtblick.de", "?subject=Chargy%20Support"],
+                ["+4993219319101",                  "+49 9321 9319 101"],
+                "https://lichtblick.charging.cloud/chargy/desktop/issues"
+            );
 
 // const app = new ChargyApp("https://chargepoint.charging.cloud/chargy/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
 //                           ["support.eu@chargepoint.com", "?subject=Chargy%20Supportanfrage"],

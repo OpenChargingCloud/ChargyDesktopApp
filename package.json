@@ -1,6 +1,6 @@
 {
   "name": "chargytransparenzsoftware",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "Chargy ist eine Transparenzsoftware für das Eichrecht in der Elektromobilität. Hiermit können Endkunden und E-Mobilitäts-Anbieter die Plausibilitäts und Validität von Ladevorgängen überprüfen.",
   "main": "src/main.cjs",
   "type": "module",
@@ -59,7 +59,7 @@
   "build": {
     "appId": "cloud.charging.ops.lichtblick.chargy.desktop",
     "productName": "Chargy Transparenzsoftware LichtBlick Edition",
-    "copyright": "Copyright © 2018-2023 GraphDefined GmbH",
+    "copyright": "Copyright © 2018-2024 GraphDefined GmbH",
     "extraFiles": [
       "build",
       "documentation",

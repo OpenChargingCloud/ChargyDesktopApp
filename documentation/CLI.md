@@ -5,7 +5,7 @@ If you want to use Chargy within automatic tests or within scripts you can use t
 ```
 C:\Program Files\Chargy Transparenzsoftware ChargePoint Edition>
 Chargy Transparenzsoftware ChargePoint Edition v1.2.0
-(c) 2018-2022 GraphDefined GmbH
+(c) 2018-2024 GraphDefined GmbH
 
 Usage: Chargy Transparenzsoftware ChargePoint Edition.exe [switches] file1, file2, ...
 

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2018-2022 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2024 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
@@ -23,12 +23,11 @@ body {
 
         #headline {
 
-            #logo {
-                background-color:   #ffffff;
+            //#logo {
                 //background-image:     url('../images/ChargePoint_logo_HEX.png');
                 //background-image:     url('../images/chargeIT-logo.jpg');
-                background-image:     url('../images/ENECO_eMobility_Logo.png');
-            }
+                //background-image:     url('../images/ENECO_eMobility_Logo.png');
+            //}
 
             #windowButtons {
                 button:hover {
