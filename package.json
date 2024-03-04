@@ -34,7 +34,7 @@
     "@types/leaflet": "^1.9.8",
     "@types/node": "^20.10.8",
     "electron": "^28.1.2",
-    "electron-builder": "^24.9.1",
+    "electron-builder": "^24.13.3",
     "electron-localshortcut": "^3.2.1",
     "sass": "^1.69.7",
     "ts-loader": "^9.5.1",
