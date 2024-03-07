@@ -527,7 +527,7 @@ export class Chargy {
                     let xmlns        = XMLDocument.lookupNamespaceURI(null);
                     if (xmlns != null)
                     {
-                    
+
                         switch (xmlns)
                         {
 
@@ -546,8 +546,6 @@ export class Chargy {
 
                                 if (processedFile.result.status)
                                     processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
-
-                                var xxx = 23;
 
                                 break;
 
