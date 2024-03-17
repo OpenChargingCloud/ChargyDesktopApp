@@ -16,7 +16,7 @@ The Chargy Desktop project has a sister project called [Chargy Mobile](https://g
 
 ## System Requirements
 
-You can download node.js 14.7.0 with npm 6.14.7 for Microsoft Windows or Mac OS X from https://nodejs.org/en/download/current/    
+You can download node.js 21.7.1 with npm 10.5.0 for Microsoft Windows or Mac OS X from https://nodejs.org/en/download/current/    
 Please note, that you have to reinstall this software for every update.    
 
 On Linux you can install Node.js via...
