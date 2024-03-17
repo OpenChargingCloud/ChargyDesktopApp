@@ -166,6 +166,10 @@ body {
                                 background-color:   #519ad0;
                             }
 
+                            #fileInput {
+                                display:            none;
+                            }
+
                         }
 
                         #loadingErrors {
@@ -1235,10 +1239,15 @@ body {
 
             }
 
+            #clear {
+                clear:          both;
+            }
+
         }
 
         #overlay {
 
+            display:                none;
             position:               absolute;
             font-family:            sans-serif;
             font-size:              90%;

@@ -26,8 +26,19 @@
     <meta name="description" content="Transparenzsoftware für die Elektromobilität">
     <meta name="author"      content="achim.friedland@graphdefined.com">
     <meta name="viewport"    content="width=device-width, initial-scale=1.0">
-<!--    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://lichtblick.c.charging.cloud/chargy/ https://open.charging.cloud/chargy/ https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"> -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://lichtblick.c.charging.cloud/chargy/ https://open.charging.cloud/chargy/ https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+
+    <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    connect-src 'self' 
+      https://chargy.charging.cloud
+      https://open.charging.cloud/chargy/
+      https://lichtblick.c.charging.cloud/chargy/
+      https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/;
+    img-src 'self' data: https:;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval';
+    style-src 'self';
+  "> 
+<!--    script-src 'self' 'unsafe-inline'; -->
 
     <!--<link rel="icon"       href="/favicon.png"                 type="image/png" />-->
     <link rel="stylesheet" href="css/fontawesome-all.min.css"     type="text/css" />
@@ -74,7 +85,7 @@
 
                         <div id="buttonsDiv">
                             <button id="fileInputButton"><i class="far fa-folder-open"></i><br />Datensätze<br />laden</button>
-                            <input id="fileInput" type="file" multiple style="display: none"/>
+                            <input id="fileInput" type="file" multiple />
                             <button id="pasteButton"><i class="fas fa-paste"></i><br />Datensätze<br />einfügen</button>
                         </div>
 
@@ -284,11 +295,11 @@
 
             </div>
 
-            <div id="clear" style="clear:both;"></div>
+            <div id="clear"></div>
 
         </div>
 
-        <div id="overlay" style="display: none">
+        <div id="overlay">
             <div id="overlayText">
 
                 <div id="error"></div>
@@ -335,7 +346,7 @@
             </div>
         </div>
 
-        <div id="issueTracker" style="display: none">
+        <div id="issueTracker">
             <div id="issueTrackerText">
 
                 <div id="headline">
