@@ -57,7 +57,7 @@
     "safe-stable-stringify": "^1.1.1"
   },
   "build": {
-    "appId": "cloud.charging.ops.lichtblick.chargy.desktop",
+    "appId": "cloud.charging.c.lichtblick.chargy.desktop",
     "productName": "Chargy Transparenzsoftware LichtBlick Edition",
     "copyright": "Copyright © 2018-2024 GraphDefined GmbH",
     "extraFiles": [

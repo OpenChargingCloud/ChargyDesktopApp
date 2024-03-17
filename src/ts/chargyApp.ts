@@ -2712,11 +2712,11 @@ export class ChargyApp {
 // Remember to set the "applicationEdition" in main.cjs
 
 const app = new ChargyApp(
-                "https://lichtblick.charging.cloud/chargy/desktop/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
+                "https://lichtblick.c.charging.cloud/chargy/desktop/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
                 false, // Show Feedback Section
                 ["support.emobility@lichtblick.de", "?subject=Chargy%20Support"],
                 ["+4993219319101",                  "+49 9321 9319 101"],
-                "https://lichtblick.charging.cloud/chargy/desktop/issues"
+                "https://lichtblick.c.charging.cloud/chargy/desktop/issues"
             );
 
 // const app = new ChargyApp("https://chargepoint.charging.cloud/chargy/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",

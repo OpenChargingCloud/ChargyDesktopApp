@@ -716,7 +716,8 @@ export class Chargy {
                     else if (JSONContext.startsWith("https://open.charging.cloud/contexts/publicKey+json"))
                         processedFile.result = JSONContent as chargyInterfaces.IPublicKeyInfo;
 
-                    else if (JSONContext.startsWith("https://www.eneco.com/contexts/charging-station-json") ||
+                    else if (JSONContext.startsWith("https://www.lichtblick.de/contexts/charging-station-json") ||
+                             JSONContext.startsWith("https://www.eneco.com/contexts/charging-station-json")     ||
                              JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
                     {
                         processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormat(JSONContent);

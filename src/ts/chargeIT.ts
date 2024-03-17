@@ -554,8 +554,10 @@ export class ChargeIT {
 
                         if (consistent) {
 
-                            if (signedMeterValueContext === "https://www.eneco.com/contexts/bsm-ws36a-json-v0" ||
-                                signedMeterValueContext === "https://www.eneco.com/contexts/bsm-ws36a-json-v1" ||
+                            if (signedMeterValueContext === "https://www.lichtblick.de/contexts/bsm-ws36a-json-v0"         ||
+                                signedMeterValueContext === "https://www.lichtblick.de/contexts/bsm-ws36a-json-v1"         ||
+                                signedMeterValueContext === "https://www.eneco.com/contexts/bsm-ws36a-json-v0"             ||
+                                signedMeterValueContext === "https://www.eneco.com/contexts/bsm-ws36a-json-v1"             ||
                                 signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0" ||
                                 signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1") {
 
@@ -994,8 +996,10 @@ export class ChargeIT {
                                                             ? signedMeterValues[0]["@context"]?.trim()
                                                             : oldChargeITMeterValueFormat;
 
-                        if (signedMeterValueContext === "https://www.eneco.com/contexts/bsm-ws36a-json-v0" ||
-                            signedMeterValueContext === "https://www.eneco.com/contexts/bsm-ws36a-json-v1" ||
+                        if (signedMeterValueContext === "https://www.lichtblick.de/contexts/bsm-ws36a-json-v0"         ||
+                            signedMeterValueContext === "https://www.lichtblick.de/contexts/bsm-ws36a-json-v1"         ||
+                            signedMeterValueContext === "https://www.eneco.com/contexts/bsm-ws36a-json-v0"             ||
+                            signedMeterValueContext === "https://www.eneco.com/contexts/bsm-ws36a-json-v1"             ||
                             signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0" ||
                             signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1") {
 
@@ -1054,7 +1058,9 @@ export class ChargeIT {
 
         //#region New chargeIT container format
 
-        if (containerFormat == "https://www.eneco.com/contexts/charging-station-json-v0"             ||
+        if (containerFormat == "https://www.lichtblick.de/contexts/charging-station-json-v0"         ||
+            containerFormat == "https://www.lichtblick.de/contexts/charging-station-json-v1"         ||
+            containerFormat == "https://www.eneco.com/contexts/charging-station-json-v0"             ||
             containerFormat == "https://www.eneco.com/contexts/charging-station-json-v1"             ||
             containerFormat == "https://www.chargeit-mobility.com/contexts/charging-station-json-v0" ||
             containerFormat == "https://www.chargeit-mobility.com/contexts/charging-station-json-v1")
