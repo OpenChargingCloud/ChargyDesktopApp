@@ -16,7 +16,7 @@ The Chargy Desktop project has a sister project called [Chargy Mobile](https://g
 
 ## System Requirements
 
-You can download node.js 14.7.0 with npm 6.14.7 for Microsoft Windows or Mac OS X from https://nodejs.org/en/download/current/    
+You can download node.js 21.7.1 with npm 10.5.0 for Microsoft Windows or Mac OS X from https://nodejs.org/en/download/current/    
 Please note, that you have to reinstall this software for every update.    
 
 On Linux you can install Node.js via...
@@ -61,7 +61,7 @@ Now you can test the software via...
 ./run.sh
 ```
 
-**Please be aware**, that Electron comes with its own internal version of Node.js. This version is currently still 12.0.0. Therefore Chargy will also show "12.0.0" and not the version number of the Node.js installation on your computer, e.g. "12.4.0". It is possible to rebuild the internal Node.js version, but we do not recommend this.
+**Please be aware**, that Electron comes with its own internal version of Node.js. This version is currently still 18.18.2. Therefore Chargy will also show "18.18.2" and not the version number of the Node.js installation on your computer, e.g. "21.7.1". It is possible to rebuild the internal Node.js version, but we do not recommend this.
 
 
 ## Building a Windows Installer
