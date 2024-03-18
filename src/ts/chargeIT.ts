@@ -565,18 +565,23 @@ export class ChargeIT {
 
                             }
 
-                            if (signedMeterValueContext.startsWith("ALFEN")) {
-                                return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
+                            else if (signedMeterValueContext.startsWith("ALFEN")) {
+                            //     return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
                             }
 
-                            if (containerFormat === oldChargeITContainerFormat) {
+                            else if (containerFormat === oldChargeITContainerFormat) {
 
-                                if (signedMeterValues[0].format == "ALFEN")
-                                    return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
+                            //     let preCTR = null;
+
+                            //     if (signedMeterValues[0].format == "ALFEN")
+                            //         preCTR = await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
+
+                            //     //if (preCTR != null)
+                            //     //    return preCTR;
 
                             }
 
-                            if (signedMeterValueContext === oldChargeITMeterValueFormat)
+                            else if (signedMeterValueContext === oldChargeITMeterValueFormat)
                             {
 
                                 let measurementCounter = 0;
@@ -1008,13 +1013,27 @@ export class ChargeIT {
                         }
 
                         if (signedMeterValueContext.startsWith("ALFEN")) {
-                            return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
+                            return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload),
+                                         {
+                                            EVSEId: evseId,
+                                            chargingStation: {
+                                               geoLocation: { "lat":    geoLocation_lat, "lng":        geoLocation_lon },
+                                               address:     { "street": address_street,  "postalCode": address_zipCode, "city": address_town, "country": address_country }
+                                            }
+                                         });
                         }
 
                         if (containerFormat === oldChargeITContainerFormat) {
 
                             if (signedMeterValues[0].format == "ALFEN")
-                                return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
+                                return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload),
+                                         {
+                                            EVSEId: evseId,
+                                            chargingStation: {
+                                               geoLocation: { "lat":    geoLocation_lat, "lng":        geoLocation_lon },
+                                               address:     { "street": address_street,  "postalCode": address_zipCode, "city": address_town, "country": address_country }
+                                            }
+                                         });
 
                         }
 
@@ -1072,7 +1091,7 @@ export class ChargeIT {
             try
             {
 
-                const id                                         = SomeJSON["@id"];
+                const chargingSessionId                          = SomeJSON["@id"];
 
                 const chargePointInfo                            = SomeJSON.chargePointInfo;
                 const evseId                                     = SomeJSON.chargePointInfo?.evseId;
@@ -1086,7 +1105,7 @@ export class ChargeIT {
                 const address_street                             = SomeJSON.chargePointInfo?.placeInfo?.address?.street;
                 const address_zipCode                            = SomeJSON.chargePointInfo?.placeInfo?.address?.zipCode;
                 const address_town                               = SomeJSON.chargePointInfo?.placeInfo?.address?.town;
-                const address_country                            = SomeJSON.chargePointInfo?.placeInfo?.address?.country ?? "Deutschland";
+                const address_country                            = SomeJSON.chargePointInfo?.placeInfo?.address?.country ?? "";
 
                 const chargingStationInfo                        = SomeJSON.chargingStationInfo;
                 const chargingStation_manufacturer               = SomeJSON.chargingStationInfo?.manufacturer;
@@ -1098,7 +1117,7 @@ export class ChargeIT {
                 const signedMeterValues                          = SomeJSON.signedMeterValues;
 
 
-                if (!chargyLib.isMandatoryString(id))
+                if (!chargyLib.isMandatoryString(chargingSessionId))
                     errors.push(this.chargy.GetLocalizedMessage("Missing or invalid charge transparency record identification!"));
 
                 //#region chargePointInfo
@@ -1328,7 +1347,7 @@ export class ChargeIT {
                                             "street":               address_street,
                                             "postalCode":           address_zipCode,
                                             "city":                 address_town,
-                                            "country":              "Germany"
+                                            "country":              address_country
                                         },
                                         "EVSEs": [
                                             {
@@ -1357,8 +1376,23 @@ export class ChargeIT {
                         return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, chargingStation_controllerSoftwareVersion, signedMeterValues);
 
                     if (smvContext?.startsWith("ALFEN"))
-                        return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload));
-
+                        return await new Alfen01(this.chargy).tryToParseALFENFormat(
+                                         signedMeterValues.map(value => value.payload),
+                                         {
+                                             chargingSession: {
+                                                "@id":            chargingSessionId
+                                             },
+                                             EVSEId:              evseId,
+                                             chargingStation: {
+                                                manufacturer:     chargingStation_manufacturer,
+                                                type:             chargingStation_type,
+                                                serialNumber:     chargingStation_serialNumber,
+                                                firmwareVersion:  chargingStation_controllerSoftwareVersion,
+                                                legalCompliance:  { freeText: chargingStation_compliance },
+                                                geoLocation:      { "lat":    geoLocation_lat, "lng":        geoLocation_lon },
+                                                address:          { "street": address_street,  "postalCode": address_zipCode, "city": address_town, "country": address_country }
+                                             }
+                                         });
 
                 }
 

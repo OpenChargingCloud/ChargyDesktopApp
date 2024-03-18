@@ -44,7 +44,7 @@ export class Alfen01  {
 
     //#region tryToParseALFENFormat(Content)
 
-    public async tryToParseALFENFormat(Content: string|string[]) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async tryToParseALFENFormat(Content: string|string[], ContainerInfos: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         // AP;
@@ -64,6 +64,9 @@ export class Alfen01  {
         try
         {
 
+            if (ContainerInfos == null)
+                ContainerInfos = {};
+
             var common = {
                     PublicKey:          "",
                     PublicKeyFormat:    "",
@@ -75,7 +78,7 @@ export class Alfen01  {
                     UnitEncoded:        0,
                     Scalar:             "",
                     UID:                "",
-                    SessionId:          0,
+                    InternalSessionId:          0,
                     dataSets:           [] as any[]
             };
 
@@ -154,7 +157,7 @@ export class Alfen01  {
                 let Value                = new Number(new DataView(DataSet.slice(46, 54), 0).getBigInt64(0, true));        // 73 29 00 00 00 00 00 00 => 10611 Wh so 10,611 KWh
                 let UID                  = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(54, 74)) as any).  // ASCII: 30 35 38 39 38 41 42 42 00 00 00 00 00 00 00 00 00 00 00 00 => UID: 05 89 8A BB
                                                   replace(/\0.*$/g, '');
-                let SessionId            = new DataView(DataSet.slice(74, 78), 0).getInt32(0, true)                        // 81 01 00 00 => 385(dec)
+                let InternalSessionId    = new DataView(DataSet.slice(74, 78), 0).getInt32(0, true)                        // 81 01 00 00 => 385(dec)
                 let Paging               = new DataView(DataSet.slice(78, 82), 0).getInt32(0, true);                       // 47 02 00 00 => 583(dec)
 
 
@@ -230,12 +233,12 @@ export class Alfen01  {
                         certainty: 0
                     };
 
-                if (common.SessionId === 0)
-                    common.SessionId = SessionId;
-                else if (SessionId !== common.SessionId)
+                if (common.InternalSessionId === 0)
+                    common.InternalSessionId = InternalSessionId;
+                else if (InternalSessionId !== common.InternalSessionId)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent charging session identification!",
+                        message:  "Inconsistent internal charging session identification!",
                         certainty: 0
                     };
 
@@ -268,10 +271,13 @@ export class Alfen01  {
 
             }
 
-            var n = common.dataSets.length-1;
+            var evseId             = ContainerInfos.EVSEId            ?? "DE*GEF*EVSE*CHARGY*1";
+            var chargingStationId  = ContainerInfos.ChargingStationId ?? "DE*GEF*STATION*CHARGY*1";
+            var n                  = common.dataSets.length-1;
+
             var _CTR: any = { //IChargeTransparencyRecord = {
 
-                 "@id":              common.SessionId,
+                 "@id":              ContainerInfos.chargingSession?.["@id"] ?? common.InternalSessionId,
                  "@context":         "https://open.charging.cloud/contexts/CTR+json",
 
                  "begin":            common.dataSets[0]["Timestamp"],
@@ -295,19 +301,19 @@ export class Alfen01  {
 
                          "chargingStations": [
                              {
-                                 "@id":                      "DE*GEF*STATION*1*A",
-                                 "description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A" },
-            //                     "firmwareVersion":          CTRArray[0]["Alfen"]["softwareVersion"],
-            //                     "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
-            //                     "address": {
-            //                         "street":               address_street,
-            //                         "postalCode":           address_zipCode,
-            //                         "city":                 address_town
-            //                     },
+                                 "@id":                      chargingStationId,
+                                 "description":              ContainerInfos.chargingStation?.description,
+                                 "manufacturer":             ContainerInfos.chargingStation?.manufacturer,
+                                 "type":                     ContainerInfos.chargingStation?.type,
+                                 "serialNumber":             ContainerInfos.chargingStation?.serialNumber,
+                                 "firmwareVersion":          ContainerInfos.chargingStation?.softwareVersion,
+                                 "legalCompliance":          ContainerInfos.chargingStation?.legalCompliance,
+                                 "geoLocation":              ContainerInfos.chargingStation?.geoLocation,
+                                 "address":                  ContainerInfos.chargingStation?.address,
                                  "EVSEs": [
                                      {
-                                         "@id":                      "DE*GEF*EVSE*1*A*1",
-                                         "description":              { "de": "GraphDefined Virtual Charging Station - CI-Tests Pool 1 / Station A / EVSE 1" },
+                                         "@id":                      evseId,
+                                         "description":              ContainerInfos.EVSE?.description,
                                          "sockets":                  [ { } ],
                                          "meters": [
                                              {
@@ -340,11 +346,12 @@ export class Alfen01  {
 
                      {
 
-                         "@id":                          common.SessionId,
+                         "@id":                          ContainerInfos.chargingSession?.["@id"] ?? common.InternalSessionId,
                          "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/AlfenCrypt01+json",
                          "begin":                        common.dataSets[0]["Timestamp"],
                          "end":                          common.dataSets[n]["Timestamp"],
-            //             "EVSEId":                       evseId,
+                         "internalSessionId":            common.InternalSessionId,
+                         "EVSEId":                       evseId,
 
                          "authorizationStart": {
                              "@id":                      common.UID,
@@ -658,7 +665,7 @@ export class AlfenCrypt01 extends ACrypt {
             scalar:                       chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                               45),
             value:                        chargyLib.SetUInt64     (cryptoBuffer, measurementValue.value,                                                           46, true),
             uid:                          chargyLib.SetText       (cryptoBuffer, (measurementValue.measurement.chargingSession?.authorizationStart["@id"] ?? ""),  54),
-            sessionId:                    chargyLib.SetUInt32     (cryptoBuffer, parseInt(measurementValue.measurement.chargingSession!["@id"]),                   74, true),
+            sessionId:                    chargyLib.SetUInt32     (cryptoBuffer, parseInt(measurementValue.measurement.chargingSession?.internalSessionId ?? ""),  74, true),
             paging:                       chargyLib.SetUInt32     (cryptoBuffer, measurementValue.paginationId,                                                    78, true)
         };
 

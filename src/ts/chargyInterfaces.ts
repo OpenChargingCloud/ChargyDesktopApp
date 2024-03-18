@@ -242,7 +242,11 @@ export interface IChargingStation
     "@id":                      string;
     "@context"?:                string;
     description?:               {};
+    type?:                      string;
+    serialNumber?:              string;
     firmwareVersion?:           string;
+    manufacturer?:              string;
+    legalCompliance?:           ILegalCompliance;
     address?:                   IAddress;
     geoLocation?:               IGeoLocation;
     chargingStationOperator?:   IChargingStationOperator;
@@ -292,6 +296,11 @@ export interface IConnector {
     type:                       string;
 }
 
+export interface ILegalCompliance {
+    certificateOfConformityId:  string;
+    freeText:                   string;
+}
+
 export interface IEMobilityProvider
 {
     "@id":                      string;
@@ -324,6 +333,7 @@ export interface IChargingSession
     GUI?:                       HTMLDivElement;
     begin:                      string;
     end?:                       string;     // to allow still running sessions!
+    internalSessionId?:         string;
     chargingProductRelevance?:  IChargingProductRelevance,
     description?:               {};
     chargingStationOperatorId?: string;

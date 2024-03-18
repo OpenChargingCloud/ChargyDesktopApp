@@ -927,6 +927,65 @@ body {
 
                             }
 
+                            .manufacturer {
+
+                                display:            table-row;
+
+                                .manufacturerId {
+                                    display:            table-cell;
+                                    padding-left:       12px;
+                                    padding-right:      2vw;
+                                    white-space:        nowrap;
+                                }
+
+                                .manufacturerValue {
+                                    display:            table-cell;
+                                    a {
+                                        text-decoration: none;
+                                        color:           #2e71a2;
+                                    }
+                                }
+
+                            }
+
+                            .type {
+
+                                display:            table-row;
+
+                                .typeId {
+                                    display:            table-cell;
+                                    padding-left:       12px;
+                                    padding-right:      2vw;
+                                    white-space:        nowrap;
+                                }
+
+                                .typeValue {
+                                    display:            table-cell;
+                                    a {
+                                        text-decoration: none;
+                                        color:           #2e71a2;
+                                    }
+                                }
+
+                            }
+
+                            .serialNumber {
+
+                                display:            table-row;
+
+                                .serialNumberId {
+                                    display:            table-cell;
+                                    padding-left:       12px;
+                                    padding-right:      2vw;
+                                    white-space:        nowrap;
+                                }
+
+                                .serialNumberValue {
+                                    display:            table-cell;
+                                }
+
+                            }
+
                             .firmwareVersion {
 
                                 display:            table-row;
@@ -939,6 +998,23 @@ body {
                                 }
 
                                 .firmwareVersionValue {
+                                    display:            table-cell;
+                                }
+
+                            }
+
+                            .legalCompliance {
+
+                                display:            table-row;
+
+                                .legalComplianceId {
+                                    display:            table-cell;
+                                    padding-left:       12px;
+                                    padding-right:      2vw;
+                                    white-space:        nowrap;
+                                }
+
+                                .legalComplianceValue {
                                     display:            table-cell;
                                 }
 

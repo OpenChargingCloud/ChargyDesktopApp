@@ -384,203 +384,216 @@ export class ChargyApp {
                                true);
         GetListOfVersions.setRequestHeader('Accept', 'application/json');
 
+        GetListOfVersions.onerror = function() {
+            //console.error('Network error');
+        };
+
         GetListOfVersions.onreadystatechange = () => {
 
             // 0 UNSENT | 1 OPENED | 2 HEADERS_RECEIVED | 3 LOADING | 4 DONE
-            if (GetListOfVersions.readyState == 4) {
-                if (GetListOfVersions.status == 200) { // HTTP 200 - OK
+            if (GetListOfVersions.readyState === XMLHttpRequest.DONE) {
+                switch (GetListOfVersions.status)
+                {
 
-                    try
-                    {
-
-                        const versionsDiv = this.updateAvailableScreen.querySelector("#versions") as HTMLDivElement;
-                        if (versionsDiv != null)
+                    case 200: // HTTP 200 - OK
+                        try
                         {
 
-                            this.currentAppInfos = JSON.parse(GetListOfVersions.responseText) as chargyInterfaces.IVersions;
-
-                            for (let version of this.currentAppInfos.versions)
+                            const versionsDiv = this.updateAvailableScreen.querySelector("#versions") as HTMLDivElement;
+                            if (versionsDiv != null)
                             {
 
-                                const thisVersion    = this.appVersion.split('.');
-                                const remoteVersion  = version.version.split('.');
+                                this.currentAppInfos = JSON.parse(GetListOfVersions.responseText) as chargyInterfaces.IVersions;
 
-                                //#region Find current version package
-
-                                if (remoteVersion[0] == thisVersion[0] &&
-                                    remoteVersion[1] == thisVersion[1] &&
-                                    remoteVersion[2] == thisVersion[2])
+                                for (let version of this.currentAppInfos.versions)
                                 {
 
-                                    this.currentVersionInfos = version;
+                                    const thisVersion    = this.appVersion.split('.');
+                                    const remoteVersion  = version.version.split('.');
 
-                                    if (this.currentVersionInfos.packages && this.currentVersionInfos.packages.length > 0)
+                                    //#region Find current version package
+
+                                    if (remoteVersion[0] == thisVersion[0] &&
+                                        remoteVersion[1] == thisVersion[1] &&
+                                        remoteVersion[2] == thisVersion[2])
                                     {
-                                        for (let _package of this.currentVersionInfos.packages)
+
+                                        this.currentVersionInfos = version;
+
+                                        if (this.currentVersionInfos.packages && this.currentVersionInfos.packages.length > 0)
                                         {
-                                            if (_package.isInstaller == null &&
-                                                (_package.platform === process.platform ||
-                                                (_package.platforms != null && Array.isArray(_package.platforms) && _package.platforms.indexOf(process.platform) > -1)))
+                                            for (let _package of this.currentVersionInfos.packages)
                                             {
-                                                this.currentPackage = _package;
+                                                if (_package.isInstaller == null &&
+                                                    (_package.platform === process.platform ||
+                                                    (_package.platforms != null && Array.isArray(_package.platforms) && _package.platforms.indexOf(process.platform) > -1)))
+                                                {
+                                                    this.currentPackage = _package;
+                                                }
                                             }
                                         }
+
                                     }
 
-                                }
+                                    //#endregion
 
-                                //#endregion
+                                    //#region Find newer/updated version
 
-                                //#region Find newer/updated version
-
-                                else if (remoteVersion[0] >  thisVersion[0]! ||
-                                        (remoteVersion[0] >= thisVersion[0]! && remoteVersion[1] >  thisVersion[1]!) ||
-                                        (remoteVersion[0] >= thisVersion[0]! && remoteVersion[1] >= thisVersion[1]! && remoteVersion[2] > thisVersion[2]!))
-                                {
-
-                                    this.updateAvailableButton.style.display = "block";
-
-                                    const versionDiv = versionsDiv.appendChild(document.createElement('div'));
-                                    versionDiv.className = "version";
-
-                                    const headlineDiv = versionDiv.appendChild(document.createElement('div'));
-                                    headlineDiv.className = "headline";
-
-                                    const versionnumberDiv = headlineDiv.appendChild(document.createElement('div'));
-                                    versionnumberDiv.className = "versionnumber";
-                                    versionnumberDiv.innerHTML = "Version " + version.version;
-
-                                    const releaseDateDiv = headlineDiv.appendChild(document.createElement('div'));
-                                    releaseDateDiv.className = "releaseDate";
-                                    releaseDateDiv.innerHTML = chargyLib.parseUTC(version.releaseDate).format("ll");
-
-                                    const descriptionDiv = versionDiv.appendChild(document.createElement('div'));
-                                    descriptionDiv.className = "description";
-                                    descriptionDiv.innerHTML = version.description["de"];
-
-                                    const tagsDiv = versionDiv.appendChild(document.createElement('div'));
-                                    tagsDiv.className = "tags";
-
-                                    for (let tag of version.tags)
-                                    {
-                                        const tagDiv = tagsDiv.appendChild(document.createElement('div'));
-                                        tagDiv.className = "tag";
-                                        tagDiv.innerHTML = tag;
-                                    }
-
-                                    const packagesDiv = versionDiv.appendChild(document.createElement('div'));
-                                    packagesDiv.className = "packages";
-
-                                    for (let versionpackage of version.packages)
+                                    else if (remoteVersion[0] >  thisVersion[0]! ||
+                                            (remoteVersion[0] >= thisVersion[0]! && remoteVersion[1] >  thisVersion[1]!) ||
+                                            (remoteVersion[0] >= thisVersion[0]! && remoteVersion[1] >= thisVersion[1]! && remoteVersion[2] > thisVersion[2]!))
                                     {
 
-                                        const packageDiv = packagesDiv.appendChild(document.createElement('div'));
-                                        packageDiv.className = "package";
+                                        this.updateAvailableButton.style.display = "block";
 
-                                        const nameDiv = packageDiv.appendChild(document.createElement('div'));
-                                        nameDiv.className = "name";
-                                        nameDiv.innerHTML = versionpackage.name;
+                                        const versionDiv = versionsDiv.appendChild(document.createElement('div'));
+                                        versionDiv.className = "version";
 
-                                        if (versionpackage.description &&
-                                            versionpackage.description["de"])
+                                        const headlineDiv = versionDiv.appendChild(document.createElement('div'));
+                                        headlineDiv.className = "headline";
+
+                                        const versionnumberDiv = headlineDiv.appendChild(document.createElement('div'));
+                                        versionnumberDiv.className = "versionnumber";
+                                        versionnumberDiv.innerHTML = "Version " + version.version;
+
+                                        const releaseDateDiv = headlineDiv.appendChild(document.createElement('div'));
+                                        releaseDateDiv.className = "releaseDate";
+                                        releaseDateDiv.innerHTML = chargyLib.parseUTC(version.releaseDate).format("ll");
+
+                                        const descriptionDiv = versionDiv.appendChild(document.createElement('div'));
+                                        descriptionDiv.className = "description";
+                                        descriptionDiv.innerHTML = version.description["de"];
+
+                                        const tagsDiv = versionDiv.appendChild(document.createElement('div'));
+                                        tagsDiv.className = "tags";
+
+                                        for (let tag of version.tags)
                                         {
-                                            const descriptionDiv = packageDiv.appendChild(document.createElement('div'));
-                                            descriptionDiv.className = "description";
-                                            descriptionDiv.innerHTML = versionpackage.description["de"];
+                                            const tagDiv = tagsDiv.appendChild(document.createElement('div'));
+                                            tagDiv.className = "tag";
+                                            tagDiv.innerHTML = tag;
                                         }
 
-                                        if (versionpackage.additionalInfo &&
-                                            versionpackage.additionalInfo["de"])
-                                        {
-                                            const additionalInfoDiv = packageDiv.appendChild(document.createElement('div'));
-                                            additionalInfoDiv.className = "additionalInfo";
-                                            additionalInfoDiv.innerHTML = versionpackage.additionalInfo["de"];
-                                        }
+                                        const packagesDiv = versionDiv.appendChild(document.createElement('div'));
+                                        packagesDiv.className = "packages";
 
-
-                                        const cryptoHashesDiv = packageDiv.appendChild(document.createElement('div'));
-                                        cryptoHashesDiv.className = "cryptoHashes";
-
-                                        for (let cryptoHash in versionpackage.cryptoHashes)
+                                        for (let versionpackage of version.packages)
                                         {
 
-                                            const cryptoHashDiv = cryptoHashesDiv.appendChild(document.createElement('div'));
-                                            cryptoHashDiv.className = "cryptoHash";
+                                            const packageDiv = packagesDiv.appendChild(document.createElement('div'));
+                                            packageDiv.className = "package";
 
-                                            const cryptoHashNameDiv = cryptoHashDiv.appendChild(document.createElement('div'));
-                                            cryptoHashNameDiv.className = "name";
-                                            cryptoHashNameDiv.innerHTML = cryptoHash;
+                                            const nameDiv = packageDiv.appendChild(document.createElement('div'));
+                                            nameDiv.className = "name";
+                                            nameDiv.innerHTML = versionpackage.name;
 
-                                            let value = versionpackage.cryptoHashes[cryptoHash].replace(/\s+/g, '');
-
-                                            if (value.startsWith("0x"))
-                                                value = value.substring(2);
-
-                                            const cryptoHashValueDiv = cryptoHashDiv.appendChild(document.createElement('div'));
-                                            cryptoHashValueDiv.className = "value";
-                                            cryptoHashValueDiv.innerHTML = value.match(/.{1,8}/g).join(" ");
-
-                                        }
-
-
-                                        const signaturesTextDiv = packageDiv.appendChild(document.createElement('div'));
-                                        signaturesTextDiv.className = "signaturesText";
-                                        signaturesTextDiv.innerHTML = "Die Authentizität diese Software wurde durch folgende digitale Signaturen bestätigt";
-
-                                        const signaturesDiv = packageDiv.appendChild(document.createElement('div'));
-                                        signaturesDiv.className = "signatures";
-
-                                        for (let signature of versionpackage.signatures)
-                                        {
-
-                                            const signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
-                                            signatureDiv.className = "signature";
-
-                                            const signatureCheckDiv = signatureDiv.appendChild(document.createElement('div'));
-                                            signatureCheckDiv.className = "signatureCheck";
-                                            signatureCheckDiv.innerHTML = "<i class=\"fas fa-question-circle fa-question-circle-orange\"></i>";
-
-                                            const authorDiv = signatureDiv.appendChild(document.createElement('div'));
-                                            authorDiv.className = "signer";
-                                            authorDiv.innerHTML = signature.signer;
-
-                                        }
-
-
-                                        if (versionpackage.downloadURLs)
-                                        {
-
-                                            const downloadURLsTextDiv = packageDiv.appendChild(document.createElement('div'));
-                                            downloadURLsTextDiv.className = "downloadURLsText";
-                                            downloadURLsTextDiv.innerHTML = "Diese Software kann über folgende Weblinks runtergeladen werden";
-
-                                            const downloadURLsDiv = packageDiv.appendChild(document.createElement('div'));
-                                            downloadURLsDiv.className = "downloadURLs";
-
-                                            for (let downloadURLName in versionpackage.downloadURLs)
+                                            if (versionpackage.description &&
+                                                versionpackage.description["de"])
                                             {
-                                                const downloadURLDiv = downloadURLsDiv.appendChild(document.createElement('div'));
-                                                downloadURLDiv.className = "downloadURL";
-                                                downloadURLDiv.innerHTML = "<a href=\"javascript:OpenLink('" + versionpackage.downloadURLs[downloadURLName] + "')\" title=\"" + versionpackage.downloadURLs[downloadURLName] + "\"><i class=\"fas fa-globe\"></i>" + downloadURLName + "</a>";
+                                                const descriptionDiv = packageDiv.appendChild(document.createElement('div'));
+                                                descriptionDiv.className = "description";
+                                                descriptionDiv.innerHTML = versionpackage.description["de"];
+                                            }
+
+                                            if (versionpackage.additionalInfo &&
+                                                versionpackage.additionalInfo["de"])
+                                            {
+                                                const additionalInfoDiv = packageDiv.appendChild(document.createElement('div'));
+                                                additionalInfoDiv.className = "additionalInfo";
+                                                additionalInfoDiv.innerHTML = versionpackage.additionalInfo["de"];
+                                            }
+
+
+                                            const cryptoHashesDiv = packageDiv.appendChild(document.createElement('div'));
+                                            cryptoHashesDiv.className = "cryptoHashes";
+
+                                            for (let cryptoHash in versionpackage.cryptoHashes)
+                                            {
+
+                                                const cryptoHashDiv = cryptoHashesDiv.appendChild(document.createElement('div'));
+                                                cryptoHashDiv.className = "cryptoHash";
+
+                                                const cryptoHashNameDiv = cryptoHashDiv.appendChild(document.createElement('div'));
+                                                cryptoHashNameDiv.className = "name";
+                                                cryptoHashNameDiv.innerHTML = cryptoHash;
+
+                                                let value = versionpackage.cryptoHashes[cryptoHash].replace(/\s+/g, '');
+
+                                                if (value.startsWith("0x"))
+                                                    value = value.substring(2);
+
+                                                const cryptoHashValueDiv = cryptoHashDiv.appendChild(document.createElement('div'));
+                                                cryptoHashValueDiv.className = "value";
+                                                cryptoHashValueDiv.innerHTML = value.match(/.{1,8}/g).join(" ");
+
+                                            }
+
+
+                                            const signaturesTextDiv = packageDiv.appendChild(document.createElement('div'));
+                                            signaturesTextDiv.className = "signaturesText";
+                                            signaturesTextDiv.innerHTML = "Die Authentizität diese Software wurde durch folgende digitale Signaturen bestätigt";
+
+                                            const signaturesDiv = packageDiv.appendChild(document.createElement('div'));
+                                            signaturesDiv.className = "signatures";
+
+                                            for (let signature of versionpackage.signatures)
+                                            {
+
+                                                const signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
+                                                signatureDiv.className = "signature";
+
+                                                const signatureCheckDiv = signatureDiv.appendChild(document.createElement('div'));
+                                                signatureCheckDiv.className = "signatureCheck";
+                                                signatureCheckDiv.innerHTML = "<i class=\"fas fa-question-circle fa-question-circle-orange\"></i>";
+
+                                                const authorDiv = signatureDiv.appendChild(document.createElement('div'));
+                                                authorDiv.className = "signer";
+                                                authorDiv.innerHTML = signature.signer;
+
+                                            }
+
+
+                                            if (versionpackage.downloadURLs)
+                                            {
+
+                                                const downloadURLsTextDiv = packageDiv.appendChild(document.createElement('div'));
+                                                downloadURLsTextDiv.className = "downloadURLsText";
+                                                downloadURLsTextDiv.innerHTML = "Diese Software kann über folgende Weblinks runtergeladen werden";
+
+                                                const downloadURLsDiv = packageDiv.appendChild(document.createElement('div'));
+                                                downloadURLsDiv.className = "downloadURLs";
+
+                                                for (let downloadURLName in versionpackage.downloadURLs)
+                                                {
+                                                    const downloadURLDiv = downloadURLsDiv.appendChild(document.createElement('div'));
+                                                    downloadURLDiv.className = "downloadURL";
+                                                    downloadURLDiv.innerHTML = "<a href=\"javascript:OpenLink('" + versionpackage.downloadURLs[downloadURLName] + "')\" title=\"" + versionpackage.downloadURLs[downloadURLName] + "\"><i class=\"fas fa-globe\"></i>" + downloadURLName + "</a>";
+                                                }
+
                                             }
 
                                         }
 
                                     }
 
-                                }
+                                    //#endregion
 
-                                //#endregion
+                                }
 
                             }
 
                         }
+                        catch (exception)
+                        {
+                            // Just do nothing!
+                        }
+                    break;
 
-                    }
-                    catch (exception)
-                    { 
-                        // Just do nothing!
-                    }
+                    case 401: // HTTP 401 - Unauthorized
+                        {
+                            // Just do nothing!
+                        }
+                    break;
 
                 }
             }
@@ -1219,11 +1232,19 @@ export class ChargyApp {
         }
         catch (exception)
         {
-            this.doGlobalError({
-                status:    chargyInterfaces.SessionVerificationResult.UnknownSessionFormat,
-                message:   this.chargy.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
-                certainty: 0
-            });
+            if (exception instanceof DOMException &&
+                exception.message === "Document is not focused.")
+            {
+                // ignore!
+            }
+            else
+            {
+                this.doGlobalError({
+                    status:    chargyInterfaces.SessionVerificationResult.UnknownSessionFormat,
+                    message:   this.chargy.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
+                    certainty: 0
+                });
+            }
         }
     }
 
@@ -1871,9 +1892,14 @@ export class ChargyApp {
                 try
                 {
 
-                    if (chargingSession.EVSEId            || chargingSession.EVSE            ||
-                        chargingSession.chargingStationId || chargingSession.chargingStation ||
-                        chargingSession.chargingPoolId    || chargingSession.chargingPool) {
+                    if ((chargingSession.EVSEId            || chargingSession.EVSE            ||
+                         chargingSession.chargingStationId || chargingSession.chargingStation ||
+                         chargingSession.chargingPoolId    || chargingSession.chargingPool) &&
+
+                         chargingSession.EVSEId            != "DE*GEF*EVSE*CHARGY*1" &&
+                         chargingSession.chargingStationId != "DE*GEF*STATION*CHARGY*1")
+
+                    {
 
                         var chargingStationInfoDiv            = tableDiv.appendChild(document.createElement('div'));
                         chargingStationInfoDiv.className      = "chargingStationInfos";
@@ -2167,8 +2193,16 @@ export class ChargyApp {
             if (CTR.chargingSessions.length >= 1)
                 CTR.chargingSessions[0]?.GUI?.click();
 
-            this.map.fitBounds([[this.minlat, this.minlng], [this.maxlat, this.maxlng]],
-                               { padding: [40, 40] });
+            if (this.minlat == +1000 &&
+                this.maxlat == -1000 &&
+                this.minlng == +1000 &&
+                this.maxlng == -1000)
+            {
+                this.map.setView([0, 0], 1);
+            }
+            else
+                this.map.fitBounds([[this.minlat, this.minlng], [this.maxlat, this.maxlng]],
+                                   { padding: [40, 40] });
 
         }
 
@@ -2260,21 +2294,54 @@ export class ChargyApp {
 
                     //#region Show charging station infos
 
-                    if (measurement.chargingSession.chargingStation != null)
+                    if (measurement.chargingSession.chargingStation != null &&
+                       (measurement.chargingSession.chargingStation["@id"] !== "DE*GEF*STATION*CHARGY*1" ||
+                        measurement.chargingSession.chargingStation.manufacturer                         ||
+                        measurement.chargingSession.chargingStation.type                                 ||
+                        measurement.chargingSession.chargingStation.serialNumber                         ||
+                        measurement.chargingSession.chargingStation.firmwareVersion                      ||
+                        measurement.chargingSession.chargingStation.legalCompliance))
                     {
 
                         const chargingStationDiv  = chargyLib.CreateDiv(MeasurementInfoDiv,  "chargingStation");
                                                     chargyLib.CreateDiv(chargingStationDiv,  "chargingStationHeadline",  "Ladestation");
 
-                        if (measurement.chargingSession.chargingStation["@id"]?.length > 0) {
+                        if (measurement.chargingSession.chargingStation["@id"]?.length > 0 &&
+                            measurement.chargingSession.chargingStation["@id"] !== "DE*GEF*STATION*CHARGY*1")
+                        {
                             chargyLib.CreateDiv2(chargingStationDiv,  "chargingStationId",
                                        "Identifikation",    measurement.chargingSession.chargingStation["@id"]);
                         }
 
+                        if (measurement.chargingSession.chargingStation.manufacturer)
+                        {
+                            chargyLib.CreateDiv2(chargingStationDiv,  "manufacturer",
+                                       "Hersteller",        measurement.chargingSession.chargingStation.manufacturer);
+                        }
+
+                        if (measurement.chargingSession.chargingStation.type)
+                        {
+                            chargyLib.CreateDiv2(chargingStationDiv,  "type",
+                                       "Typ",               measurement.chargingSession.chargingStation.type);
+                        }
+
+                        if (measurement.chargingSession.chargingStation.serialNumber)
+                        {
+                            chargyLib.CreateDiv2(chargingStationDiv,  "serialNumber",
+                                       "Seriennummer",      measurement.chargingSession.chargingStation.serialNumber);
+                        }
+
                         if (measurement.chargingSession.chargingStation.firmwareVersion &&
-                            measurement.chargingSession.chargingStation.firmwareVersion.length > 0) {
+                            measurement.chargingSession.chargingStation.firmwareVersion.length > 0)
+                        {
                             chargyLib.CreateDiv2(chargingStationDiv,  "firmwareVersion",
                                        "Firmware-Version",  measurement.chargingSession.chargingStation.firmwareVersion);
+                        }
+
+                        if (measurement.chargingSession.chargingStation.legalCompliance)
+                        {
+                            chargyLib.CreateDiv2(chargingStationDiv,  "legalCompliance",
+                                       "Konformität",       measurement.chargingSession.chargingStation.legalCompliance?.freeText);
                         }
 
                     }

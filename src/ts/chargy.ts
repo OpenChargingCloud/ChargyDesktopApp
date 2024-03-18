@@ -544,7 +544,7 @@ export class Chargy {
                             case "":
                                 processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
-                                if (processedFile.result.status)
+                                if (processedFile.result.status && processedFile.result.status !== chargyInterfaces.SessionVerificationResult.Unvalidated)
                                     processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
 
                                 break;
@@ -564,7 +564,7 @@ export class Chargy {
                         // XML namespace. Therefore we have to guess the format.
                         processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
-                        if (processedFile.result.status)
+                        if (processedFile.result.status && processedFile.result.status !== chargyInterfaces.SessionVerificationResult.Unvalidated)
                             processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
 
                         var xxx = 23;
@@ -590,7 +590,7 @@ export class Chargy {
 
             // ALFEN processing
             else if (textContent?.startsWith("AP;"))
-                processedFile.result = await new Alfen01(this).tryToParseALFENFormat(textContent);
+                processedFile.result = await new Alfen01(this).tryToParseALFENFormat(textContent, {});
 
             // Public key processing (PEM format)
             else if (textContent?.startsWith("-----BEGIN PUBLIC KEY-----") &&

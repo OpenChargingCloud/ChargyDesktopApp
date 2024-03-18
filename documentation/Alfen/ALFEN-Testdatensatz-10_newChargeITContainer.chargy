@@ -1,27 +1,39 @@
 {
-  "placeInfo" : {
-    "geoLocation" : {
-      "lat" : 49.731421,
-      "lon" : 10.147718
+  "@context": "https://www.chargeit-mobility.com/contexts/charging-station-json-v1",
+  "@id": "af032557-c62c-414b-aecc-41ea59877305",
+  "chargePointInfo": {
+    "placeInfo": {
+      "geoLocation": {
+        "lat": 48.03552,
+        "lon": 10.50669
+      },
+      "address": {
+        "street": "Breitenbergstr. 2",
+        "town": "Mindelheim",
+        "zipCode": "87719"
+      }
     },
-    "address" : {
-      "street" : "Steigweg 24",
-      "town" : "Kitzingen",
-      "zipCode" : "97318" 
-    },
-    "evseId" : "DE*BDO*E2323234064*1" 
+    "evseId": "DE*BDO*E8025334492*2"
+  },
+  "chargingStationInfo": {
+    "manufacturer": "Alfen B.V.",
+    "type": "Eve Single Pro-line",
+    "serialNumber": "2020-24-T-042",
+    "controllerSoftwareVersion": "v1.2.34",
+    "compliance": "PTB XYZ"
   },
   "signedMeterValues" : [ {
     "payload" : "AP;0;3;AJ2J7LYMGCIWT4AHUJPPFIIVB3FGRV2JQ2HVZG2I;BIHEIWSHAAA2WZUZOYYDCNWTWAFACRC2I4ADGAEDQ4AAAABABMI5UAEVRZFV4AIAAEEAB7Y6AD4N2AIAAAAAAABQGQ3DKNCGIZATKOJVGU4DAAAAAAAAAAAWAAAAAKYAAAAA====;X7KCDU5IJHGUW64LDYHYR7IXRPPSKCMWAMQOVZVRNGRX6BEIHX3TFKUDJGEMUI5W5CJFTPDEWR7F6===;",
     "format" : "ALFEN",
     "formatVersion" : "0",
-    "encoding" : "HEX",
+    "encoding" : "BASE64",
     "manufacturer" : "Alfen BV" 
   }, {
     "payload" : "AP;1;3;AJ2J7LYMGCIWT4AHUJPPFIIVB3FGRV2JQ2HVZG2I;BIHEIWSHAAA2WZUZOYYDCNWTWAFACRC2I4ADGAEDQ4AAAAAQFRGNUAFWZFFV4AIAAEEAB7Y6AA7ASAQAAAAAAABQGQ3DKNCGIZATKOJVGU4DAAAAAAAAAAAWAAAAALAAAAAA====;FXINYN5UF2LKAS633476F7V2GQGBP22KBCZD3TOSJCFLCFGYAAYTVJFIA7637NKQ22CZSEB2AOJJO===;",
     "format" : "ALFEN",
     "formatVersion" : "0",
-    "encoding" : "HEX",
+    "encoding" : "BASE64",
     "manufacturer" : "Alfen BV" 
   } ]
+
 }
