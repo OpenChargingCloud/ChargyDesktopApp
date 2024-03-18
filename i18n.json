@@ -392,7 +392,37 @@
     "Inconsistent_EVSE_Identification": {
         "de": "Inkonsistente Identifikation des Ladepunktes (EVSE)!",
         "en": "Inconsistent charge point (EVSE) identification!"
-    }
+    },
 
+
+    "Total": {
+        "de": "Gesamt",
+        "en": "Total"
+    },
+
+    "Reservation": {
+        "de": "Reservierung",
+        "en": "Reservation"
+    },
+
+    "Energy": {
+        "de": "Energie",
+        "en": "Energy"
+    },
+
+    "Time": {
+        "de": "Zeit",
+        "en": "Time"
+    },
+
+    "Idle": {
+        "de": "Idle",
+        "en": "Idle"
+    },
+
+    "Flat": {
+        "de": "Fixkosten",
+        "en": "Flat"
+    }
 
 }

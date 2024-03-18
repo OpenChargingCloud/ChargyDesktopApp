@@ -37,8 +37,9 @@
     img-src 'self' data: https:;
     script-src 'self' 'unsafe-inline' 'unsafe-eval';
     style-src 'self' 'unsafe-inline';
-  "> 
-<!--    script-src 'self' 'unsafe-inline'; -->
+  ">
+<!-- style-src 'unsafe-inline' required for leaflet and markers! -->
+<!-- script-src 'unsafe-eval' only required for faster WebPack during development! -->
 
     <!--<link rel="icon"       href="/favicon.png"                 type="image/png" />-->
     <link rel="stylesheet" href="css/fontawesome-all.min.css"     type="text/css" />

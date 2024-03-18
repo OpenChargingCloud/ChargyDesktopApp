@@ -361,6 +361,8 @@ export class Alfen01  {
                             //                                               CTRArray[0]["contract"]["timestampLocal"]["seasonOffset"]).format(),
                          },
 
+                         "costs":                        ContainerInfos.chargingCosts,
+
                          "measurements": [
 
                              {

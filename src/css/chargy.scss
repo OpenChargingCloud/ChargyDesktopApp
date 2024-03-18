@@ -460,7 +460,7 @@ body {
                                                     display:            table-cell;
                                                     width:              100%;
                                                     padding:            2px 5px 2px 3px;
-                                                    vertical-align:     middle;                                                
+                                                    vertical-align:     middle;
                                                     font-family:        monospace;
                                                     font-size:          135%;
                                                     overflow-wrap:      break-word;
@@ -704,6 +704,45 @@ body {
                                         .text {
                                             display:            table-cell;
                                             color:            #212427;
+                                        }
+
+                                    }
+
+                                    .costsInfos {
+
+                                        display:            table-row;
+
+                                        .icon {
+                                            display:            table-cell;
+                                            padding:            0px 7px 0px 3px;
+                                            text-align:         center;
+                                            vertical-align:     top;
+                                        }
+
+                                        .text {
+
+                                            display:            table-cell;
+                                            color:            #212427;
+
+                                            .costs {
+
+                                                .totalCosts {
+
+                                                    display:            flex;
+                                                    flex-direction:     row;
+
+                                                    .totalCost {
+                                                        font-weight:    bold;
+                                                    }
+
+                                                    .totalCostCurrency {
+                                                        font-weight:    bold;
+                                                    }
+
+                                                }
+
+                                            }
+
                                         }
 
                                     }
@@ -1160,6 +1199,47 @@ body {
 
                         }
 
+                        .costsTable {
+
+                            display:            table-row-group;
+
+                            .costsRow {
+
+                                display:            table-row;
+
+                                .type {
+                                    display:            table-cell;
+                                    padding-left:       12px;
+                                    padding-right:      2vw;
+                                    white-space:        nowrap;
+                                }
+
+                                .amount {
+                                    display:            table-cell;
+                                    padding-right:      3px;
+                                    text-align:         right;
+                                }
+
+                                .unit {
+                                    display:            table-cell;
+                                    padding-right:      10px;
+                                }
+
+                                .cost {
+                                    display:            table-cell;
+                                    padding-right:      3px;
+                                    text-align:         right;
+                                }
+
+                                .currency {
+                                    display:            table-cell;
+                                    padding:            0px;
+                                }
+
+                            }
+
+                        }
+
                     }
 
                     #measurementValues-headline {
@@ -1240,6 +1320,15 @@ body {
                             .value2, .unit2 {
                                 color:            rgba(44, 74, 96, 0.5);
                             }
+                        }
+
+                    }
+
+                    .costsAndTariffs {
+
+                        .headline {
+                            margin-top: 0.6vh;
+                            font-weight: bold;
                         }
 
                     }

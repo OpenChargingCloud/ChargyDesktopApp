@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import * as exp from 'constants';
 import { ACrypt }  from './ACrypt'
 
 export function IsAChargeTransparencyRecord(data: IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult|undefined): data is IChargeTransparencyRecord
@@ -298,6 +299,8 @@ export interface IConnector {
 
 export interface ILegalCompliance {
     certificateOfConformityId:  string;
+    officialSoftware?:          Array<ITransparencySoftware>;  // The transparency software that is officially part of the charging station.
+    compatibleSoftware?:        Array<ITransparencySoftware>;  // Other transparency softwares, that can verify the transparency record, but are not officially part of the charging station.
     freeText:                   string;
 }
 
@@ -349,11 +352,13 @@ export interface IChargingSession
     publicKey?:                 IPublicKeyInfo;
     tariffId?:                  string;
     tariff?:                    ITariff|null;
+    costs?:                     IChargingCosts;
     authorizationStart:         IAuthorization;
     authorizationStop?:         IAuthorization;
     product?:                   IChargingProduct;
     measurements:               Array<IMeasurement>;
     parking?:                   Array<IParking>;
+    transparencyInfos?:         ITransparencyInfos;
     method?:                    ACrypt;
     original?:                  string;
     signature?:                 string|ISignatureRS;
@@ -372,12 +377,46 @@ export interface IChargingProduct
     "@context"?:                string;
 }
 
+export interface IChargingCosts {
+    total:                      number;
+    currency:                   string;
+    reservation?:               ICost;
+    energy?:                    ICost;
+    time?:                      ICost;
+    idle?:                      ICost;
+    flat?:                      IFlatCost;
+}
+
+export interface ICost {
+    amount:                     number;     // Note: The billed amount might be different from the measured amount!
+    unit:                       string;
+    cost:                       number;
+}
+
+export interface IFlatCost {
+    cost:                       number;
+}
+
 export interface IParking
 {
     "@id":                      string;
     "@context"?:                string;
     begin:                      string;
     end?:                       string;
+}
+
+export interface ITransparencySoftware {
+    name:                       string;
+    version?:                   string;
+    manufacturer?:              string;
+    downloadURLs?:              Array<string>;
+}
+
+export interface ITransparencyInfos {
+    chargingSessionURL?:        string;                        // e.g. https://chargeportal.de.mer.eco/transactions/transparency/$sessionId
+    officialSoftware?:          Array<ITransparencySoftware>;  // The transparency software that is officially part of the charging station.
+    compatibleSoftware?:        Array<ITransparencySoftware>;  // Other transparency softwares, that can verify the transparency record, but are not officially part of the charging station.
+    freeText?:                  string;
 }
 
 export interface IAuthorization

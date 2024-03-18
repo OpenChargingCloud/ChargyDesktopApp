@@ -1114,6 +1114,24 @@ export class ChargeIT {
                 const chargingStation_controllerSoftwareVersion  = SomeJSON.chargingStationInfo?.controllerSoftwareVersion;
                 const chargingStation_compliance                 = SomeJSON.chargingStationInfo?.compliance;
 
+                const chargingCostsInfo                          = SomeJSON.chargingCostsInfo;
+                const chargingCostsInfo_total                    = SomeJSON.chargingCostsInfo?.total;
+                const chargingCostsInfo_currency                 = SomeJSON.chargingCostsInfo?.currency;
+                const chargingCostsInfo_reservation              = SomeJSON.chargingCostsInfo?.reservation;
+                const chargingCostsInfo_reservation_cost         = SomeJSON.chargingCostsInfo?.reservation?.cost;
+                const chargingCostsInfo_reservation_unit         = SomeJSON.chargingCostsInfo?.reservation?.unit;
+                const chargingCostsInfo_energy                   = SomeJSON.chargingCostsInfo?.energy;
+                const chargingCostsInfo_energy_cost              = SomeJSON.chargingCostsInfo?.energy?.cost;
+                const chargingCostsInfo_energy_unit              = SomeJSON.chargingCostsInfo?.energy?.unit;
+                const chargingCostsInfo_time                     = SomeJSON.chargingCostsInfo?.time;
+                const chargingCostsInfo_time_cost                = SomeJSON.chargingCostsInfo?.time?.cost;
+                const chargingCostsInfo_time_unit                = SomeJSON.chargingCostsInfo?.time?.unit;
+                const chargingCostsInfo_idle                     = SomeJSON.chargingCostsInfo?.idle;
+                const chargingCostsInfo_idle_cost                = SomeJSON.chargingCostsInfo?.idle?.cost;
+                const chargingCostsInfo_idle_unit                = SomeJSON.chargingCostsInfo?.idle?.unit;
+                const chargingCostsInfo_flat                     = SomeJSON.chargingCostsInfo?.flat;
+                const chargingCostsInfo_flat_cost                = SomeJSON.chargingCostsInfo?.flat?.cost;
+
                 const signedMeterValues                          = SomeJSON.signedMeterValues;
 
 
@@ -1226,6 +1244,76 @@ export class ChargeIT {
 
                 //#endregion
 
+                //#region chargingCostsInfo
+
+                if (chargingCostsInfo)
+                {
+
+                    if (!chargyLib.isMandatoryNumber(chargingCostsInfo_total))
+                        errors.push(this.chargy.GetLocalizedMessage("Missing or invalid total costs within the charging costs!"));
+
+                    if (!chargyLib.isMandatoryString(chargingCostsInfo_currency))
+                        errors.push(this.chargy.GetLocalizedMessage("Missing or invalid currency within the charging costs!"));
+
+                    if (chargingCostsInfo_reservation)
+                    {
+
+                        if (!chargyLib.isMandatoryNumber(chargingCostsInfo_reservation_cost))
+                            errors.push(this.chargy.GetLocalizedMessage("Missing or invalid reservation cost within the charging costs!"));
+
+                        // ToDo: Check for valid reservation unit
+                        if (!chargyLib.isMandatoryString(chargingCostsInfo_reservation_unit))
+                            errors.push(this.chargy.GetLocalizedMessage("Missing or invalid reservation unit within the charging costs!"));
+
+                    }
+
+                    if (chargingCostsInfo_energy)
+                    {
+
+                        if (!chargyLib.isMandatoryNumber(chargingCostsInfo_energy_cost))
+                            errors.push(this.chargy.GetLocalizedMessage("Missing or invalid energy cost within the charging costs!"));
+
+                        // ToDo: Check for valid energy unit
+                        if (!chargyLib.isMandatoryString(chargingCostsInfo_energy_unit))
+                            errors.push(this.chargy.GetLocalizedMessage("Missing or invalid energy unit within the charging costs!"));
+
+                    }
+
+                    if (chargingCostsInfo_time)
+                    {
+
+                        if (!chargyLib.isMandatoryNumber(chargingCostsInfo_time_cost))
+                            errors.push(this.chargy.GetLocalizedMessage("Missing or invalid time cost within the charging costs!"));
+
+                        // ToDo: Check for valid time unit
+                        if (!chargyLib.isMandatoryString(chargingCostsInfo_time_unit))
+                            errors.push(this.chargy.GetLocalizedMessage("Missing or invalid time unit within the charging costs!"));
+
+                    }
+
+                    if (chargingCostsInfo_idle)
+                    {
+
+                        if (!chargyLib.isMandatoryNumber(chargingCostsInfo_idle_cost))
+                            errors.push(this.chargy.GetLocalizedMessage("Missing or invalid idle cost within the charging costs!"));
+
+                        // ToDo: Check for valid idle unit
+                        if (!chargyLib.isMandatoryString(chargingCostsInfo_idle_unit))
+                            errors.push(this.chargy.GetLocalizedMessage("Missing or invalid idle unit within the charging costs!"));
+
+                    }
+
+                    if (chargingCostsInfo_flat)
+                    {
+
+                        if (!chargyLib.isMandatoryNumber(chargingCostsInfo_flat_cost))
+                            errors.push(this.chargy.GetLocalizedMessage("Missing or invalid flat cost within the charging costs!"));
+
+                    }
+
+                }
+
+                //#endregion
 
                 if (!chargyLib.isMandatoryJSONArray(signedMeterValues) || signedMeterValues.length < 2) {
                     errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidSignedMeterValues"));
@@ -1391,7 +1479,8 @@ export class ChargeIT {
                                                 legalCompliance:  { freeText: chargingStation_compliance },
                                                 geoLocation:      { "lat":    geoLocation_lat, "lng":        geoLocation_lon },
                                                 address:          { "street": address_street,  "postalCode": address_zipCode, "city": address_town, "country": address_country }
-                                             }
+                                             },
+                                             chargingCosts:       chargingCostsInfo
                                          });
 
                 }

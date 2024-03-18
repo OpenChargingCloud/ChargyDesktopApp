@@ -2038,6 +2038,53 @@ export class ChargyApp {
 
                 //#endregion
 
+                //#region Show total costs...
+
+                try
+                {
+
+                    if (chargingSession.costs != null)
+                    {
+
+                        var costsInfoDiv        = tableDiv.appendChild(document.createElement('div'));
+                        costsInfoDiv.className  = "costsInfos";
+
+                        var costsIconDiv        = costsInfoDiv.appendChild(document.createElement('div'));
+                        costsIconDiv.className  = "icon";
+                        costsIconDiv.innerHTML  = '<i class="fa-solid fa-euro-sign"></i>';
+
+                        var textDiv             = costsInfoDiv.appendChild(document.createElement('div'));
+                        textDiv.classList.add("text");
+
+                        var costsDiv            = textDiv.appendChild(document.createElement('div'));
+                        costsDiv.classList.add("costs");
+
+                        if (chargingSession.costs.total != 0)
+                        {
+
+                            var totalCostsDiv      = costsDiv.appendChild(document.createElement('div'));
+                            totalCostsDiv.classList.add("totalCosts");
+
+                            var totalCostsCost     = totalCostsDiv.appendChild(document.createElement('div'));
+                            totalCostsCost.classList.add("totalCost");
+                            totalCostsCost.innerHTML     = chargingSession.costs.total.toString();
+
+                            var totalCostsCurrency = totalCostsDiv.appendChild(document.createElement('div'));
+                            totalCostsCurrency.classList.add("totalCostCurrency");
+                            totalCostsCurrency.innerHTML = chargingSession.costs.currency;
+
+                        }
+
+                    }
+
+                } catch (exception)
+                {
+                    console.log("Could not show costs of charging session '" + chargingSession["@id"] + "':" + exception);
+                }
+
+                //#endregion
+
+
                 //#region Add marker to map
 
                 // First clear the map...
@@ -2402,6 +2449,170 @@ export class ChargyApp {
 
                     //#endregion
 
+
+                    //#region Show charging costs and tariffs...
+
+                    if (chargingSession.costs)
+                    {
+
+                        const costsAndTariffsDiv  = chargyLib.CreateDiv(MeasurementInfoDiv,  "costsAndTariffs");
+                                                    chargyLib.CreateDiv(costsAndTariffsDiv,  "headline", "Kosten und Tarife");
+
+
+
+                        // var costsInfoDiv        = this.evseTarifInfosDiv.appendChild(document.createElement('div'));
+                        // costsInfoDiv.className  = "costsAndTariffs";
+
+                        // var costsIconDiv        = costsInfoDiv.appendChild(document.createElement('div'));
+                        // costsIconDiv.className  = "headline";
+                        // costsIconDiv.innerHTML  = "Kosten und Tarife";
+
+                        var costsTableDiv       = costsAndTariffsDiv.appendChild(document.createElement('div'));
+                        costsTableDiv.classList.add("costsTable");
+
+                        if (chargingSession.costs.reservation?.cost != null)
+                        {
+
+                            var reservationCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
+                            reservationCostsRow.classList.add("costsRow");
+
+                            var reservationCostsType     = reservationCostsRow.appendChild(document.createElement('div'));
+                            reservationCostsType.classList.add("type");
+                            reservationCostsType.innerHTML    = this.chargy.GetLocalizedMessage("Reservation");
+
+                            var reservationCostsAmount   = reservationCostsRow.appendChild(document.createElement('div'));
+                            reservationCostsAmount.classList.add("amount");
+                            reservationCostsAmount.innerHTML  = chargingSession.costs.reservation.amount.toString();
+
+                            var reservationCostsUnit     = reservationCostsRow.appendChild(document.createElement('div'));
+                            reservationCostsUnit.classList.add("unit");
+                            reservationCostsUnit.innerHTML    = chargingSession.costs.reservation.unit;
+
+                            var reservationCostsCost     = reservationCostsRow.appendChild(document.createElement('div'));
+                            reservationCostsCost.classList.add("cost");
+                            reservationCostsCost.innerHTML   = chargingSession.costs.reservation.cost.toString();
+
+                            var reservationCostsCurrency = reservationCostsRow.appendChild(document.createElement('div'));
+                            reservationCostsCurrency.classList.add("currency");
+                            reservationCostsCurrency.innerHTML   = chargingSession.costs.currency;
+
+                        }
+
+                        if (chargingSession.costs.energy?.cost != null)
+                        {
+
+                            var energyCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
+                            energyCostsRow.classList.add("costsRow");
+
+                            var energyCostsType     = energyCostsRow.appendChild(document.createElement('div'));
+                            energyCostsType.classList.add("type");
+                            energyCostsType.innerHTML    = this.chargy.GetLocalizedMessage("Energy");
+
+                            var energyCostsAmount   = energyCostsRow.appendChild(document.createElement('div'));
+                            energyCostsAmount.classList.add("amount");
+                            energyCostsAmount.innerHTML  = chargingSession.costs.energy.amount.toString();
+
+                            var energyCostsUnit     = energyCostsRow.appendChild(document.createElement('div'));
+                            energyCostsUnit.classList.add("unit");
+                            energyCostsUnit.innerHTML    = chargingSession.costs.energy.unit;
+
+                            var energyCostsCost     = energyCostsRow.appendChild(document.createElement('div'));
+                            energyCostsCost.classList.add("cost");
+                            energyCostsCost.innerHTML   = chargingSession.costs.energy.cost.toString();
+
+                            var energyCostsCurrency = energyCostsRow.appendChild(document.createElement('div'));
+                            energyCostsCurrency.classList.add("currency");
+                            energyCostsCurrency.innerHTML   = chargingSession.costs.currency;
+
+                        }
+
+                        if (chargingSession.costs.time?.cost != null)
+                        {
+
+                            var timeCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
+                            timeCostsRow.classList.add("costsRow");
+
+                            var timeCostsType     = timeCostsRow.appendChild(document.createElement('div'));
+                            timeCostsType.classList.add("type");
+                            timeCostsType.innerHTML    = this.chargy.GetLocalizedMessage("Time");
+
+                            var timeCostsAmount   = timeCostsRow.appendChild(document.createElement('div'));
+                            timeCostsAmount.classList.add("amount");
+                            timeCostsAmount.innerHTML  = chargingSession.costs.time.amount.toString();
+
+                            var timeCostsUnit     = timeCostsRow.appendChild(document.createElement('div'));
+                            timeCostsUnit.classList.add("unit");
+                            timeCostsUnit.innerHTML    = chargingSession.costs.time.unit;
+
+                            var timeCostsCost     = timeCostsRow.appendChild(document.createElement('div'));
+                            timeCostsCost.classList.add("cost");
+                            timeCostsCost.innerHTML   = chargingSession.costs.time.cost.toString();
+
+                            var timeCostsCurrency = timeCostsRow.appendChild(document.createElement('div'));
+                            timeCostsCurrency.classList.add("currency");
+                            timeCostsCurrency.innerHTML   = chargingSession.costs.currency;
+
+                        }
+
+                        if (chargingSession.costs.idle?.cost != null)
+                        {
+
+                            var idleCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
+                            idleCostsRow.classList.add("costsRow");
+
+                            var idleCostsType     = idleCostsRow.appendChild(document.createElement('div'));
+                            idleCostsType.classList.add("type");
+                            idleCostsType.innerHTML    = this.chargy.GetLocalizedMessage("Idle");
+
+                            var idleCostsAmount   = idleCostsRow.appendChild(document.createElement('div'));
+                            idleCostsAmount.classList.add("amount");
+                            idleCostsAmount.innerHTML  = chargingSession.costs.idle.amount.toString();
+
+                            var idleCostsUnit     = idleCostsRow.appendChild(document.createElement('div'));
+                            idleCostsUnit.classList.add("unit");
+                            idleCostsUnit.innerHTML    = chargingSession.costs.idle.unit;
+
+                            var idleCostsCost     = idleCostsRow.appendChild(document.createElement('div'));
+                            idleCostsCost.classList.add("cost");
+                            idleCostsCost.innerHTML   = chargingSession.costs.idle.cost.toString();
+
+                            var idleCostsCurrency = idleCostsRow.appendChild(document.createElement('div'));
+                            idleCostsCurrency.classList.add("currency");
+                            idleCostsCurrency.innerHTML   = chargingSession.costs.currency;
+
+                        }
+
+                        if (chargingSession.costs.flat?.cost != null)
+                        {
+
+                            var flatCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
+                            flatCostsRow.classList.add("costsRow");
+
+                            var flatCostsType     = flatCostsRow.appendChild(document.createElement('div'));
+                            flatCostsType.classList.add("type");
+                            flatCostsType.innerHTML    = this.chargy.GetLocalizedMessage("Flat");
+
+                            var flatCostsAmount   = flatCostsRow.appendChild(document.createElement('div'));
+                            flatCostsAmount.classList.add("amount");
+
+                            var flatCostsUnit     = flatCostsRow.appendChild(document.createElement('div'));
+                            flatCostsUnit.classList.add("unit");
+
+                            var flatCostsCost     = flatCostsRow.appendChild(document.createElement('div'));
+                            flatCostsCost.classList.add("cost");
+                            flatCostsCost.innerHTML   = chargingSession.costs.flat.cost.toString();
+
+                            var flatCostsCurrency = flatCostsRow.appendChild(document.createElement('div'));
+                            flatCostsCurrency.classList.add("currency");
+                            flatCostsCurrency.innerHTML   = chargingSession.costs.currency;
+
+                        }
+
+                    }
+
+                    //#endregion
+
+
                     //#region Show measurement values...
 
                     if (measurement.values && measurement.values.length > 0)
@@ -2688,6 +2899,9 @@ export class ChargyApp {
                     }
 
                     //#endregion
+
+
+
 
                 }
             }
