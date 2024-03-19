@@ -395,6 +395,70 @@
     },
 
 
+    "Charging Session Information": {
+        "de": "Informationen zum Ladevorgang",
+        "en": "Charging Session Information"
+    },
+
+    "Charging Station": {
+        "de": "Ladestation",
+        "en": "Charging Station"
+    },
+
+    "Manufacturer": {
+        "de": "Hersteller",
+        "en": "Manufacturer"
+    },
+
+    "Identification": {
+        "de": "Identifikation",
+        "en": "Identification"
+    },
+
+    "Model": {
+        "de": "Model",
+        "en": "Model"
+    },
+
+    "Serial Number": {
+        "de": "Seriennummer",
+        "en": "Serial Number"
+    },
+
+    "Firmware Version": {
+        "de": "Firmware-Version",
+        "en": "Firmware Version"
+    },
+
+    "Legal Compliance": {
+        "de": "Compliance",
+        "en": "Compliance"
+    },
+
+    "Conformity": {
+        "de": "Konformität",
+        "en": "Conformity"
+    },
+
+    "Calibration": {
+        "de": "Kalibrierung",
+        "en": "Calibration"
+    },
+
+
+
+    "Energy Meter" : {
+        "de": "Energiezähler",
+        "en": "Energy Meter"
+    },
+
+
+
+    "Costs and Tariffs": {
+        "de": "Kosten und Tarife",
+        "en": "Costs and Tariffs"
+    },
+
     "Total": {
         "de": "Gesamt",
         "en": "Total"
@@ -423,6 +487,13 @@
     "Flat": {
         "de": "Fixkosten",
         "en": "Flat"
+    },
+
+
+
+    "Meter Values": {
+        "de": "Messwerte",
+        "en": "Meter Values"
     }
 
 }

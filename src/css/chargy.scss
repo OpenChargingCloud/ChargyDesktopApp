@@ -920,7 +920,7 @@ body {
                     border-radius:      8px 8px 0px 0px;
                 }
 
-                #evseTarifInfos {
+                #detailedInfos {
 
                     width:              100%;
                     flex-grow:          1;
@@ -931,272 +931,309 @@ body {
                     color:              #2c4a60;
                     overflow-y:         scroll;
 
-                    #headline {
+                    .headline {
                         color:              #2e71a2;
                         font-weight:        bold;
                         padding:            2px 10px 12px 0px;
                     }
 
-                    .measurementInfos {
+                    .chargingStationInfos {
 
                         display:            table;
 
-                        .chargingStation {
+                        .headline2 {
+                            font-weight:        bold
+                        }
 
-                            display:            table-row-group;
+                        .chargingStationId {
 
-                            .chargingStationHeadline {
-                                font-weight:        bold
+                            display:            table-row;
+
+                            .chargingStationIdId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
                             }
 
-                            .chargingStationId {
-
-                                display:            table-row;
-
-                                .chargingStationIdId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .chargingStationIdValue {
-                                    display:            table-cell;
-                                }
-
-                            }
-
-                            .manufacturer {
-
-                                display:            table-row;
-
-                                .manufacturerId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .manufacturerValue {
-                                    display:            table-cell;
-                                    a {
-                                        text-decoration: none;
-                                        color:           #2e71a2;
-                                    }
-                                }
-
-                            }
-
-                            .type {
-
-                                display:            table-row;
-
-                                .typeId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .typeValue {
-                                    display:            table-cell;
-                                    a {
-                                        text-decoration: none;
-                                        color:           #2e71a2;
-                                    }
-                                }
-
-                            }
-
-                            .serialNumber {
-
-                                display:            table-row;
-
-                                .serialNumberId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .serialNumberValue {
-                                    display:            table-cell;
-                                }
-
-                            }
-
-                            .firmwareVersion {
-
-                                display:            table-row;
-
-                                .firmwareVersionId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .firmwareVersionValue {
-                                    display:            table-cell;
-                                }
-
-                            }
-
-                            .legalCompliance {
-
-                                display:            table-row;
-
-                                .legalComplianceId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .legalComplianceValue {
-                                    display:            table-cell;
-                                }
-
+                            .chargingStationIdValue {
+                                display:            table-cell;
                             }
 
                         }
 
-                        .meter {
+                        .manufacturer {
 
-                            display:            table-row-group;
+                            display:            table-row;
 
-                            .meterHeadline {
-                                margin-top:         .6vh;
-                                font-weight:        bold;
+                            .manufacturerId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
                             }
 
-                            .meterId {
-
-                                display:            table-row;
-
-                                .meterIdId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
+                            .manufacturerValue {
+                                display:            table-cell;
+                                a {
+                                    text-decoration: none;
+                                    color:           #2e71a2;
                                 }
-
-                                .meterIdValue {
-                                    display:            table-cell;
-                                }
-
                             }
 
-                            .meterVendor {
+                        }
 
-                                display:            table-row;
+                        .type {
 
-                                .meterVendorId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
+                            display:            table-row;
 
-                                .meterVendorValue {
-                                    display:            table-cell;
-                                    a {
-                                        text-decoration: none;
-                                        color:           #2e71a2;
-                                    }
-                                }
-
+                            .typeId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
                             }
 
-                            .meterModel {
-
-                                display:            table-row;
-
-                                .meterModelId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
+                            .typeValue {
+                                display:            table-cell;
+                                a {
+                                    text-decoration: none;
+                                    color:           #2e71a2;
                                 }
-
-                                .meterModelValue {
-                                    display:            table-cell;
-                                    a {
-                                        text-decoration: none;
-                                        color:           #2e71a2;
-                                    }
-                                }
-
                             }
 
-                            .meterHardwareVersion {
+                        }
 
-                                display:            table-row;
+                        .serialNumber {
 
-                                .meterHardwareVersionId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
+                            display:            table-row;
 
-                                .meterHardwareVersionValue {
-                                    display:            table-cell;
-                                }
-
+                            .serialNumberId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
                             }
 
-                            .meterFirmwareVersion {
-
-                                display:            table-row;
-
-                                .meterFirmwareVersionId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .meterFirmwareVersionValue {
-                                    display:            table-cell;
-                                }
-
+                            .serialNumberValue {
+                                display:            table-cell;
                             }
 
-                            .measurement {
+                        }
 
-                                display:            table-row;
+                        .firmwareVersion {
 
-                                .measurementId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
+                            display:            table-row;
 
-                                .measurementValue {
-                                    display:            table-cell;
-                                }
-
+                            .firmwareVersionId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
                             }
 
-                            .OBIS {
-
-                                display:            table-row;
-
-                                .OBISId {
-                                    display:            table-cell;
-                                    padding-left:       12px;
-                                    padding-right:      2vw;
-                                    white-space:        nowrap;
-                                }
-
-                                .OBISValue {
-                                    display:            table-cell;
-                                }
-
+                            .firmwareVersionValue {
+                                display:            table-cell;
                             }
 
+                        }
+
+                        .legalCompliance {
+
+                            display:            table-row;
+
+                            .legalComplianceId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .legalComplianceValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                        .conformity {
+
+                            display:            table-row;
+
+                            .conformityId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .conformityValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                        .calibration {
+
+                            display:            table-row;
+
+                            .calibrationId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .calibrationValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                    }
+
+                    .energyMeterInfos {
+
+                        display:            table;
+
+                        .headline2 {
+                            margin-top:         0.6vh;
+                            font-weight:        bold
+                        }
+
+                        .meterId {
+
+                            display:            table-row;
+
+                            .meterIdId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .meterIdValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                        .meterManufacturer {
+
+                            display:            table-row;
+
+                            .meterManufacturerId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .meterManufacturerValue {
+                                display:            table-cell;
+                                a {
+                                    text-decoration: none;
+                                    color:           #2e71a2;
+                                }
+                            }
+
+                        }
+
+                        .meterModel {
+
+                            display:            table-row;
+
+                            .meterModelId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .meterModelValue {
+                                display:            table-cell;
+                                a {
+                                    text-decoration: none;
+                                    color:           #2e71a2;
+                                }
+                            }
+
+                        }
+
+                        .meterHardwareVersion {
+
+                            display:            table-row;
+
+                            .meterHardwareVersionId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .meterHardwareVersionValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                        .meterFirmwareVersion {
+
+                            display:            table-row;
+
+                            .meterFirmwareVersionId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .meterFirmwareVersionValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                        .measurement {
+
+                            display:            table-row;
+
+                            .measurementId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .measurementValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                        .OBIS {
+
+                            display:            table-row;
+
+                            .OBISId {
+                                display:            table-cell;
+                                padding-left:       12px;
+                                padding-right:      2vw;
+                                white-space:        nowrap;
+                            }
+
+                            .OBISValue {
+                                display:            table-cell;
+                            }
+
+                        }
+
+                    }
+
+                    .costsAndTariffInfos {
+
+                        .headline2 {
+                            margin-top: 0.6vh;
+                            font-weight: bold;
                         }
 
                         .costsTable {
@@ -1242,16 +1279,16 @@ body {
 
                     }
 
-                    #measurementValues-headline {
-                        margin-top:         0.6vh;
-                        font-weight:        bold;
-                    }
-
                     .measurementValues {
 
                         display:            table;
                         width:              100%;
                         cursor:             zoom-in;
+
+                        .headline2 {
+                            margin-top:     0.6vh;
+                            font-weight:    bold;
+                        }
 
                         .measurementValue {
 
@@ -1320,15 +1357,6 @@ body {
                             .value2, .unit2 {
                                 color:            rgba(44, 74, 96, 0.5);
                             }
-                        }
-
-                    }
-
-                    .costsAndTariffs {
-
-                        .headline {
-                            margin-top: 0.6vh;
-                            font-weight: bold;
                         }
 
                     }

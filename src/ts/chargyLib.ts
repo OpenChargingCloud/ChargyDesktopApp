@@ -826,6 +826,17 @@ export function isOptionalString(text: any): text is string {
                : true;
 }
 
+/**
+ * Ensures, that the given text is a valid URL, if it exists
+ * @param text an URL
+ * @returns true, when the given text is a valid URL, if it exists
+ */
+export function isOptionalURL(text: any): text is string {
+    return text !== undefined && text !== null
+               ? typeof text === "string" && text.startsWith("https://")
+               : true;
+}
+
 
 /**
  * Ensures, that the given number exists and is a valid number

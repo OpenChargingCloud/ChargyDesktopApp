@@ -20,7 +20,17 @@
     "type": "Eve Single Pro-line",
     "serialNumber": "2020-24-T-042",
     "controllerSoftwareVersion": "v1.2.34",
-    "compliance": "PTB XYZ"
+    "compliance": "PTB XYZ",
+    "calibration": "CSA 1234"
+  },
+  "meterInfo": {
+    "firmwareVersion": "123",
+    "type": "eHZ IW8E EMH",
+    "manufacturer": "EMH"
+  },
+  "connectorInfo": {
+    "type": "Typ-2 Socket",
+    "losses": 2.1
   },
   "chargingCostsInfo": {
     "total": 2.05,

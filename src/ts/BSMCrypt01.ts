@@ -874,8 +874,8 @@ export class BSMCrypt01 extends ACrypt {
             (CTR!.chargingStationOperators![0]!.chargingStations![0]!.EVSEs[0]?.meters)?.push({
                 "@id":               common.meterInfo_meterId,
                 model:               common.meterInfo_type,
-                vendor:              common.meterInfo_manufacturer,
-                vendorURL:           "https://www.bzr-bauer.de",
+                manufacturer:        common.meterInfo_manufacturer,
+                manufacturerURL:     "https://www.bzr-bauer.de",
                 firmwareVersion:     common.meterInfo_firmwareVersion,
                 //hardwareVersion?:    string;
                 signatureInfos:      {

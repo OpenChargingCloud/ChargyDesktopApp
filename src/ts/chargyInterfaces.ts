@@ -243,10 +243,13 @@ export interface IChargingStation
     "@id":                      string;
     "@context"?:                string;
     description?:               {};
-    type?:                      string;
-    serialNumber?:              string;
-    firmwareVersion?:           string;
     manufacturer?:              string;
+    manufacturerURL?:           string;
+    model?:                     string;
+    modelURL?:                  string;
+    firmwareVersion?:           string;
+    hardwareVersion?:           string;
+    serialNumber?:              string;
     legalCompliance?:           ILegalCompliance;
     address?:                   IAddress;
     geoLocation?:               IGeoLocation;
@@ -278,12 +281,13 @@ export interface IMeter
     "@id":                      string;
     "@context"?:                string;
     description?:               {};
-    vendor:                     string;
-    vendorURL?:                 string;
+    manufacturer:               string;
+    manufacturerURL?:           string;
     model:                      string;
     modelURL?:                  string;
     firmwareVersion:            string;
     hardwareVersion?:           string;
+    legalCompliance?:           ILegalCompliance;
     chargingStation?:           IChargingStation;
     chargingStationId?:         string;
     EVSE?:                      IEVSE;
@@ -297,10 +301,28 @@ export interface IConnector {
     type:                       string;
 }
 
-export interface ILegalCompliance {
-    certificateOfConformityId:  string;
+export interface IConformity {
+    certificateId:              string;
+    url?:                       string;
+    notBefore:                  string;
+    notAfter:                   string;
     officialSoftware?:          Array<ITransparencySoftware>;  // The transparency software that is officially part of the charging station.
     compatibleSoftware?:        Array<ITransparencySoftware>;  // Other transparency softwares, that can verify the transparency record, but are not officially part of the charging station.
+    freeText:                   string;
+}
+
+export interface ICalibration {
+    certificateId:              string;
+    url?:                       string;
+    notBefore:                  string;
+    notAfter:                   string;
+    freeText:                   string;
+}
+
+export interface ILegalCompliance {
+    conformity?:                Array<IConformity>;
+    calibration?:               Array<ICalibration>;
+    url?:                       string;
     freeText:                   string;
 }
 

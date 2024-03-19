@@ -314,15 +314,19 @@ export class Alfen01  {
                                      {
                                          "@id":                      evseId,
                                          "description":              ContainerInfos.EVSE?.description,
-                                         "sockets":                  [ { } ],
+                                         "connectors": [ {
+                                                 "type":                     ContainerInfos.connector?.type,
+                                                 "looses":                   ContainerInfos.connector?.looses
+                                          } ],
                                          "meters": [
                                              {
                                                  "@id":                      common.MeterId,
-            //                                     "vendor":                   CTRArray[0]["meterInfo"]["manufacturer"],
-            //                                     "vendorURL":                "http://www.emh-metering.de",
-            //                                     "model":                    CTRArray[0]["meterInfo"]["type"],
-            //                                     "hardwareVersion":          "1.0",
-            //                                     "firmwareVersion":          CTRArray[0]["meterInfo"]["firmwareVersion"],
+                                                 "manufacturer":             ContainerInfos.energyMeter?.manufacturer,
+                                                 "manufacturerURL":          ContainerInfos.energyMeter?.manufacturerURL,
+                                                 "model":                    ContainerInfos.energyMeter?.model,
+                                                 "modelURL":                 ContainerInfos.energyMeter?.modelURL,
+                                                 "hardwareVersion":          ContainerInfos.energyMeter?.hardwareVersion,
+                                                 "firmwareVersion":          ContainerInfos.energyMeter?.firmwareVersion,
             //                                     "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
                                                  "publicKeys": [
                                                      {

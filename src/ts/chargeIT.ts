@@ -310,8 +310,8 @@ export class ChargeIT {
                             "meters": [
                                 {
                                     "@id":                      CTRArray[0]!["meterInfo"]["meterId"],
-                                    "vendor":                   CTRArray[0]!["meterInfo"]["manufacturer"],
-                                    "vendorURL":                "http://www.emh-metering.de",
+                                    "manufacturer":             CTRArray[0]!["meterInfo"]["manufacturer"],
+                                    "manufacturerURL":          "https://www.emh-metering.de",
                                     "model":                    CTRArray[0]!["meterInfo"]["type"],
                                     "hardwareVersion":          "1.0",
                                     "firmwareVersion":          CTRArray[0]!["meterInfo"]["firmwareVersion"],
@@ -1113,6 +1113,32 @@ export class ChargeIT {
                 const chargingStation_serialNumber               = SomeJSON.chargingStationInfo?.serialNumber;
                 const chargingStation_controllerSoftwareVersion  = SomeJSON.chargingStationInfo?.controllerSoftwareVersion;
                 const chargingStation_compliance                 = SomeJSON.chargingStationInfo?.compliance;
+                const chargingStation_complianceURL              = SomeJSON.chargingStationInfo?.complianceURL;
+                const chargingStation_conformity                 = SomeJSON.chargingStationInfo?.conformity;
+                const chargingStation_conformity_URL             = SomeJSON.chargingStationInfo?.conformityURL;
+                const chargingStation_conformity_certificateId   = SomeJSON.chargingStationInfo?.conformityCertificateId;
+                const chargingStation_calibration                = SomeJSON.chargingStationInfo?.calibration;
+                const chargingStation_calibration_URL            = SomeJSON.chargingStationInfo?.calibrationURL;
+                const chargingStation_calibration_certificateId  = SomeJSON.chargingStationInfo?.calibrationCertificateId;
+
+                // meterInfo can also be under the signedMeterValues!
+                const meterInfo                                  = SomeJSON.meterInfo;
+                const meterInfo_meterId                          = SomeJSON.meterInfo?.meterId;
+                const meterInfo_manufacturer                     = SomeJSON.meterInfo?.manufacturer;
+                const meterInfo_manufacturerURL                  = SomeJSON.meterInfo?.manufacturerURL;
+                const meterInfo_model                            = SomeJSON.meterInfo?.model;
+                const meterInfo_modelURL                         = SomeJSON.meterInfo?.modelURL;
+                const meterInfo_hardwareVersion                  = SomeJSON.meterInfo?.hardwareVersion;
+                const meterInfo_firmwareVersion                  = SomeJSON.meterInfo?.firmwareVersion;
+                const meterInfo_publicKey                        = SomeJSON.meterInfo?.publicKey;
+                const meterInfo_publicKeyFormat                  = SomeJSON.meterInfo?.publicKeyFormat;
+                const meterInfo_publicKeyEncoding                = SomeJSON.meterInfo?.publicKeyEncoding;
+                const meterInfo_signatureFormat                  = SomeJSON.meterInfo?.signatureFormat;
+                const meterInfo_signatureEncoding                = SomeJSON.meterInfo?.signatureEncoding;
+
+                const connectorInfo                              = SomeJSON.connectorInfo;
+                const connectorInfo_type                         = SomeJSON.connectorInfo?.type;
+                const connectorInfo_losses                       = SomeJSON.connectorInfo?.losses;
 
                 const chargingCostsInfo                          = SomeJSON.chargingCostsInfo;
                 const chargingCostsInfo_total                    = SomeJSON.chargingCostsInfo?.total;
@@ -1237,8 +1263,92 @@ export class ChargeIT {
                     if (!chargyLib.isOptionalString(chargingStation_controllerSoftwareVersion))
                         errors.push(this.chargy.GetLocalizedMessage("Invalid charging station controller software version!"));
 
+
                     if (!chargyLib.isOptionalString(chargingStation_compliance))
                         errors.push(this.chargy.GetLocalizedMessage("Invalid charging station compliance!"));
+
+                    if (!chargyLib.isOptionalURL   (chargingStation_complianceURL))
+                        errors.push(this.chargy.GetLocalizedMessage("Invalid charging station compliance URL!"));
+
+
+                    if (!chargyLib.isOptionalString(chargingStation_conformity))
+                        errors.push(this.chargy.GetLocalizedMessage("Invalid charging station conformity!"));
+
+                    if (!chargyLib.isOptionalURL   (chargingStation_conformity_URL))
+                        errors.push(this.chargy.GetLocalizedMessage("Invalid charging station conformity URL!"));
+
+                    if (!chargyLib.isOptionalURL   (chargingStation_conformity_certificateId))
+                        errors.push(this.chargy.GetLocalizedMessage("Invalid charging station conformity certificate identification!"));
+
+
+                    if (!chargyLib.isOptionalString(chargingStation_calibration))
+                        errors.push(this.chargy.GetLocalizedMessage("Invalid charging station calibration!"));
+
+                    if (!chargyLib.isOptionalURL   (chargingStation_calibration_URL))
+                        errors.push(this.chargy.GetLocalizedMessage("Invalid charging station calibration URL!"));
+
+                    if (!chargyLib.isOptionalURL   (chargingStation_calibration_certificateId))
+                        errors.push(this.chargy.GetLocalizedMessage("Invalid charging station calibration certificate identification!"));
+
+                }
+
+                //#endregion
+
+                //#region meterInfo
+
+                if (meterInfo) {
+
+                    if (!chargyLib.isOptionalString(meterInfo_meterId))
+                        errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_MeterIdP",         1));
+
+                    if (!chargyLib.isOptionalString(meterInfo_manufacturer))
+                        errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_ManufacturerP",    1));
+
+                    if (!chargyLib.isOptionalString(meterInfo_manufacturerURL))
+                        errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_ManufacturerP",    1));
+
+                    if (!chargyLib.isOptionalString(meterInfo_model))
+                        errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_ManufacturerP",    1));
+
+                    if (!chargyLib.isOptionalString(meterInfo_modelURL))
+                        errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_ManufacturerP",    1));
+
+                    if (!chargyLib.isOptionalString(meterInfo_firmwareVersion))
+                        errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_FirmwareVersionP", 1));
+
+                    if (!chargyLib.isOptionalString(meterInfo_hardwareVersion))
+                        errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_FirmwareVersionP", 1));
+
+
+                    if (!chargyLib.isOptionalString(meterInfo_publicKey))
+                        errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_PublicKeyP",       1));
+
+                    if (!chargyLib.isOptionalString(meterInfo_publicKeyFormat))
+                        errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_PublicKeyP",       1));
+
+                    if (!chargyLib.isOptionalString(meterInfo_publicKeyEncoding))
+                        errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_PublicKeyP",       1));
+
+
+                    if (!chargyLib.isOptionalString(meterInfo_signatureFormat))
+                        errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_PublicKeyP",       1));
+
+                    if (!chargyLib.isOptionalString(meterInfo_signatureEncoding))
+                        errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_PublicKeyP",       1));
+
+                }
+
+                //#endregion
+
+                //#region connectorInfo
+
+                if (connectorInfo) {
+
+                    if (!chargyLib.isOptionalString(connectorInfo_type))
+                        errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_MeterIdP",         1));
+
+                    if (!chargyLib.isOptionalString(connectorInfo_losses))
+                        errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_MeterIdP",         1));
 
                 }
 
@@ -1476,11 +1586,21 @@ export class ChargeIT {
                                                 type:             chargingStation_type,
                                                 serialNumber:     chargingStation_serialNumber,
                                                 firmwareVersion:  chargingStation_controllerSoftwareVersion,
-                                                legalCompliance:  { freeText: chargingStation_compliance },
+                                                legalCompliance:  {
+                                                    conformity: [{
+
+                                                        freeText:  chargingStation_compliance
+                                                    }],
+                                                    calibration: [{
+                                                        freeText:  chargingStation_calibration
+                                                    }]
+                                                },
                                                 geoLocation:      { "lat":    geoLocation_lat, "lng":        geoLocation_lon },
                                                 address:          { "street": address_street,  "postalCode": address_zipCode, "city": address_town, "country": address_country }
                                              },
-                                             chargingCosts:       chargingCostsInfo
+                                            energyMeter:          meterInfo,
+                                            connector:            connectorInfo,
+                                            chargingCosts:        chargingCostsInfo
                                          });
 
                 }
