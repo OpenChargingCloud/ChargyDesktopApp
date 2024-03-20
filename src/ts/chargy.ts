@@ -501,6 +501,8 @@ export class Chargy {
 
         //#endregion
 
+        //#region Process PDF/A-3 and compressed files
+
         if (FileInfos && FileInfos.length > 0)
         {
             for (var fileInfo of FileInfos)
@@ -513,70 +515,96 @@ export class Chargy {
 
                     const pdfWorkerSrc = require('pdfjs-dist/build/pdf.worker.mjs');
                     pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
-                    const pdfDocument  = await pdfjsLib.getDocument(fileInfo.path!).promise;
 
-                    try
+                    const pdfDocument  = fileInfo.data
+                                            ? await pdfjsLib.getDocument(fileInfo.data).promise
+                                            : fileInfo.path
+                                                  ? await pdfjsLib.getDocument(fileInfo.path).promise
+                                                  : null;
+
+                    if (pdfDocument)
                     {
+                        try
+                        {
 
-                        const attachments = await pdfDocument.getAttachments();
+                            const attachments = await pdfDocument.getAttachments();
 
-                        Object.keys(attachments).forEach(fileName => {
+                            Object.keys(attachments).forEach(fileName => {
 
-                            const attachment = attachments[fileName];
+                                const attachment = attachments[fileName];
 
-                            if (attachment.filename.endsWith('.chargy'))
-                                expandedFiles.push({
-                                    name:  attachment.filename,
-                                    path:  FileInfos[0]?.path,
-                                    type:  "application/chargy",
-                                    data:  attachment.content,
-                                    info:  "A CHARGY file extracted from a PDF/A-3 or newer attachment"
-                                });
+                                if (attachment.filename.endsWith('.chargy'))
+                                    expandedFiles.push({
+                                        name:  attachment.filename,
+                                        path:  FileInfos[0]?.path,
+                                        type:  "application/chargy",
+                                        data:  attachment.content,
+                                        info:  "A CHARGY file extracted from a PDF/A-3 or newer attachment"
+                                    });
 
-                            else if (attachment.filename.endsWith('.xml'))
-                                expandedFiles.push({
-                                    name:  attachment.filename,
-                                    path:  FileInfos[0]?.path,
-                                    type:  "application/xml",
-                                    data:  attachment.content,
-                                    info:  "A XML file extracted from a PDF/A-3 or newer attachment"
-                                });
+                                else if (attachment.filename.endsWith('.xml'))
+                                    expandedFiles.push({
+                                        name:  attachment.filename,
+                                        path:  FileInfos[0]?.path,
+                                        type:  "application/xml",
+                                        data:  attachment.content,
+                                        info:  "A XML file extracted from a PDF/A-3 or newer attachment"
+                                    });
 
-                            else if (attachment.filename.endsWith('.json'))
-                                expandedFiles.push({
-                                    name:  attachment.filename,
-                                    path:  FileInfos[0]?.path,
-                                    type:  "application/json",
-                                    data:  attachment.content,
-                                    info:  "A JSON file extracted from a PDF/A-3 or newer attachment"
-                                });
+                                else if (attachment.filename.endsWith('.json'))
+                                    expandedFiles.push({
+                                        name:  attachment.filename,
+                                        path:  FileInfos[0]?.path,
+                                        type:  "application/json",
+                                        data:  attachment.content,
+                                        info:  "A JSON file extracted from a PDF/A-3 or newer attachment"
+                                    });
 
-                            else if (attachment.filename.endsWith('.csv'))
-                                expandedFiles.push({
-                                    name:  attachment.filename,
-                                    path:  FileInfos[0]?.path,
-                                    type:  "text/csv",
-                                    data:  attachment.content,
-                                    info:  "A CSV file extracted from a PDF/A-3 or newer attachment"
-                                });
+                                else if (attachment.filename.endsWith('.csv'))
+                                    expandedFiles.push({
+                                        name:  attachment.filename,
+                                        path:  FileInfos[0]?.path,
+                                        type:  "text/csv",
+                                        data:  attachment.content,
+                                        info:  "A CSV file extracted from a PDF/A-3 or newer attachment"
+                                    });
 
-                        });
+                            });
 
-                    } catch (error) {
-                        console.error(`Error extracting PDF/A-3 attachments: ${error}`);
+                        } catch (error) {
+                            console.error(`Error extracting PDF/A-3 attachments: ${error}`);
+                        }
                     }
 
                 }
 
                 //#endregion
 
+                //#region Process compressed files
+
+                else if (fileInfo.type === "application/x-zip-compressed" ||
+                         fileInfo.type === "application/zip"              ||
+                         fileInfo.type === "application/x-bzip2"          ||
+                         fileInfo.type === "application/gzip"             ||
+                         fileInfo.type === "application/x-tar")
+                {
+
+                    const decompressedFiles = await this.decompressFiles([fileInfo]);
+
+                    for (var decompressedFile of decompressedFiles)
+                        expandedFiles.push(decompressedFile);
+
+                }
+
+                //#endregion
+
+                else
+                    expandedFiles.push(fileInfo);
+
             }
         }
-        else
-        {
-            expandedFiles = await this.decompressFiles(FileInfos);
-        }
 
+        //#endregion
 
         //#region Process JSON/XML/text files
 
@@ -589,7 +617,7 @@ export class Chargy {
             // Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
             // conversion translates it to FEFF (UTF-16 BOM)
             if (textContent?.charCodeAt(0) === 0xFEFF)
-                textContent = textContent.substr(1);
+                textContent = textContent.substring(1);
 
             // XML processing...
             if (textContent?.startsWith("<?xml"))
