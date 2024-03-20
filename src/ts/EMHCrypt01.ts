@@ -22,7 +22,7 @@ import * as chargyLib         from './chargyLib'
 
 export interface IEMHMeasurementValue extends chargyInterfaces.IMeasurementValue
 {
-    statusMeter:                string,
+    infoStatus:                 string,
     secondsIndex:               number,
     paginationId:               string,
     logBookIndex:               string
@@ -140,7 +140,7 @@ export class EMHCrypt01 extends ACrypt {
             status:                       chargyInterfaces.VerificationResult.InvalidSignature,
             meterId:                      chargyLib.SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                   0),
             timestamp:                    chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                  10),
-            infoStatus:                   chargyLib.SetHex        (cryptoBuffer, measurementValue.statusMeter,                                                14, false),
+            infoStatus:                   chargyLib.SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                 14, false),
             secondsIndex:                 chargyLib.SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                               15, true),
             paginationId:                 chargyLib.SetHex        (cryptoBuffer, measurementValue.paginationId,                                               19, true),
             obis:                         chargyLib.SetHex        (cryptoBuffer, chargyLib.OBIS2Hex(measurementValue.measurement.obis),                       23, false),
@@ -277,8 +277,8 @@ export class EMHCrypt01 extends ACrypt {
 
             this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                                     result.meterId                                         || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Zeitstempel",              chargyLib.UTC2human(measurementValue.timestamp),                                                result.timestamp                                       || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Status",                   chargyLib.hex2bin(measurementValue.statusMeter) + " (" + measurementValue.statusMeter + " hex)<br /><span class=\"statusInfos\">" +
-                                                        this.DecodeStatus(measurementValue.statusMeter).join("<br />") + "</span>",                     result.infoStatus                                      || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Status",                   chargyLib.hex2bin(measurementValue.infoStatus) + " (" + measurementValue.infoStatus + " hex)<br /><span class=\"statusInfos\">" +
+                                                        this.DecodeStatus(measurementValue.infoStatus).join("<br />") + "</span>",                      result.infoStatus                                      || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                                  result.secondsIndex                                    || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                                    result.paginationId                                    || "",  infoDiv, PlainTextDiv);
             this.CreateLine("OBIS-Kennzahl",            measurementValue.measurement.obis,                                                              result.obis                                            || "",  infoDiv, PlainTextDiv);

@@ -284,7 +284,8 @@ export class Chargy {
         let archiveFound      = false;
         let expandedFileInfos = new Array<chargyInterfaces.IFileInfo>();
 
-        do {
+        do
+        {
 
             archiveFound      = false;
             expandedFileInfos = new Array<chargyInterfaces.IFileInfo>();
@@ -619,17 +620,18 @@ export class Chargy {
             if (textContent?.charCodeAt(0) === 0xFEFF)
                 textContent = textContent.substring(1);
 
-            // XML processing...
+            //#region XML processing...
+
             if (textContent?.startsWith("<?xml"))
             {
                 try
                 {
 
-                    let XMLDocument  = new DOMParser().parseFromString(textContent, "text/xml");
+                    let XMLDocument = new DOMParser().parseFromString(textContent, "text/xml");
 
                     //#region XML namespace found...
 
-                    let xmlns        = XMLDocument.lookupNamespaceURI(null);
+                    let xmlns = XMLDocument.lookupNamespaceURI(null);
                     if (xmlns != null)
                     {
 
@@ -669,10 +671,11 @@ export class Chargy {
                         // XML namespace. Therefore we have to guess the format.
                         processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
-                        if (processedFile.result.status && processedFile.result.status !== chargyInterfaces.SessionVerificationResult.Unvalidated)
+                        if (processedFile.result.status &&
+                            processedFile.result.status !== chargyInterfaces.SessionVerificationResult.Unvalidated)
+                        {
                             processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
-
-                        var xxx = 23;
+                        }
 
                     }
 
@@ -689,17 +692,26 @@ export class Chargy {
                 }
             }
 
-            // OCMF processing
+            //#endregion
+
+            //#region OCMF processing
+
             else if (textContent?.startsWith("OCMF|{"))
                 processedFile.result = await new OCMF(this).tryToParseOCMF2(textContent);
 
-            // ALFEN processing
+            //#endregion
+
+            //#region ALFEN processing
+
             else if (textContent?.startsWith("AP;"))
                 processedFile.result = await new Alfen01(this).tryToParseALFENFormat(textContent, {});
 
-            // Public key processing (PEM format)
+            //#endregion
+
+            //#region Public key processing (PEM format)
+
             else if (textContent?.startsWith("-----BEGIN PUBLIC KEY-----") &&
-                    textContent?.endsWith  ("-----END PUBLIC KEY-----"))
+                     textContent?.endsWith  ("-----END PUBLIC KEY-----"))
             {
 
                 try
@@ -806,7 +818,10 @@ export class Chargy {
 
             }
 
-            // JSON processing
+            //#endregion
+
+            //#region JSON processing
+
             else if (textContent?.startsWith("{") || textContent?.startsWith("["))
             {
                 try
@@ -876,6 +891,9 @@ export class Chargy {
                 }
             }
 
+            //#endregion
+
+
             if (processedFile.result == undefined) {
                 processedFile.result = {
                     status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
@@ -896,23 +914,36 @@ export class Chargy {
         if (processedFiles.length == 1)
         {
 
-            if (chargyInterfaces.IsAChargeTransparencyRecord(processedFiles[0]?.result))
-                return this.processChargeTransparencyRecord(processedFiles[0]!.result);
+            var processedFile = processedFiles[0];
+            if (processedFile)
+            {
 
-            if (chargyInterfaces.IsAPublicKeyLookup(processedFiles[0]?.result))
-                return {
-                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:   this.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
-                    certainty: 0
-                };
+                if (chargyInterfaces.IsAChargeTransparencyRecord(processedFile.result))
+                    return this.processChargeTransparencyRecord(processedFile.result);
 
-            return processedFiles[0]!.result;
+                if (chargyInterfaces.IsAPublicKeyLookup(processedFile.result))
+                    return {
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:    this.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
+                        certainty:  0
+                    };
+
+                // Can only be an ISessionCryptoResult/error message!
+                return processedFile.result;
+
+            }
+
+            return {
+                status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:    this.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
+                certainty:  0
+            };
 
         }
 
         //#endregion
 
-        //#region If multiple CTR had been found => merge them into a single one
+        //#region If multiple CTR had been found => Merge them into a single CTR!
 
         else if (processedFiles.length > 1)
         {
@@ -920,7 +951,7 @@ export class Chargy {
             let mergedCTR:chargyInterfaces.IChargeTransparencyRecord = {
                 "@id":      "",
                 "@context": "",
-                certainty: 0
+                certainty:   0
             };
 
             for (const processedFile of processedFiles)
