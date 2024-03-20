@@ -732,7 +732,7 @@ export class Chargepoint01 {
 
 export interface IChargepointMeasurementValue extends chargyInterfaces.IMeasurementValue
 {
-    infoStatus:                    string,
+    statusMeter:                   string,
     secondsIndex:                  number,
     paginationId:                  string,
     logBookIndex:                  string
@@ -773,34 +773,10 @@ export class ChargePointCrypt01 extends ACrypt {
     // https://www.secg.org/sec2-v2.pdf
 
     constructor(chargy:  Chargy) {
-
         super("ECC secp224k1/secp256r1",
               chargy);
-
     }
 
-
-    GenerateKeyPair()//options?: elliptic.ec.GenKeyPairOptions)
-    {
-        return this.curve256r1.genKeyPair();
-        // privateKey     = keypair.getPrivate();
-        // publicKey      = keypair.getPublic();
-        // privateKeyHEX  = privateKey.toString('hex').toLowerCase();
-        // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
-    }
-
-
-    async SignChargingSession  (chargingSession:         chargyInterfaces.IChargingSession,
-                                privateKey:              any):              Promise<chargyInterfaces.ISessionCryptoResult>
-    {
-
-        return {
-            status:    chargyInterfaces.SessionVerificationResult.UnknownSessionFormat,
-            message:   this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
-            certainty: 0
-        }
-
-    }
 
     async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
@@ -1126,83 +1102,6 @@ export class ChargePointCrypt01 extends ACrypt {
                 certainty: 0
             }
         }
-
-    }
-
-
-    async SignMeasurement  (measurementValue:  IChargepointMeasurementValue,
-                            privateKey:        any): Promise<IChargePointCrypt01Result>
-    {
-
-        if (measurementValue.measurement                 === undefined ||
-            measurementValue.measurement.chargingSession === undefined)
-        {
-            return {
-                status: chargyInterfaces.VerificationResult.InvalidMeasurement
-            }
-        }
-
-        var buffer                       = new ArrayBuffer(320);
-        var cryptoBuffer                 = new DataView(buffer);
-
-        var cryptoResult:IChargePointCrypt01Result = {
-            status:                       chargyInterfaces.VerificationResult.InvalidSignature,
-            meterId:                      chargyLib.SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
-            timestamp:                    chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
-            infoStatus:                   chargyLib.SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
-            secondsIndex:                 chargyLib.SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
-            paginationId:                 chargyLib.SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
-            obis:                         chargyLib.SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
-            unitEncoded:                  chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-            scale:                        chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
-            value:                        chargyLib.SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
-            logBookIndex:                 chargyLib.SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
-            authorizationStart:           chargyLib.SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
-            authorizationStartTimestamp:  chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
-        };
-
-        // Only the first 24 bytes/192 bits are used!
-        cryptoResult.sha256value  = (await chargyLib.sha256(cryptoBuffer)).substring(0, 48);
-
-        // cryptoResult.publicKey    = publicKey.encode('hex').
-        //                                       toLowerCase();
-
-        const signature           = this.curve256r1.keyFromPrivate(privateKey.toString('hex')).
-                                                    sign(cryptoResult.sha256value);
-
-        switch (measurementValue.measurement.signatureInfos.format)
-        {
-
-            case chargyInterfaces.SignatureFormats.DER:
-
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
-                    value:      signature.toDER('hex')
-                };
-
-                return cryptoResult;
-
-
-            case chargyInterfaces.SignatureFormats.rs:
-
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
-                    r:          signature.r,
-                    s:          signature.s
-                };
-
-                return cryptoResult;
-
-
-            //default:
-
-
-        }
-
-        cryptoResult.status = chargyInterfaces.VerificationResult.ValidSignature;
-        return cryptoResult;
 
     }
 

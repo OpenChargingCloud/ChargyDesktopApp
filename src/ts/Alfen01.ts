@@ -142,23 +142,21 @@ export class Alfen01  {
                 }
 
                 // Everything is Little Endian
-                let AdapterId            = this.bufferToHex(DataSet.slice( 0, 10));                                        // 0a 54 65 73 74 44 65 76 00 09
-                let AdapterFWVersion     = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(10, 14)) as any);  // ASCII: 76 30 31 34 (v014)
-                let AdapterFWChecksum    = this.bufferToHex(DataSet.slice(14, 16));                                        // B9 79
-                let MeterId              = this.bufferToHex(DataSet.slice(16, 26));                                        // 0A 01 44 5A 47 00 33 00 25 02
-                let MeterStatus          = this.bufferToHex(DataSet.slice(26, 28), true);                                  // 00 00
-                let AdapterStatus        = this.bufferToHex(DataSet.slice(28, 30), true);                                  // 00 10
-                let SecondIndex          = new DataView(DataSet.slice(30, 34), 0).getInt32(0, true);                       // 28 71 9A 02 => 43675944 dec
-                let Timestamp            = new Date(new DataView(DataSet.slice(34, 38), 0).getInt32(0, true) * 1000).      // UNIX timestamp: 91 91 3D 5C => 1547538833 => 2019-01-15T07:53:53Z
-                                                  toISOString();
-                let ObisId               = this.bufferToHex(DataSet.slice(38, 44));                                        // 01 00 01 08 00 ff
-                let UnitEncoded          = this.bufferToNumber(DataSet.slice(44, 45));                                     // 1e => 30 => Wh
-                let Scalar               = this.bufferToHex(DataSet.slice(45, 46));                                        // 00
-                let Value                = new Number(new DataView(DataSet.slice(46, 54), 0).getBigInt64(0, true));        // 73 29 00 00 00 00 00 00 => 10611 Wh so 10,611 KWh
-                let UID                  = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(54, 74)) as any).  // ASCII: 30 35 38 39 38 41 42 42 00 00 00 00 00 00 00 00 00 00 00 00 => UID: 05 89 8A BB
-                                                  replace(/\0.*$/g, '');
-                let InternalSessionId    = new DataView(DataSet.slice(74, 78), 0).getInt32(0, true)                        // 81 01 00 00 => 385(dec)
-                let Paging               = new DataView(DataSet.slice(78, 82), 0).getInt32(0, true);                       // 47 02 00 00 => 583(dec)
+                let AdapterId            = this.bufferToHex(DataSet.slice( 0, 10));                                                              // 0a 54 65 73 74 44 65 76 00 09
+                let AdapterFWVersion     = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(10, 14)) as any);                        // ASCII: 76 30 31 34 (v014)
+                let AdapterFWChecksum    = this.bufferToHex(DataSet.slice(14, 16));                                                              // B9 79
+                let MeterId              = this.bufferToHex(DataSet.slice(16, 26));                                                              // 0A 01 44 5A 47 00 33 00 25 02
+                let MeterStatus          = this.bufferToHex(DataSet.slice(26, 28), true);                                                        // 00 00
+                let AdapterStatus        = this.bufferToHex(DataSet.slice(28, 30), true);                                                        // 00 10
+                let SecondIndex          = new DataView(DataSet.slice(30, 34), 0).getInt32(0, true);                                             // 28 71 9A 02 => 43675944 dec
+                let Timestamp            = new Date(new DataView(DataSet.slice(34, 38), 0).getInt32(0, true) * 1000).toISOString();              // UNIX timestamp: 91 91 3D 5C => 1547538833 => 2019-01-15T07:53:53Z
+                let ObisId               = this.bufferToHex(DataSet.slice(38, 44));                                                              // 01 00 01 08 00 ff
+                let UnitEncoded          = this.bufferToNumber(DataSet.slice(44, 45));                                                           // 1e => 30 => Wh
+                let Scalar               = this.bufferToHex(DataSet.slice(45, 46));                                                              // 00
+                let Value                = new Number(new DataView(DataSet.slice(46, 54), 0).getBigInt64(0, true));                              // 73 29 00 00 00 00 00 00 => 10611 Wh so 10,611 KWh
+                let UID                  = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(54, 74)) as any).replace(/\0.*$/g, '');  // ASCII: 30 35 38 39 38 41 42 42 00 00 00 00 00 00 00 00 00 00 00 00 => UID: 05 89 8A BB
+                let InternalSessionId    = new DataView(DataSet.slice(74, 78), 0).getInt32(0, true)                                              // 81 01 00 00 => 385(dec)
+                let Paging               = new DataView(DataSet.slice(78, 82), 0).getInt32(0, true);                                             // 47 02 00 00 => 583(dec)
 
 
                 if (common.AdapterId === "")
@@ -220,7 +218,7 @@ export class Alfen01  {
                 else if (Scalar !== common.Scalar)
                     return {
                         status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement scaler!",
+                        message:  "Inconsistent measurement scalar!",
                         certainty: 0
                     };
 
@@ -275,7 +273,7 @@ export class Alfen01  {
             var chargingStationId  = ContainerInfos.ChargingStationId ?? "DE*GEF*STATION*CHARGY*1";
             var n                  = common.dataSets.length-1;
 
-            var _CTR: any = { //IChargeTransparencyRecord = {
+            var _CTR: IAlfenChargeTransparencyRecord = {
 
                  "@id":              ContainerInfos.chargingSession?.["@id"] ?? common.InternalSessionId,
                  "@context":         "https://open.charging.cloud/contexts/CTR+json",
@@ -284,27 +282,25 @@ export class Alfen01  {
                  "end":              common.dataSets[n]["Timestamp"],
 
                  "description": {
-                     "de":           "Alle Ladevorgänge"
+                     "de":           "Alle Ladevorgänge",
+                     "en":           "All charging sessions"
                  },
 
                  "contract": {
                      "@id":          common.UID,
-                     //"type":         CTRArray[0]["contract"]["type"],
-                     "username":     "",
-                     "email":        ""
                  },
 
                  "chargingPools": [
                      {
-                         "@id":                      "DE*GEF*POOL*1",
-                         "description":              { "de": "GraphDefined Virtual Charging Pool - CI-Tests Pool 1" },
+                         "@id":                      "DE*GEF*POOL*CHARGY*1",
+                         "description":              { "en": "GraphDefined CHARGY Virtual Charging Pool 1" },
 
                          "chargingStations": [
                              {
                                  "@id":                      chargingStationId,
                                  "description":              ContainerInfos.chargingStation?.description,
                                  "manufacturer":             ContainerInfos.chargingStation?.manufacturer,
-                                 "type":                     ContainerInfos.chargingStation?.type,
+                                 "model":                    ContainerInfos.chargingStation?.type,
                                  "serialNumber":             ContainerInfos.chargingStation?.serialNumber,
                                  "firmwareVersion":          ContainerInfos.chargingStation?.softwareVersion,
                                  "legalCompliance":          ContainerInfos.chargingStation?.legalCompliance,
@@ -326,15 +322,15 @@ export class Alfen01  {
                                                  "model":                    ContainerInfos.energyMeter?.model,
                                                  "modelURL":                 ContainerInfos.energyMeter?.modelURL,
                                                  "hardwareVersion":          ContainerInfos.energyMeter?.hardwareVersion,
-                                                 "firmwareVersion":          ContainerInfos.energyMeter?.firmwareVersion,
-            //                                     "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+                                                 "firmwareVersion":          common.AdapterFWVersion  ?? ContainerInfos.energyMeter?.firmwareVersion,
+                                                 "firmwareChecksum":         common.AdapterFWChecksum ?? ContainerInfos.energyMeter?.firmwareChecksum,
+                                                 "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/AlfenCrypt01",
                                                  "publicKeys": [
                                                      {
-                                                         "value":            common.PublicKey,
-                                                         "algorithm":        common.PublicKeyFormat,
-                                                         "format":           "DER",
-                                                         "encoding":         "base32"
-                                                      //   "signatures":       CTRArray[0]["meterInfo"]["publicKeySignatures"]
+                                                         "value":                    common.PublicKey,
+                                                         "algorithm":                common.PublicKeyFormat,
+                                                         "format":                   "DER",
+                                                         "encoding":                 "base32"
                                                      }
                                                  ]
                                              }
@@ -350,19 +346,15 @@ export class Alfen01  {
 
                      {
 
-                         "@id":                          ContainerInfos.chargingSession?.["@id"] ?? common.InternalSessionId,
+                         "@id":                          ContainerInfos.chargingSession?.["@id"] ?? common.InternalSessionId.toString(),
                          "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/AlfenCrypt01+json",
                          "begin":                        common.dataSets[0]["Timestamp"],
                          "end":                          common.dataSets[n]["Timestamp"],
-                         "internalSessionId":            common.InternalSessionId,
+                         "internalSessionId":            common.InternalSessionId.toString(),
                          "EVSEId":                       evseId,
 
                          "authorizationStart": {
                              "@id":                      common.UID,
-                            //  "type":                     CTRArray[0]["contract"]["type"],
-                            //  "timestamp":                this.moment.unix(CTRArray[0]["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
-                            //                                               CTRArray[0]["contract"]["timestampLocal"]["localOffset"] +
-                            //                                               CTRArray[0]["contract"]["timestampLocal"]["seasonOffset"]).format(),
                          },
 
                          "costs":                        ContainerInfos.chargingCosts,
@@ -375,20 +367,18 @@ export class Alfen01  {
                                  "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/AlfenCrypt03+json",
                                  "name":                 chargyLib.OBIS2MeasurementName(chargyLib.parseOBIS(common.ObisId)),
                                  "obis":                 chargyLib.parseOBIS(common.ObisId),
-            //                     "unit":                 CTRArray[0]["measuredValue"]["unit"],
                                  "unitEncoded":          common.UnitEncoded,
-            //                     "valueType":            CTRArray[0]["measuredValue"]["valueType"],
-                                 "scale":                common.Scalar,
+                                 "scale":                parseFloat(common.Scalar),
 
-                                 "adapterId":            common.AdapterId,
+                                 "adapterId":            common.AdapterId,   // ToDo: Add adapterId to the measurement?!!??
                                  "adapterFWVersion":     common.AdapterFWVersion,
                                  "adapterFWChecksum":    common.AdapterFWChecksum,
 
                                  "signatureInfos": {
-                                     "hash":                 "SHA256",
-                                     "algorithm":            "ECC",
+                                     "hash":                 chargyInterfaces.CryptoHashAlgorithms.SHA256,
+                                     "algorithm":            chargyInterfaces.CryptoAlgorithms.ECC,
                                      "curve":                common.PublicKeyFormat,
-                                     "format":               "rs",
+                                     "format":               chargyInterfaces.SignatureFormats.rs,
                                      "encoding":             "base32"
                                  },
 
@@ -400,28 +390,31 @@ export class Alfen01  {
 
                      }
 
-                 ]
+                 ],
+
+                 "certainty":        1
 
             };
 
             for (var dataSet of common.dataSets)
             {
-                 _CTR["chargingSessions"][0]["measurements"][0]["values"].push(
-                                         {
-                                             "timestamp":      dataSet["Timestamp"],
-                                             "value":          dataSet["Value"],
-                                             "statusMeter":    dataSet["StatusMeter"],
-                                             "statusAdapter":  dataSet["StatusAdapter"],
-                                             "secondsIndex":   dataSet["SecondIndex"],
-                                             "paginationId":   dataSet["Paging"],
-                                             "signatures": [
-                                                 {
-                                                     "r":          dataSet["Signature"].substring(0, 48),
-                                                     "s":          dataSet["Signature"].substring(48)
-                                                 }
-                                             ]
-                                         }
-                 );
+                if (_CTR["chargingSessions"]?.[0]?.["measurements"]?.[0]?.["values"] != null)
+                    _CTR["chargingSessions"][0]["measurements"][0]["values"].push(
+                        {
+                            "timestamp":      dataSet["Timestamp"],
+                            "value":          dataSet["Value"],
+                            "statusMeter":    dataSet["StatusMeter"],
+                            "statusAdapter":  dataSet["StatusAdapter"],
+                            "secondsIndex":   dataSet["SecondIndex"],
+                            "paginationId":   dataSet["Paging"],
+                            "signatures": [
+                                {
+                                    "r":  dataSet["Signature"].substring(0, 48),
+                                    "s":  dataSet["Signature"].substring(48)
+                                }
+                            ]
+                        }
+                    );
             }
 
 
@@ -491,37 +484,28 @@ export interface IAlfenCrypt01Result extends chargyInterfaces.ICryptoResult
 }
 
 
+export interface IAlfenChargingSession extends chargyInterfaces.IChargingSession
+{
+    internalSessionId?:         string;
+    meter?:                     chargyInterfaces.IMeter;
+    measurements:               Array<IAlfenMeasurement>;
+}
+
+export interface IAlfenChargeTransparencyRecord extends chargyInterfaces.IChargeTransparencyRecord
+{
+    chargingSessions?:          Array<IAlfenChargingSession>;
+}
+
+
+
+
 export class AlfenCrypt01 extends ACrypt {
 
     constructor(chargy:  Chargy) {
-
         super("Alfen",
               chargy);
-
     }
 
-
-    GenerateKeyPair()//options?: elliptic.ec.GenKeyPairOptions)
-    {
-        return this.curve192r1.genKeyPair();
-        // privateKey     = keypair.getPrivate();
-        // publicKey      = keypair.getPublic();
-        // privateKeyHEX  = privateKey.toString('hex').toLowerCase();
-        // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
-    }
-
-
-    async SignChargingSession  (chargingSession:         chargyInterfaces.IChargingSession,
-                                privateKey:              any):              Promise<chargyInterfaces.ISessionCryptoResult>
-    {
-
-        return {
-            status:    chargyInterfaces.SessionVerificationResult.UnknownSessionFormat,
-            message:   this.chargy.GetLocalizedMessage("UnknownSessionFormat"),
-            certainty: 0
-        }
-
-    }
 
     async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
@@ -574,73 +558,6 @@ export class AlfenCrypt01 extends ACrypt {
 
     }
 
-
-    async SignMeasurement  (measurementValue:  IAlfenMeasurementValue,
-                            privateKey:        any): Promise<IAlfenCrypt01Result>
-    {
-
-        var buffer                       = new ArrayBuffer(320);
-        var cryptoBuffer                 = new DataView(buffer);
-
-        var cryptoResult:IAlfenCrypt01Result = {
-            status:                       chargyInterfaces.VerificationResult.InvalidSignature,
-            meterId:                      chargyLib.SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,              0),
-            timestamp:                    chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                             10),
-            statusMeter:                  chargyLib.SetHex        (cryptoBuffer, measurementValue.statusMeter,                           14, false),
-            statusAdapter:                chargyLib.SetHex        (cryptoBuffer, measurementValue.statusAdapter,                         15, false),
-            secondsIndex:                 chargyLib.SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                          16, true),
-            paging:                       chargyLib.SetUInt32     (cryptoBuffer, measurementValue.paginationId,                          19, true),
-            obisId:                       chargyLib.SetHex        (cryptoBuffer, chargyLib.OBIS2Hex(measurementValue.measurement.obis),  23, false),
-            unitEncoded:                  chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,               29),
-            scalar:                       chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                     30),
-            value:                        chargyLib.SetUInt64     (cryptoBuffer, measurementValue.value,                                 31, true)
-        };
-
-        // Only the first 24 bytes/192 bits are used!
-        cryptoResult.hashValue  = (await chargyLib.sha256(cryptoBuffer)).substring(0, 48);
-
-        // cryptoResult.publicKey    = publicKey.encode('hex').
-        //                                       toLowerCase();
-
-        const signature           = this.curve192r1.keyFromPrivate(privateKey.toString('hex')).
-                                                    sign(cryptoResult.hashValue);
-
-        switch (measurementValue.measurement.signatureInfos.format)
-        {
-
-            case chargyInterfaces.SignatureFormats.DER:
-
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
-                    value:      signature.toDER('hex')
-                };
-
-                return cryptoResult;
-
-
-            case chargyInterfaces.SignatureFormats.rs:
-
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
-                    r:          signature.r,
-                    s:          signature.s
-                };
-
-                return cryptoResult;
-
-
-            //default:
-
-
-        }
-
-        cryptoResult.status = chargyInterfaces.VerificationResult.ValidSignature;
-        return cryptoResult;
-
-    }
-
     async VerifyMeasurement(measurementValue: IAlfenMeasurementValue): Promise<IAlfenCrypt01Result>
     {
 
@@ -667,7 +584,7 @@ export class AlfenCrypt01 extends ACrypt {
             secondsIndex:                 chargyLib.SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                                    30, true),
             timestamp:                    chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                       34, false),
             obisId:                       chargyLib.SetHex        (cryptoBuffer, chargyLib.OBIS2Hex(measurementValue.measurement.obis),                            38, false),
-            unitEncoded:                  chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                         44),
+            unitEncoded:                  chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded ?? 0,                                    44),
             scalar:                       chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                               45),
             value:                        chargyLib.SetUInt64     (cryptoBuffer, measurementValue.value,                                                           46, true),
             uid:                          chargyLib.SetText       (cryptoBuffer, (measurementValue.measurement.chargingSession?.authorizationStart["@id"] ?? ""),  54),
@@ -684,8 +601,8 @@ export class AlfenCrypt01 extends ACrypt {
             {
 
                 cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
+                    algorithm:  measurementValue.measurement.signatureInfos!.algorithm,
+                    format:     measurementValue.measurement.signatureInfos!.format,
                     r:          signatureExpected.r,
                     s:          signatureExpected.s
                 };
@@ -841,7 +758,7 @@ export class AlfenCrypt01 extends ACrypt {
             this.CreateLine("Sekundenindex",               measurementValue.secondsIndex,                                                            result.secondsIndex           || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Zeitstempel",                 chargyLib.UTC2human(measurementValue.timestamp),                                          result.timestamp              || "",  infoDiv, PlainTextDiv);
             this.CreateLine("OBIS-Kennzahl",               measurementValue.measurement.obis,                                                        result.obisId                 || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Einheit (codiert)",           measurementValue.measurement.unitEncoded,                                                 result.unitEncoded            || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Einheit (codiert)",           measurementValue.measurement.unitEncoded ?? 0,                                            result.unitEncoded            || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Skalierung",                  measurementValue.measurement.scale,                                                       result.scalar                 || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Messwert",                    measurementValue.value + " Wh",                                                           result.value                  || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Autorisierung",              (measurementValue.measurement.chargingSession?.authorizationStart["@id"] ?? "") + " hex",  chargyLib.pad(result.uid, 20) || "",  infoDiv, PlainTextDiv);
@@ -915,13 +832,15 @@ export class AlfenCrypt01 extends ACrypt {
                         const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
 
                         if (signatureDiv != null)
-                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession?.chargingStation,
-                                                                                                    measurementValue.measurement.chargingSession?.EVSE,
-                                                                                                    //@ts-ignore
-                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                                                    //@ts-ignore
-                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
-                                                                                                    signature);
+                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(
+                                                               measurementValue.measurement.chargingSession?.chargingStation,
+                                                               measurementValue.measurement.chargingSession?.EVSE,
+                                                               //@ts-ignore
+                                                               measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                               //@ts-ignore
+                                                               measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                               signature
+                                                           );
 
                     }
                     catch (exception)
@@ -947,15 +866,15 @@ export class AlfenCrypt01 extends ACrypt {
                 SignatureExpectedDiv.parentElement             != undefined &&
                 SignatureExpectedDiv.parentElement.children[0] != undefined)
             {
-                SignatureExpectedDiv.parentElement.children[0].innerHTML  = "Erwartete Signatur (" + (result.signature.format || "") + ", hex)";
+                SignatureExpectedDiv.parentElement.children[0].innerHTML = "Erwartete Signatur (" + (result.signature.format || "") + ", hex)";
             }
 
             if (result.signature.r && result.signature.s)
-                SignatureExpectedDiv.innerHTML                            = "r: " + result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") + "<br />" +
-                                                                            "s: " + result.signature.s.toLowerCase().match(/.{1,8}/g)?.join(" ");
+                SignatureExpectedDiv.innerHTML = "r: " + result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") + "<br />" +
+                                                 "s: " + result.signature.s.toLowerCase().match(/.{1,8}/g)?.join(" ");
 
             else if (result.signature.value)
-                SignatureExpectedDiv.innerHTML                            = result.signature.value.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
+                SignatureExpectedDiv.innerHTML = result.signature.value.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
 
         }
 

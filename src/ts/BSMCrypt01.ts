@@ -110,10 +110,8 @@ export class BSMCrypt01 extends ACrypt {
     readonly curve = new this.chargy.elliptic.ec('p256');
 
     constructor(chargy: Chargy) {
-
         super("ECC secp256r1",
               chargy);
-
     }
 
 
@@ -915,28 +913,7 @@ export class BSMCrypt01 extends ACrypt {
     }
 
 
-    GenerateKeyPair()//options?: elliptic.ec.GenKeyPairOptions)
-    {
-        return this.curve.genKeyPair();
-        // privateKey     = keypair.getPrivate();
-        // publicKey      = keypair.getPublic();
-        // privateKeyHEX  = privateKey.toString('hex').toLowerCase();
-        // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
-    }
-
-
-    async SignChargingSession  (chargingSession:         chargyInterfaces.IChargingSession,
-                                privateKey:              any):              Promise<chargyInterfaces.ISessionCryptoResult>
-    {
-
-        return {
-            status:    chargyInterfaces.SessionVerificationResult.UnknownSessionFormat,
-            certainty: 0
-        }
-
-    }
-
-    async VerifyChargingSession(chargingSession:         chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         var sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
@@ -986,93 +963,7 @@ export class BSMCrypt01 extends ACrypt {
 
     }
 
-
-    async SignMeasurement  (measurementValue:  IBSMMeasurementValue,
-                            privateKey:        any): Promise<IBSMCrypt01Result>
-    {
-
-        let MA1_length    = new TextEncoder().encode(measurementValue.MA1  ).length + 4;
-        let Meta1_length  = new TextEncoder().encode(measurementValue.Meta1).length + 4;
-        let Meta2_length  = new TextEncoder().encode(measurementValue.Meta2).length + 4;
-        let Meta3_length  = new TextEncoder().encode(measurementValue.Meta3).length + 4;
-        let requiredSize  = 13*6 + MA1_length + Meta1_length + Meta2_length + Meta3_length;
-        let buffer        = new ArrayBuffer(requiredSize);
-        var cryptoBuffer  = new DataView(buffer);
-
-        // TODO: Factor out creating IBSMCrypt01Result from IBSMMeasurementValue.
-        //
-        // TODO: Use units and scale factors from input data instead of making
-        // assumptions about them.
-        var cryptoResult:IBSMCrypt01Result = {
-            status:        chargyInterfaces.VerificationResult.InvalidSignature,
-            ArraySize:     requiredSize,
-            Typ:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.Typ,          0, 255,   0),
-            RCR:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.RCR,          measurementValue.RCR_SF,       30,   6),
-            TotWhImp:      chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.TotWhImp,     measurementValue.TotWhImp_SF,  30,  12),
-            W:             chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.W,            measurementValue.W_SF,         27,  18),
-            MA1:           chargyLib.SetText_withLength(cryptoBuffer, measurementValue.MA1,                   24),
-            RCnt:          chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.RCnt,         0, 255,  24 + MA1_length),
-            OS:            chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.OS,           0,   7,  30 + MA1_length),
-            Epoch:         chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.Epoch,        0,   7,  36 + MA1_length),
-            TZO:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.TZO,          0,   6,  42 + MA1_length),
-            EpochSetCnt:   chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.EpochSetCnt,  0, 255,  48 + MA1_length),
-            EpochSetOS:    chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.EpochSetOS,   0,   7,  54 + MA1_length),
-            DI:            chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.DI,           0, 255,  60 + MA1_length),
-            DO:            chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.DO,           0, 255,  66 + MA1_length),
-            Meta1:         chargyLib.SetText_withLength(cryptoBuffer, measurementValue.Meta1,                 72 + MA1_length),
-            Meta2:         chargyLib.SetText_withLength(cryptoBuffer, measurementValue.Meta2,                 72 + MA1_length + Meta1_length),
-            Meta3:         chargyLib.SetText_withLength(cryptoBuffer, measurementValue.Meta3,                 72 + MA1_length + Meta1_length + Meta2_length),
-            Evt:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.Evt,          0, 255,  72 + MA1_length + Meta1_length + Meta2_length + Meta3_length),
-        };
-
-        // Only the first 24 bytes/192 bits are used!
-        cryptoResult.sha256value  = (await chargyLib.sha256(cryptoBuffer)).substring(0, 48);
-
-        // cryptoResult.publicKey    = publicKey.encode('hex').
-        //                                       toLowerCase();
-
-        const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
-                                               sign(cryptoResult.sha256value);
-
-        switch (measurementValue.measurement!.signatureInfos.format)
-        {
-
-            case chargyInterfaces.SignatureFormats.DER:
-
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement!.signatureInfos.algorithm,
-                    format:     measurementValue.measurement!.signatureInfos.format,
-                    value:      signature.toDER('hex')
-                };
-
-                return cryptoResult;
-
-
-            case chargyInterfaces.SignatureFormats.rs:
-
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement!.signatureInfos.algorithm,
-                    format:     measurementValue.measurement!.signatureInfos.format,
-                    r:          signature.r,
-                    s:          signature.s
-                };
-
-                return cryptoResult;
-
-
-            //default:
-
-
-        }
-
-        cryptoResult.status = chargyInterfaces.VerificationResult.ValidSignature;
-        return cryptoResult;
-
-
-
-    }
-
-    async VerifyMeasurement(measurementValue:  IBSMMeasurementValue): Promise<IBSMCrypt01Result>
+    async VerifyMeasurement(measurementValue: IBSMMeasurementValue): Promise<IBSMCrypt01Result>
     {
 
         function setResult(verificationResult: chargyInterfaces.VerificationResult)
@@ -1201,8 +1092,8 @@ export class BSMCrypt01 extends ACrypt {
                 const meter = this.chargy.GetMeter(measurementValue.measurement!.energyMeterId);
 
                 cryptoResult.signature = {
-                    algorithm:  (measurementValue.measurement!.signatureInfos ?? meter?.signatureInfos)?.algorithm,
-                    format:     (measurementValue.measurement!.signatureInfos ?? meter?.signatureInfos)?.format,
+                    algorithm:  (measurementValue.measurement!.signatureInfos ?? meter?.signatureInfos)?.algorithm!,
+                    format:     (measurementValue.measurement!.signatureInfos ?? meter?.signatureInfos)?.format!,
                     r:          signatureExpected.r,
                     s:          signatureExpected.s
                 };

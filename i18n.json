@@ -425,6 +425,11 @@
         "en": "Serial Number"
     },
 
+    "Hardware Version": {
+        "de": "Hardware-Version",
+        "en": "Hardware Version"
+    },
+
     "Firmware Version": {
         "de": "Firmware-Version",
         "en": "Firmware Version"

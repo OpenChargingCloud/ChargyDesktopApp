@@ -226,6 +226,7 @@ export class ChargyApp {
         {
             (this.openSourceLibsDiv.querySelector("#elliptic")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["elliptic"]?.               replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#momentJS")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["moment"]?.                 replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#pdfjsdist")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["pdfjs-dist"]?.             replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#decompress")             as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress"]?.             replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#decompressBZIP2")        as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress-bzip2"]?.       replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#decompressGZ")           as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decompress-gz"]?.          replace(/[^0-9\.]/g, "");
@@ -1299,6 +1300,7 @@ export class ChargyApp {
                         loadedFiles.push({
                                        "name":  filename.name,
                                        "path":  filename.path,
+                                       "type":  filename.type,
                                        "data":  fs.readFileSync((filename.path ?? filename.name).replace("file://", ""))
                                     });
 
@@ -1913,8 +1915,14 @@ export class ChargyApp {
 
                         if (chargingSession.EVSEId || chargingSession.EVSE) {
 
-                            if (chargingSession.EVSE == null || typeof chargingSession.EVSE !== 'object')
-                                chargingSession.EVSE = this.chargy.GetEVSE(chargingSession.EVSEId);
+                            // if (chargingSession.EVSE == null || typeof chargingSession.EVSE !== 'object')
+                            //     chargingSession.EVSE = this.chargy.GetEVSE(chargingSession.EVSEId);
+                            if (!chargingSession.EVSE)
+                            {
+                                const evse = this.chargy.GetEVSE(chargingSession.EVSEId);
+                                if (evse)
+                                    chargingSession.EVSE = evse;
+                            }
 
                             chargingStationDiv.classList.add("EVSE");
                             chargingStationDiv.innerHTML      = (chargingSession.EVSE   != null && chargingSession.EVSE.description != null
@@ -1943,10 +1951,16 @@ export class ChargyApp {
 
                         else if (chargingSession.chargingStationId || chargingSession.chargingStation) {
 
-                            if (chargingSession.chargingStation == null || chargingSession.chargingStation == undefined || typeof chargingSession.chargingStation !== 'object')
-                                chargingSession.chargingStation = this.chargy.GetChargingStation(chargingSession.chargingStationId ?? "");
+                            // if (chargingSession.chargingStation == null || chargingSession.chargingStation == undefined || typeof chargingSession.chargingStation !== 'object')
+                            //     chargingSession.chargingStation = this.chargy.GetChargingStation(chargingSession.chargingStationId ?? "");
+                            if (!chargingSession.chargingStation)
+                            {
+                                const station = this.chargy.GetChargingStation(chargingSession.chargingStationId ?? "");
+                                if (station)
+                                    chargingSession.chargingStation = station;
+                            }
 
-                            if (chargingSession.chargingStation != null)
+                            if (chargingSession.chargingStation)
                             {
 
                                 chargingStationDiv.classList.add("chargingStation");
@@ -1968,10 +1982,16 @@ export class ChargyApp {
 
                         else if (chargingSession.chargingPoolId || chargingSession.chargingPool) {
 
-                            if (chargingSession.chargingPool == null || chargingSession.chargingPool == undefined || typeof chargingSession.chargingPool !== 'object')
-                                chargingSession.chargingPool = this.chargy.GetChargingPool(chargingSession.chargingPoolId ?? "");
+                            // if (chargingSession.chargingPool == null || chargingSession.chargingPool == undefined || typeof chargingSession.chargingPool !== 'object')
+                            //     chargingSession.chargingPool = this.chargy.GetChargingPool(chargingSession.chargingPoolId ?? "");
+                            if (!chargingSession.chargingPool)
+                            {
+                                const pool = this.chargy.GetChargingPool(chargingSession.chargingPoolId ?? "");
+                                if (pool)
+                                    chargingSession.chargingPool = pool;
+                            }
 
-                            if (chargingSession.chargingPool != null)
+                            if (chargingSession.chargingPool)
                             {
 
                                 chargingStationDiv.classList.add("chargingPool");
@@ -2444,28 +2464,28 @@ export class ChargyApp {
                                                  this.chargy.GetLocalizedMessage("Serial Number"),
                                                  measurement.energyMeterId);
 
-                        if (meter.manufacturer?.length > 0)
+                        if (meter.manufacturer && meter.manufacturer.length > 0)
                             chargyLib.CreateDiv2(energyMeterInfosDiv, "meterManufacturer",
                                                  this.chargy.GetLocalizedMessage("Manufacturer"),
                                                  meter.manufacturerURL && meter.manufacturerURL.length > 0
                                                      ? "<a href=\"javascript:OpenLink('" + meter.manufacturerURL + "')\">" + meter.manufacturer + "</a>"
                                                      : meter.manufacturer);
 
-                        if (meter.model?.length > 0)
+                        if (meter.model && meter.model.length > 0)
                             chargyLib.CreateDiv2(energyMeterInfosDiv, "meterModel",
                                                  this.chargy.GetLocalizedMessage("Model"),
-                                                 meter.modelURL != undefined && meter.modelURL?.length > 0
+                                                 meter.modelURL && meter.modelURL.length > 0
                                                      ? "<a href=\"javascript:OpenLink('" + meter.modelURL + "')\">" + meter.model + "</a>"
                                                      : meter.model);
 
-                        if (meter.hardwareVersion && meter.hardwareVersion?.length > 0)
+                        if (meter.hardwareVersion && meter.hardwareVersion.length > 0)
                             chargyLib.CreateDiv2(energyMeterInfosDiv, "meterHardwareVersion",
-                                                 "Hardware Version",
+                                                 this.chargy.GetLocalizedMessage("Hardware Version"),
                                                  meter.hardwareVersion);
 
-                        if (meter.firmwareVersion?.length > 0)
+                        if (meter.firmwareVersion && meter.firmwareVersion.length > 0)
                             chargyLib.CreateDiv2(energyMeterInfosDiv, "meterFirmwareVersion",
-                                                 "Firmware Version",
+                                                 this.chargy.GetLocalizedMessage("Firmware Version"),
                                                  meter.firmwareVersion);
 
                     }

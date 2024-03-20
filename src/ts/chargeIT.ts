@@ -913,6 +913,7 @@ export class ChargeIT {
                                             {
                                                 "algorithm":        "secp192r1",
                                                 "format":           "DER",
+                                                "encoding":         "hex",
                                                 "value":            "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
                                                 "signatures": [
                                                     {
@@ -926,6 +927,7 @@ export class ChargeIT {
                                             {
                                                 "algorithm":        "secp256k1",
                                                 "format":           "DER",
+                                                "encoding":         "hex",
                                                 "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
                                                 "signatures":       [ ]
                                             }
@@ -1464,15 +1466,14 @@ export class ChargeIT {
                         "@context":         "https://open.charging.cloud/contexts/CTR+json",
 
                         "description": {
-                            "de":           "Alle Ladevorgänge"
+                            "de":           "Alle Ladevorgänge",
+                            "en":           "All charging sessions"
                         },
 
                         "chargingStationOperators": [
                             {
 
                                 "@id":                      "chargeITmobilityCSO",
-                                "@context":                 "",
-                                //"eMobilityIds":             [ "DE*BDO", "DE*LVF", "+49*822" ],
                                 "description": {
                                     "de":                   "chargeIT mobility GmbH - Charging Station Operator Services"
                                 },
@@ -1485,6 +1486,7 @@ export class ChargeIT {
                                         {
                                             "algorithm":        "secp192r1",
                                             "format":           "DER",
+                                            "encoding":         "hex",
                                             "value":            "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
                                             "signatures": [
                                                 {
@@ -1498,6 +1500,7 @@ export class ChargeIT {
                                         {
                                             "algorithm":        "secp256k1",
                                             "format":           "DER",
+                                            "encoding":         "hex",
                                             "value":            "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
                                             "signatures":       [ ]
                                         }

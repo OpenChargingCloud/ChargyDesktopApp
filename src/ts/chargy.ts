@@ -31,6 +31,7 @@ import { SAFEXML }                            from './SAFE_XML'
 import { XMLContainer }                       from './XMLContainer'
 import * as chargyInterfaces                  from './chargyInterfaces'
 import * as chargyLib                         from './chargyLib'
+import * as pdfjsLib                          from 'pdfjs-dist';
 
 export class Chargy {
 
@@ -495,13 +496,89 @@ export class Chargy {
                 certainty: 0
             }
 
+        let expandedFiles  = new Array<chargyInterfaces.IFileInfo>();
+        let processedFiles = new Array<chargyInterfaces.IExtendedFileInfo>();
+
         //#endregion
 
-        let expandedFiles  = await this.decompressFiles(FileInfos);
+        if (FileInfos && FileInfos.length > 0)
+        {
+            for (var fileInfo of FileInfos)
+            {
+
+                //#region Process PDF/A-3 attachments
+
+                if (fileInfo.type === "application/pdf" || fileInfo.name.endsWith(".pdf"))
+                {
+
+                    const pdfWorkerSrc = require('pdfjs-dist/build/pdf.worker.mjs');
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
+                    const pdfDocument  = await pdfjsLib.getDocument(fileInfo.path!).promise;
+
+                    try
+                    {
+
+                        const attachments = await pdfDocument.getAttachments();
+
+                        Object.keys(attachments).forEach(fileName => {
+
+                            const attachment = attachments[fileName];
+
+                            if (attachment.filename.endsWith('.chargy'))
+                                expandedFiles.push({
+                                    name:  attachment.filename,
+                                    path:  FileInfos[0]?.path,
+                                    type:  "application/chargy",
+                                    data:  attachment.content,
+                                    info:  "A CHARGY file extracted from a PDF/A-3 or newer attachment"
+                                });
+
+                            else if (attachment.filename.endsWith('.xml'))
+                                expandedFiles.push({
+                                    name:  attachment.filename,
+                                    path:  FileInfos[0]?.path,
+                                    type:  "application/xml",
+                                    data:  attachment.content,
+                                    info:  "A XML file extracted from a PDF/A-3 or newer attachment"
+                                });
+
+                            else if (attachment.filename.endsWith('.json'))
+                                expandedFiles.push({
+                                    name:  attachment.filename,
+                                    path:  FileInfos[0]?.path,
+                                    type:  "application/json",
+                                    data:  attachment.content,
+                                    info:  "A JSON file extracted from a PDF/A-3 or newer attachment"
+                                });
+
+                            else if (attachment.filename.endsWith('.csv'))
+                                expandedFiles.push({
+                                    name:  attachment.filename,
+                                    path:  FileInfos[0]?.path,
+                                    type:  "text/csv",
+                                    data:  attachment.content,
+                                    info:  "A CSV file extracted from a PDF/A-3 or newer attachment"
+                                });
+
+                        });
+
+                    } catch (error) {
+                        console.error(`Error extracting PDF/A-3 attachments: ${error}`);
+                    }
+
+                }
+
+                //#endregion
+
+            }
+        }
+        else
+        {
+            expandedFiles = await this.decompressFiles(FileInfos);
+        }
+
 
         //#region Process JSON/XML/text files
-
-        let processedFiles = new Array<chargyInterfaces.IExtendedFileInfo>();
 
         for (let expandedFile of expandedFiles)
         {
@@ -594,7 +671,7 @@ export class Chargy {
 
             // Public key processing (PEM format)
             else if (textContent?.startsWith("-----BEGIN PUBLIC KEY-----") &&
-                     textContent?.endsWith  ("-----END PUBLIC KEY-----"))
+                    textContent?.endsWith  ("-----END PUBLIC KEY-----"))
             {
 
                 try
@@ -605,11 +682,11 @@ export class Chargy {
                                                 : processedFile.name).replace("-publicKey", "");
 
                     const publicKeyPEM   = textContent.replace("-----BEGIN PUBLIC KEY-----", "").
-                                                       replace("-----END PUBLIC KEY-----",   "").
-                                                       split  ('\n').
-                                                       map    ((line) => line.trim()).
-                                                       filter ((line) => line !== '' && !line.startsWith('#')).
-                                                       join   ("");
+                                                    replace("-----END PUBLIC KEY-----",   "").
+                                                    split  ('\n').
+                                                    map    ((line) => line.trim()).
+                                                    filter ((line) => line !== '' && !line.startsWith('#')).
+                                                    join   ("");
 
                     // https://lapo.it/asn1js/ for a visual check...
                     // https://github.com/indutny/asn1.js
@@ -717,8 +794,8 @@ export class Chargy {
                         processedFile.result = JSONContent as chargyInterfaces.IPublicKeyInfo;
 
                     else if (JSONContext.startsWith("https://www.lichtblick.de/contexts/charging-station-json") ||
-                             JSONContext.startsWith("https://www.eneco.com/contexts/charging-station-json")     ||
-                             JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
+                            JSONContext.startsWith("https://www.eneco.com/contexts/charging-station-json")     ||
+                            JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
                     {
                         processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormat(JSONContent);
                     }
@@ -737,7 +814,7 @@ export class Chargy {
                             // At this point we currently only know whether the CTR data format is correct,
                             // but NOT whether the crypto signatures are correct!
                             return chargyInterfaces.isISessionCryptoResult1(ctr);// &&
-                                   //ctr.status === chargyInterfaces.SessionVerificationResult.Unvalidated;
+                                //ctr.status === chargyInterfaces.SessionVerificationResult.Unvalidated;
 
                         });
 

@@ -48,36 +48,11 @@ export class GDFCrypt01 extends ACrypt {
     readonly curve = new this.chargy.elliptic.ec('p256');
 
     constructor(chargy:  Chargy) {
-
         super("ECC secp256r1",
               chargy);
-
     }
 
-
-    GenerateKeyPair()//options?: elliptic.ec.GenKeyPairOptions)
-    {
-        return this.curve.genKeyPair();
-        // privateKey     = keypair.getPrivate();
-        // publicKey      = keypair.getPublic();
-        // privateKeyHEX  = privateKey.toString('hex').toLowerCase();
-        // publicKeyHEX   = publicKey.encode('hex').toLowerCase();
-    }
-
-
-    async SignChargingSession  (chargingSession:         chargyInterfaces.IChargingSession,
-                                privateKey:              any):              Promise<chargyInterfaces.ISessionCryptoResult>
-    {
-
-        return {
-            status:    chargyInterfaces.SessionVerificationResult.UnknownSessionFormat,
-            message:   this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
-            certainty: 0
-        }
-
-    }
-
-    async VerifyChargingSession(chargingSession:         chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         var sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
@@ -128,70 +103,7 @@ export class GDFCrypt01 extends ACrypt {
 
     }
 
-    async SignMeasurement(measurementValue:  IGDFMeasurementValue,
-                          privateKey:        any): Promise<IGDFCrypt01Result>
-    {
-
-        if (measurementValue.measurement                 === undefined ||
-            measurementValue.measurement.chargingSession === undefined)
-        {
-            return {
-                status: chargyInterfaces.VerificationResult.InvalidMeasurement
-            }
-        }
-
-        var buffer                       = new ArrayBuffer(320);
-        var cryptoBuffer                 = new DataView(buffer);
-
-        var cryptoResult:IGDFCrypt01Result = {
-            status:                       chargyInterfaces.VerificationResult.InvalidSignature,
-            meterId:                      chargyLib.SetText     (cryptoBuffer, measurementValue.measurement.energyMeterId,                                   0),
-            timestamp:                    chargyLib.SetTimestamp(cryptoBuffer, measurementValue.timestamp,                                                  10),
-            obis:                         chargyLib.SetHex      (cryptoBuffer, measurementValue.measurement.obis,                                           23, false),
-            unitEncoded:                  chargyLib.SetInt8     (cryptoBuffer, measurementValue.measurement.unitEncoded,                                    29),
-            scale:                        chargyLib.SetInt8     (cryptoBuffer, measurementValue.measurement.scale,                                          30),
-            value:                        chargyLib.SetUInt64   (cryptoBuffer, measurementValue.value,                                                      31, true),
-            authorizationStart:           chargyLib.SetHex      (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],      41),
-            authorizationStartTimestamp:  chargyLib.SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp,  169)
-        };
-
-        cryptoResult.sha256value  = await chargyLib.sha256(cryptoBuffer);
-
-        // cryptoResult.publicKey    = publicKey.encode('hex').
-        //                                       toLowerCase();
-
-        const signature           = this.curve.keyFromPrivate(privateKey.toString('hex')).
-                                               sign(cryptoResult.sha256value);
-
-        switch (measurementValue.measurement.signatureInfos.format)
-        {
-
-            case chargyInterfaces.SignatureFormats.DER:
-
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
-                    value:      signature.toDER('hex')
-                };
-
-                return cryptoResult;
-
-
-            case chargyInterfaces.SignatureFormats.rs:
-
-                cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
-                    r:          signature.r,
-                    s:          signature.s
-                };
-
-                return cryptoResult;
-
-        }
-    }
-
-    async VerifyMeasurement(measurementValue:  IGDFMeasurementValue): Promise<IGDFCrypt01Result>
+    async VerifyMeasurement(measurementValue: IGDFMeasurementValue): Promise<IGDFCrypt01Result>
     {
 
         function setResult(vr: chargyInterfaces.VerificationResult)
@@ -219,7 +131,7 @@ export class GDFCrypt01 extends ACrypt {
             meterId:                      chargyLib.SetText     (cryptoBuffer, measurementValue.measurement.energyMeterId,                                   0),
             timestamp:                    chargyLib.SetTimestamp(cryptoBuffer, measurementValue.timestamp,                                                  10),
             obis:                         chargyLib.SetHex      (cryptoBuffer, measurementValue.measurement.obis,                                           23, false),
-            unitEncoded:                  chargyLib.SetInt8     (cryptoBuffer, measurementValue.measurement.unitEncoded,                                    29),
+            unitEncoded:                  chargyLib.SetInt8     (cryptoBuffer, measurementValue.measurement.unitEncoded ?? 0,                               29),
             scale:                        chargyLib.SetInt8     (cryptoBuffer, measurementValue.measurement.scale,                                          30),
             value:                        chargyLib.SetUInt64   (cryptoBuffer, measurementValue.value,                                                      31, true),
             authorizationStart:           chargyLib.SetHex      (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],      41),
@@ -234,8 +146,8 @@ export class GDFCrypt01 extends ACrypt {
             {
 
                 cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-                    format:     measurementValue.measurement.signatureInfos.format,
+                    algorithm:  measurementValue.measurement.signatureInfos!.algorithm,
+                    format:     measurementValue.measurement.signatureInfos!.format,
                     r:          signatureExpected.r,
                     s:          signatureExpected.s
                 };
@@ -355,7 +267,7 @@ export class GDFCrypt01 extends ACrypt {
             //this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                                  result.secondsIndex                                    || "",  infoDiv, PlainTextDiv);
             //this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                                    result.paginationId                                    || "",  infoDiv, PlainTextDiv);
             this.CreateLine("OBIS-Kennzahl",            measurementValue.measurement.obis,                                                              result.obis                                            || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded,                                                       result.unitEncoded                                     || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded ?? 0,                                                  result.unitEncoded                                     || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                             result.scale                                           || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                                 result.value                                           || "",  infoDiv, PlainTextDiv);
             //this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                                         result.logBookIndex                                    || "",  infoDiv, PlainTextDiv);

@@ -102,7 +102,7 @@ export interface IChargeTransparencyRecord
     "@context":                 string;
     begin?:                     string;
     end?:                       string;
-    description?:               {};
+    description?:               IMultilanguageText;
     contract?:                  IContract;
     chargingStationOperators?:  Array<IChargingStationOperator>;
     chargingPools?:             Array<IChargingPool>;
@@ -130,6 +130,8 @@ export interface IContract
 {
     "@id":                      string;
     "@context"?:                string;
+    description?:               IMultilanguageText;
+    type?:                      string;
     username?:                  string;
     email?:                     string;
 }
@@ -147,6 +149,7 @@ export interface IPublicKeyInfo
     type?:                      string|IOIDInfo;
     algorithm:                  string|IOIDInfo;
     value:                      string;
+    encoding?:                  string;
     signatures?:                Array<IPublicKeysignature>;
     certainty:                  number;
 }
@@ -190,7 +193,8 @@ export interface IChargingStationOperator
 {
     "@id":                      string;
     "@context"?:                string;
-    description?:               {};
+    subCSOIds?:                 Array<string>;
+    description?:               IMultilanguageText;
     contact:                    IContact;
     support:                    ISupport;
     privacy:                    IPrivacy;
@@ -229,12 +233,12 @@ export interface IChargingPool
 {
     "@id":                      string;
     "@context"?:                string;
-    description:                {};
-    address:                    IAddress;
+    description?:               IMultilanguageText;
+    address?:                   IAddress;
     geoLocation?:               IGeoLocation;
-    chargingStationOperator:    IChargingStationOperator;
-    chargingStations:           Array<IChargingStation>;
-    tariffs:                    Array<ITariff>;
+    chargingStationOperator?:   IChargingStationOperator;
+    chargingStations?:          Array<IChargingStation>;
+    tariffs?:                   Array<ITariff>;
     publicKeys?:                Array<IPublicKey>;
 }
 
@@ -242,12 +246,13 @@ export interface IChargingStation
 {
     "@id":                      string;
     "@context"?:                string;
-    description?:               {};
+    description?:               IMultilanguageText;
     manufacturer?:              string;
     manufacturerURL?:           string;
     model?:                     string;
     modelURL?:                  string;
     firmwareVersion?:           string;
+    firmwareChecksum?:          string;
     hardwareVersion?:           string;
     serialNumber?:              string;
     legalCompliance?:           ILegalCompliance;
@@ -267,7 +272,7 @@ export interface IEVSE
 {
     "@id":                      string;
     "@context"?:                string;
-    description?:               {};
+    description?:               IMultilanguageText;
     chargingStation?:           IChargingStation;
     chargingStationId?:         string;
     meters:                     Array<IMeter>;
@@ -280,12 +285,13 @@ export interface IMeter
 {
     "@id":                      string;
     "@context"?:                string;
-    description?:               {};
-    manufacturer:               string;
+    description?:               IMultilanguageText;
+    manufacturer?:              string;
     manufacturerURL?:           string;
-    model:                      string;
+    model?:                     string;
     modelURL?:                  string;
-    firmwareVersion:            string;
+    firmwareVersion?:           string;
+    firmwareChecksum?:          string;
     hardwareVersion?:           string;
     legalCompliance?:           ILegalCompliance;
     chargingStation?:           IChargingStation;
@@ -293,12 +299,13 @@ export interface IMeter
     EVSE?:                      IEVSE;
     EVSEId?:                    string;
     signatureInfos?:            ISignatureInfos;
-    signatureFormat:            string;
+    signatureFormat?:           string;
     publicKeys?:                Array<IPublicKey>;
 }
 
 export interface IConnector {
     type:                       string;
+    looses:                     number;
 }
 
 export interface IConformity {
@@ -330,7 +337,7 @@ export interface IEMobilityProvider
 {
     "@id":                      string;
     "@context"?:                string;
-    description:                {};
+    description:                IMultilanguageText;
     tariffs:                    Array<ITariff>;
     publicKeys?:                Array<IPublicKey>;
 }
@@ -339,14 +346,14 @@ export interface ITariff
 {
     "@id":                      string;
     "@context"?:                string;
-    description:                {};
+    description:                IMultilanguageText;
 }
 
 export interface IMediationService
 {
     "@id":                      string;
     "@context"?:                string;
-    description:                {};
+    description:                IMultilanguageText;
     publicKeys?:                Array<IPublicKey>;
 }
 
@@ -360,20 +367,20 @@ export interface IChargingSession
     end?:                       string;     // to allow still running sessions!
     internalSessionId?:         string;
     chargingProductRelevance?:  IChargingProductRelevance,
-    description?:               {};
+    description?:               IMultilanguageText;
     chargingStationOperatorId?: string;
-    chargingStationOperator?:   IChargingStationOperator|null;
+    chargingStationOperator?:   IChargingStationOperator;
     chargingPoolId?:            string;
-    chargingPool?:              IChargingPool|null;
+    chargingPool?:              IChargingPool;
     chargingStationId?:         string;
-    chargingStation?:           IChargingStation|null;
+    chargingStation?:           IChargingStation;
     EVSEId:                     string;
-    EVSE?:                      IEVSE|null;
+    EVSE?:                      IEVSE;
     meterId?:                   string;
-    meter?:                     IMeter|null;
+    meter?:                     IMeter;
     publicKey?:                 IPublicKeyInfo;
     tariffId?:                  string;
-    tariff?:                    ITariff|null;
+    tariff?:                    ITariff;
     costs?:                     IChargingCosts;
     authorizationStart:         IAuthorization;
     authorizationStop?:         IAuthorization;
@@ -460,12 +467,12 @@ export interface IMeasurement
     phenomena?:                 any[];
     name:                       string;
     obis:                       string;
-    unit:                       string;
-    unitEncoded:                number;
-    valueType:                  string;
+    unit?:                      string;
+    unitEncoded?:               number;
+    valueType?:                 string;
     scale:                      number;
     verifyChain?:               boolean;
-    signatureInfos:             ISignatureInfos;
+    signatureInfos?:            ISignatureInfos;
     values:                     Array<IMeasurementValue>;
     verificationResult?:        ICryptoResult;
 }
@@ -479,10 +486,11 @@ export interface IMeasurements
 
 export interface ISignatureInfos {
     hash:                       CryptoHashAlgorithms;
-    hashTruncation:             number;
+    hashTruncation?:            number;
     algorithm:                  CryptoAlgorithms;
     curve:                      string;
     format:                     SignatureFormats;
+    encoding?:                  string;
 }
 
 export enum SignatureFormats {
@@ -517,12 +525,13 @@ export interface IMeasurementValue
 
     timestamp:                  string;
     value:                      number;
-    value_displayPrefix:        DisplayPrefixes;
-    value_displayPrecision:     number;
-    infoStatus?:                string;
+    value_displayPrefix?:       DisplayPrefixes;
+    value_displayPrecision?:    number;
+    statusMeter?:               string;
     secondsIndex?:              number;
     paginationId?:              number|string;
     logBookIndex?:              string;
+    statusAdapter?:             string;
 
     errors?:                    Array<string>;
     warnings?:                  Array<string>;
@@ -576,6 +585,7 @@ export interface IPublicKey
     format:                     string;
     previousValue?:             string;
     value:                      string;
+    encoding?:                  string;
     signatures?:                any;
 }
 
@@ -645,6 +655,7 @@ export enum SessionVerificationResult {
 export enum VerificationResult {
 
     UnknownCTRFormat,
+    UnknownSignatureFormat,
     EnergyMeterNotFound,
     PublicKeyNotFound,
     InvalidPublicKey,
@@ -706,6 +717,10 @@ export interface IVersionSignature {
     signature:      string
 }
 
+export interface IMultilanguageText {
+    [key: string]: string;
+}
+
 export interface IResult {
     status:         SessionVerificationResult,
     message:        string
@@ -722,6 +737,7 @@ export interface TarInfo {
 export interface IFileInfo {
     name:           string,
     path?:          string,
+    type?:          string,
     data?:          ArrayBuffer,
     info?:          string,
     error?:         string,
