@@ -352,102 +352,132 @@ export class Chargy {
                                  filetype.mime.toString() === "application/x-tar")
                         {
 
-                            let compressedFiles:Array<chargyInterfaces.TarInfo> = await decompress(Buffer.from(FileInfo.data),
-                                                                                                   { plugins: [ decompressTar(),
-                                                                                                                decompressTargz(),
-                                                                                                                decompressTarbz2(),
-                                                                                                                //decompressTarxz(),
-                                                                                                                decompressUnzip(),
-                                                                                                                decompressGz(),
-                                                                                                                decompressBzip2()
-                                                                                                              ] });
-
-                            if (compressedFiles.length == 0)
-                                continue;
-
-                            archiveFound = true;
-
-                            //#region A single compressed file without a path/filename, e.g. within bz2
-
-                            if (compressedFiles.length == 1 && compressedFiles[0]?.path == null)
-                            {
-                                expandedFileInfos.push({
-                                                      name:  FileInfo.name.substring(0, FileInfo.name.lastIndexOf('.')),
-                                                      data:  compressedFiles[0]?.data
-                                                  });
-                                continue;
-                            }
-
-                            //#endregion
-
-                            //#region A chargepoint compressed archive file
-
-                            let CTRfile:any    = null;
-                            let dataFile       = "";
-                            let singatureFile  = "";
-
-                            if (compressedFiles.length >= 2)
+                            try
                             {
 
-                                for (let file of compressedFiles)
+                                let compressedFiles:Array<chargyInterfaces.TarInfo> = await decompress(Buffer.from(FileInfo.data),
+                                                                                                       { plugins: [ decompressTar(),
+                                                                                                                    decompressTargz(),
+                                                                                                                    decompressTarbz2(),
+                                                                                                                    //decompressTarxz(),
+                                                                                                                    decompressUnzip(),
+                                                                                                                    decompressGz(),
+                                                                                                                    decompressBzip2()
+                                                                                                                ] });
+
+                                if (compressedFiles.length == 0)
+                                    continue;
+
+                                archiveFound = true;
+
+                                //#region A single compressed file without a path/filename, e.g. within bz2
+
+                                if (compressedFiles.length == 1 && compressedFiles[0]?.path == null)
                                 {
-
-                                    if (file.type === "file" && file.path === "secrrct")
-                                    {
-                                        try
-                                        {
-                                            dataFile = new TextDecoder('utf-8').decode(file.data);
-                                        }
-                                        catch (Exception)
-                                        {
-                                            console.debug("Invalid chargepoint CTR file!")
-                                        }
-                                    }
-
-                                    if (file.type === "file" && file.path === "secrrct.sign")
-                                    {
-                                        try
-                                        {
-                                            singatureFile = chargyLib.buf2hex(file.data);
-                                        }
-                                        catch (Exception)
-                                        {
-                                            console.debug("Invalid chargepoint CTR file!")
-                                        }
-                                    }
-
-                                }
-
-                                if (dataFile != null && dataFile.length > 0 && singatureFile != null && singatureFile != "")
-                                {
-                                    CTRfile           = JSON.parse(dataFile);
-                                    CTRfile.original  = btoa(dataFile); // Save the original JSON with whitespaces for later signature verification!
-                                    CTRfile.signature = singatureFile;
                                     expandedFileInfos.push({
-                                        name: FileInfo.name,
-                                        data: new TextEncoder().encode(JSON.stringify(CTRfile))
-                                    });
+                                                          name:  FileInfo.name.substring(0, FileInfo.name.lastIndexOf('.')),
+                                                          data:  compressedFiles[0]?.data
+                                                      });
                                     continue;
                                 }
 
-                            }
+                                //#endregion
 
-                            //#endregion
+                                //#region A chargepoint compressed archive file
 
-                            //#region Multiple files
+                                let CTRfile:any    = null;
+                                let dataFile       = "";
+                                let signatureFile  = "";
 
-                            for (let compressedFile of compressedFiles)
-                            {
-                                if (compressedFile.type === "file")
+                                if (compressedFiles.length >= 2)
                                 {
-                                    expandedFileInfos.push({
-                                                          name: compressedFile.path?.substring(compressedFile.path.lastIndexOf('/') + 1 ?? FileInfo.name),
-                                                          data: compressedFile.data
-                                                      });
-                                }
-                            }
 
-                            //#endregion
+                                    for (let file of compressedFiles)
+                                    {
+                                        if (file.type === "file")
+                                        {
+                                            switch (file.path)
+                                            {
+
+                                                case "secrrct":
+                                                {
+                                                    try
+                                                    {
+                                                        dataFile = new TextDecoder('utf-8').decode(file.data);
+                                                    }
+                                                    catch (Exception)
+                                                    {
+                                                        console.debug("Invalid chargepoint 'secrrct' file!")
+                                                    }
+                                                }
+                                                break;
+
+                                                case "secrrct.sign":
+                                                {
+                                                    try
+                                                    {
+                                                        signatureFile = chargyLib.buf2hex(file.data);
+                                                    }
+                                                    catch (Exception)
+                                                    {
+                                                        console.debug("Invalid chargepoint 'secrrct.sign' file!")
+                                                    }
+                                                }
+                                                break;
+
+                                            }
+                                        }
+
+                                    }
+
+                                    if (dataFile?.     length > 0 &&
+                                        signatureFile?.length > 0)
+                                    {
+                                        try
+                                        {
+
+                                            CTRfile           = JSON.parse(dataFile);
+
+                                            // Save the 'original' JSON with whitespaces for later signature verification!
+                                            CTRfile.original  = btoa(dataFile);
+                                            CTRfile.signature = signatureFile;
+
+                                            expandedFileInfos.push({
+                                                name: FileInfo.name,
+                                                data: new TextEncoder().encode(JSON.stringify(CTRfile))
+                                            });
+
+                                        }
+                                        catch (Exception)
+                                        {
+                                            console.debug("Could not parse chargepoint 'secrrct' file!")
+                                        }
+                                        continue;
+                                    }
+
+                                }
+
+                                //#endregion
+
+                                //#region Multiple files
+
+                                for (let compressedFile of compressedFiles)
+                                {
+                                    if (compressedFile.type === "file")
+                                    {
+                                        expandedFileInfos.push({
+                                                            name: compressedFile.path?.substring(compressedFile.path.lastIndexOf('/') + 1 ?? FileInfo.name),
+                                                            data: compressedFile.data
+                                                        });
+                                    }
+                                }
+
+                                //#endregion
+
+                            }
+                            catch (exception) {
+                                console.log("Error decompressing files: " + exception);
+                            }
 
                             continue;
 
@@ -584,16 +614,27 @@ export class Chargy {
                 //#region Process compressed files
 
                 else if (fileInfo.type === "application/x-zip-compressed" ||
+                         fileInfo.type === "application/x-compressed"     ||
                          fileInfo.type === "application/zip"              ||
                          fileInfo.type === "application/x-bzip2"          ||
                          fileInfo.type === "application/gzip"             ||
+                         fileInfo.type === "application/x-gzip"           ||
                          fileInfo.type === "application/x-tar")
                 {
 
-                    const decompressedFiles = await this.decompressFiles([fileInfo]);
+                    try
+                    {
 
-                    for (var decompressedFile of decompressedFiles)
-                        expandedFiles.push(decompressedFile);
+                        const decompressedFiles = await this.decompressFiles([fileInfo]);
+
+                        for (var decompressedFile of decompressedFiles)
+                            expandedFiles.push(decompressedFile);
+
+                    }
+                    catch (exception)
+                    {
+                        console.log("Error decompressing files: " + exception);
+                    }
 
                 }
 
@@ -837,8 +878,8 @@ export class Chargy {
                         processedFile.result = JSONContent as chargyInterfaces.IPublicKeyInfo;
 
                     else if (JSONContext.startsWith("https://www.lichtblick.de/contexts/charging-station-json") ||
-                            JSONContext.startsWith("https://www.eneco.com/contexts/charging-station-json")     ||
-                            JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
+                             JSONContext.startsWith("https://www.eneco.com/contexts/charging-station-json")     ||
+                             JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
                     {
                         processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormat(JSONContent);
                     }

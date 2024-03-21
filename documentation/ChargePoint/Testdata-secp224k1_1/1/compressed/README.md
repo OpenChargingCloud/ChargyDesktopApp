@@ -1,0 +1,1 @@
+You have to select the `0024b10000027b29_1.pem` public key file an one or multiple of the compressed charge transparency files, e.g. `0024b10000027b29_1_121708795_payload.FLAT_SESSION.tar.bz2`.

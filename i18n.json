@@ -1,4 +1,26 @@
 {
+
+    "All charging sessions": {
+        "de": "Alle Ladevorgänge",
+        "en": "All charging sessions"
+    },
+
+    "on": {
+        "de": "am",
+        "en": "on"
+    },
+
+    "from": {
+        "de": "von",
+        "en": "from"
+    },
+
+    "till": {
+        "de": "bis",
+        "en": "till"
+    },
+
+
     "GeneralError": {
         "de": "Allgemeiner Fehler!",
         "en": "General Error!"

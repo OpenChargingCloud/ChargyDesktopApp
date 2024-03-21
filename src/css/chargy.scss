@@ -563,6 +563,18 @@ body {
                             font-weight:    bold;
                         }
 
+                        .dates {
+                            padding:        0px;
+                        }
+
+                        #begin {
+                            padding:        0px;
+                        }
+
+                        #end {
+                            padding:        0px;
+                        }
+
                         #chargingSessions {
 
                             padding:            0px 0px 0px 10px;
@@ -983,18 +995,18 @@ body {
 
                         }
 
-                        .type {
+                        .model {
 
                             display:            table-row;
 
-                            .typeId {
+                            .modelId {
                                 display:            table-cell;
                                 padding-left:       12px;
                                 padding-right:      2vw;
                                 white-space:        nowrap;
                             }
 
-                            .typeValue {
+                            .modelValue {
                                 display:            table-cell;
                                 a {
                                     text-decoration: none;

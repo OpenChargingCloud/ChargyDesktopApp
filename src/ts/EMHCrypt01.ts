@@ -48,7 +48,7 @@ export interface IEMHCrypt01Result extends chargyInterfaces.ICryptoResult
     publicKey?:                    string,
     publicKeyFormat?:              string,
     publicKeySignatures?:          any,
-    signature?:                    chargyInterfaces.IECCSignature
+    signature?:                    chargyInterfaces.ISignatureRS
 }
 
 
@@ -152,7 +152,7 @@ export class EMHCrypt01 extends ACrypt {
             authorizationStartTimestamp:  chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp,  169)
         };
 
-        var signatureExpected = measurementValue.signatures[0] as chargyInterfaces.IECCSignature;
+        var signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
         if (signatureExpected != null)
         {
 

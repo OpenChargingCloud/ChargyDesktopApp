@@ -48,7 +48,7 @@ export interface IOCMFv1_0Result extends chargyInterfaces.ICryptoResult
     publicKey?:                    string,
     publicKeyFormat?:              string,
     publicKeySignatures?:          any,
-    signature?:                    chargyInterfaces.IECCSignature
+    signature?:                    chargyInterfaces.ISignatureRS
 }
 
 

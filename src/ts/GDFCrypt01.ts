@@ -40,7 +40,7 @@ export interface IGDFCrypt01Result extends chargyInterfaces.ICryptoResult
     publicKey?:                    string,
     publicKeyFormat?:              string,
     publicKeySignatures?:          any,
-    signature?:                    chargyInterfaces.IECCSignature
+    signature?:                    chargyInterfaces.ISignatureRS
 }
 
 export class GDFCrypt01 extends ACrypt {
@@ -138,7 +138,7 @@ export class GDFCrypt01 extends ACrypt {
             authorizationStartTimestamp:  chargyLib.SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp,  169)
         };
 
-        var signatureExpected = measurementValue.signatures[0] as chargyInterfaces.IECCSignature;
+        var signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
         if (signatureExpected != null)
         {
 

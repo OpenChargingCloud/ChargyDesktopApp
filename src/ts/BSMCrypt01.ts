@@ -101,7 +101,7 @@ export interface IBSMCrypt01Result extends chargyInterfaces.ICryptoResult
     publicKey?:                    string,
     publicKeyFormat?:              string,
     publicKeySignatures?:          any,
-    signature?:                    chargyInterfaces.IECCSignature
+    signature?:                    chargyInterfaces.ISignatureRS
 }
 
 
@@ -505,7 +505,7 @@ export class BSMCrypt01 extends ACrypt {
 
                 //#region Find "evse-id:"        within the "Meta" data blocks
 
-                let signedEVSEId = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('evse-id:'));
+                let signedEVSEId = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name?.startsWith('Meta') && element.measuredValue.value?.startsWith('evse-id:'));
                 if (signedEVSEId.length == 1)
                 {
 
@@ -520,7 +520,7 @@ export class BSMCrypt01 extends ACrypt {
 
                 //#region Find "csc-sw-version:" within the "Meta" data blocks
 
-                let signedCSCSWVersion = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name.startsWith('Meta') && element.measuredValue.value.startsWith('csc-sw-version:'));
+                let signedCSCSWVersion = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name?.startsWith('Meta') && element.measuredValue.value?.startsWith('csc-sw-version:'));
                 if (signedCSCSWVersion.length == 1)
                 {
 
@@ -891,9 +891,13 @@ export class BSMCrypt01 extends ACrypt {
                                      }]
             });
 
-            CTR["status"] = chargyInterfaces.SessionVerificationResult.Unvalidated;
-
             //#endregion
+
+            CTR.status     = errors.length == 0
+                                 ? chargyInterfaces.SessionVerificationResult.Unvalidated
+                                 : chargyInterfaces.SessionVerificationResult.InvalidSessionFormat;
+
+            CTR.certainty  = 1 - errors.length/numberOfFormatChecks;
 
             return CTR;
 
@@ -1080,7 +1084,7 @@ export class BSMCrypt01 extends ACrypt {
             Evt:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.Evt,          0, 255,  72 + MA1_length + Meta1_length + Meta2_length + Meta3_length),
         };
 
-        var signatureExpected = measurementValue.signatures[0] as chargyInterfaces.IECCSignature;
+        var signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
         if (signatureExpected != null)
         {
 
@@ -1134,7 +1138,7 @@ export class BSMCrypt01 extends ACrypt {
                                     );
                                 });
 
-                                const publicKeyDER = ASN1_PublicKey.decode(Buffer.from(meter?.publicKeys[0]!.value, 'hex'), 'der');
+                                const publicKeyDER = ASN1_PublicKey.decode(Buffer.from(meter?.publicKeys[0]?.value ?? "", 'hex'), 'der');
                                 publicKey = chargyLib.buf2hex(publicKeyDER.publicKey.data).toLowerCase();
 
                             }

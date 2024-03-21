@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+import * as chargyInterfaces  from './chargyInterfaces'
+
+
 export function ParseJSON_LD<T>(Text:     string,
                                 Context:  string = ""): T {
 
@@ -856,4 +859,16 @@ export function isOptionalNumber(number: any): number is number {
     return number !== undefined && number !== null
                ? typeof number === "number"
                : true;
+}
+
+
+
+export function InformationRelevanceToString(InfoRelevance: chargyInterfaces.InformationRelevance) : string
+{
+    switch (InfoRelevance) {
+        case chargyInterfaces.InformationRelevance.Ignored:      return "Ignored";
+        case chargyInterfaces.InformationRelevance.Informative:  return "Informative";
+        case chargyInterfaces.InformationRelevance.Important:    return "Important";
+        default:                                                 return "Unknown";
+    }
 }

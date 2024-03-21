@@ -480,7 +480,7 @@ export interface IAlfenCrypt01Result extends chargyInterfaces.ICryptoResult
     publicKey?:                    string,
     publicKeyFormat?:              string,
     publicKeySignatures?:          any,
-    signature?:                    chargyInterfaces.IECCSignature
+    signature?:                    chargyInterfaces.ISignatureRS
 }
 
 
@@ -593,7 +593,7 @@ export class AlfenCrypt01 extends ACrypt {
         };
 
 
-        var signatureExpected = measurementValue.signatures[0] as chargyInterfaces.IECCSignature;
+        var signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
         if (signatureExpected != null)
         {
 
@@ -924,9 +924,10 @@ export class AlfenCrypt01 extends ACrypt {
     }
 
 
-    //#region Helper methods
+    // Helper methods
 
-    // Status flags MID meter
+    //#region Status flags MID meter
+
     private DecodeMeterStatus(statusValueHex: string) : Array<string>
     {
 
@@ -985,8 +986,10 @@ export class AlfenCrypt01 extends ACrypt {
 
     }
 
+    //#endregion
 
-    // Status flags LMN adapter
+    //#region Status flags LMN adapter
+
     private DecodeAdapterStatus(statusValueHex: string) : Array<string>
     {
 
@@ -1044,5 +1047,6 @@ export class AlfenCrypt01 extends ACrypt {
     }
 
     //#endregion
+
 
 }

@@ -204,6 +204,10 @@ export interface IChargingStationOperator
     EVSEs?:                     Array<IEVSE>;
     tariffs?:                   Array<ITariff>;
     publicKeys?:                Array<IPublicKey>;
+
+    chargingTariffs?:           Array<ITariff>;
+    parkingTariffs?:            Array<ITariff>;
+
 }
 
 export interface IContact {
@@ -346,7 +350,17 @@ export interface ITariff
 {
     "@id":                      string;
     "@context"?:                string;
-    description:                IMultilanguageText;
+    description?:               IMultilanguageText;
+    currency?:                  string;
+    taxes?:                     Array<ITaxes>;
+}
+
+export interface ITaxes
+{
+    "@id":                      string;
+    "@context"?:                string;
+    description?:               IMultilanguageText;
+    percentage:                 number;
 }
 
 export interface IMediationService
@@ -395,11 +409,6 @@ export interface IChargingSession
     verificationResult?:        ISessionCryptoResult;
 }
 
-export interface ISignatureRS {
-    r:                          string;
-    s:                          string;
-}
-
 export interface IChargingProduct
 {
     "@id":                      string;
@@ -432,6 +441,7 @@ export interface IParking
     "@context"?:                string;
     begin:                      string;
     end?:                       string;
+    overstay?:                  boolean;
 }
 
 export interface ITransparencySoftware {
@@ -484,13 +494,27 @@ export interface IMeasurements
     verificationResult?:        ICryptoResult;
 }
 
+export enum IECCurves {
+    secp192r1,
+    secp224k1,
+    secp256k1,
+    secp256r1,
+    secp384r1,
+    secp512r1
+}
+
+export enum IEncoding {
+    hex,
+    base64
+}
+
 export interface ISignatureInfos {
-    hash:                       CryptoHashAlgorithms;
-    hashTruncation?:            number;
-    algorithm:                  CryptoAlgorithms;
-    curve:                      string;
-    format:                     SignatureFormats;
-    encoding?:                  string;
+    hash:                       CryptoHashAlgorithms|string;
+    hashTruncation?:                                 number;
+    algorithm:                  CryptoAlgorithms    |string;
+    curve:                      IECCurves           |string;
+    format:                     SignatureFormats    |string;
+    encoding?:                  IEncoding           |string;
 }
 
 export enum SignatureFormats {
@@ -536,7 +560,7 @@ export interface IMeasurementValue
     errors?:                    Array<string>;
     warnings?:                  Array<string>;
 
-    signatures:                 Array<ISignature|ISignatureRS>;
+    signatures?:                Array<ISignature|ISignatureRS>;
     result?:                    ICryptoResult;
 
 }
@@ -584,25 +608,32 @@ export interface IPublicKey
     algorithm:                  string;
     format:                     string;
     previousValue?:             string;
-    value:                      string;
+    value?:                     string;
     encoding?:                  string;
     signatures?:                any;
 }
 
 export interface ISignature
 {
-    algorithm:                  CryptoAlgorithms;
-    format:                     SignatureFormats;
+    algorithm?:                 CryptoAlgorithms|string;
+    format?:                    SignatureFormats|string;
     previousValue?:             string;
     value?:                     string;
 }
 
-export interface IECCSignature extends ISignature
+// export interface IECCSignature extends ISignature
+// {
+//     //algorithm:                  CryptoAlgorithms|string;
+//     //format:                     SignatureFormats|string;
+//     //previousValue?:             string;
+//     //value?:                     string;
+//     r?:                         string;
+//     s?:                         string;
+// }
+
+
+export interface ISignatureRS  extends ISignature
 {
-    algorithm:                  CryptoAlgorithms;
-    format:                     SignatureFormats;
-    previousValue?:             string;
-    value?:                     string;
     r?:                         string;
     s?:                         string;
 }
@@ -625,14 +656,14 @@ export interface IGeoLocation {
 
 export interface IChargingProductRelevance
 {
-    time?:                      InformationRelevance;
-    energy?:                    InformationRelevance;
-    parking?:                   InformationRelevance;
-    sessionFee?:                InformationRelevance;
+    time?:                      InformationRelevance|string;
+    energy?:                    InformationRelevance|string;
+    parking?:                   InformationRelevance|string;
+    sessionFee?:                InformationRelevance|string;
 }
 
 export enum InformationRelevance {
-    Unkonwn,
+    Unknown,
     Ignored,
     Informative,
     Important

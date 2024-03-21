@@ -1515,24 +1515,25 @@ export class ChargyApp {
 
         //#region Show CTR infos
 
-        if (CTR.description) {
-            let descriptionDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
-            descriptionDiv.id  = "description";
-            descriptionDiv.innerText = chargyLib.firstValue(CTR.description);
-        }
+        let descriptionDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
+        descriptionDiv.id  = "description";
+        descriptionDiv.innerText = chargyLib.firstValue(CTR.description) ?? this.chargy.GetLocalizedMessage("All charging sessions");
 
-        if (CTR.begin) {
+        const ctrBeginText  = CTR.begin ? chargyLib.parseUTC(CTR.begin).format('dddd, D. MMMM YYYY') : null;
+        const ctrEndText    = CTR.end   ? chargyLib.parseUTC(CTR.end).  format('dddd, D. MMMM YYYY') : null;
+
+        if (ctrBeginText) {
             let beginDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
             beginDiv.id        = "begin";
-            beginDiv.className = "defi";
-            beginDiv.innerHTML = "von " + chargyLib.parseUTC(CTR.begin).format('dddd, D. MMMM YYYY');
+            beginDiv.className = "dates";
+            beginDiv.innerHTML = (ctrBeginText == ctrEndText ? this.chargy.GetLocalizedMessage("on") : this.chargy.GetLocalizedMessage("from")) + " " + ctrBeginText;
         }
 
-        if (CTR.end) {
+        if (ctrEndText && ctrEndText != ctrBeginText) {
             let endDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
-            endDiv.id          = "begin";
-            endDiv.className   = "defi";
-            endDiv.innerHTML   = "bis " + chargyLib.parseUTC(CTR.end).format('dddd, D. MMMM YYYY');
+            endDiv.id          = "end";
+            endDiv.className   = "dates";
+            endDiv.innerHTML   = this.chargy.GetLocalizedMessage("till") + " " + ctrEndText;
         }
 
         //#endregion
@@ -1650,7 +1651,7 @@ export class ChargyApp {
                             switch (chargingSession.chargingProductRelevance.time)
                             {
 
-                                case chargyInterfaces.InformationRelevance.Unkonwn:
+                                case chargyInterfaces.InformationRelevance.Unknown:
                                 case chargyInterfaces.InformationRelevance.Ignored:
                                 case chargyInterfaces.InformationRelevance.Important:
                                     break;
@@ -1717,7 +1718,7 @@ export class ChargyApp {
                                     switch (chargingSession.chargingProductRelevance.energy)
                                     {
 
-                                        case chargyInterfaces.InformationRelevance.Unkonwn:
+                                        case chargyInterfaces.InformationRelevance.Unknown:
                                         case chargyInterfaces.InformationRelevance.Ignored:
                                         case chargyInterfaces.InformationRelevance.Important:
                                             break;
@@ -1765,12 +1766,13 @@ export class ChargyApp {
                         parkingDiv.className                 = "text";
                        // parkingDiv.innerHTML = chargingSession.parking != null ? chargingSession.product["@id"] + "<br />" : "";
 
-                        if (chargingSession?.parking[chargingSession.parking.length-1]?.end != null)
+                        const lastParking = chargingSession.parking[chargingSession.parking.length-1];
+
+                        if (lastParking?.end != null)
                         {
 
-                            let parkingBegin = chargyLib.parseUTC(chargingSession?.parking[0]?.begin ?? "-");
-                            //@ts-ignore
-                            let parkingEnd   = parseUTC(chargingSession.parking[chargingSession.parking.length-1].end);
+                            let parkingBegin = chargyLib.parseUTC(chargingSession.parking[0]?.begin ?? "-");
+                            let parkingEnd   = chargyLib.parseUTC(lastParking.end);
                             let duration     = this.moment.duration(parkingEnd - parkingBegin);
 
                             parkingDiv.innerHTML += "Parkdauer ";
@@ -1786,7 +1788,7 @@ export class ChargyApp {
                                 switch (chargingSession.chargingProductRelevance.parking)
                                 {
 
-                                    case chargyInterfaces.InformationRelevance.Unkonwn:
+                                    case chargyInterfaces.InformationRelevance.Unknown:
                                     case chargyInterfaces.InformationRelevance.Ignored:
                                     case chargyInterfaces.InformationRelevance.Important:
                                         break;
