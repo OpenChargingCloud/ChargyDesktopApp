@@ -29,6 +29,13 @@ export const enum TimeStatusTypes {
     relative
 }
 
+export interface IOCMFLossCompensation {
+    LN?:        string,
+    LI?:        string,
+    LR:         string,
+    LU:         string
+}
+
 export interface IOCMFReading {
     TM:         string, // Timestamp
     TX?:        string, // Transaction
@@ -63,6 +70,9 @@ export interface IOCMFData {
     IF?:        string[],
     IT:         string,
     ID:         string,
+    TT:         string,
+
+    LC?:        IOCMFLossCompensation,
 
     CT?:        string,
     CI?:        string,
@@ -86,12 +96,12 @@ export interface IOCMFData_v1_0 extends IOCMFData {
 }
 
 export interface IOCMFData_v0_1_Signed {
-    data:       IOCMFData_v0_1,
-    signature:  any
+    measurements:  IOCMFData_v0_1,
+    signature:     any
 }
 
 export interface IOCMFData_v1_0_Signed {
-    data:       IOCMFData_v1_0,
-    signature:  any
+    measurements:  IOCMFData_v1_0,
+    signature:     any
 }
 

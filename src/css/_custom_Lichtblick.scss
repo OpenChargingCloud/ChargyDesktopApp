@@ -1,0 +1,254 @@
+﻿/*
+ * Copyright (c) 2018-2024 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
+ *
+ * Licensed under the Affero GPL license, Version 3.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.gnu.org/licenses/agpl.html
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+ body {
+
+    #app {
+
+        background-color:   #ffffff;
+
+        #headline {
+
+            //#logo {
+                //background-image:     url('../images/ChargePoint_logo_HEX.png');
+                //background-image:     url('../images/chargeIT-logo.jpg');
+                //background-image:     url('../images/ENECO_eMobility_Logo.png');
+            //}
+
+            #windowButtons {
+                button:hover {
+                    color:          #b7b7b7;
+                }
+            }
+
+        }
+
+        #verifyframe {
+
+            #leftbar {
+                #input {
+
+                    background-color:    #e2e2e2;
+
+                    #inputInfos {
+                        #buttonsDiv {
+
+                            button {
+
+                                color:              #3a1d27;
+                                //background:         none;
+                                background-color:   #d6e5e1;
+
+                                i {
+                                    font-size:          120%;
+                                }
+
+                            }
+
+                            button:hover {
+                                color:              #ffffff;
+                                //background:         radial-gradient(farthest-corner at 39px 40px, #f9e8c2 0%, #ebad5c 40%, #ed4f54 80%);
+                                background-color:   #5b9787;
+                            }
+
+                        }
+                    }
+
+                    #chargingSessionScreen {
+                        #chargingSessions {
+
+                            .chargingSession {
+                                background-color:   #e9e9e9;
+                            }
+
+                            .activated {
+                                background-color:   #d6e5e1;
+                            }
+
+                        }
+                    }
+
+                    #chargingSessionReport {
+                        #chargingSessions {
+
+                            .chargingSessions {
+                                background-color:   #dbdbdb;
+                            }
+
+                            .activated {
+                                background-color:   #c4c4c4;
+                            }
+
+                        }
+                    }
+
+                    #inputButtons {
+
+                        #backButton {
+                            color:            #888888;
+                        }
+
+                        #backButton:hover {
+                            color:            #000000;
+                        }
+
+                        #exportButtonDiv {
+
+                            #exportButton {
+                                color:            #aaaaaa;
+                            }
+
+                            #exportButton:hover {
+                                color:            #000000;
+                            }
+
+                        }
+
+                    }
+
+                    #aboutScreen {
+
+                        .linkButton {
+                            background-color:    #e2e2e2;
+                            font-weight:           bold;
+                        }
+
+                        .linkButton:hover {
+                            color:               #777777;
+                            background-color:    #e9e9e9;
+                        }
+
+                        #TOSP {
+                            a {
+                                color:   #444444;
+                            }
+                        }
+
+                    }
+
+                }
+            }
+
+            #rightbar {
+
+                background-color:    #e2e2e2;
+                // width:              calc(50% - 15px);
+                // border-radius:      8px 8px 8px 8px;
+                // height:             calc(100% - 15px);
+
+                #detailedInfos {
+
+                    color:           #000000;
+
+                    .headline {
+                        color:       #000000;
+                    }
+
+                    .energyMeterInfos {
+
+                        .meterManufacturer {
+                            .meterManufacturerValue {
+                                a {
+                                    color:   #444444
+                                }
+                            }
+                        }
+
+                        .meterModel {
+                            .meterModelValue {
+                                a {
+                                    color:   #444444
+                                }
+                            }
+                        }
+
+                    }
+
+                    .measurementValues {
+                        .measurementValue:hover {
+                            background-color:   #aaaaaa;
+                        }
+                    }
+
+                }
+
+                #feedback {
+
+                    display:           none;
+                    color:           #34668a;
+
+                    #feedbackMethods {
+                        button:hover, a:hover {
+                            color:        #c40546;
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+
+        #overlay {
+            #overlayText {
+
+                background-color:    #e2e2e2;
+                border:              20px solid #e2e2e2;
+
+                .infoblock {
+
+                    .description {
+                        background-color:    #e2e2e2;
+                        font-weight:         bold;
+                    }
+
+                    .value {
+                        background-color:    #d0d0d0
+                    }
+
+                }
+
+                #overlayOkButtonDiv {
+
+                    #overlayOkButton {
+                        color:            #888888;
+                    }
+
+                    #overlayOkButton:hover {
+                        color:            #000000;
+                    }
+
+                }
+
+            }
+        }
+
+        #issueTracker {
+            display:                 none;
+        }
+
+    }
+
+}
+
+.fa-check-circle {
+    color:          #85b4a9;
+}
+
+.leaflet-container a {
+    color:          #444444;
+}

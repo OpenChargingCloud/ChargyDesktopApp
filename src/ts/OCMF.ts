@@ -18,6 +18,7 @@
 import { Chargy }             from './chargy'
 import * as ocmfTypes         from './OCMFTypes'
 import * as chargyInterfaces  from './chargyInterfaces'
+import * as chargyLib         from './chargyLib'
 
 
 export class OCMF {
@@ -110,8 +111,8 @@ export class OCMF {
 
     //#region tryToParseOCMFv1_0(OCMFDataList, PublicKey?)
 
-    public async tryToParseOCMF(OCMFDataList:  ocmfTypes.IOCMFData_v1_0_Signed[],
-                                PublicKey?:    string) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async tryToParseOCMFv1_0(OCMFDataList:  ocmfTypes.IOCMFData_v1_0_Signed[],
+                                    PublicKey?:    string) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         try
@@ -226,7 +227,7 @@ export class OCMF {
 
             // {
             //
-            //     "data": {
+            //     "payload": {
             //
             //       "FV": "1.0",
             //       "GI": "SEAL AG",
@@ -268,104 +269,261 @@ export class OCMF {
             for (let ocmf of OCMFDataList)
             {
 
-                let GatewayInformation :string    = ocmf.data.GI != null ? ocmf.data.GI.trim() : ""; // Some text about the manufacturer, model, variant, ... of e.g. the gateway.
-                let GatewaySerial      :string    = ocmf.data.GS != null ? ocmf.data.GS.trim() : ""; // Serial number of the gateway, might be mandatory.
-                let GatewayVersion     :string    = ocmf.data.GV != null ? ocmf.data.GV.trim() : ""; // Software version of the gateway.
+                // https://github.com/SAFE-eV/OCMF-Open-Charge-Metering-Format/blob/master/OCMF-en.md
 
-                let paging             :string    = ocmf.data.PG != null ? ocmf.data.PG.trim() : ""; // Paging, as this data might be part of a larger context.
-                let TransactionType               = ocmfTypes.OCMFTransactionTypes.undefined;
-                switch (paging[0]?.toLowerCase())
+                //#region General Information
+
+                const formatVersion                 = ocmf.measurements?.FV;    // Format Version:         Optional version of the data format in the representation.
+                const gatewayInformation            = ocmf.measurements?.GI;    // Gateway Identification: Optional identifier of the manufacturer for the system which has generated the present data (manufacturer, model, variant, etc.).
+                const gatewaySerial                 = ocmf.measurements?.GS;    // Gateway Serial:         Serial number of the above mentioned system. This field is conditionally mandatory.
+                const gatewayVersion                = ocmf.measurements?.GV;    // Gateway Version:        Optional version designation of the manufacturer for the software of the above mentioned system.
+
+                //#endregion
+
+                //#region Pagination
+
+                const paging                        = ocmf.measurements?.PG;    // Pagination of the entire data set, i.e. the data that is combined in one signature. Format: <indicator><number>
+                                                                                //     The string is composed of an identifying letter for the context and a number without leading zeros. There is a separate independent pagination counter for each context. The following indicators are defined:
+                                                                                //     T: Transaction – readings in transaction reference    (mandatory)
+                                                                                //     F: Fiscal      – readings independent of transactions (optional)
+                                                                                //     The respective pagination counter is incremented after each use for a record.
+
+                //#endregion
+
+                //#region Meter Identification
+
+                const meterVendor                   = ocmf.measurements?.MV;    // Meter Vendor:           Optional manufacturer identification of the meter, name of the manufacturer.
+                const meterModel                    = ocmf.measurements?.MM;    // Meter Model:            Optional model identification of the meter.
+                const meterSerial                   = ocmf.measurements?.MS;    // Meter Serial:           Serial number of the meter.
+                const meterFirmware                 = ocmf.measurements?.MF;    // Meter Firmware:         Optional firmware version of the meter.
+
+                //#endregion
+
+                //#region User Assignment
+
+                const identificationStatus          = ocmf.measurements?.IS;    // Identification Status:  General status for user assignment:
+                                                                                //                             true:  user successfully assigned
+                                                                                //                             false: user not assigned
+                const identificationLevel           = ocmf.measurements?.IL;    // Identification Level:   Optional encoded overall status of the user assignment, represented by an identifier:
+                                                                                //                             Group                        Status/Error    Description
+                                                                                //                           ------------------------------ --------------- ----------------------------------------------------------------------------------------
+                                                                                //                             not available                -               The field is not specified.
+                                                                                //                             status without assignment    NONE            There is no user assignment. The other data for user assignment have no significance.
+                                                                                //                             status with assignment       HEARSAY         The assignment is unsecured; e.g. by reading an RFID UID.
+                                                                                //                                                          TRUSTED         The mapping can be trusted to some extent, but there is no absolute reliability.
+                                                                                //                                                                          Example: Authorization by backend.
+                                                                                //                                                          VERIFIED        The assignment has been verified by the signature component and special measures.
+                                                                                //                                                          CERTIFIED       The assignment was verified by the signature component using a cryptographic signature
+                                                                                //                                                                          that certifies the assignment.
+                                                                                //                                                          SECURE          The mapping was established by a secure feature
+                                                                                //                                                                          (e.g. secure RFID card, ISO 15118 with plug and charge, etc.).
+                                                                                //                             Error                        MISMATCH        Error; UIDs do not match.
+                                                                                //                                                          INVALID         Error; certificate not correct (check negative).
+                                                                                //                                                          OUTDATED        Error; referenced trust certificate expired.
+                                                                                //                                                          UNKNOWN         Certificate could not be successfully verified (no matching trust certificate found).
+                const identificationFlags           = ocmf.measurements?.IF;    // Identification Flags:   An enumeration of detailed statements about the user assignment, represented by one or more identifiers.
+                                                                                //                         The identifiers are always noted as string elements in an array.
+                                                                                //                         Also one or no element must be noted as an array.
+                                                                                //
+                                                                                //                         RFID_NONE        No assignment via RFID
+                                                                                //                         RFID_PLAIN       Assignment via external RFID card reader
+                                                                                //                         RFID_RELATED     Assignment via protected RFID card reader
+                                                                                //                         RFID_PSK         A previously known shared key (pre-shared key) was used, e.g. with a secured RFID card.
+                                                                                //
+                                                                                //                         OCPP_NONE        No user assignment by OCPP
+                                                                                //                         OCPP_RS          Assignment by OCPP RemoteStart method
+                                                                                //                         OCPP_AUTH        Assignment by OCPP Authorize method
+                                                                                //                         OCPP_RS_TLS      Assignment by OCPP RemoteStart method, obtained via a secured TLS connection.
+                                                                                //                         OCPP_AUTH_TLS    Assignment by OCPP Authorize method, obtained via a secured TLS connection.
+                                                                                //                         OCPP_CACHE       Assignment by authorization cache of OCPP
+                                                                                //                         OCPP_WHITELIST   Assignment by whitelist from OCPP
+                                                                                //                         OCPP_CERTIFIED   A certificate of the backend was used which certifies the user mapping.
+                                                                                //
+                                                                                //                         ISO15118_NONE    no user assignment by ISO 15118
+                                                                                //                         ISO15118_PNC     Plug & Charge was used
+                                                                                //
+                                                                                //                         PLMN_NONE        no user assignment
+                                                                                //                         PLMN_RING        call
+                                                                                //                         PLMN_SMS         short message
+                const identificationType            = ocmf.measurements?.IT;    // Identification Type:    Type of identification data, identifier:
+                                                                                //                         describes the possible types of user mappings, which can be used in the Type field as unsigned integer in the Type field.
+                                                                                //                         These mappings are based on the specifications from OCPP. OCPP currently (version 1.5) only provides 20 characters for the
+                                                                                //                         identification feature. In accordance with the maximum length of an IBAN (34 characters) allocations of up to 40 bytes
+                                                                                //                         have been provided for the data area.
+                                                                                //                         Token    Identifier      Description
+                                                                                //                         -------  --------------- ---------------------------------------------------------------------------------------------------
+                                                                                //                          0       NONE            No assignment available
+                                                                                //                          1       DENIED          Assignment currently not available (due to two-factor authorization)
+                                                                                //                          2       UNDEFINED       Type not specified
+                                                                                //                         10       ISO14443        UID of an RFID card according to ISO 14443. Represented as 4 or 7 bytes in hexadecimal notation.
+                                                                                //                         11       ISO15693        UID of an RFID card according to ISO 15693. Represented as 8 bytes in hexadecimal notation.
+                                                                                //                         20       EMAID           Electro-Mobility-Account-ID according to ISO/IEC 15118 (string with length 14 or 15)
+                                                                                //                         21       EVCCID          ID of an electric vehicle according to ISO/IEC 15118 (maximum length 6 characters)
+                                                                                //                         30       EVCOID          EV Contract ID according to DIN 91286.
+                                                                                //                         40       ISO7812         Identification card format according to ISO/IEC 7812 (credit and bank cards, etc.)
+                                                                                //                         50       CARD_TXN_NR     Card transaction number (CardTxNbr) for a payment with credit or bank card used in a terminal at the charging point.
+                                                                                //                         60       CENTRAL         Centrally generated ID. No exact format defined, can be e.g. a UUID. (OCPP 2.0)
+                                                                                //                         61       CENTRAL_1       Centrally generated ID, e.g. by start via SMS. No exact format defined. (until OCPP 1.6)
+                                                                                //                         62       CENTRAL_2       Centrally generated ID, e.g. by operator start. No exact format defined. (until OCPP 1.6)
+                                                                                //                         70       LOCAL           Locally generated ID. No exact format defined, might be e.g. a UUID. (OCPP 2.0)
+                                                                                //                         71       LOCAL_1         Locally generated ID, e.g. ID generated internally by the charge point. No exact format defined. (until OCPP 1.6)
+                                                                                //                         72       LOCAL_2         Locally generated ID, for other cases. No exact format defined. (until OCPP 1.6)
+                                                                                //                         80       PHONE_NUMBER    International phone number with leading "+".
+                                                                                //                         90       KEY_CODE        User-related private key code. No exact format defined.
+                const identificationData            = ocmf.measurements?.ID;    // Identification Data:    The optional actual identification data according to the Identification Type, e.g. a hex-coded UID according to ISO 14443.
+                const tariffText                    = ocmf.measurements?.TT;    // Tariff Text:            An optional textual description used to identify a unique tariff. This field is intended for the tariff designation in "Direct Payment" use case.
+
+                //#endregion
+
+                //#region EVSE Metrologic parameters
+
+                const lossCompensation              = ocmf.measurements?.LC;    // Loss Compensation:      Optional characteristics of EVSE's charging cable used for identifying and processing cable loss compensation algorithm.
+                                                                                //                         The cable loss data consists in an object under the key "LC". It shall contain Cable Resistance value and may contain optional traceability
+                                                                                //                         parameters, as explained in following table.
+                                                                                //                         Key  Type            Cardinality     Description
+                                                                                //                         --   --------------  --------------  ---------------------------------------------------------------------------------------------------------------------------------
+                                                                                //                         LN   String (0..20)  0..1            Optional Loss compensation Naming
+                                                                                //                                                                  A meter can use this value for adding a traceability text for justifying cable loss characteristics.
+                                                                                //                         LI   Number          0..1            Optional Loss compensation Identification
+                                                                                //                                                                  A meter can use this value for adding a traceability ID number for justifying cable loss characteristics
+                                                                                //                                                                  from a lookup table specified in meter's documentation.
+                                                                                //                         LR   Number          1..1            Loss compensation cable Resistance
+                                                                                //                                                                  A meter shall use this value for specifying the cable resistance value used in cable Loss compensation computation.
+                                                                                //                         LU   Number          1..1            Loss compensation cable resistance Unit
+                                                                                //                                                                  A meter shall use this field for specifying the unit of cable resistance value given by LR field used in cable loss
+                                                                                //                                                                  compensation computation. The unit of this value can be traced in OCMF format in addition to meter's documentation.
+                                                                                //                                                                  Allowed values are milliohm or microohm:
+                                                                                //                                                                  - The LU value for milliohm shall be "mOhm".
+                                                                                //                                                                  - The LU value for microohm shall be "µOhm".
+
+                //#endregion
+
+                //#region Assignment of the Charge Point
+
+                const chargePointIdType             = ocmf.measurements?.CT;    // Identification Type:    Optional type of the specification for the identification of the charge point, identifier see table 18.
+                                                                                //                         Identifier   Description
+                                                                                //                         ------------ ----------------------------------------------------------------------------------------------------------
+                                                                                //                         EVSEID       EVSE ID
+                                                                                //                         CBIDC        Charge box ID and connector ID according to OCPP, a space is used as field separator, e.g. „STEVE_01 1“.
+                const chargePointId                 = ocmf.measurements?.CI;    // Identification:         Optional identification information for the charge point.
+
+                //#endregion
+
+                if (chargyLib.isOptionalString         (formatVersion)        &&
+                    chargyLib.isOptionalString         (gatewayInformation)   &&
+                    chargyLib.isOptionalString         (gatewaySerial)        &&
+                    chargyLib.isOptionalString         (gatewayVersion)       &&
+
+                    chargyLib.isMandatoryString        (paging)               &&
+
+                    chargyLib.isOptionalString         (meterVendor)          &&
+                    chargyLib.isOptionalString         (meterModel)           &&
+                    chargyLib.isMandatoryString        (meterSerial)          &&
+                    chargyLib.isOptionalString         (meterFirmware)        &&
+
+                    chargyLib.isMandatoryBoolean       (identificationStatus) &&
+                    chargyLib.isOptionalString         (identificationLevel)  &&
+                    chargyLib.isMandatoryArrayOfStrings(identificationFlags)  &&
+                    chargyLib.isMandatoryString        (identificationType)   &&
+                    chargyLib.isOptionalString         (identificationData)   &&
+                    chargyLib.isOptionalString         (tariffText)           &&
+
+                    chargyLib.isOptionalJSONObject     (lossCompensation)     &&
+
+                    chargyLib.isOptionalString         (chargePointIdType)    &&
+                    chargyLib.isOptionalString         (chargePointId)        )
                 {
 
-                    case 't':
-                        TransactionType = ocmfTypes.OCMFTransactionTypes.transaction;
-                        break;
+                    const paginationPrefix              = paging.length > 0
+                                                              ? paging[0]?.toLowerCase()
+                                                              : null;
+                    const transactionType               = paginationPrefix === 't'
+                                                              ? ocmfTypes.OCMFTransactionTypes.transaction
+                                                              : paginationPrefix === 'f'
+                                                                    ? ocmfTypes.OCMFTransactionTypes.fiscal
+                                                                    : ocmfTypes.OCMFTransactionTypes.undefined;
+                    const pagination                    = paging.length > 1
+                                                              ? chargyLib.parseNumber(paging.substring(1))
+                                                              : null;
 
-                    case 'f':
-                        TransactionType = ocmfTypes.OCMFTransactionTypes.fiscal;
-                        break
-
-                }
-                let Pagination                    = paging.substring(1);
-
-                let MeterVendor         :string   = ocmf.data.MV != null ? ocmf.data.MV.trim() : "";    // Vendor of the device, optional.
-                let MeterModel          :string   = ocmf.data.MM != null ? ocmf.data.MM.trim() : "";    // Model of the device, optional.
-                let MeterSerial         :string   = ocmf.data.MS != null ? ocmf.data.MS.trim() : "";    // Serialnumber of the device, might be optional.
-                let MeterFirmware       :string   = ocmf.data.MF != null ? ocmf.data.MF.trim() : "";    // Software version of the device.
-
-                let IdentificationStatus:boolean  = ocmf.data.IS != null ? ocmf.data.IS        : false; // true, if user is assigned, else false.
-                let IdentificationLevel :string   = ocmf.data.IL != null ? ocmf.data.IL.trim() : "";    // optional
-                let IdentificationFlags :string[] = ocmf.data.IF != null ? ocmf.data.IF        : [];    // optional
-                let IdentificationType  :string   = ocmf.data.IT != null ? ocmf.data.IT.trim() : "";    // The type of the authentication data.
-                let IdentificationData  :string   = ocmf.data.ID != null ? ocmf.data.ID.trim() : "";    // The authentication data.
-
-                let ChargePointIdType   :string   = ocmf.data.CT != null ? ocmf.data.CT.trim() : "";    // Type of the following ChargePointId: EVSEId|ChargingStationId|...
-                let ChargePointId       :string   = ocmf.data.CI != null ? ocmf.data.CI.trim() : "";    // The identification of the charge point
-
-                if (!ocmf.data.RD || ocmf.data.RD.length == 0)
-                    return {
+                    if (transactionType === ocmfTypes.OCMFTransactionTypes.undefined) return {
                         status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   "Each OCMF data set must have at least one meter reading!",
+                        message:   this.chargy.GetLocalizedMessage("The given OCMF data does not have a valid transaction type!"),
                         certainty: 0
                     }
 
-                for (let reading of ocmf.data.RD)
-                {
+                    if (!chargyLib.isMandatoryNumber(pagination)) return {
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   this.chargy.GetLocalizedMessage("The given OCMF data does not have a valid pagination counter!"),
+                        certainty: 0
+                    }
 
-                    let metaTimestamp       = reading.TM.split(' ');
-                    let Timestamp           = metaTimestamp[0];
-                    let TimeStatus          = metaTimestamp[1];
-                    let Transaction         = reading.TX;   // B|C,X|E,L,R,A,P|S|T | null
-                    let Value               = reading.RV;   // typeof RV == 'number', but MUST NOT be rounded!
-                    let OBIS                = reading.RI;   // OBIS-Code
-                    let Unit                = reading.RU;   // Reading-Unit: kWh, ...
-                    let CurrentType         = reading.RT;   // Reading-Current-Type
-                    let ErrorFlags          = reading.EF;   // Error-Flags
-                    let Status              = reading.ST;   // Status
+                    if (!ocmf.measurements.RD || ocmf.measurements.RD.length == 0) return {
+                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:   this.chargy.GetLocalizedMessage("Each OCMF data set must have at least one meter reading!"),
+                        certainty: 0
+                    }
 
-                    if (CTR.chargingSessions[0].begin == null)
-                        CTR.chargingSessions[0].begin = Timestamp;
+                    for (const reading of ocmf.measurements.RD)
+                    {
 
-                    CTR.chargingSessions[0].end = Timestamp;
+                        let metaTimestamp       = reading.TM.split(' ');
+                        let Timestamp           = metaTimestamp[0];
+                        let TimeStatus          = metaTimestamp[1];
 
-                    if (CTR.chargingSessions[0].measurements.length == 0)
-                        CTR.chargingSessions[0].measurements.push({
-                            "energyMeterId":    MeterSerial,
-                            "@context":         "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/OCMFv1.0+json",
-                            "obis":             OBIS,        // "1-b:1.8.0"
-                            "unit":             Unit,        // "kWh"
-                            "currentType":      CurrentType, // "AC"
-                            "values":           []
+                        let Transaction         = reading.TX;   // B|C,X|E,L,R,A,P|S|T | null
+                        let Value               = reading.RV;   // typeof RV == 'number', but MUST NOT be rounded!
+                        let OBIS                = reading.RI;   // OBIS-Code
+                        let Unit                = reading.RU;   // Reading-Unit: kWh, ...
+                        let CurrentType         = reading.RT;   // Reading-Current-Type
+                        let ErrorFlags          = reading.EF;   // Error-Flags
+                        let Status              = reading.ST;   // Status
+
+                        if (CTR.chargingSessions[0].begin == null)
+                            CTR.chargingSessions[0].begin = Timestamp;
+
+                        CTR.chargingSessions[0].end = Timestamp;
+
+                        if (CTR.chargingSessions[0].measurements.length == 0)
+                            CTR.chargingSessions[0].measurements.push({
+                                "energyMeterId":    meterSerial,
+                                "@context":         "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/OCMFv1.0+json",
+                                "obis":             OBIS,        // "1-b:1.8.0"
+                                "unit":             Unit,        // "kWh"
+                                "currentType":      CurrentType, // "AC"
+                                "values":           []
+                            });
+
+                        CTR.chargingSessions[0].measurements[0].values.push({
+                            "timestamp":        Timestamp,          // "2019-06-26T08:57:44,337+0000"
+                            "timeStatus":       TimeStatus,         // "U"
+                            "transaction":      Transaction,        // "B"
+                            "value":            Value,              // 2935.6
+                            "transactionType":  transactionType,    // "T"
+                            "pagination":       pagination,         // "9289"
+                            "errorFlags":       ErrorFlags,         // ""
+                            "status":           Status,             // "G"
+                            "signatures": [{
+                                "value": ocmf.signature["SD"]
+                            }]
                         });
 
-                    CTR.chargingSessions[0].measurements[0].values.push({
-                        "timestamp":        Timestamp,          // "2019-06-26T08:57:44,337+0000"
-                        "timeStatus":       TimeStatus,         // "U"
-                        "transaction":      Transaction,        // "B"
-                        "value":            Value,              // 2935.6
-                        "transactionType":  TransactionType,    // "T"
-                        "pagination":       Pagination,         // "9289"
-                        "errorFlags":       ErrorFlags,         // ""
-                        "status":           Status,             // "G"
-                        "signatures": [{
-                            "value": ocmf.signature["SD"]
-                        }]
-                    });
+                    }
+
+                    CTR.begin = CTR.chargingSessions[0].begin;
+                    CTR.end   = CTR.chargingSessions[0].end;
+
+                    CTR.chargingSessions[0].authorizationStart["@id"]  = ocmf.measurements.ID;
+                    CTR.chargingSessions[0].authorizationStart["type"] = ocmf.measurements.IT;
+                    CTR.chargingSessions[0].authorizationStart["IS"]   = ocmf.measurements.IS;
+                    CTR.chargingSessions[0].authorizationStart["IL"]   = ocmf.measurements.IL;
+                    CTR.chargingSessions[0].authorizationStart["IF"]   = ocmf.measurements.IF;
 
                 }
 
-                CTR.begin = CTR.chargingSessions[0].begin;
-                CTR.end   = CTR.chargingSessions[0].end;
-
-                CTR.chargingSessions[0].authorizationStart["@id"]  = ocmf.data.ID;
-                CTR.chargingSessions[0].authorizationStart["type"] = ocmf.data.IT;
-                CTR.chargingSessions[0].authorizationStart["IS"]   = ocmf.data.IS;
-                CTR.chargingSessions[0].authorizationStart["IL"]   = ocmf.data.IL;
-                CTR.chargingSessions[0].authorizationStart["IF"]   = ocmf.data.IF;
+                return CTR;
 
             }
-
-            return CTR;
 
         }
         catch (exception)
@@ -377,16 +535,24 @@ export class OCMF {
             }
         }
 
+        return {
+            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+            message:   "Invalid OCMF data!",
+            certainty: 0
+        }
+
     }
 
     //#endregion
 
 
-    //#region Try
+    //#region tryToParseOCMF(OCMFValues, PublicKey?)
 
-    public async tryToParseOCMF2(OCMFValues:  string|string[],
-                                 PublicKey?:  string) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async tryToParseOCMF(OCMFValues:  string|string[],
+                                PublicKey?:  string) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
+
+        //#region Data
 
         let commonVersion          = "";
         let ocmfDataList:Object[]  = [];
@@ -394,146 +560,142 @@ export class OCMF {
         if (typeof OCMFValues === 'string')
             OCMFValues = [ OCMFValues ];
 
-        for (let ocmfValue of OCMFValues)
+        //#endregion
+
+        //#region Parse OCMF value(s)
+
+        for (const ocmfValue of OCMFValues)
         {
 
             // OCMF|{"FV":"1.0","GI":"SEAL AG","GS":"1850006a","GV":"1.34","PG":"T9289","MV":"Carlo Gavazzi","MM":"EM340-DIN.AV2.3.X.S1.PF","MS":"******240084S","MF":"B4","IS":true,"IL":"TRUSTED","IF":["OCCP_AUTH"],"IT":"ISO14443","ID":"56213C05","RD":[{"TM":"2019-06-26T08:57:44,337+0000 U","TX":"B","RV":268.978,"RI":"1-b:1.8.0","RU":"kWh","RT":"AC","EF":"","ST":"G"}]}|{"SD":"304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"}
-            const ocmfSections = ocmfValue.split('|');
 
-            if (ocmfSections.length == 3)
-            {
-
-                if (ocmfSections[0] !== "OCMF")
-                    return {
-                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   "The given data does not have a valid OCMF header!",
-                        certainty: 0
-                    }
-
-                let ocmfVersion           = "";
-                let ocmfData:     any     = {};
-                let ocmfSignature:Object  = {};
-
-                try
-                {
-
-                    // http://hers.abl.de/SAFE/Datenformat_OCMF/Datenformat_OCMF_v1.0.pdf
-                    // Ein Darstellungsformat, JSON-basiert (nachvollziehbar)
-                    // Ein Übertragungsformat, JSON-basiert (vereinheitlicht)
-                    //
-                    // {
-                    //     "FV": "1.0",
-                    //     "GI": "SEAL AG",
-                    //     "GS": "1850006a",
-                    //     "GV": "1.34",
-                    //
-                    //     "PG": "T9289",
-                    //
-                    //     "MV": "Carlo Gavazzi",
-                    //     "MM": "EM340-DIN.AV2.3.X.S1.PF",
-                    //     "MS": "******240084S",
-                    //     "MF": "B4",
-                    //
-                    //     "IS": true,
-                    //     "IL": "TRUSTED",
-                    //     "IF": ["OCCP_AUTH"],
-                    //     "IT": "ISO14443",
-                    //     "ID": "56213C05",
-                    //
-                    //     "RD": [{
-                    //         "TM": "2019-06-26T08:57:44,337+0000 U",
-                    //         "TX": "B",
-                    //         "RV": 268.978,
-                    //         "RI": "1-b:1.8.0",
-                    //         "RU": "kWh",
-                    //         "RT": "AC",
-                    //         "EF": "",
-                    //         "ST": "G"
-                    //     }]
-                    // }
-                    // {
-                    //     "SD": "304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"
-                    // }
-
-                    ocmfData       = JSON.parse(ocmfSections[1] ?? "{}");
-                    ocmfSignature  = JSON.parse(ocmfSections[2] ?? "{}");
-                    ocmfVersion    = ocmfData["FV"] != null ? ocmfData["FV"].trim() : ""; 
-
-                }
-                catch (exception)
-                {
-                    return {
-                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   "Could not parse the given OCMF data!",
-                        certainty: 0
-                    }
-                }
-
-                if (ocmfData      == null || Object.keys(ocmfData).length === 0)
-                    return {
-                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   "Could not parse the given OCMF data!",
-                        certainty: 0
-                    }
-
-                if (ocmfSignature == null || Object.keys(ocmfSignature).length === 0)
-                    return {
-                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   "Could not parse the given OCMF signature!",
-                        certainty: 0
-                    }
-
-                if (commonVersion == "")
-                    commonVersion = ocmfVersion;
-                else
-                    if (ocmfVersion != commonVersion)
-                        "Invalid mixture of different OCMF versions within the given SAFE XML!";
-
-                ocmfDataList.push({ "data": ocmfData, "signature": ocmfSignature });
-
-            }
-
-            else
+            if (!ocmfValue.startsWith("OCMF|{"))
                 return {
                     status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:   "The given data is not valid OCMF!",
+                    message:   this.chargy.GetLocalizedMessage("The given OCMF data does not have a valid header!"),
                     certainty: 0
                 }
 
-        }
+            const splitIndex = ocmfValue.lastIndexOf("|");
 
-        if (ocmfDataList.length == 1)
-            return {
-                status:    chargyInterfaces.SessionVerificationResult.AtLeastTwoMeasurementsRequired,
-                message:   "At least two OCMF measurements are required!",
-                certainty: 0
-            }
+            if (splitIndex == -1)
+                return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessage("The given OCMF data could not be parsed") + "!",
+                    certainty: 0
+                }
 
-        if (ocmfDataList.length >= 2)
-        {
-            switch (commonVersion)
+            try
             {
 
-                // case "0.1":
-                //     return await this.tryToParseOCMFv0_1(OCMFDataList as IOCMFData_v0_1[], PublicKey);
+                //#region Documentation
 
-                case "1.0":
-                    return await this.tryToParseOCMF(ocmfDataList as ocmfTypes.IOCMFData_v1_0_Signed[], PublicKey);
+                // http://hers.abl.de/SAFE/Datenformat_OCMF/Datenformat_OCMF_v1.0.pdf
+                // Ein Darstellungsformat, JSON-basiert (nachvollziehbar)
+                // Ein Übertragungsformat, JSON-basiert (vereinheitlicht)
+                //
+                // {
+                //     "FV": "1.0",
+                //     "GI": "SEAL AG",
+                //     "GS": "1850006a",
+                //     "GV": "1.34",
+                //
+                //     "PG": "T9289",
+                //
+                //     "MV": "Carlo Gavazzi",
+                //     "MM": "EM340-DIN.AV2.3.X.S1.PF",
+                //     "MS": "******240084S",
+                //     "MF": "B4",
+                //
+                //     "IS": true,
+                //     "IL": "TRUSTED",
+                //     "IF": ["OCCP_AUTH"],
+                //     "IT": "ISO14443",
+                //     "ID": "56213C05",
+                //
+                //     "RD": [{
+                //         "TM": "2019-06-26T08:57:44,337+0000 U",
+                //         "TX": "B",
+                //         "RV": 268.978,
+                //         "RI": "1-b:1.8.0",
+                //         "RU": "kWh",
+                //         "RT": "AC",
+                //         "EF": "",
+                //         "ST": "G"
+                //     }]
+                // }
+                // {
+                //     "SD": "304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"
+                // }
 
-                default:
-                    return {
-                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   "Unknown OCMF version!",
-                        certainty: 0
-                    }
+                //#endregion
+
+                const ocmfPayload    = JSON.parse(ocmfValue.substring(5, splitIndex));
+                const ocmfSignature  = JSON.parse(ocmfValue.substring(splitIndex + 1));
+                const ocmfVersion    = ocmfPayload["FV"]?.trim();
+
+                if (Object.keys(ocmfPayload).length === 0) return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessage("The given OCMF measurements could not be parsed!"),
+                    certainty: 0
+                }
+
+                if (Object.keys(ocmfSignature).length === 0) return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessage("The given OCMF signature could not be parsed!"),
+                    certainty: 0
+                }
+
+                if (!chargyLib.isMandatoryString(ocmfVersion)) return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessage("The given OCMF data does not have a valid version number!"),
+                    certainty: 0
+                }
+
+                if (commonVersion == "")
+                    commonVersion = ocmfVersion;
+
+                if (ocmfVersion != commonVersion) return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessage("Invalid mixture of different OCMF versions!"),
+                    certainty: 0
+                }
+
+                ocmfDataList.push({
+                               "payload":    ocmfPayload,
+                               "signature":  ocmfSignature
+                             });
 
             }
+            catch (exception)
+            {
+                return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessage("The given OCMF data could not be parsed") + ": " + exception,
+                    certainty: 0
+                }
+            }
+
         }
 
-        return {
-            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-            message:   "Unknown OCMF version!",
-            certainty: 0
+        //#endregion
+
+        switch (commonVersion)
+        {
+
+            // case "0.1":
+            //     return await this.tryToParseOCMFv0_1(ocmfDataList as ocmfTypes.IOCMFData_v0_1[], PublicKey);
+
+            case "1.0":
+                return await this.tryToParseOCMFv1_0(ocmfDataList as ocmfTypes.IOCMFData_v1_0_Signed[], PublicKey);
+
+            default:
+                return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessage("Unknown OCMF version!"),
+                    certainty: 0
+                }
+
         }
 
     }

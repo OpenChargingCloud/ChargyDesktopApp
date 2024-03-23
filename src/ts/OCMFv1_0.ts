@@ -310,10 +310,9 @@ export class OCMFv1_0 extends ACrypt {
                           SignatureCheckDiv:     HTMLDivElement)
     {
 
-        if (measurementValue.measurement                                              === undefined ||
-            measurementValue.measurement.chargingSession                              === undefined ||
-            measurementValue.measurement.chargingSession.authorizationStart           === undefined ||
-            measurementValue.measurement.chargingSession.authorizationStart.timestamp === undefined)
+        if (measurementValue.measurement                                    === undefined ||
+            measurementValue.measurement.chargingSession                    === undefined ||
+            measurementValue.measurement.chargingSession.authorizationStart === undefined)
         {
             return {
                 status: chargyInterfaces.VerificationResult.InvalidMeasurement
@@ -354,7 +353,7 @@ export class OCMFv1_0 extends ACrypt {
             this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                                  result.value                                           || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                                          result.logBookIndex                                    || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",                 chargyLib.pad(result.authorizationStart,          128) || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Autorisierungszeitpunkt",  chargyLib.parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp),   chargyLib.pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, PlainTextDiv);
+     //       this.CreateLine("Autorisierungszeitpunkt",  chargyLib.parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp),   chargyLib.pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, PlainTextDiv);
 
         }
 

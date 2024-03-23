@@ -1135,7 +1135,7 @@ export class ChargyApp {
 
         if (!this.showFeedbackSection)
         {
-            this.feedbackDiv.style.display = "none";
+          //  this.feedbackDiv.style.display = "none";
             return;
         }
 

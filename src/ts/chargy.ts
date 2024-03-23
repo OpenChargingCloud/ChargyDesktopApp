@@ -738,7 +738,7 @@ export class Chargy {
             //#region OCMF processing
 
             else if (textContent?.startsWith("OCMF|{"))
-                processedFile.result = await new OCMF(this).tryToParseOCMF2(textContent);
+                processedFile.result = await new OCMF(this).tryToParseOCMF(textContent);
 
             //#endregion
 

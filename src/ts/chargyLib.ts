@@ -754,32 +754,53 @@ export function isOptionalJSONObject(jsonObject: any,
 }
 
 /**
- * Ensures, that the given json array exists and is a valid json object
- * @param jsonObject a json object
- * @returns true, when the given json array exists and is a valid json object
+ * Ensures, that the given json array exists and is a valid json array
+ * @param value a json array
+ * @returns true, when the given json array exists and is a valid json array
  */
-export function isMandatoryJSONArray(jsonArray: any): jsonArray is any[] {
+export function isMandatoryJSONArray(value: any): value is any[] {
+    return Array.isArray(value);
+}
 
-    return jsonArray        !== null      &&
-           jsonArray        !== undefined &&
-           typeof jsonArray === "object"  &&
-           Array.isArray(jsonArray);
+/**
+ * Ensures, that the given json array of strings exists and is a valid json array of strings
+ * @param value a json array of strings
+ * @returns true, when the given json array exists of strings and is a valid json array of strings
+ */
+export function isMandatoryArrayOfStrings(value: any): value is string[] {
+    return Array.isArray(value) && value.every(element => typeof element === "string");
+}
+
+/**
+ * Checks, whether the given json array exists and if yes wether it is a valid json array
+ * @param value a json array
+ * @returns true, when the given json array does not exist or when it exists and is a valid json array
+ */
+export function isOptionalJSONArray(value: any): value is any[] {
+
+    return value === undefined ||
+           value === null      ||
+           Array.isArray(value);
 
 }
 
 /**
- * Checks, whether the given json array exists and if yes wether it is a valid json object
- * @param jsonArray a json object
- * @returns true, when the given json array does not exist or when it exists, that it is a valid json array
+ * Checks, whether the given json array of strings exists and if yes wether it is a valid json array of strings
+ * @param value a json array of strings
+ * @returns true, when the given json array of strings does not exist or when it exists and is a valid json array of strings
  */
-export function isOptionalJSONArray(jsonArray: any): jsonArray is any[] {
+export function isOptionalArrayOfStrings(value: any): value is string[] | undefined | null {
 
-    return jsonArray        !== null      &&
-           jsonArray        !== undefined &&
-           typeof jsonArray === "object"  &&
-           Array.isArray(jsonArray);
+    return value === undefined ||
+           value === null      ||
+           (Array.isArray(value) && value.every(element => typeof element === "string"));
 
 }
+
+
+
+
+
 
 /**
  * Checks, whether the given json array exists and if yes wether it is a valid json object
@@ -809,56 +830,83 @@ export function isOptionalJSONArrayError(jsonArray: any) {
 
 }
 
+
+/**
+ * Ensures, that the given boolean exists and is a valid boolean
+ * @param value a boolean
+ * @returns true, when the given boolean exists and is a valid boolean
+ */
+export function isMandatoryBoolean(value: any): value is boolean {
+    return value !== undefined && value !== null && typeof value === "boolean";
+}
+
 /**
  * Ensures, that the given text exists and is a valid string
- * @param text a string
+ * @param value a string
  * @returns true, when the given text exists and is a valid string
  */
-export function isMandatoryString(text: any): text is string {
-    return text !== undefined && text !== null && typeof text === "string";
+export function isMandatoryString(value: any): value is string {
+    return value !== undefined && value !== null && typeof value === "string";
 }
 
 /**
  * Ensures, that the given text is a valid string, if it exists
- * @param text a string
+ * @param value a string
  * @returns true, when the given text is a valid string, if it exists
  */
-export function isOptionalString(text: any): text is string {
-    return text !== undefined && text !== null
-               ? typeof text === "string"
+export function isOptionalString(value: any): value is string {
+    return value !== undefined && value !== null
+               ? typeof value === "string"
                : true;
 }
 
 /**
  * Ensures, that the given text is a valid URL, if it exists
- * @param text an URL
+ * @param value an URL
  * @returns true, when the given text is a valid URL, if it exists
  */
-export function isOptionalURL(text: any): text is string {
-    return text !== undefined && text !== null
-               ? typeof text === "string" && text.startsWith("https://")
+export function isOptionalURL(value: any): value is string {
+    return value !== undefined && value !== null
+               ? typeof value === "string" && value.startsWith("https://")
                : true;
 }
 
 
 /**
  * Ensures, that the given number exists and is a valid number
- * @param number a number
+ * @param value a number
  * @returns true, when the given number exists and is a valid number
  */
-export function isMandatoryNumber(number: any): number is number {
-    return number !== undefined && number !== null && typeof number === "number";
+export function isMandatoryNumber(value: any): value is number {
+    return value !== undefined && value !== null && typeof value === "number";
 }
 
 /**
  * Ensures, that the given number is a valid number, if it exists
- * @param number a number
+ * @param value a number
  * @returns true, when the given number is a valid number, if it exists
  */
-export function isOptionalNumber(number: any): number is number {
-    return number !== undefined && number !== null
-               ? typeof number === "number"
+export function isOptionalNumber(value: any): value is number {
+    return value !== undefined && value !== null
+               ? typeof value === "number"
                : true;
+}
+
+
+
+export function parseNumber(value: string): number | null {
+
+    if (value.trim().length > 0) {
+
+        const parsedNumber = Number(value);
+
+        if (!isNaN(parsedNumber) && isFinite(parsedNumber))
+            return parsedNumber;
+
+    }
+
+    return null;
+
 }
 
 

@@ -521,6 +521,61 @@
     "Meter Values": {
         "de": "Messwerte",
         "en": "Meter Values"
+    },
+
+
+
+
+
+
+    "The given OCMF data does not have a valid header!": {
+        "de": "Die übergebenen OCMF-Daten haben keinen gültigen Header!",
+        "en": "The given OCMF data does not have a valid header!"
+    },
+
+    "The given OCMF data could not be parsed": {
+        "de": "Die übergebenen OCMF-Daten konnten nicht geparst werden",
+        "en": "The given OCMF data could not be parsed"
+    },
+
+    "The given OCMF measurements could not be parsed!": {
+        "de": "Die übergebenen OCMF-Messwerte konnten nicht geparst werden!",
+        "en": "The given OCMF measurements could not be parsed!"
+    },
+
+    "The given OCMF signature could not be parsed!": {
+        "de": "Die übergebene OCMF-Signatur konnte nicht geparst werden!",
+        "en": "The given OCMF signature could not be parsed!"
+    },
+
+    "The given OCMF data does not have a valid version number!" : {
+        "de": "Die übergebenen OCMF-Daten haben keine gültige Versionsnummer!",
+        "en": "The given OCMF data does not have a valid version number!"
+    },
+
+    "Invalid mixture of different OCMF versions!": {
+        "de": "Ungültige Mischung verschiedener OCMF-Versionen!",
+        "en": "Invalid mixture of different OCMF versions!"
+    },
+
+    "Unknown OCMF version!" : {
+        "de": "Unbekannte OCMF-Version!",
+        "en": "Unknown OCMF version!"
+    },
+
+    "Each OCMF data set must have at least one meter reading!": {
+        "de": "Jeder OCMF-Datensatz muss mindestens einen Messwert haben!",
+        "en": "Each OCMF data set must have at least one meter reading!"
+    },
+
+    "The given OCMF data does not have a valid transaction type!": {
+        "de": "Die übergebenen OCMF-Daten haben keinen gültigen Transaktionstyp!",
+        "en": "The given OCMF data does not have a valid transaction type!"
+    },
+
+    "The given OCMF data does not have a valid pagination counter!": {
+        "de": "Die übergebenen OCMF-Daten haben keine gültige Paginierungszähler!",
+        "en": "The given OCMF data does not have a valid pagination counter!"
     }
 
 }
