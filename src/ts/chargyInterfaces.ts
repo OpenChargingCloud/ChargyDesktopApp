@@ -17,6 +17,7 @@
 
 import * as exp from 'constants';
 import { ACrypt }  from './ACrypt'
+import Decimal     from 'decimal.js';
 
 export function IsAChargeTransparencyRecord(data: IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult|undefined): data is IChargeTransparencyRecord
 {
@@ -99,7 +100,7 @@ export interface IChargeTransparencyRecord
 {
 
     "@id":                      string;
-    "@context":                 string;
+    "@context":                 string | Array<string>;
     begin?:                     string;
     end?:                       string;
     description?:               IMultilanguageText;
@@ -548,12 +549,12 @@ export interface IMeasurementValue
     previousValue?:             IMeasurementValue;
 
     timestamp:                  string;
-    value:                      number;
+    value:                      Decimal;
     value_displayPrefix?:       DisplayPrefixes;
     value_displayPrecision?:    number;
     statusMeter?:               string;
     secondsIndex?:              number;
-    paginationId?:              number|string;
+    paginationId?:              number | string;
     logBookIndex?:              string;
     statusAdapter?:             string;
 

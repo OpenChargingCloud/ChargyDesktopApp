@@ -31,6 +31,7 @@ import { SAFEXML }                            from './SAFE_XML'
 import { XMLContainer }                       from './XMLContainer'
 import * as chargyInterfaces                  from './chargyInterfaces'
 import * as chargyLib                         from './chargyLib'
+import Decimal                                from 'decimal.js';
 import * as pdfjsLib                          from 'pdfjs-dist';
 
 export class Chargy {
@@ -1148,8 +1149,9 @@ export class Chargy {
         try
         {
 
-            this.currentCTR                = CTR;
-            this.internalCTR               = JSON.parse(JSON.stringify(CTR)); // Operate on a copy of the data!
+            // We operate on an agumented copy of the data!
+            this.internalCTR  = chargyLib.CloneCTR(CTR);
+            this.currentCTR   = CTR;
 
             //#region Process operators (pools, stations, evses, tariffs, ...)
 
@@ -1227,29 +1229,29 @@ export class Chargy {
 
                                 for (var EVSE of chargingStation.EVSEs)
                                 {
-        
+
                                     EVSE.chargingStation    = chargingStation;
                                     EVSE.chargingStationId  = chargingStation["@id"];
-        
+
                                     this.EVSEs.push(EVSE);
-        
+
                                     if (EVSE.meters) {
-        
+
                                         for (var meter of EVSE.meters)
                                         {
-        
+
                                             meter.EVSE               = EVSE;
                                             meter.EVSEId             = EVSE["@id"];
-        
+
                                             meter.chargingStation    = chargingStation;
                                             meter.chargingStationId  = chargingStation["@id"];
-        
+
                                             this.meters.push(meter);
-        
+
                                         }
-        
+
                                     }
-        
+
                                 }
 
                             }

@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import Decimal from "decimal.js"
+
 export const enum OCMFTransactionTypes
 {
     undefined,
@@ -37,14 +39,15 @@ export interface IOCMFLossCompensation {
 }
 
 export interface IOCMFReading {
-    TM:         string, // Timestamp
-    TX?:        string, // Transaction
-    RV?:        string, // typeof RV == 'number', but MUST NOT be rounded!
-    RI?:        string, // Reading-Identification == OBIS-Code
-    RU?:        string, // Reading-Unit: kWh, ...
-    RT?:        string, // Reading-Current-Type
-    EF?:        string, // Error-Flags
-    ST:         string  // Status
+    TM:         string,  // Timestamp
+    TX?:        string,  // Transaction
+    RV?:        Decimal, // typeof RV == 'number', but MUST NOT be rounded!
+    RI?:        string,  // Reading-Identification == OBIS-Code
+    RU?:        string,  // Reading-Unit: kWh, ...
+    RT?:        string,  // Reading-Current-Type
+    CL?:        Number,  // Cumulated Loss
+    EF?:        string,  // Error-Flags
+    ST:         string   // Status
 }
 
 export interface IOCMFSignature {
@@ -96,12 +99,12 @@ export interface IOCMFData_v1_0 extends IOCMFData {
 }
 
 export interface IOCMFData_v0_1_Signed {
-    measurements:  IOCMFData_v0_1,
-    signature:     any
+    payload:    IOCMFData_v0_1,
+    signature:  any
 }
 
 export interface IOCMFData_v1_0_Signed {
-    measurements:  IOCMFData_v1_0,
-    signature:     any
+    payload:    IOCMFData_v1_0,
+    signature:  any
 }
 

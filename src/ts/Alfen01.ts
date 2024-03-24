@@ -19,6 +19,7 @@ import { Chargy }             from './chargy'
 import { ACrypt }             from './ACrypt'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
+import Decimal from 'decimal.js';
 
 export class Alfen01  {
 
@@ -153,7 +154,7 @@ export class Alfen01  {
                 let ObisId               = this.bufferToHex(DataSet.slice(38, 44));                                                              // 01 00 01 08 00 ff
                 let UnitEncoded          = this.bufferToNumber(DataSet.slice(44, 45));                                                           // 1e => 30 => Wh
                 let Scalar               = this.bufferToHex(DataSet.slice(45, 46));                                                              // 00
-                let Value                = new Number(new DataView(DataSet.slice(46, 54), 0).getBigInt64(0, true));                              // 73 29 00 00 00 00 00 00 => 10611 Wh so 10,611 KWh
+                let Value                = new Number(new DataView(DataSet.slice(46, 54), 0).getBigInt64(0, true));                    // 73 29 00 00 00 00 00 00 => 10611 Wh so 10,611 KWh
                 let UID                  = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(54, 74)) as any).replace(/\0.*$/g, '');  // ASCII: 30 35 38 39 38 41 42 42 00 00 00 00 00 00 00 00 00 00 00 00 => UID: 05 89 8A BB
                 let InternalSessionId    = new DataView(DataSet.slice(74, 78), 0).getInt32(0, true)                                              // 81 01 00 00 => 385(dec)
                 let Paging               = new DataView(DataSet.slice(78, 82), 0).getInt32(0, true);                                             // 47 02 00 00 => 583(dec)
@@ -260,7 +261,7 @@ export class Alfen01  {
                     //@ts-ignore
                     "Timestamp":          Timestamp,
                     //@ts-ignore
-                    "Value":              Value,
+                    "Value":              new Decimal(Value.toString()),  // Workaround for Decimal.js
                     //@ts-ignore
                     "Paging":             Paging,
                     //@ts-ignore
@@ -570,10 +571,10 @@ export class AlfenCrypt01 extends ACrypt {
 
         measurementValue.method = this;
 
-        var buffer        = new ArrayBuffer(82);
-        var cryptoBuffer  = new DataView(buffer);
+        const buffer        = new ArrayBuffer(82);
+        const cryptoBuffer  = new DataView(buffer);
 
-        var cryptoResult:IAlfenCrypt01Result = {
+        const cryptoResult:IAlfenCrypt01Result = {
             status:                       chargyInterfaces.VerificationResult.InvalidSignature,
             adapterId:                    chargyLib.SetHex        (cryptoBuffer, measurementValue.measurement.adapterId,                                           0),
             adapterFWVersion:             chargyLib.SetText       (cryptoBuffer, measurementValue.measurement.adapterFWVersion,                                    10),
@@ -586,14 +587,14 @@ export class AlfenCrypt01 extends ACrypt {
             obisId:                       chargyLib.SetHex        (cryptoBuffer, chargyLib.OBIS2Hex(measurementValue.measurement.obis),                            38, false),
             unitEncoded:                  chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded ?? 0,                                    44),
             scalar:                       chargyLib.SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                               45),
-            value:                        chargyLib.SetUInt64     (cryptoBuffer, measurementValue.value,                                                           46, true),
+            value:                        chargyLib.SetUInt64D    (cryptoBuffer, measurementValue.value,                                                           46, true),
             uid:                          chargyLib.SetText       (cryptoBuffer, (measurementValue.measurement.chargingSession?.authorizationStart["@id"] ?? ""),  54),
             sessionId:                    chargyLib.SetUInt32     (cryptoBuffer, parseInt(measurementValue.measurement.chargingSession?.internalSessionId ?? ""),  74, true),
             paging:                       chargyLib.SetUInt32     (cryptoBuffer, measurementValue.paginationId,                                                    78, true)
         };
 
 
-        var signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
+        const signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
         if (signatureExpected != null)
         {
 

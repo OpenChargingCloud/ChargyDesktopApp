@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import Decimal from 'decimal.js';
 import { Chargy }             from './chargy'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
@@ -237,6 +238,7 @@ export class ChargyApp {
             (this.openSourceLibsDiv.querySelector("#leafletJS")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet"]?.                replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#leafletAwesomeMarkers")  as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet.awesome-markers"]?.replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#chartJS")                as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["chart.js"]?.               replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#decimalJS")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decimal.js"]?.             replace(/[^0-9\.]/g, "");
         }
 
         //#endregion
@@ -1692,9 +1694,9 @@ export class ChargyApp {
 
                                 }
 
-                                const first  = measurement?.values[0]?.value                           ?? 0;
+                                const first  = measurement?.values[0]?.value                           ?? new Decimal(0);
                                 const last   = measurement?.values[measurement.values.length-1]?.value ?? first;
-                                let   amount = parseFloat(((last - first) * Math.pow(10, measurement.scale)).toFixed(10));
+                                let   amount = parseFloat(((last.minus(first)).times(Math.pow(10, measurement.scale))).toFixed(10));
 
                                 switch (measurement.unit)
                                 {
@@ -2676,12 +2678,12 @@ export class ChargyApp {
                     if (measurement.values && measurement.values.length > 0)
                     {
 
-                        const measurementValuesDiv = chargyLib.CreateDiv(this.detailedInfosDiv, "measurementValues");
-                                                     chargyLib.CreateDiv(measurementValuesDiv, "headline2",
-                                                                         this.chargy.GetLocalizedMessage("Meter Values"));
+                        let   measurementCounter    = 0;
+                        let   previousValue         = new Decimal(0);
 
-                        let previousValue                 = 0;
-                        let measurementCounter            = 0;
+                        const measurementValuesDiv  = chargyLib.CreateDiv(this.detailedInfosDiv, "measurementValues");
+                                                      chargyLib.CreateDiv(measurementValuesDiv, "headline2",
+                                                                          this.chargy.GetLocalizedMessage("Meter Values"));
 
                         for (let measurementValue of measurement.values)
                         {
@@ -2703,7 +2705,7 @@ export class ChargyApp {
 
                             //#region Show current energy value
 
-                            let currentValue  = measurementValue.value * Math.pow(10, measurementValue.measurement.scale);
+                            let currentValue  = measurementValue.value.times(Math.pow(10, measurementValue.measurement.scale));
 
                             // Display the energy value differently from its native energy meter representation.
                             // This can be a regulatory requirement based on the calibration law.
@@ -2715,16 +2717,16 @@ export class ChargyApp {
                                     switch (measurementValue.value_displayPrefix)
                                     {
                                         case chargyInterfaces.DisplayPrefixes.KILO:
-                                            currentValue = parseFloat((currentValue             ).toFixed(measurementValue.value_displayPrecision));
+                                            currentValue = new Decimal((currentValue                ).toFixed(measurementValue.value_displayPrecision));
                                             break;
                                         case chargyInterfaces.DisplayPrefixes.MEGA:
-                                            currentValue = parseFloat((currentValue /       1000).toFixed(measurementValue.value_displayPrecision));
+                                            currentValue = new Decimal((currentValue.div(      1000)).toFixed(measurementValue.value_displayPrecision));
                                             break;
                                         case chargyInterfaces.DisplayPrefixes.GIGA:
-                                            currentValue = parseFloat((currentValue /    1000000).toFixed(measurementValue.value_displayPrecision));
+                                            currentValue = new Decimal((currentValue.div(   1000000)).toFixed(measurementValue.value_displayPrecision));
                                             break;
                                         default:
-                                            currentValue = parseFloat((currentValue *       1000).toFixed(measurementValue.value_displayPrecision));
+                                            currentValue = new Decimal((currentValue.times(    1000)).toFixed(measurementValue.value_displayPrecision));
                                     }
                                 }
                                 else // Wh
@@ -2732,22 +2734,22 @@ export class ChargyApp {
                                     switch (measurementValue.value_displayPrefix)
                                     {
                                         case chargyInterfaces.DisplayPrefixes.KILO:
-                                            currentValue = parseFloat((currentValue /       1000).toFixed(measurementValue.value_displayPrecision));
+                                            currentValue = new Decimal((currentValue.div(      1000).toFixed(measurementValue.value_displayPrecision)));
                                             break;
                                         case chargyInterfaces.DisplayPrefixes.MEGA:
-                                            currentValue = parseFloat((currentValue /    1000000).toFixed(measurementValue.value_displayPrecision));
+                                            currentValue = new Decimal((currentValue.div(   1000000).toFixed(measurementValue.value_displayPrecision)));
                                             break;
                                         case chargyInterfaces.DisplayPrefixes.GIGA:
-                                            currentValue = parseFloat((currentValue / 1000000000).toFixed(measurementValue.value_displayPrecision));
+                                            currentValue = new Decimal((currentValue.div(1000000000).toFixed(measurementValue.value_displayPrecision)));
                                             break;
                                         default:
-                                            currentValue = parseFloat((currentValue             ).toFixed(measurementValue.value_displayPrecision));
+                                            currentValue = new Decimal((currentValue               ).toFixed(measurementValue.value_displayPrecision));
                                     }
                                 }
                             }
                             else
                             {
-                                currentValue = parseFloat(currentValue.toFixed(Math.abs(measurementValue.measurement.scale)));
+                                currentValue = new Decimal(currentValue.toFixed(Math.abs(measurementValue.measurement.scale)));
                             }
 
                             // Show energy value
@@ -2808,10 +2810,10 @@ export class ChargyApp {
                             // Difference (will use the same DisplayPrefix like the plain value!)
                             chargyLib.CreateDiv(measurementValueDiv, "value2",
                                       measurementCounter > 1
-                                          ? (currentValue - previousValue >= 0 ? "+" : "") +
+                                          ? (currentValue.minus(previousValue).toNumber() >= 0 ? "+" : "") +
                                             (measurementValue.value_displayPrecision
-                                                 ? parseFloat((currentValue - previousValue).toFixed(Math.abs(measurementValue.value_displayPrecision)))
-                                                 : parseFloat((currentValue - previousValue).toFixed(Math.abs(measurementValue.measurement.scale))))
+                                                 ? parseFloat((currentValue.minus(previousValue)).toFixed(Math.abs(measurementValue.value_displayPrecision)))
+                                                 : parseFloat((currentValue.minus(previousValue)).toFixed(Math.abs(measurementValue.measurement.scale))))
                                           : "0");
 
                             // Unit

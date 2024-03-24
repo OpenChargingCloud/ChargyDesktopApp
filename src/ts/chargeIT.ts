@@ -116,55 +116,55 @@ export class ChargeIT {
 
             //#endregion
 
-            if (chargyLib.isMandatoryString    (measurementId)                             &&
-                chargyLib.isMandatoryNumber    (timestamp)                                 &&
-                chargyLib.isMandatoryString    (transactionId)                             &&
-                chargyLib.isMandatoryString    (signature)                                 &&
+            if (chargyLib.isMandatoryString     (measurementId)                             &&
+                chargyLib.isMandatoryNumber     (timestamp)                                 &&
+                chargyLib.isMandatoryString     (transactionId)                             &&
+                chargyLib.isMandatoryString     (signature)                                 &&
 
-                chargyLib.isMandatoryJSONObject(meterInfo)                                 &&
-                chargyLib.isMandatoryString    (meterInfo_meterId)                         &&
-                chargyLib.isMandatoryString    (meterInfo_type)                            &&
-                chargyLib.isMandatoryString    (meterInfo_firmwareVersion)                 &&
-                chargyLib.isMandatoryString    (meterInfo_publicKey)                       &&
-                chargyLib.isMandatoryString    (meterInfo_manufacturer)                    &&
+                chargyLib.isMandatoryJSONObject (meterInfo)                                 &&
+                chargyLib.isMandatoryString     (meterInfo_meterId)                         &&
+                chargyLib.isMandatoryString     (meterInfo_type)                            &&
+                chargyLib.isMandatoryString     (meterInfo_firmwareVersion)                 &&
+                chargyLib.isMandatoryString     (meterInfo_publicKey)                       &&
+                chargyLib.isMandatoryString     (meterInfo_manufacturer)                    &&
 
-                chargyLib.isOptionalJSONArrayOk(meterInfo_publicKeySignatures)             &&
+                chargyLib.isOptionalJSONArrayOk (meterInfo_publicKeySignatures)             &&
 
-                chargyLib.isMandatoryJSONObject(contract)                                  &&
-                chargyLib.isMandatoryString    (contract_id)                               &&
-                chargyLib.isMandatoryString    (contract_type)                             &&
-                chargyLib.isMandatoryNumber    (contract_timestamp)                        &&
+                chargyLib.isMandatoryJSONObject (contract)                                  &&
+                chargyLib.isMandatoryString     (contract_id)                               &&
+                chargyLib.isMandatoryString     (contract_type)                             &&
+                chargyLib.isMandatoryNumber     (contract_timestamp)                        &&
 
-                chargyLib.isMandatoryJSONObject(contract_timestampLocal)                   &&
-                chargyLib.isMandatoryNumber    (contract_timestampLocal_timestamp)         &&
-                chargyLib.isMandatoryNumber    (contract_timestampLocal_localOffset)       &&
-                chargyLib.isMandatoryNumber    (contract_timestampLocal_seasonOffset)      &&
+                chargyLib.isMandatoryJSONObject (contract_timestampLocal)                   &&
+                chargyLib.isMandatoryNumber     (contract_timestampLocal_timestamp)         &&
+                chargyLib.isMandatoryNumber     (contract_timestampLocal_localOffset)       &&
+                chargyLib.isMandatoryNumber     (contract_timestampLocal_seasonOffset)      &&
 
-                chargyLib.isMandatoryJSONObject(measuredValue)                             &&
-                chargyLib.isMandatoryString    (measuredValue_value)                       &&
-                chargyLib.isMandatoryString    (measuredValue_unit)                        &&
-                chargyLib.isMandatoryNumber    (measuredValue_scale)                       &&
-                chargyLib.isMandatoryString    (measuredValue_valueType)                   &&
-                chargyLib.isMandatoryNumber    (measuredValue_unitEncoded)                 &&
+                chargyLib.isMandatoryJSONObject (measuredValue)                             &&
+                chargyLib.isMandatoryString     (measuredValue_value)                       &&
+                chargyLib.isMandatoryString     (measuredValue_unit)                        &&
+                chargyLib.isMandatoryNumber     (measuredValue_scale)                       &&
+                chargyLib.isMandatoryString     (measuredValue_valueType)                   &&
+                chargyLib.isMandatoryNumber     (measuredValue_unitEncoded)                 &&
 
-                chargyLib.isMandatoryJSONObject(measuredValue_timestampLocal)              &&
-                chargyLib.isMandatoryNumber    (measuredValue_timestampLocal_timestamp)    &&
-                chargyLib.isMandatoryNumber    (measuredValue_timestampLocal_localOffset)  &&
-                chargyLib.isMandatoryNumber    (measuredValue_timestampLocal_seasonOffset) &&
+                chargyLib.isMandatoryJSONObject (measuredValue_timestampLocal)              &&
+                chargyLib.isMandatoryNumber     (measuredValue_timestampLocal_timestamp)    &&
+                chargyLib.isMandatoryNumber     (measuredValue_timestampLocal_localOffset)  &&
+                chargyLib.isMandatoryNumber     (measuredValue_timestampLocal_seasonOffset) &&
 
-                chargyLib.isMandatoryJSONObject(measurand)                                 &&
-                chargyLib.isMandatoryString    (measurand_id)                              &&
-                chargyLib.isMandatoryString    (measurand_name)                            &&
+                chargyLib.isMandatoryJSONObject (measurand)                                 &&
+                chargyLib.isMandatoryString     (measurand_id)                              &&
+                chargyLib.isMandatoryString     (measurand_name)                            &&
 
-                chargyLib.isMandatoryJSONObject(additionalInfo)                            &&
-                chargyLib.isMandatoryString    (additionalInfo_status)                     &&
+                chargyLib.isMandatoryJSONObject (additionalInfo)                            &&
+                chargyLib.isMandatoryString     (additionalInfo_status)                     &&
 
-                chargyLib.isMandatoryJSONObject(additionalInfo_indexes)                    &&
-                chargyLib.isMandatoryNumber    (additionalInfo_indexes_timer)              &&
-                chargyLib.isMandatoryString    (additionalInfo_indexes_logBook)            &&
+                chargyLib.isMandatoryJSONObject (additionalInfo_indexes)                    &&
+                chargyLib.isMandatoryNumber     (additionalInfo_indexes_timer)              &&
+                chargyLib.isMandatoryString     (additionalInfo_indexes_logBook)            &&
 
-                chargyLib.isMandatoryJSONObject(chargePoint)                               &&
-                chargyLib.isMandatoryString    (chargePoint_softwareVersion)) {
+                chargyLib.isMandatoryJSONObject (chargePoint)                               &&
+                chargyLib.isMandatoryString     (chargePoint_softwareVersion)) {
 
                     CTRArray.push({
                         "timestamp":            timestamp,

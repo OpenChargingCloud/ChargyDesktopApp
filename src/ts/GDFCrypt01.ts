@@ -133,7 +133,7 @@ export class GDFCrypt01 extends ACrypt {
             obis:                         chargyLib.SetHex      (cryptoBuffer, measurementValue.measurement.obis,                                           23, false),
             unitEncoded:                  chargyLib.SetInt8     (cryptoBuffer, measurementValue.measurement.unitEncoded ?? 0,                               29),
             scale:                        chargyLib.SetInt8     (cryptoBuffer, measurementValue.measurement.scale,                                          30),
-            value:                        chargyLib.SetUInt64   (cryptoBuffer, measurementValue.value,                                                      31, true),
+            value:                        chargyLib.SetUInt64D  (cryptoBuffer, measurementValue.value,                                                      31, true),
             authorizationStart:           chargyLib.SetHex      (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],      41),
             authorizationStartTimestamp:  chargyLib.SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp,  169)
         };

@@ -16,6 +16,7 @@
  */
 
 import * as chargyInterfaces  from './chargyInterfaces'
+import Decimal                from 'decimal.js';
 
 
 export function ParseJSON_LD<T>(Text:     string,
@@ -435,6 +436,14 @@ export function SetUInt64(dv: DataView, value: number, offset: number, reverse?:
 
 }
 
+export function SetUInt64D(dv: DataView, value: Decimal, offset: number, reverse?: boolean): string
+{
+    return SetUInt64(dv,
+                     value.toNumber(),
+                     offset,
+                     reverse);
+}
+
 export function SetText(dv: DataView, text: string, offset: number): string
 {
 
@@ -717,11 +726,11 @@ export async function sha512(message: string|DataView): Promise<string> {
 
 /**
  * Ensures, that the given json object exists and is a valid json object
- * @param jsonObject a json object
+ * @param value a json object
  * @returns true, when the given json object exists and is a valid json object
  */
-export function isMandatoryJSONObject(jsonObject: any): jsonObject is any {
-    return jsonObject !== undefined && jsonObject !== null && typeof jsonObject === "object" && !Array.isArray(jsonObject);
+export function isMandatoryJSONObject(value: any): value is any {
+    return typeof value === "object" && !Array.isArray(value);
 }
 
 /**
@@ -729,27 +738,11 @@ export function isMandatoryJSONObject(jsonObject: any): jsonObject is any {
  * @param jsonObject a json object
  * @returns true, when the given json object does not exist or when it exists, that it is a valid json object
  */
-export function isOptionalJSONObject(jsonObject: any,
-                                     ok?:    (json: any[]) => void,
-                                     error?: (json: any)   => void) {
+export function isOptionalJSONObject(value: any): value is any | undefined | null {
 
-    if (jsonObject !== undefined && jsonObject !== null)
-    {
-
-        if (typeof jsonObject === "object" && !Array.isArray(jsonObject))
-        {
-            if (ok !== undefined)
-                ok(jsonObject);
-        }
-        else
-        {
-            if (error !== undefined)
-                error(jsonObject);
-        }
-
-    }
-
-    return false;
+    return value === null      ||
+           value === undefined ||
+           (typeof value === "object" && !Array.isArray(value));
 
 }
 
@@ -837,7 +830,7 @@ export function isOptionalJSONArrayError(jsonArray: any) {
  * @returns true, when the given boolean exists and is a valid boolean
  */
 export function isMandatoryBoolean(value: any): value is boolean {
-    return value !== undefined && value !== null && typeof value === "boolean";
+    return typeof value === "boolean";
 }
 
 /**
@@ -846,7 +839,7 @@ export function isMandatoryBoolean(value: any): value is boolean {
  * @returns true, when the given text exists and is a valid string
  */
 export function isMandatoryString(value: any): value is string {
-    return value !== undefined && value !== null && typeof value === "string";
+    return typeof value === "string";
 }
 
 /**
@@ -854,10 +847,21 @@ export function isMandatoryString(value: any): value is string {
  * @param value a string
  * @returns true, when the given text is a valid string, if it exists
  */
-export function isOptionalString(value: any): value is string {
-    return value !== undefined && value !== null
-               ? typeof value === "string"
-               : true;
+export function isOptionalString(value: any): value is string | undefined | null {
+
+    return typeof value === "string"  ||
+                  value === undefined ||
+                  value === null;
+
+}
+
+/**
+ * Ensures, that the given text exists and is a valid URL
+ * @param value an URL
+ * @returns true, when the given text exists and is a valid URL
+ */
+export function isMandatoryURL(value: any): value is string | undefined | null {
+    return typeof value === "string" && value.startsWith("https://");
 }
 
 /**
@@ -865,10 +869,12 @@ export function isOptionalString(value: any): value is string {
  * @param value an URL
  * @returns true, when the given text is a valid URL, if it exists
  */
-export function isOptionalURL(value: any): value is string {
-    return value !== undefined && value !== null
-               ? typeof value === "string" && value.startsWith("https://")
-               : true;
+export function isOptionalURL(value: any): value is string | undefined | null {
+
+    return (typeof value === "string" && value.startsWith("https://") ||
+                   value === undefined ||
+                   value === null);
+
 }
 
 
@@ -878,7 +884,7 @@ export function isOptionalURL(value: any): value is string {
  * @returns true, when the given number exists and is a valid number
  */
 export function isMandatoryNumber(value: any): value is number {
-    return value !== undefined && value !== null && typeof value === "number";
+    return typeof value === "number";
 }
 
 /**
@@ -886,11 +892,67 @@ export function isMandatoryNumber(value: any): value is number {
  * @param value a number
  * @returns true, when the given number is a valid number, if it exists
  */
-export function isOptionalNumber(value: any): value is number {
-    return value !== undefined && value !== null
-               ? typeof value === "number"
-               : true;
+export function isOptionalNumber(value: any): value is number | undefined | null {
+
+    return typeof value === "number"  ||
+                  value === undefined ||
+                  value === null;
+
 }
+
+/**
+ * Ensures, that the given decimal number exists and is a valid decimal number
+ * @param value a decimal number
+ * @returns true, when the given decimal number exists and is a valid decimal number
+ */
+export function isMandatoryDecimal(value: any): value is Decimal {
+
+    if (value instanceof Decimal || typeof value === "number")
+        return true;
+
+    if (typeof value === "string") {
+        try
+        {
+            const decimalValue = new Decimal(value);
+            return true;
+        }
+        catch (e) {
+        }
+    }
+
+    return false;
+
+}
+
+/**
+ * Ensures, that the given decimal number is a valid decimal number, if it exists
+ * @param value a decimal number
+ * @returns true, when the given decimal number is a valid decimal number, if it exists
+ */
+export function isOptionalDecimal(value: any): value is Decimal | undefined | null {
+
+    if (value instanceof Decimal ||
+        typeof value === "number"||
+        value === undefined ||
+        value === null)
+    {
+        return true;
+    }
+
+    if (typeof value === "string") {
+        try
+        {
+            const decimalValue = new Decimal(value);
+            return true;
+        }
+        catch (e) {
+        }
+    }
+
+    return false;
+
+}
+
 
 
 
@@ -919,4 +981,30 @@ export function InformationRelevanceToString(InfoRelevance: chargyInterfaces.Inf
         case chargyInterfaces.InformationRelevance.Important:    return "Important";
         default:                                                 return "Unknown";
     }
+}
+
+
+export function CloneCTR(CTR: chargyInterfaces.IChargeTransparencyRecord): chargyInterfaces.IChargeTransparencyRecord
+{
+
+    // const jsonSerializer = (key:string, value:any) => {
+    //     return value instanceof Decimal ? value.toNumber() : value;
+    // };
+
+    var clonedCTR = JSON.parse(JSON.stringify(CTR)) as chargyInterfaces.IChargeTransparencyRecord;   //, jsonSerializer));
+
+    if (clonedCTR.chargingSessions)
+    {
+        for (const session of clonedCTR.chargingSessions) {
+            for (const measurement of session.measurements) {
+                for (const value of measurement.values) {
+                    if (typeof value.value === 'string' || typeof value.value === 'number')
+                        value.value = new Decimal(value.value);
+                }
+            }
+        }
+    }
+
+    return clonedCTR;
+
 }

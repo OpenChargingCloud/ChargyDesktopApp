@@ -46,6 +46,7 @@
     "asn1.js": "^5.4.1",
     "base32-decode": "^1.0.0",
     "chart.js": "^4.4.1",
+    "decimal.js": "^10.4.3",
     "decompress": "^4.2.1",
     "decompress-bzip2": "^4.0.0",
     "decompress-gz": "^0.0.1",

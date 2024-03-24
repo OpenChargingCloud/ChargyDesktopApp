@@ -569,13 +569,28 @@
     },
 
     "The given OCMF data does not have a valid transaction type!": {
-        "de": "Die übergebenen OCMF-Daten haben keinen gültigen Transaktionstyp!",
+        "de": "Der übergebene OCMF-Datensatz hat keinen gültigen Transaktionstyp!",
         "en": "The given OCMF data does not have a valid transaction type!"
     },
 
-    "The given OCMF data does not have a valid pagination counter!": {
-        "de": "Die übergebenen OCMF-Daten haben keine gültige Paginierungszähler!",
-        "en": "The given OCMF data does not have a valid pagination counter!"
+    "The given OCMF meter value does not have a valid pagination counter!": {
+        "de": "Die übergebenen OCMF-Messwert haben keine gültige Paginierungszähler!",
+        "en": "The given OCMF meter value does not have a valid pagination counter!"
+    },
+
+    "The given OCMF meter value does not have a valid time sync format!": {
+        "de": "Die übergebenen OCMF-Messwert haben kein gültiges Zeitsyncformat!",
+        "en": "The given OCMF meter value does not have a valid time sync format!"
+    },
+
+    "The given OCMF meter value does not have a valid transaction type!": {
+        "de": "Die übergebenen OCMF-Messwert haben keinen gültigen Transaktionstyp!",
+        "en": "The given OCMF meter value does not have a valid transaction type!"
+    },
+
+    "The given OCMF meter value does not have a valid current type!": {
+        "de": "Die übergebenen OCMF-Messwert haben keinen gültigen Stromtyp!",
+        "en": "The given OCMF meter value does not have a valid current type!"
     }
 
 }
