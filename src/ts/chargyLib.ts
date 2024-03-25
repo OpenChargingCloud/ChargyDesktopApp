@@ -95,6 +95,8 @@ export function parseOBIS(OBIS: string): string
     // https://github.com/volkszaehler/vzlogger/blob/master/src/Obis.cpp
     // https://www.promotic.eu/en/pmdoc/Subsystems/Comm/PmDrivers/IEC62056_OBIS.htm
     // https://www.bundesnetzagentur.de/DE/Service-Funktionen/Beschlusskammern/BK06/BK6_81_GPKE_GeLi/Mitteilung_nr_62/Anlagen/Codeliste_OBIS_Kennzahlen_2.2g.pdf?__blob=publicationFile&v=2
+    // https://www.bundesnetzagentur.de/DE/Beschlusskammern/BK06/BK6_81_GPKE_GeLi/Mitteilung_Nr_20/Anlagen/Obis-Kennzahlen-System_2.0.pdf?__blob=publicationFile&v=2
+    // https://www.edi-energy.de/index.php?id=38&tx_bdew_bdew%5Buid%5D=2084&tx_bdew_bdew%5Baction%5D=download&tx_bdew_bdew%5Bcontroller%5D=Dokument&cHash=0db4ac05eb3e647669c5e9ac7bca093b
     // http://www.nzr.de/download.php?id=612: 1.17.0 => Signierter Zählerstand (nur im EDL40-Modus)
 
     // format: "A-B:C.D.E[*&]F"
@@ -131,9 +133,9 @@ export function OBIS2Hex(OBIS: string): string
 
 }
 
-export function OBIS2MeasurementName(In: string) : string
+export function OBIS2MeasurementName(OBISString: string) : string
 {
-    switch (In)
+    switch (OBISString)
     {
 
         case "1-0:1.7.0*255":
@@ -148,8 +150,28 @@ export function OBIS2MeasurementName(In: string) : string
         case "1-0:1.17.0*255":
             return "ENERGY_TOTAL";
 
+        // https://www.dzg.de/fileadmin/dzg/content/downloads/produkte-zaehler/gsh/DZG_GSH01_product_manual_2022_12_08.pdf
+        // Obis Code         Description                                                                      Data Type   Unit   Scaler   Displayed Accuracy   OCMF Accuracy
+        // ---------------   -------------------------------------------------------------------------------- ----------- ------ -------- -------------------- ---------------
+        // 1-0:1.8.0*255     Total Import Mains Energy                Upper Line Content (Billing Relevant)   int64_t     kWh    -4       2                    3
+        // 1-0:140.7.0*255   Line Loss Impedance                      Upper Line Content (Billing Relevant)   uint16_t    Ohm    -4
+        // 1-0:152.8.0*255   Total Transaction Import Device Energy   Upper Line Content (Billing Relevant)
+        //--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        // 1-0:31.7.0*255    Phase L1 Current                         -                                       int32_t     A      -2       1                    -
+        // 1-0:32.7.0*255    Phase L1 Voltage                         -                                       int32_t     V      -2       1                    -
+        // 1-0:1.7.0*255     Total Import Mains Power                 -                                       int32_t     W      -2       1                    -
+        // 1.0:156.7.0*255   Import Device Power                      -                                       int32_t     W      -2       1                    -
+        // 1.0:154.7.0*255   Import Line Loss Power                   -                                       int32_t     W      -2       1                    -
+        // 1-0:16.7.0*255    Total Device Power                       -                                       int64_t     W      -2       1                    -
+        // 1-0:154.8.0*255   Total Import Line Loss Energy            -                                       int64_t     kWh    -4       2                    3
+        // 1-0:156.8.0*255   Total Import Device Energy               -                                       int64_t     kWh    -4       2                    3
+
+        case "1-0:152.8.0*255":
+        case "01-00:98.08.00.FF":
+            return "ENERGY_TOTAL";
+
         default:
-            return In;
+            return OBISString;
 
     }
 }

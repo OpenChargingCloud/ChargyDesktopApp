@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-import * as exp from 'constants';
 import { ACrypt }  from './ACrypt'
 import Decimal     from 'decimal.js';
 
@@ -604,6 +603,16 @@ export function isICryptoResult(obj: any): obj is ICryptoResult {
     return obj.status !== undefined
 }
 
+export function isIPublicKeyXY(obj: any): obj is IPublicKeyXY {
+    return obj && typeof obj.x === "string" && typeof obj.y === "string";
+}
+
+export interface IPublicKeyXY extends IPublicKey
+{
+    x:                          string;
+    y:                          string;
+}
+
 export interface IPublicKey
 {
     algorithm:                  string;
@@ -633,7 +642,7 @@ export interface ISignature
 // }
 
 
-export interface ISignatureRS  extends ISignature
+export interface ISignatureRS extends ISignature
 {
     r?:                         string;
     s?:                         string;
@@ -686,10 +695,13 @@ export enum SessionVerificationResult {
 
 export enum VerificationResult {
 
+    Unvalidated,
+
     UnknownCTRFormat,
     UnknownSignatureFormat,
     EnergyMeterNotFound,
     PublicKeyNotFound,
+    UnknownPublicKeyFormat,
     InvalidPublicKey,
 
     InvalidMeasurement,

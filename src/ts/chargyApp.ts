@@ -2366,7 +2366,7 @@ export class ChargyApp {
                     if (measurement.chargingSession.chargingStation != null &&
                        (measurement.chargingSession.chargingStation["@id"] !== "DE*GEF*STATION*CHARGY*1" ||
                         measurement.chargingSession.chargingStation.manufacturer                         ||
-                        measurement.chargingSession.chargingStation.model                                 ||
+                        measurement.chargingSession.chargingStation.model                                ||
                         measurement.chargingSession.chargingStation.serialNumber                         ||
                         measurement.chargingSession.chargingStation.firmwareVersion                      ||
                         measurement.chargingSession.chargingStation.legalCompliance))
