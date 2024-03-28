@@ -982,7 +982,7 @@ export class ChargyApp {
 
                                 request.on('end', async () => {
 
-                                    let result = await chargyHTTP.detectAndConvertContentFormat([{
+                                    let result = await chargyHTTP.DetectAndConvertContentFormat([{
                                         name: "http request",
                                         data: Buffer.concat(binaryData)
                                     }]);
@@ -1461,16 +1461,16 @@ export class ChargyApp {
         let result:IChargeTransparencyRecord|ISessionCryptoResult = null;
 
         if (typeof FileInfos === 'string')
-            result = await this.chargy.detectAndConvertContentFormat([{
+            result = await this.chargy.DetectAndConvertContentFormat([{
                                                                          name: "clipboard",
                                                                          data: new TextEncoder().encode(FileInfos)
                                                                       }]);
 
         else if (chargyInterfaces.isIFileInfo(FileInfos))
-            result = await this.chargy.detectAndConvertContentFormat([ FileInfos ]);
+            result = await this.chargy.DetectAndConvertContentFormat([ FileInfos ]);
 
         else
-            result = await this.chargy.detectAndConvertContentFormat(FileInfos);
+            result = await this.chargy.DetectAndConvertContentFormat(FileInfos);
 
 
         if (chargyInterfaces.IsAChargeTransparencyRecord(result))

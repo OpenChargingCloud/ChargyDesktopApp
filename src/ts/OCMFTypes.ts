@@ -18,7 +18,6 @@
 import * as chargyInterfaces  from './chargyInterfaces'
 import Decimal                from "decimal.js"
 
-
 export const enum OCMFTransactionTypes
 {
     undefined,
@@ -124,6 +123,7 @@ export interface IOCMFReading {
 export interface IOCMFSignature {
 
     // {
+    //   "SA": "ECDSA-secp256r1-SHA256",
     //   "SD": "304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"
     // }
 
@@ -140,6 +140,8 @@ export interface IOCMFSignature {
                                         // ECDSA-brainpool256r1-SHA256        ECDSA                 brainpool256r1                                                256 bit      SHA-256          64
                                         // ECDSA-secp384r1-SHA256             ECDSA                 secp384r1, NIST P-384, ANSI X9.62 elliptic curve prime384v1   384 bit      SHA-256          96
                                         // ECDSA-brainpool384r1-SHA256        ECDSA                 brainpool384r1                                                384 bit      SHA-256          96
+
+                                        // Note: The hash algorithms for 384++ key lengths should be SHA-384 and SHA-512, not SHA-256 to match the security levels of the official crypto standards!
 
     SE?:        string,                 // Signature Encoding:            Optionally indicates how the signature data is encoded to be stored in the JSON string.
                                         //                                If it is omitted, the default value is effective.
@@ -182,6 +184,29 @@ export interface IOCMFSignature {
 export interface IOCMFPayload {
 
     // Source: https://github.com/SAFE-eV/OCMF-Open-Charge-Metering-Format/blob/master/OCMF-en.md
+
+    // {
+    //     "FV": "1.0",
+    //     "GI": "SEAL AG",
+    //     "GS": "1850006a",
+    //     "GV": "1.34",
+    //
+    //     "PG": "T9289",
+    //
+    //     "MV": "Carlo Gavazzi",
+    //     "MM": "EM340-DIN.AV2.3.X.S1.PF",
+    //     "MS": "******240084S",
+    //     "MF": "B4",
+    //
+    //     "IS": true,
+    //     "IL": "TRUSTED",
+    //     "IF": ["OCCP_AUTH"],
+    //     "IT": "ISO14443",
+    //     "ID": "56213C05",
+    //
+    //     "RD": [...]
+    //
+    // }
 
     //#region General Information
 
@@ -361,84 +386,11 @@ export interface IOCMFPayload {
 
 }
 
-// export interface IOCMFData_v0_1 extends IOCMFPayload {
-//     VI:         string,
-//     VV:         string,
-// }
-
-// export interface IOCMFPayload_v1_0 extends IOCMFPayload {
-
-// }
-
-// export interface IOCMFData_v0_1_Signed {
-//     payload:    IOCMFData_v0_1,
-//     signature:  any
-// }
-
-// export interface IOCMFData_v1_0_Signed {
-//     payload:    IOCMFPayload_v1_0,
-//     signature:  any
-// }
-
-
-export enum OCMFVerificationResult {
-
-    NoChargeTransparencyRecordsFound,
-    UnknownSessionFormat,
-    InvalidSessionFormat,
-    PublicKeyNotFound,
-    InvalidPublicKey,
-    InvalidSignature,
-    Unvalidated,
-    ValidSignature,
-    InconsistentTimestamps,
-    AtLeastTwoMeasurementsRequired
-
-}
-
-// A less insane version of OCMF! ;)
+// OCMF as a well-defined JSON document
 export interface IOCMFJSONDocument {
-    "@context":         string|string[],
-    payload:            IOCMFPayload,
-    signature:          IOCMFSignature,
-    publicKey?:         string|chargyInterfaces.IPublicKeyXY,
-    validationStatus:   chargyInterfaces.VerificationResult
+    "@context":          string|string[],
+    payload:             IOCMFPayload,
+    signature:           IOCMFSignature,
+    publicKey?:          string|chargyInterfaces.IPublicKeyXY,
+    validationStatus?:   chargyInterfaces.VerificationResult
 }
-
-
-
-    // {
-    //     "FV": "1.0",
-    //     "GI": "SEAL AG",
-    //     "GS": "1850006a",
-    //     "GV": "1.34",
-    //
-    //     "PG": "T9289",
-    //
-    //     "MV": "Carlo Gavazzi",
-    //     "MM": "EM340-DIN.AV2.3.X.S1.PF",
-    //     "MS": "******240084S",
-    //     "MF": "B4",
-    //
-    //     "IS": true,
-    //     "IL": "TRUSTED",
-    //     "IF": ["OCCP_AUTH"],
-    //     "IT": "ISO14443",
-    //     "ID": "56213C05",
-    //
-    //     "RD": [{
-    //         "TM": "2019-06-26T08:57:44,337+0000 U",
-    //         "TX": "B",
-    //         "RV": 268.978,
-    //         "RI": "1-b:1.8.0",
-    //         "RU": "kWh",
-    //         "RT": "AC",
-    //         "EF": "",
-    //         "ST": "G"
-    //     }]
-    // }
-    // {
-    //     "SD": "304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"
-    // }
-
-

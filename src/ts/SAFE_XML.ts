@@ -235,7 +235,7 @@ export class SAFEXML  {
                     return await new Alfen01(this.chargy).tryToParseALFENFormat(signedValues, {});
 
                 case "ocmf":
-                    return await new OCMF(this.chargy).tryToParseOCMF(signedValues, commonPublicKey);
+                    return await new OCMF(this.chargy).TryToParseOCMF(signedValues, commonPublicKey);
 
             }
 

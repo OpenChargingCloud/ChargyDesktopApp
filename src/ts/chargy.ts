@@ -260,9 +260,9 @@ export class Chargy {
     //#endregion
 
 
-    //#region decompressFiles(FileInfos)
+    //#region (private) decompressFiles(FileInfos)
 
-    public async decompressFiles(FileInfos: Array<chargyInterfaces.IFileInfo>): Promise<Array<chargyInterfaces.IFileInfo>> {
+    private async decompressFiles(FileInfos: Array<chargyInterfaces.IFileInfo>): Promise<Array<chargyInterfaces.IFileInfo>> {
 
         //#region Initial checks
 
@@ -515,9 +515,9 @@ export class Chargy {
 
     //#endregion
 
-    //#region detectAndConvertContentFormat(FileInfos)
+    //#region DetectAndConvertContentFormat(FileInfos)
 
-    public async detectAndConvertContentFormat(FileInfos: Array<chargyInterfaces.IFileInfo>): Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult> {
+    public async DetectAndConvertContentFormat(FileInfos: Array<chargyInterfaces.IFileInfo>): Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult> {
 
         //#region Initial checks
 
@@ -739,7 +739,7 @@ export class Chargy {
             //#region OCMF processing
 
             else if (textContent?.startsWith("OCMF"))
-                processedFile.result = await new OCMF(this).tryToParseOCMF(textContent);
+                processedFile.result = await new OCMF(this).TryToParseOCMF(textContent);
 
             //#endregion
 
@@ -1114,9 +1114,9 @@ export class Chargy {
 
     //#endregion
 
-    //#region processChargeTransparencyRecord(CTR)
+    //#region (private) processChargeTransparencyRecord(CTR)
 
-    public async processChargeTransparencyRecord(CTR: chargyInterfaces.IChargeTransparencyRecord): Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    private async processChargeTransparencyRecord(CTR: chargyInterfaces.IChargeTransparencyRecord): Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         //#region Initial checks
@@ -1441,9 +1441,9 @@ export class Chargy {
 
     //#endregion
 
-    //#region processChargingSession(chargingSession)
+    //#region (private) processChargingSession(chargingSession)
 
-    public async processChargingSession(chargingSession: chargyInterfaces.IChargingSession) : Promise<chargyInterfaces.ISessionCryptoResult>
+    private async processChargingSession(chargingSession: chargyInterfaces.IChargingSession) : Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         //ToDo: Verify @id exists
@@ -1506,5 +1506,88 @@ export class Chargy {
     }
 
     //#endregion
+
+
+
+
+    public MergeChargeTransparencyRecords(CTRs: Array<chargyInterfaces.IChargeTransparencyRecord>): chargyInterfaces.IChargeTransparencyRecord
+    {
+
+        const mergedCTR:chargyInterfaces.IChargeTransparencyRecord = {
+            "@id":       "",
+            "@context":  "",
+            certainty:    0
+        };
+
+        for (const ctr of CTRs)
+        {
+
+            //Note: the CTRs might have different @context values and additional context/format specific data!
+
+            if (mergedCTR["@id"] === "")
+                mergedCTR["@id"] = ctr["@id"];
+
+            if (mergedCTR["@context"] === "")
+                mergedCTR["@context"] = ctr["@context"];
+
+            if (!mergedCTR.begin || (mergedCTR.begin && ctr.begin && mergedCTR.begin > ctr.begin))
+                mergedCTR.begin = ctr.begin;
+
+            if (!mergedCTR.end || (mergedCTR.end && ctr.end && mergedCTR.end < ctr.end))
+                mergedCTR.end = ctr.end;
+
+            if (!mergedCTR.description)
+                mergedCTR.description = ctr.description;
+
+            //ToDo: Is this a really good idea? Or should we fail, whenever this information is different?
+            if (!mergedCTR.contract)
+                mergedCTR.contract = ctr.contract;
+
+
+            if (!mergedCTR.chargingStationOperators)
+                mergedCTR.chargingStationOperators = ctr.chargingStationOperators;
+            else if (ctr.chargingStationOperators)
+                for (let chargingStationOperator of ctr.chargingStationOperators)
+                    mergedCTR.chargingStationOperators.push(chargingStationOperator);
+
+            if (!mergedCTR.chargingPools)
+                mergedCTR.chargingPools = ctr.chargingPools;
+            else if (ctr.chargingPools)
+                for (let chargingPool of ctr.chargingPools)
+                    mergedCTR.chargingPools.push(chargingPool);
+
+            if (!mergedCTR.chargingStations)
+                mergedCTR.chargingStations = ctr.chargingStations;
+            else if (ctr.chargingStations)
+                for (let chargingStation of ctr.chargingStations)
+                    mergedCTR.chargingStations.push(chargingStation);
+
+            // publicKeys
+
+            if (!mergedCTR.chargingSessions)
+                mergedCTR.chargingSessions = ctr.chargingSessions;
+            else if (ctr.chargingSessions)
+                for (let chargingSession of ctr.chargingSessions)
+                    mergedCTR.chargingSessions.push(chargingSession);
+
+            if (!mergedCTR.eMobilityProviders)
+                mergedCTR.eMobilityProviders = ctr.eMobilityProviders;
+            else if (ctr.eMobilityProviders)
+                for (let eMobilityProvider of ctr.eMobilityProviders)
+                    mergedCTR.eMobilityProviders.push(eMobilityProvider);
+
+            if (!mergedCTR.mediationServices)
+                mergedCTR.mediationServices = ctr.mediationServices;
+            else if (ctr.mediationServices)
+                for (let mediationService of ctr.mediationServices)
+                    mergedCTR.mediationServices.push(mediationService);
+
+        }
+
+        return mergedCTR;
+
+    }
+
+
 
 }

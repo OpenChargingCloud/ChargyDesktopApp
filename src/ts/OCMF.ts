@@ -21,6 +21,10 @@ import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
 import Decimal                from 'decimal.js';
 
+// Note: OCMF is not really about signed meter values, but a container format for signed meter values.
+//       The signature is not about the meter values, but about the entire container.
+//       This has implications how OCMF is embeded within EV roaming protocols like OICP or OCPI,
+//       that expect signed meter values only!
 
 export interface IOCMFMeasurementValue extends chargyInterfaces.IMeasurementValue
 {
@@ -156,106 +160,67 @@ export class OCMF {
 
     //#endregion
 
-    //#region tryToParseOCMFv1_0(OCMFDataList, PublicKey?)
+    //#region (private) tryToParseOCMFv1_0(OCMFDataList, PublicKey?)
 
-    public async tryToParseOCMFv1_0(OCMFDataList:     ocmfTypes.IOCMFJSONDocument[],
-                                    PublicKey?:       string|chargyInterfaces.IPublicKeyXY,
-                                    ContainerInfos?:  any) : Promise<IOCMFChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    private async tryToParseOCMFv1_0(OCMFJSONDocuments:  ocmfTypes.IOCMFJSONDocument[],
+                                     PublicKey?:         string|chargyInterfaces.IPublicKeyXY,
+                                     ContainerInfos?:    any) : Promise<IOCMFChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         try
         {
 
-            // {
-            //
-            //     "payload": {
-            //
-            //       "FV": "1.0",
-            //       "GI": "SEAL AG",
-            //       "GS": "1850006a",
-            //       "GV": "1.34",
-            //
-            //       "PG": "T9289",
-            //
-            //       "MV": "Carlo Gavazzi",
-            //       "MM": "EM340-DIN.AV2.3.X.S1.PF",
-            //       "MS": "******240084S",
-            //       "MF": "B4",
-            //
-            //       "IS": true,
-            //       "IL": "TRUSTED",
-            //       "IF": ["OCCP_AUTH"],
-            //       "IT": "ISO14443",
-            //       "ID": "56213C05",
-            //
-            //       "RD": [{
-            //           "TM": "2019-06-26T08:57:44,337+0000 U",
-            //           "TX": "B",
-            //           "RV": 268.978,
-            //           "RI": "1-b:1.8.0",
-            //           "RU": "kWh",
-            //           "RT": "AC",
-            //           "EF": "",
-            //           "ST": "G"
-            //       }]
-            //
-            //     },
-            //
-            //     "signature": {
-            //       "SD": "304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"
-            //     }
-            //
-            // }
+            const firstOCMDJSONDocument = OCMFJSONDocuments[0];
 
-            for (let ocmf of OCMFDataList)
+            if (firstOCMDJSONDocument != undefined)
             {
 
                 //#region General Information
 
-                const formatVersion                 = ocmf.payload?.FV;
-                const gatewayInformation            = ocmf.payload?.GI;
-                const gatewaySerial                 = ocmf.payload?.GS;
-                const gatewayVersion                = ocmf.payload?.GV;
+                const formatVersion                 = firstOCMDJSONDocument.payload?.FV;
+                const gatewayInformation            = firstOCMDJSONDocument.payload?.GI;
+                const gatewaySerial                 = firstOCMDJSONDocument.payload?.GS;
+                const gatewayVersion                = firstOCMDJSONDocument.payload?.GV;
 
                 //#endregion
 
                 //#region Pagination
 
-                const paging                        = ocmf.payload?.PG;
+                const paging                        = firstOCMDJSONDocument.payload?.PG;
 
                 //#endregion
 
                 //#region Meter Identification
 
-                const meterVendor                   = ocmf.payload?.MV;
-                const meterModel                    = ocmf.payload?.MM;
-                const meterSerial                   = ocmf.payload?.MS;
-                const meterFirmware                 = ocmf.payload?.MF;
+                const meterVendor                   = firstOCMDJSONDocument.payload?.MV;
+                const meterModel                    = firstOCMDJSONDocument.payload?.MM;
+                const meterSerial                   = firstOCMDJSONDocument.payload?.MS;
+                const meterFirmware                 = firstOCMDJSONDocument.payload?.MF;
 
                 //#endregion
 
                 //#region User Assignment
 
-                const identificationStatus          = ocmf.payload?.IS;
-                const identificationLevel           = ocmf.payload?.IL;
-                const identificationFlags           = ocmf.payload?.IF;
-                const identificationType            = ocmf.payload?.IT;
-                const identificationData            = ocmf.payload?.ID;
-                const tariffText                    = ocmf.payload?.TT;
+                const identificationStatus          = firstOCMDJSONDocument.payload?.IS;
+                const identificationLevel           = firstOCMDJSONDocument.payload?.IL;
+                const identificationFlags           = firstOCMDJSONDocument.payload?.IF;
+                const identificationType            = firstOCMDJSONDocument.payload?.IT;
+                const identificationData            = firstOCMDJSONDocument.payload?.ID;
+                const tariffText                    = firstOCMDJSONDocument.payload?.TT;
 
                 //#endregion
 
                 //#region EVSE Metrologic parameters
 
-                const controlerFirmwareVersion      = ocmf.payload?.CF;
-                const lossCompensation              = ocmf.payload?.LC;
+                const controlerFirmwareVersion      = firstOCMDJSONDocument.payload?.CF;
+                const lossCompensation              = firstOCMDJSONDocument.payload?.LC;
 
                 //#endregion
 
                 //#region Assignment of the Charge Point
 
-                const chargePointIdType             = ocmf.payload?.CT;
-                const chargePointId                 = ocmf.payload?.CI;
+                const chargePointIdType             = firstOCMDJSONDocument.payload?.CT;
+                const chargePointId                 = firstOCMDJSONDocument.payload?.CI;
 
                 //#endregion
 
@@ -313,7 +278,7 @@ export class OCMF {
 
                     //#endregion
 
-                    if (!ocmf.payload.RD || ocmf.payload.RD.length == 0) return {
+                    if (!firstOCMDJSONDocument.payload.RD || firstOCMDJSONDocument.payload.RD.length == 0) return {
                         status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:   this.chargy.GetLocalizedMessage("Each OCMF data set must have at least one meter reading!"),
                         certainty: 0
@@ -456,126 +421,138 @@ export class OCMF {
 
                     };
 
-
-                    for (const reading of ocmf.payload.RD)
+                    for (const ocmfJSONDocument of OCMFJSONDocuments)
                     {
 
-                        //#region Data
+                        // ToDo: Validate the pagination!
 
-                        const time                   = reading.TM;
-                        const transaction            = reading.TX;
-                        const readingValue           = reading.RV;
-                        const readingIdentification  = reading.RI;
-                        const readingUnit            = reading.RU;
-                        const readingCurrentType     = reading.RT;
-                        const cumulatedLoss          = reading.CL;
-                        const errorFlags             = reading.EF;
-                        const status                 = reading.ST;
-
-                        //#endregion
-
-                        if (chargyLib.isMandatoryString  (time)                  &&
-                            chargyLib.isOptionalString   (transaction)           &&
-                            chargyLib.isMandatoryDecimal (readingValue)          &&   // Note: Some vendors use a JSON string here!
-                            chargyLib.isOptionalString   (readingIdentification) &&
-                            chargyLib.isMandatoryString  (readingUnit)           &&
-                            chargyLib.isOptionalString   (readingCurrentType)    &&
-                            chargyLib.isOptionalDecimal  (cumulatedLoss)         &&
-                            chargyLib.isOptionalString   (errorFlags)            &&
-                            chargyLib.isOptionalString   (status))
+                        for (const reading of ocmfJSONDocument.payload.RD)
                         {
 
-                            //#region Meter Reading Validation
+                            //#region Data
 
-                            const timeSplit           = time.split(" ");
-
-                            if (timeSplit.length != 2) return {
-                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:   this.chargy.GetLocalizedMessage("The given OCMF meter value does not have a valid time format!"),
-                                certainty: 0
-                            }
-
-                            const timeRegEx           = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2},\d{3}[+-]\d{4}$/;
-                            const timeStamp           = timeSplit[0];
-
-                            if (!chargyLib.isMandatoryString (timeStamp) || !timeRegEx.test(timeStamp)) return {
-                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:   this.chargy.GetLocalizedMessage("The given OCMF meter value does not have a valid time sync format!"),
-                                certainty: 0
-                            }
-
-                            const timeStampISO8601    = this.convertToISO8601(timeStamp);
-                            const timeSync            = timeSplit[1];
-
-                            if (!chargyLib.isMandatoryString (timeSync) || !["U", "I", "S", "R"].includes(timeSync)) return {
-                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:   this.chargy.GetLocalizedMessage("The given OCMF meter value does not have a valid time sync format!"),
-                                certainty: 0
-                            }
-
-                            if (transaction != null && !["B", "C", "X", "E", "L", "R", "A", "P", "S", "T"].includes(transaction)) return {
-                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:   this.chargy.GetLocalizedMessage("The given OCMF meter value does not have a valid transaction type!"),
-                                certainty: 0
-                            }
-
-                            if (!["kWh", "Wh", "mOhm", "uOhm"].includes(readingUnit)) return {
-                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:   this.chargy.GetLocalizedMessage("The given OCMF meter value does not have a valid current type!"),
-                                certainty: 0
-                            }
-
-                            if (readingCurrentType != null && !["AC", "DC"].includes(readingCurrentType)) return {
-                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:   this.chargy.GetLocalizedMessage("The given OCMF meter value does not have a valid current type!"),
-                                certainty: 0
-                            }
+                            const time                   = reading.TM;
+                            const transaction            = reading.TX;
+                            const readingValue           = reading.RV;
+                            const readingIdentification  = reading.RI;
+                            const readingUnit            = reading.RU;
+                            const readingCurrentType     = reading.RT;
+                            const cumulatedLoss          = reading.CL;
+                            const errorFlags             = reading.EF;
+                            const status                 = reading.ST;
 
                             //#endregion
 
-                            if (CTR.chargingSessions?.[0]?.begin === "?")
-                                CTR.chargingSessions![0]!.begin = timeStampISO8601;
+                            if (chargyLib.isMandatoryString  (time)                  &&
+                                chargyLib.isOptionalString   (transaction)           &&
+                                chargyLib.isMandatoryDecimal (readingValue)          &&   // Note: Some vendors use a JSON string here!
+                                chargyLib.isOptionalString   (readingIdentification) &&
+                                chargyLib.isMandatoryString  (readingUnit)           &&
+                                chargyLib.isOptionalString   (readingCurrentType)    &&
+                                chargyLib.isOptionalDecimal  (cumulatedLoss)         &&
+                                chargyLib.isOptionalString   (errorFlags)            &&
+                                chargyLib.isOptionalString   (status))
+                            {
 
-                            CTR.chargingSessions![0]!.end = timeStampISO8601;
+                                //#region Meter Reading Validation
 
-                            // ToDo: There might be multiple OBIS meter readings per timestamp!
-                            if (CTR.chargingSessions![0]!.measurements.length == 0)
-                                CTR.chargingSessions![0]!.measurements.push({
-                                    "name":             chargyLib.OBIS2MeasurementName(readingIdentification ?? ""),
-                                    "scale":            1,      // Fix me!
-                                    "energyMeterId":    meterSerial,
-                                    "@context":         "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/OCMFv1.0+json",
-                                    "obis":             readingIdentification ?? "?",   // OBIS: "1-b:1.8.0"
-                                    "unit":             readingUnit,                    // "kWh"
-                                    "currentType":      readingCurrentType,             // "AC"
-                                    "values":           []
+                                const timeSplit           = time.split(" ");
+
+                                if (timeSplit.length != 2) return {
+                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                    message:   this.chargy.GetLocalizedMessage("The given OCMF meter value does not have a valid time format!"),
+                                    certainty: 0
+                                }
+
+                                const timeRegEx           = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2},\d{3}[+-]\d{4}$/;
+                                const timeStamp           = timeSplit[0];
+
+                                if (!chargyLib.isMandatoryString (timeStamp) || !timeRegEx.test(timeStamp)) return {
+                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                    message:   this.chargy.GetLocalizedMessage("The given OCMF meter value does not have a valid time sync format!"),
+                                    certainty: 0
+                                }
+
+                                const timeStampISO8601    = this.convertToISO8601(timeStamp);
+                                const timeSync            = timeSplit[1];
+
+                                if (!chargyLib.isMandatoryString (timeSync) || !["U", "I", "S", "R"].includes(timeSync)) return {
+                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                    message:   this.chargy.GetLocalizedMessage("The given OCMF meter value does not have a valid time sync format!"),
+                                    certainty: 0
+                                }
+
+                                if (transaction != null && !["B", "C", "X", "E", "L", "R", "A", "P", "S", "T"].includes(transaction)) return {
+                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                    message:   this.chargy.GetLocalizedMessage("The given OCMF meter value does not have a valid transaction type!"),
+                                    certainty: 0
+                                }
+
+                                if (!["kWh", "Wh", "mOhm", "uOhm"].includes(readingUnit)) return {
+                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                    message:   this.chargy.GetLocalizedMessage("The given OCMF meter value does not have a valid current type!"),
+                                    certainty: 0
+                                }
+
+                                if (readingCurrentType != null && !["AC", "DC"].includes(readingCurrentType)) return {
+                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                    message:   this.chargy.GetLocalizedMessage("The given OCMF meter value does not have a valid current type!"),
+                                    certainty: 0
+                                }
+
+                                //#endregion
+
+                                if (CTR!.chargingSessions?.[0]?.begin === "?")
+                                    CTR!.chargingSessions![0]!.begin = timeStampISO8601;
+
+                                CTR!.chargingSessions![0]!.end = timeStampISO8601;
+
+                                // ToDo: There might be multiple OBIS meter readings per timestamp!
+                                if (CTR!.chargingSessions![0]!.measurements.length == 0)
+                                    CTR!.chargingSessions![0]!.measurements.push({
+                                        "name":             chargyLib.OBIS2MeasurementName(readingIdentification ?? ""),
+                                        "scale":            1,      // Fix me!
+                                        "energyMeterId":    meterSerial,
+                                        "@context":         "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/OCMFv1.0+json",
+                                        "obis":             readingIdentification ?? "?",   // OBIS: "1-b:1.8.0"
+                                        "unit":             readingUnit,                    // "kWh"
+                                        "currentType":      readingCurrentType,             // "AC"
+                                        "values":           []
+                                    });
+
+                                CTR!.chargingSessions![0]!.measurements[0]!.values.push({
+                                    "timestamp":         timeStampISO8601,            // "2019-06-26T08:57:44,337+0000"
+                                    "timeSync":          timeSync,                    // "U"|"I"|"S"|"R"
+                                    "transaction":       transaction,                 // "B"|"C"|"X"|"E"|"L"|"R"|"A"|"P"|"S"|"T"|null
+                                    "value":             new Decimal(readingValue),   // 2935.6
+                                    "transactionType":   transactionType,             // "T"     ToDo: Serialize this to a string!
+                                    "pagination":        pagination,                  // "9289"
+                                    "errorFlags":        errorFlags,                  // ""
+                                    "cumulatedLoss":     cumulatedLoss                // 0.0
+                                                                ? new Decimal(cumulatedLoss)
+                                                                : undefined,
+                                    "status":            status,                      // "G"
+                                    "signatures": [{
+                                        "value":             ocmfJSONDocument.signature["SD"]
+                                    }]
                                 });
 
-                            CTR.chargingSessions![0]!.measurements[0]!.values.push({
-                                "timestamp":         timeStampISO8601,            // "2019-06-26T08:57:44,337+0000"
-                                "timeSync":          timeSync,                    // "U"|"I"|"S"|"R"
-                                "transaction":       transaction,                 // "B"|"C"|"X"|"E"|"L"|"R"|"A"|"P"|"S"|"T"|null
-                                "value":             new Decimal(readingValue),   // 2935.6
-                                "transactionType":   transactionType,             // "T"     ToDo: Serialize this to a string!
-                                "pagination":        pagination,                  // "9289"
-                                "errorFlags":        errorFlags,                  // ""
-                                "cumulatedLoss":     cumulatedLoss                // 0.0
-                                                         ? new Decimal(cumulatedLoss)
-                                                         : undefined,
-                                "status":            status,                      // "G"
-                                "signatures": [{
-                                    "value":             ocmf.signature["SD"]
-                                }]
-                            });
+                            }
 
                         }
-
                     }
 
-                    CTR.begin = CTR.chargingSessions![0]!.begin;
-                    CTR.end   = CTR.chargingSessions![0]!.end;
+                    if (CTR.chargingSessions        != null &&
+                        CTR.chargingSessions.length  > 0    &&
+                        CTR.chargingSessions[0]     != null)
+                    {
 
-                    return CTR;
+                        CTR.begin = CTR.chargingSessions[0].begin;
+                        CTR.end   = CTR.chargingSessions[0].end;
+
+                        return CTR;
+
+                    }
 
                 }
 
@@ -586,16 +563,176 @@ export class OCMF {
         {
             return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                message:   "Invalid OCMF data: " + (exception instanceof Error ? exception.message : exception),
                 certainty: 0
             }
         }
 
         return {
-            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-            message:   "Invalid OCMF data!",
-            certainty: 0
+            status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+            certainty:  0
         }
+
+    }
+
+    //#endregion
+
+
+    //#region (private) mergeOCMFSessions(CTRs)
+
+    private mergeOCMFSessions(CTRs: Array<IOCMFChargeTransparencyRecord>): IOCMFChargeTransparencyRecord
+    {
+
+        const mergedCTR:IOCMFChargeTransparencyRecord = {
+            "@id":       "",
+            "@context":  "",
+            certainty:    1
+        };
+
+        for (const ctr of CTRs)
+        {
+
+            if (mergedCTR["@id"] === "")
+                mergedCTR["@id"] = ctr["@id"];
+
+            if (mergedCTR["@context"] === "")
+                mergedCTR["@context"] = ctr["@context"];
+
+            if (!mergedCTR.begin || (mergedCTR.begin && ctr.begin && mergedCTR.begin > ctr.begin))
+                mergedCTR.begin = ctr.begin;
+
+            if (!mergedCTR.end || (mergedCTR.end && ctr.end && mergedCTR.end < ctr.end))
+                mergedCTR.end = ctr.end;
+
+            if (!mergedCTR.description)
+                mergedCTR.description = ctr.description;
+
+            //ToDo: Is this a really good idea? Or should we fail, whenever this information is different?
+            if (!mergedCTR.contract)
+                mergedCTR.contract = ctr.contract;
+
+
+            if (!mergedCTR.chargingStationOperators)
+                mergedCTR.chargingStationOperators = ctr.chargingStationOperators;
+            else if (ctr.chargingStationOperators)
+                for (const chargingStationOperator of ctr.chargingStationOperators)
+                    mergedCTR.chargingStationOperators.push(chargingStationOperator);
+
+            if (!mergedCTR.chargingPools)
+                mergedCTR.chargingPools = ctr.chargingPools;
+            else if (ctr.chargingPools)
+                for (const chargingPool of ctr.chargingPools)
+                    mergedCTR.chargingPools.push(chargingPool);
+
+            if (!mergedCTR.chargingStations)
+                mergedCTR.chargingStations = ctr.chargingStations;
+            else if (ctr.chargingStations)
+                for (const chargingStation of ctr.chargingStations)
+                    mergedCTR.chargingStations.push(chargingStation);
+
+            // publicKeys
+
+            if (!mergedCTR.chargingSessions)
+                mergedCTR.chargingSessions = ctr.chargingSessions;
+            else if (ctr.chargingSessions)
+                for (const chargingSession of ctr.chargingSessions)
+                    mergedCTR.chargingSessions.push(chargingSession);
+
+            if (!mergedCTR.eMobilityProviders)
+                mergedCTR.eMobilityProviders = ctr.eMobilityProviders;
+            else if (ctr.eMobilityProviders)
+                for (const eMobilityProvider of ctr.eMobilityProviders)
+                    mergedCTR.eMobilityProviders.push(eMobilityProvider);
+
+            if (!mergedCTR.mediationServices)
+                mergedCTR.mediationServices = ctr.mediationServices;
+            else if (ctr.mediationServices)
+                for (const mediationService of ctr.mediationServices)
+                    mergedCTR.mediationServices.push(mediationService);
+
+        }
+
+        return mergedCTR;
+
+    }
+
+    //#endregion
+
+    //#region (private) mergeChargeTransparencyRecords(CTRs)
+
+    private mergeChargeTransparencyRecords(CTRs: Array<IOCMFChargeTransparencyRecord>): IOCMFChargeTransparencyRecord
+    {
+
+        const mergedCTR:IOCMFChargeTransparencyRecord = {
+            "@id":       "",
+            "@context":  "",
+            certainty:    1
+        };
+
+        for (const ctr of CTRs)
+        {
+
+            if (mergedCTR["@id"] === "")
+                mergedCTR["@id"] = ctr["@id"];
+
+            if (mergedCTR["@context"] === "")
+                mergedCTR["@context"] = ctr["@context"];
+
+            if (!mergedCTR.begin || (mergedCTR.begin && ctr.begin && mergedCTR.begin > ctr.begin))
+                mergedCTR.begin = ctr.begin;
+
+            if (!mergedCTR.end || (mergedCTR.end && ctr.end && mergedCTR.end < ctr.end))
+                mergedCTR.end = ctr.end;
+
+            if (!mergedCTR.description)
+                mergedCTR.description = ctr.description;
+
+            //ToDo: Is this a really good idea? Or should we fail, whenever this information is different?
+            if (!mergedCTR.contract)
+                mergedCTR.contract = ctr.contract;
+
+
+            if (!mergedCTR.chargingStationOperators)
+                mergedCTR.chargingStationOperators = ctr.chargingStationOperators;
+            else if (ctr.chargingStationOperators)
+                for (const chargingStationOperator of ctr.chargingStationOperators)
+                    mergedCTR.chargingStationOperators.push(chargingStationOperator);
+
+            if (!mergedCTR.chargingPools)
+                mergedCTR.chargingPools = ctr.chargingPools;
+            else if (ctr.chargingPools)
+                for (const chargingPool of ctr.chargingPools)
+                    mergedCTR.chargingPools.push(chargingPool);
+
+            if (!mergedCTR.chargingStations)
+                mergedCTR.chargingStations = ctr.chargingStations;
+            else if (ctr.chargingStations)
+                for (const chargingStation of ctr.chargingStations)
+                    mergedCTR.chargingStations.push(chargingStation);
+
+            // publicKeys
+
+            if (!mergedCTR.chargingSessions)
+                mergedCTR.chargingSessions = ctr.chargingSessions;
+            else if (ctr.chargingSessions)
+                for (const chargingSession of ctr.chargingSessions)
+                    mergedCTR.chargingSessions.push(chargingSession);
+
+            if (!mergedCTR.eMobilityProviders)
+                mergedCTR.eMobilityProviders = ctr.eMobilityProviders;
+            else if (ctr.eMobilityProviders)
+                for (const eMobilityProvider of ctr.eMobilityProviders)
+                    mergedCTR.eMobilityProviders.push(eMobilityProvider);
+
+            if (!mergedCTR.mediationServices)
+                mergedCTR.mediationServices = ctr.mediationServices;
+            else if (ctr.mediationServices)
+                for (const mediationService of ctr.mediationServices)
+                    mergedCTR.mediationServices.push(mediationService);
+
+        }
+
+        return mergedCTR;
 
     }
 
@@ -1028,9 +1165,9 @@ export class OCMF {
 
     //#endregion
 
-    //#region tryToParseOCMF(OCMFValues, PublicKey?, ContainerInfos?)
+    //#region TryToParseOCMF(OCMFValues, PublicKey?, ContainerInfos?)
 
-    public async tryToParseOCMF(OCMFValues:       string|string[],
+    public async TryToParseOCMF(OCMFValues:       string|string[],
                                 PublicKey?:       string|chargyInterfaces.IPublicKeyXY,
                                 ContainerInfos?:  any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
@@ -1160,6 +1297,5 @@ export class OCMF {
     }
 
     //#endregion
-
 
 }
