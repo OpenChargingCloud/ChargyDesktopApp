@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import Decimal from 'decimal.js';
 import { Chargy }             from './chargy'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
 
+import Decimal                from 'decimal.js';
 import * as L                 from 'leaflet';
 
 // import { debug } from "util";
@@ -992,7 +992,7 @@ export class ChargyApp {
 
                                         response.writeHead(200, {'Content-Type': 'application/json'});
 
-                                        let results = result.chargingSessions?.map(session => session.verificationResult);
+                                        let results = result.chargingSessions?.map((session: any) => session.verificationResult);
 
                                         if (results != undefined)
                                         {

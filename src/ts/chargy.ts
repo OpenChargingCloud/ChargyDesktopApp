@@ -29,6 +29,7 @@ import { OCMF }                               from './OCMF'
 import { OCMFv1_0 }                           from './OCMFv1_0'
 import { SAFEXML }                            from './SAFE_XML'
 import { XMLContainer }                       from './XMLContainer'
+import { OCPI }                               from './OCPI'
 import * as chargyInterfaces                  from './chargyInterfaces'
 import * as chargyLib                         from './chargyLib'
 import Decimal                                from 'decimal.js';
@@ -891,7 +892,8 @@ export class Chargy {
                         // Some formats do not provide any context or format identifiers...
                         const results = [
                             await new ChargeIT(this).     tryToParseChargeITContainerFormat(JSONContent),
-                            await new Chargepoint01(this).tryToParseChargepointFormat      (JSONContent)
+                            await new Chargepoint01(this).tryToParseChargepointFormat      (JSONContent),
+                            await new OCPI(this).         tryToParseOCPIFormat             (JSONContent)
                         ];
 
                         const filteredResults = results.filter((ctr) => {

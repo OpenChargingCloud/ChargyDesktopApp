@@ -139,6 +139,7 @@ export interface IContract
 export interface IPublicKeyLookup
 {
     publicKeys:                 Array<IPublicKeyInfo>;
+    status?:                    SessionVerificationResult;
 }
 
 export interface IPublicKeyInfo

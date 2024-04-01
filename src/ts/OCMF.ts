@@ -542,6 +542,12 @@ export class OCMF {
                         }
                     }
 
+
+                    CTR.status = (OCMFJSONDocuments.every(ocmfJSONDocument => ocmfJSONDocument.validationStatus === chargyInterfaces.VerificationResult.ValidSignature)
+                                     ? chargyInterfaces.SessionVerificationResult.ValidSignature
+                                     : chargyInterfaces.SessionVerificationResult.InvalidSignature) as chargyInterfaces.SessionVerificationResult;
+
+
                     if (CTR.chargingSessions        != null &&
                         CTR.chargingSessions.length  > 0    &&
                         CTR.chargingSessions[0]     != null)
@@ -752,12 +758,12 @@ export class OCMF {
 
             //#region Setup crypto
 
-            const plaintext  = JSON.stringify(OCMFJSONDocument.payload);
+            const plaintext         = OCMFJSONDocument.rawPayload ?? JSON.stringify(OCMFJSONDocument.payload);
 
-            let   curve      = null;
-            let   publicKey  = null;
-            let   hashValue  = null;
-            let   signature  = null;
+            let   curve:any         = null;
+            let   publicKey:any     = null;
+            let   hashValue:string  = "";
+            let   signature:any     = null;
 
             try
             {
@@ -771,6 +777,7 @@ export class OCMF {
 
                     case "ECDSA-secp256k1-SHA256":
                         hashValue  = (await chargyLib.sha256(plaintext));
+                        curve      = new this.chargy.elliptic.ec('secp256k1');
                         break;
 
                     case "ECDSA-secp256k1-SHA256":
@@ -792,6 +799,11 @@ export class OCMF {
 
                     case "ECDSA-brainpool384r1-SHA256":
                         hashValue  = (await chargyLib.sha256(plaintext));
+                        break;
+
+                    case "ECDSA-secp521r1-SHA256":
+                        hashValue  = (await chargyLib.sha256(plaintext));
+                        curve      = new this.chargy.elliptic.ec('p521');
                         break;
 
                     default: // ECDSA-secp256r1-SHA256
@@ -838,28 +850,25 @@ export class OCMF {
                         );
                     });
 
-                    // We assume the public key is encoded the same way as the signature!
-                    let bufferEncoding: BufferEncoding = 'hex';
 
-                    switch (OCMFJSONDocument.signature.SE?.toLowerCase() ?? "")
+
+                    // Most protocols do not have a method to indicate the public key encoding format!
+                    let   bufferEncoding: BufferEncoding  = 'hex';
+                    const hexRegex                        = /^[0-9A-Fa-f]+$/;
+                    const base64Regex                     = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
+
+                    if (hexRegex.test(OCMFJSONDocument.publicKey))
+                        bufferEncoding = 'hex';
+
+                    else if (base64Regex.test(OCMFJSONDocument.publicKey))
+                        bufferEncoding = 'base64';
+
+                    else
                     {
-
-                        case "":
-                            break;
-
-                        case "hex":
-                            bufferEncoding = 'hex';
-                            break;
-
-                        case 'base64':
-                            bufferEncoding = 'base64';
-                            break;
-
-                        default:
-                            OCMFJSONDocument.validationStatus = chargyInterfaces.VerificationResult.UnknownPublicKeyFormat;
-                            return OCMFJSONDocument.validationStatus;
-
+                        OCMFJSONDocument.validationStatus = chargyInterfaces.VerificationResult.UnknownPublicKeyFormat;
+                        return OCMFJSONDocument.validationStatus;
                     }
+
 
                     // Parse the DER-encoded public key
                     const publicKeyASN1  = ECPoint.decode(Buffer.from(OCMFJSONDocument.publicKey, bufferEncoding), 'der');
@@ -1009,7 +1018,9 @@ export class OCMF {
     {
 
         // OCMF can be on a singe line or on multiple lines even within the embedded JSON!
-        // Only for calculating the signature, the OCMF data must be on a single line!
+        // But for calculating the signature we have to use ocmfRAWPayload, as OCMF does not define a
+        // canonical format for calculating the signature which prevents a meaningful interoperability
+        // of the signature verification process!
 
         // OCMF|<payload>|<signature>
         //
@@ -1031,15 +1042,16 @@ export class OCMF {
         // <payload2>|
         // <signature2>
 
-        const combinedOCMF       = OCMFValues.join('\n');
+        const combinedOCMF            = OCMFValues.join('\n');
 
-        let   ocmfStructure      =  0;
-        let   ocmfPayload:any    = {};
-        let   ocmfSignature:any  = {};
+        let   ocmfStructure           =  0;
+        let   ocmfRAWPayload:string   = "";
+        let   ocmfPayload:any         = {};
+        let   ocmfSignature:any       = {};
 
-        let   depth              =  0;
-        let   startIndex         = -1;
-        let   endIndex           = -1;
+        let   depth                   =  0;
+        let   startIndex              = -1;
+        let   endIndex                = -1;
 
         let   ocmfJSONDocuments: Array<ocmfTypes.IOCMFJSONDocument> = [];
 
@@ -1096,7 +1108,8 @@ export class OCMF {
                                 {
                                     try
                                     {
-                                        ocmfPayload   = JSON.parse(combinedOCMF.substring(startIndex, endIndex + 1));
+                                        ocmfRAWPayload  = combinedOCMF.substring(startIndex, endIndex + 1);
+                                        ocmfPayload     = JSON.parse(ocmfRAWPayload);
                                     }
                                     catch (exception)
                                     {
@@ -1118,6 +1131,7 @@ export class OCMF {
 
                                     ocmfJSONDocuments.push({
                                         "@context":        "OCMF",
+                                        rawPayload:         ocmfRAWPayload,
                                         payload:            ocmfPayload,
                                         signature:          ocmfSignature,
                                         publicKey:          PublicKey,

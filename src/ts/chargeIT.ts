@@ -55,7 +55,7 @@ export class ChargeIT {
                                                         signedMeterValues:  Array<any>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
-        let CTRArray = [];
+        let CTRArray:Array<any> = [];
 
         //#region Parse Signed Meter Values
 
