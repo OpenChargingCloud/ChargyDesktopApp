@@ -529,12 +529,15 @@ export class OCMF {
                                     "pagination":        pagination,                  // "9289"
                                     "errorFlags":        errorFlags,                  // ""
                                     "cumulatedLoss":     cumulatedLoss                // 0.0
-                                                                ? new Decimal(cumulatedLoss)
-                                                                : undefined,
+                                                             ? new Decimal(cumulatedLoss)
+                                                             : undefined,
                                     "status":            status,                      // "G"
-                                    "signatures": [{
-                                        "value":             ocmfJSONDocument.signature["SD"]
-                                    }]
+                                    // "signatures":        [{
+                                    //                          "value":  ocmfJSONDocument.signature["SD"]
+                                    //                      }],
+                                    "result":            {
+                                                             "status": ocmfJSONDocument.validationStatus ?? chargyInterfaces.VerificationResult.Unvalidated
+                                                         }
                                 });
 
                             }
@@ -1012,16 +1015,13 @@ export class OCMF {
 
     //#region (private) parseAndConvertOCMF(OCMFValues, PublicKey?, ContainerInfos?)
 
-    private parseAndConvertOCMF(OCMFValues:       string[],
-                                PublicKey?:       string|chargyInterfaces.IPublicKeyXY,
-                                ContainerInfos?:  any): ocmfTypes.IOCMFJSONDocument[] | string
+    private async parseAndConvertOCMF(OCMFValues:       string[],
+                                      PublicKey?:       string|chargyInterfaces.IPublicKeyXY,
+                                      ContainerInfos?:  any): Promise<ocmfTypes.IOCMFJSONDocument[] | string>
     {
 
         // OCMF can be on a singe line or on multiple lines even within the embedded JSON!
-        // But for calculating the signature we have to use ocmfRAWPayload, as OCMF does not define a
-        // canonical format for calculating the signature which prevents a meaningful interoperability
-        // of the signature verification process!
-
+        //
         // OCMF|<payload>|<signature>
         //
         // OCMF|{"FV":"1.0","GI":"SEAL AG","GS":"1850006a","GV":"1.34","PG":"T9289","MV":"Carlo Gavazzi","MM":"EM340-DIN.AV2.3.X.S1.PF","MS":"******240084S","MF":"B4","IS":true,"IL":"TRUSTED","IF":["OCCP_AUTH"],"IT":"ISO14443","ID":"56213C05","RD":[{"TM":"2019-06-26T08:57:44,337+0000 U","TX":"B","RV":268.978,"RI":"1-b:1.8.0","RU":"kWh","RT":"AC","EF":"","ST":"G"}]}|{"SD":"304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"}
@@ -1029,6 +1029,13 @@ export class OCMF {
         // OCMF|
         // {"FV":"1.0","GI":"SEAL AG","GS":"1850006a","GV":"1.34","PG":"T9289","MV":"Carlo Gavazzi","MM":"EM340-DIN.AV2.3.X.S1.PF","MS":"******240084S","MF":"B4","IS":true,"IL":"TRUSTED","IF":["OCCP_AUTH"],"IT":"ISO14443","ID":"56213C05","RD":[{"TM":"2019-06-26T08:57:44,337+0000 U","TX":"B","RV":268.978,"RI":"1-b:1.8.0","RU":"kWh","RT":"AC","EF":"","ST":"G"}]}|
         // {"SD":"304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"}
+        //
+        // The OCMF payload should not have any '|' within the payload or signature, but you never know.
+        // Therefore we use a stateful '{' and '}' aware parser to split the OCMF into "OCMF|<payload>|<signature>".
+        //
+        // For calculating the signature we have to use ocmfRAWPayload, as OCMF does not define a canonical format.
+        // This means that non-functional JSON whitespaces can break the signature calculation and therefore inhibit
+        // a meaningful interoperability of the signature verification process!
 
         // Multiple OCMF documents within a text are possible, e.g. for signed START and STOP meter values of a charging session:
         //
@@ -1129,14 +1136,21 @@ export class OCMF {
                                         return "The " + (ocmfJSONDocuments.length + 1) + ". OCMF signature is not a valid JSON document!";
                                     }
 
-                                    ocmfJSONDocuments.push({
+                                    const ocmfJSONDocument = {
                                         "@context":        "OCMF",
                                         rawPayload:         ocmfRAWPayload,
                                         payload:            ocmfPayload,
                                         signature:          ocmfSignature,
                                         publicKey:          PublicKey,
-                                        validationStatus:   chargyInterfaces.VerificationResult.Unvalidated
-                                    });
+                                        validationStatus:   PublicKey
+                                                                ? chargyInterfaces.VerificationResult.Unvalidated
+                                                                : chargyInterfaces.VerificationResult.PublicKeyNotFound
+                                    }
+
+                                    if (PublicKey)
+                                        await this.validateOCMFSignature(ocmfJSONDocument, PublicKey);
+
+                                    ocmfJSONDocuments.push(ocmfJSONDocument);
 
                                 }
 
@@ -1199,13 +1213,13 @@ export class OCMF {
 
         //#endregion
 
-        const ocmfJSONDocuments = this.parseAndConvertOCMF(
-                                      typeof OCMFValues === 'string'
-                                          ? [ OCMFValues ]
-                                          : OCMFValues,
-                                      PublicKey,
-                                      ContainerInfos
-                                  );
+        const ocmfJSONDocuments = await this.parseAndConvertOCMF(
+                                            typeof OCMFValues === 'string'
+                                                ? [ OCMFValues ]
+                                                : OCMFValues,
+                                            PublicKey,
+                                            ContainerInfos
+                                        );
 
         if (typeof ocmfJSONDocuments !== 'string')
         {

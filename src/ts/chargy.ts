@@ -522,12 +522,11 @@ export class Chargy {
 
         //#region Initial checks
 
-        if (FileInfos == null || FileInfos.length == 0)
-            return {
-                status:    chargyInterfaces.SessionVerificationResult.NoChargeTransparencyRecordsFound,
-                message:   this.GetLocalizedMessage("NoChargeTransparencyRecordsFound"),
-                certainty: 0
-            }
+        if (FileInfos == null || FileInfos.length == 0) return {
+            status:    chargyInterfaces.SessionVerificationResult.NoChargeTransparencyRecordsFound,
+            message:   this.GetLocalizedMessage("No charge transparency records found!"),
+            certainty: 0
+        }
 
         let expandedFiles  = new Array<chargyInterfaces.IFileInfo>();
         let processedFiles = new Array<chargyInterfaces.IExtendedFileInfo>();
@@ -715,7 +714,8 @@ export class Chargy {
                         processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
                         if (processedFile.result.status &&
-                            processedFile.result.status !== chargyInterfaces.SessionVerificationResult.Unvalidated)
+                           (processedFile.result.status === chargyInterfaces.SessionVerificationResult.Unvalidated ||
+                            processedFile.result.status === chargyInterfaces.SessionVerificationResult.ValidSignature))
                         {
                             processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
                         }
@@ -1108,7 +1108,7 @@ export class Chargy {
 
         return {
             status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-            message:   this.GetLocalizedMessage("NoChargeTransparencyRecordsFound"),
+            message:   this.GetLocalizedMessage("No charge transparency records found!"),
             certainty: 0
         }
 

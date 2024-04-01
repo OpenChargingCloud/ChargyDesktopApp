@@ -79,11 +79,11 @@ export class OCMFv1_0 extends ACrypt {
                 {
 
                     // Validate...
-                    for (var measurementValue of measurement.values)
-                    {
-                        measurementValue.measurement = measurement;
-                        await this.VerifyMeasurement(measurementValue as IOCMFv1_0MeasurementValue);
-                    }
+                    // for (var measurementValue of measurement.values)
+                    // {
+                    //     measurementValue.measurement = measurement;
+                    //     await this.VerifyMeasurement(measurementValue as IOCMFv1_0MeasurementValue);
+                    // }
 
 
                     // Find an overall result...

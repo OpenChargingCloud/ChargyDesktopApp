@@ -26,12 +26,17 @@
         "en": "General Error!"
     },
 
-    "NoChargeTransparencyRecordsFound": {
+    "Undefined Error!": {
+        "de": "Undefinierter Fehler!",
+        "en": "Undefined Error!"
+    },
+
+    "No charge transparency records found!": {
         "de": "Keine Transparenzdatensätze gefunden!",
         "en": "No charge transparency records found!"
     },
 
-    "UnknownOrInvalidChargeTransparencyRecord": {
+    "Unknown or invalid charge transparency record!": {
         "de": "Unbekannter oder ungültiger Transparenzdatensatz!",
         "en": "Unknown or invalid charge transparency record!"
     },
@@ -76,6 +81,27 @@
         "en": "Invalid charging session!"
     },
 
+
+
+    "Unbekanntes Messdatensatzformat!": {
+        "de": "Unbekanntes Messdatensatzformat!",
+        "en": "Unknown meter data record format!"
+    },
+
+    "Meter serial number": {
+        "de": "Zählerseriennummer",
+        "en": "Meter serial number"
+    },
+
+    "Measurement": {
+        "de": "Messung",
+        "en": "Measurement"
+    },
+
+    "OBIS code": {
+        "de": "OBIS-Kennzahl",
+        "en": "OBIS code"
+    },
 
 
     "MissingOrInvalidEVSEId": {
@@ -591,6 +617,86 @@
     "The given OCMF meter value does not have a valid current type!": {
         "de": "Die übergebenen OCMF-Messwert haben keinen gültigen Stromtyp!",
         "en": "The given OCMF meter value does not have a valid current type!"
+    },
+
+    "Unknown charge transparency data format": {
+        "de": "Unbekanntes Transparenzdatenformat",
+        "en": "Unknown charge transparency data format"
+    },
+
+    "Energy meter not found": {
+        "de": "Energiezähler nicht gefunden",
+        "en": "Energy meter not found"
+    },
+
+    "Public key not found": {
+        "de": "Öffentlicher Schlüssel nicht gefunden",
+        "en": "Public key not found"
+    },
+
+    "Invalid public key": {
+        "de": "Ungültiger Public Key",
+        "en": "Invalid public key"
+    },
+
+    "Invalid signature": {
+        "de": "Ungültige Signatur",
+        "en": "Invalid signature"
+    },
+
+    "Invalid start value": {
+        "de": "Ungültiger Startwert",
+        "en": "Invalid start value"
+    },
+
+    "Invalid intermediate value": {
+        "de": "Ungültiger Zwischenwert",
+        "en": "Invalid intermediate value"
+    },
+
+    "Invalid stop value": {
+        "de": "Ungültiger Endwert",
+        "en": "Invalid stop value"
+    },
+
+    "Valid signature": {
+        "de": "Gültige Signatur",
+        "en": "Valid signature"
+    },
+
+    "Valid start value": {
+        "de": "Gültiger Startwert",
+        "en": "Valid start value"
+    },
+
+    "Valid intermediate value": {
+        "de": "Gültiger Zwischenwert",
+        "en": "Valid intermediate value"
+    },
+
+    "Valid stop value": {
+        "de": "Gültiger Endwert",
+        "en": "Valid stop value"
+    },
+
+    "Meter value": {
+        "de": "Messwert",
+        "en": "Meter value"
+    },
+
+    "Start value": {
+        "de": "Startwert",
+        "en": "Start value"
+    },
+
+    "Zwischenwert": {
+        "de": "Zwischenwert",
+        "en": "Intermediate value"
+    },
+
+    "End value": {
+        "de": "Endwert",
+        "en": "End value"
     }
 
 }

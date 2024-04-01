@@ -2237,21 +2237,21 @@ export class ChargyApp {
                     {
 
                         case chargyInterfaces.SessionVerificationResult.UnknownSessionFormat:
-                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("InvalidChargingSessionShort");
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("InvalidChargingSession");
                             break;
 
                         case chargyInterfaces.SessionVerificationResult.PublicKeyNotFound:
                         case chargyInterfaces.SessionVerificationResult.InvalidPublicKey:
                         case chargyInterfaces.SessionVerificationResult.InvalidSignature:
-                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("InvalidChargingSessionShort");
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("InvalidChargingSession");
                             break;
 
                         case chargyInterfaces.SessionVerificationResult.ValidSignature:
-                            verificationStatusDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + this.chargy.GetLocalizedMessage("ValidChargingSessionShort");
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + this.chargy.GetLocalizedMessage("ValidChargingSession");
                             break;
 
                         default:
-                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("InvalidChargingSessionShort");
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("InvalidChargingSession");
                             break;
 
                     }
@@ -2500,7 +2500,7 @@ export class ChargyApp {
 
                     else
                         chargyLib.CreateDiv2(energyMeterInfosDiv, "meterId",
-                                             "Zählerseriennummer",
+                                             this.chargy.GetLocalizedMessage("Meter serial number"),
                                              measurement.energyMeterId);
 
                     //#endregion
@@ -2508,11 +2508,11 @@ export class ChargyApp {
                     //#region Show measurement infos
 
                     chargyLib.CreateDiv2(energyMeterInfosDiv, "measurement",
-                                         "Messung",
+                                         this.chargy.GetLocalizedMessage("Measurement"),
                                          measurement.phenomena?.[0]?.name ?? measurement.name);
 
                     chargyLib.CreateDiv2(energyMeterInfosDiv, "OBIS",
-                                         "OBIS-Kennzahl",
+                                         this.chargy.GetLocalizedMessage("OBIS code"),
                                          measurement.phenomena?.[0]?.obis ?? measurement.obis);
 
                     //#endregion
@@ -2878,77 +2878,79 @@ export class ChargyApp {
                                         break;
 
                                     case chargyInterfaces.VerificationResult.UnknownCTRFormat:
-                                        icon = '<i class="fas fa-times-circle"></i> Unbekanntes Transparenzdatenformat';
+                                        icon = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("Unknown charge transparency data format");
                                         break;
 
                                     case chargyInterfaces.VerificationResult.EnergyMeterNotFound:
-                                        icon = '<i class="fas fa-times-circle"></i> Ungültiger Energiezähler';
+                                        icon = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("Energy meter not found");
                                         break;
 
                                     case chargyInterfaces.VerificationResult.PublicKeyNotFound:
-                                        icon = '<i class="fas fa-times-circle"></i> Public Key nicht gefunden';
+                                        icon = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("Public key not found");
                                         break;
 
                                     case chargyInterfaces.VerificationResult.InvalidPublicKey:
-                                        icon = '<i class="fas fa-times-circle"></i> Ungültiger Public Key';
+                                        icon = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("Invalid public key");
                                         break;
 
 
                                     case chargyInterfaces.VerificationResult.InvalidSignature:
-                                        icon = '<i class="fas fa-times-circle"></i> Ungültige Signatur';
+                                        icon = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("Invalid signature");
                                         break;
 
                                     case chargyInterfaces.VerificationResult.InvalidStartValue:
-                                        icon = '<i class="fas fa-times-circle"></i> Ungültiger Startwert';
+                                        icon = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("Invalid start value");
                                         break;
 
                                     case chargyInterfaces.VerificationResult.InvalidIntermediateValue:
-                                        icon = '<i class="fas fa-times-circle"></i> Ungültiger Zwischenwert';
+                                        icon = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("Invalid intermediate value");
                                         break;
 
                                     case chargyInterfaces.VerificationResult.InvalidStopValue:
-                                        icon = '<i class="fas fa-times-circle"></i> Ungültiger Endwert';
+                                        icon = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("Invalid stop value");
                                         break;
 
 
                                     case chargyInterfaces.VerificationResult.NoOperation:
-                                        icon = '<div class="noValidation">Messwert</div>';
+                                        icon = '<div class="noValidation">' + this.chargy.GetLocalizedMessage("Meter value") + '</div>';
                                         break;
 
                                     case chargyInterfaces.VerificationResult.StartValue:
-                                        icon = '<div class="noValidation">Startwert</div>';
+                                        icon = '<div class="noValidation">' + this.chargy.GetLocalizedMessage("Start value") + '</div>';
                                         break;
 
                                     case chargyInterfaces.VerificationResult.IntermediateValue:
-                                        icon = '<div class="noValidation">Zwischenwert</div>';
+                                        icon = '<div class="noValidation">' + this.chargy.GetLocalizedMessage("Intermediate value") + '</div>';
                                         break;
 
                                     case chargyInterfaces.VerificationResult.StopValue:
-                                        icon = '<div class="noValidation">Endwert</div>';
+                                        icon = '<div class="noValidation">' + this.chargy.GetLocalizedMessage("End value") + '</div>';
                                         break;
 
 
                                     case chargyInterfaces.VerificationResult.ValidSignature:
-                                        icon = '<i class="fas fa-check-circle"></i> Gültige Signatur';
+                                        icon = '<i class="fas fa-check-circle"></i> ' + this.chargy.GetLocalizedMessage("Valid signature");
                                         break;
 
                                     case chargyInterfaces.VerificationResult.ValidStartValue:
-                                        icon = '<i class="fas fa-check-circle"></i> Gültiger Startwert';
+                                        icon = '<i class="fas fa-check-circle"></i> ' + this.chargy.GetLocalizedMessage("Valid start value");
                                         break;
 
                                     case chargyInterfaces.VerificationResult.ValidIntermediateValue:
-                                        icon = '<i class="fas fa-check-circle"></i> Gültiger Zwischenwert';
+                                        icon = '<i class="fas fa-check-circle"></i> ' + this.chargy.GetLocalizedMessage("Valid intermediate value");
                                         break;
 
                                     case chargyInterfaces.VerificationResult.ValidStopValue:
-                                        icon = '<i class="fas fa-check-circle"></i> Gültiger Endwert';
+                                        icon = '<i class="fas fa-check-circle"></i> ' + this.chargy.GetLocalizedMessage("Valid stop value");
                                         break;
 
                                 }
 
-                            chargyLib.CreateDiv(measurementValueDiv,
-                                                "verificationStatus",
-                                                icon);
+                            chargyLib.CreateDiv(
+                                measurementValueDiv,
+                                "verificationStatus",
+                                icon
+                            );
 
                             //#endregion
 
@@ -2958,9 +2960,6 @@ export class ChargyApp {
 
                     //#endregion
 
-
-
-
                 }
             }
 
@@ -2969,7 +2968,7 @@ export class ChargyApp {
         {
             this.doGlobalError({
                 status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:    this.chargy.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
+                message:    this.chargy.GetLocalizedMessage("Unknown or invalid charge transparency record!"),
                 exception:  exception,
                 certainty:  0
             });
@@ -2998,7 +2997,7 @@ export class ChargyApp {
         if (measurementValue             == null ||
             measurementValue.measurement == null)
         {
-            doError("Unbekanntes Messdatensatzformat!");
+            doError(this.chargy.GetLocalizedMessage("Unknown meter data record format!"));
         }
 
 
@@ -3032,7 +3031,7 @@ export class ChargyApp {
 
         else
         {
-            doError("Unbekanntes Messdatensatzformat!");
+            doError(this.chargy.GetLocalizedMessage("Unknown meter data record format!"));
         }
 
         //#endregion
