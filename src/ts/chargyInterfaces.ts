@@ -496,17 +496,17 @@ export interface IMeasurements
 }
 
 export enum IECCurves {
-    secp192r1,
-    secp224k1,
-    secp256k1,
-    secp256r1,
-    secp384r1,
-    secp512r1
+    secp192r1  = "secp192r1",
+    secp224k1  = "secp224k1",
+    secp256k1  = "secp256k1",
+    secp256r1  = "secp256r1",
+    secp384r1  = "secp384r1",
+    secp512r1  = "secp512r1"
 }
 
 export enum IEncoding {
-    hex,
-    base64
+    hex     = "hex",
+    base64  = "base64"
 }
 
 export interface ISignatureInfos {
@@ -519,18 +519,19 @@ export interface ISignatureInfos {
 }
 
 export enum SignatureFormats {
-    DER,
-    rs
+    DER  = "DER",
+    rs   = "rs"
 }
 
 export enum CryptoAlgorithms {
-    RSA,
-    ECC
+    RSA  = "RSA",
+    ECC  = "ECC"
 }
 
 export enum CryptoHashAlgorithms {
-    SHA256,
-    SHA512
+    SHA256  = "SHA256",
+    SHA384  = "SHA384",
+    SHA512  = "SHA512"
 }
 
 export enum DisplayPrefixes {
@@ -674,54 +675,54 @@ export interface IChargingProductRelevance
 }
 
 export enum InformationRelevance {
-    Unknown,
-    Ignored,
-    Informative,
-    Important
+    Unknown      = "Unknown",
+    Ignored      = "Ignored",
+    Informative  = "Informative",
+    Important    = "Important"
 }
 
 // Remember to update main.cjs "setVerificationResult" when you edit this enum!
 export enum SessionVerificationResult {
-    NoChargeTransparencyRecordsFound,
-    UnknownSessionFormat,
-    InvalidSessionFormat,
-    PublicKeyNotFound,
-    InvalidPublicKey,
-    InvalidSignature,
-    Unvalidated,
-    ValidSignature,
-    InconsistentTimestamps,
-    AtLeastTwoMeasurementsRequired
+    NoChargeTransparencyRecordsFound  = "NoChargeTransparencyRecordsFound",
+    UnknownSessionFormat              = "UnknownSessionFormat",
+    InvalidSessionFormat              = "InvalidSessionFormat",
+    PublicKeyNotFound                 = "PublicKeyNotFound",
+    InvalidPublicKey                  = "InvalidPublicKey",
+    InvalidSignature                  = "InvalidSignature",
+    Unvalidated                       = "Unvalidated",
+    ValidSignature                    = "ValidSignature",
+    InconsistentTimestamps            = "InconsistentTimestamps",
+    AtLeastTwoMeasurementsRequired    = "AtLeastTwoMeasurementsRequired"
 }
 
 export enum VerificationResult {
 
-    Unvalidated,
+    Unvalidated               = "Unvalidated",
 
-    UnknownCTRFormat,
-    UnknownSignatureFormat,
-    EnergyMeterNotFound,
-    PublicKeyNotFound,
-    UnknownPublicKeyFormat,
-    InvalidPublicKey,
+    UnknownCTRFormat          = "UnknownCTRFormat",
+    UnknownSignatureFormat    = "UnknownSignatureFormat",
+    EnergyMeterNotFound       = "EnergyMeterNotFound",
+    PublicKeyNotFound         = "PublicKeyNotFound",
+    UnknownPublicKeyFormat    = "UnknownPublicKeyFormat",
+    InvalidPublicKey          = "InvalidPublicKey",
 
-    InvalidMeasurement,
-    InvalidStartValue,
-    InvalidIntermediateValue,
-    InvalidStopValue,
-    InvalidSignature,
+    InvalidMeasurement        = "InvalidMeasurement",
+    InvalidStartValue         = "InvalidStartValue",
+    InvalidIntermediateValue  = "InvalidIntermediateValue",
+    InvalidStopValue          = "InvalidStopValue",
+    InvalidSignature          = "InvalidSignature",
 
-    NoOperation,
-    StartValue,
-    IntermediateValue,
-    StopValue,
+    NoOperation               = "NoOperation",
+    StartValue                = "StartValue",
+    IntermediateValue         = "IntermediateValue",
+    StopValue                 = "StopValue",
 
-    ValidSignature,
-    ValidStartValue,
-    ValidIntermediateValue,
-    ValidStopValue,
+    ValidSignature            = "ValidSignature",
+    ValidStartValue           = "ValidStartValue",
+    ValidIntermediateValue    = "ValidIntermediateValue",
+    ValidStopValue            = "ValidStopValue",
 
-    ValidationError
+    ValidationError           = "ValidationError"
 
 }
 
