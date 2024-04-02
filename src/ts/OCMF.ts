@@ -778,69 +778,47 @@ export class OCMF {
                 {
 
                     case "ECDSA-secp192k1-SHA256":
-                        OCMFJSONDocument.hashAlgorithm  = "SHA256";
-                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
                         break;
 
                     case "ECDSA-secp192r1-SHA256":
-                        OCMFJSONDocument.hashAlgorithm  = "SHA256";
-                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
                         break;
 
                     case "ECDSA-secp256k1-SHA256":
-                        OCMFJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
-                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
-                        curve      = new this.chargy.elliptic.ec('secp256k1');
+                        curve = new this.chargy.elliptic.ec('secp256k1');
                         break;
 
                     case "ECDSA-secp256k1-SHA256":
-                        OCMFJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
-                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
                         break;
 
                     case "ECDSA-brainpool256r1-SHA256":
-                        OCMFJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
-                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
                         break;
 
                     // Note: Cryptographical wrong hash algorithm!
                     case "ECDSA-secp384r1-SHA256":
-                        OCMFJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
-                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
-                        curve      = new this.chargy.elliptic.ec('p384');
+                        curve = new this.chargy.elliptic.ec('p384');
                         break;
 
                     // Note: Cryptographical wrong hash algorithm!
                     case "ECDSA-brainpool384r1-SHA256":
-                        OCMFJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
-                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
                         break;
 
                     // Not an OCMF standard!
                     case "ECDSA-secp384r1-SHA384":
-                        OCMFJSONDocument.hashAlgorithm  = "SHA384, 384 Bits, hex";
-                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
-                        curve      = new this.chargy.elliptic.ec('p384');
+                        curve = new this.chargy.elliptic.ec('p384');
                         break;
 
                     // Not an OCMF standard!
                     case "ECDSA-brainpool384r1-SHA384":
-                        OCMFJSONDocument.hashAlgorithm  = "SHA384, 384 Bits, hex";
-                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
                         break;
 
                     // Not an OCMF standard!
                     case "ECDSA-secp521r1-SHA512":
-                        OCMFJSONDocument.hashAlgorithm  = "SHA512, 512 Bits, hex";
-                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
-                        curve      = new this.chargy.elliptic.ec('p521');
+                        curve = new this.chargy.elliptic.ec('p521');
                         break;
 
                     // ECDSA-secp256r1-SHA256
                     default:
-                        OCMFJSONDocument.hashAlgorithm  = "SHA256";
-                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
-                        curve      = new this.chargy.elliptic.ec('p256');
+                        curve = new this.chargy.elliptic.ec('p256');
                         break;
 
                 }
@@ -950,63 +928,6 @@ export class OCMF {
             catch (exception)
             {
                 OCMFJSONDocument.validationStatus = chargyInterfaces.VerificationResult.InvalidPublicKey;
-                return OCMFJSONDocument.validationStatus;
-            }
-
-            //#endregion
-
-            //#region Parse the signature
-
-            try
-            {
-
-                // Define an ASN.1 structure for an ECDSA signature
-                const ECDSASignature = this.chargy.asn1.define('ECDSASignature', function () {
-                    //@ts-ignore
-                    this.seq().obj(
-                        //@ts-ignore
-                        this.key('r').int(),
-                        //@ts-ignore
-                        this.key('s').int()
-                    );
-                });
-
-                let bufferEncoding: BufferEncoding = 'hex';
-
-                switch (OCMFJSONDocument.signature.SE?.toLowerCase() ?? "")
-                {
-
-                    case "":
-                        break;
-
-                    case "hex":
-                        bufferEncoding = 'hex';
-                        break;
-
-                    case 'base64':
-                        bufferEncoding = 'base64';
-                        break;
-
-                    default:
-                        OCMFJSONDocument.validationStatus = chargyInterfaces.VerificationResult.UnknownSignatureFormat;
-                        return OCMFJSONDocument.validationStatus;
-
-                }
-
-                // Parse the DER-encoded signature
-                const signatureObj = ECDSASignature.decode(Buffer.from(OCMFJSONDocument.signature.SD, bufferEncoding), 'der');
-
-                // Extract the r and s components of the signature
-                OCMFJSONDocument.signatureRS =  {
-                    value:  OCMFJSONDocument.signature.SD,
-                    r:      signatureObj.r.toString(16),
-                    s:      signatureObj.s.toString(16)
-                };
-
-            }
-            catch (exception)
-            {
-                OCMFJSONDocument.validationStatus = chargyInterfaces.VerificationResult.InvalidSignature;
                 return OCMFJSONDocument.validationStatus;
             }
 
@@ -1168,7 +1089,7 @@ export class OCMF {
                                         return "The " + (ocmfJSONDocuments.length + 1) + ". OCMF signature is not a valid JSON document!";
                                     }
 
-                                    const ocmfJSONDocument = {
+                                    const ocmfJSONDocument:ocmfTypes.IOCMFJSONDocument = {
                                         "@context":        "OCMF",
                                         raw:                combinedOCMF.substring(ocmfStartIndex, endIndex + 1),
                                         rawPayload:         ocmfRAWPayload,
@@ -1180,7 +1101,143 @@ export class OCMF {
                                                                 : chargyInterfaces.VerificationResult.PublicKeyNotFound
                                     }
 
-                                    if (PublicKey)
+                                    //#region Hash the payload
+
+                                    const plaintext = ocmfJSONDocument.rawPayload ?? JSON.stringify(ocmfJSONDocument.payload);
+
+                                    try
+                                    {
+
+                                        switch (ocmfJSONDocument.signature.SA)
+                                        {
+
+                                            case "ECDSA-secp192k1-SHA256":
+                                                ocmfJSONDocument.hashAlgorithm  = "SHA256";
+                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                break;
+
+                                            case "ECDSA-secp192r1-SHA256":
+                                                ocmfJSONDocument.hashAlgorithm  = "SHA256";
+                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                break;
+
+                                            case "ECDSA-secp256k1-SHA256":
+                                                ocmfJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
+                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                break;
+
+                                            case "ECDSA-secp256k1-SHA256":
+                                                ocmfJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
+                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                break;
+
+                                            case "ECDSA-brainpool256r1-SHA256":
+                                                ocmfJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
+                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                break;
+
+                                            // Note: Cryptographical wrong hash algorithm!
+                                            case "ECDSA-secp384r1-SHA256":
+                                                ocmfJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
+                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                break;
+
+                                            // Note: Cryptographical wrong hash algorithm!
+                                            case "ECDSA-brainpool384r1-SHA256":
+                                                ocmfJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
+                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                break;
+
+                                            // Not an OCMF standard!
+                                            case "ECDSA-secp384r1-SHA384":
+                                                ocmfJSONDocument.hashAlgorithm  = "SHA384, 384 Bits, hex";
+                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                break;
+
+                                            // Not an OCMF standard!
+                                            case "ECDSA-brainpool384r1-SHA384":
+                                                ocmfJSONDocument.hashAlgorithm  = "SHA384, 384 Bits, hex";
+                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                break;
+
+                                            // Not an OCMF standard!
+                                            case "ECDSA-secp521r1-SHA512":
+                                                ocmfJSONDocument.hashAlgorithm  = "SHA512, 512 Bits, hex";
+                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                break;
+
+                                            // ECDSA-secp256r1-SHA256
+                                            default:
+                                                ocmfJSONDocument.hashAlgorithm  = "SHA256";
+                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                break;
+
+                                        }
+
+                                    }
+                                    catch (exception)
+                                    {
+                                        ocmfJSONDocument.validationStatus = chargyInterfaces.VerificationResult.UnknownSignatureFormat;
+                                    }
+
+                                    //#endregion
+
+                                    //#region Parse the signature
+
+                                    try
+                                    {
+
+                                        // Define an ASN.1 structure for an ECDSA signature
+                                        const ECDSASignature = this.chargy.asn1.define('ECDSASignature', function () {
+                                            //@ts-ignore
+                                            this.seq().obj(
+                                                //@ts-ignore
+                                                this.key('r').int(),
+                                                //@ts-ignore
+                                                this.key('s').int()
+                                            );
+                                        });
+
+                                        let bufferEncoding: BufferEncoding = 'hex';
+
+                                        switch (ocmfJSONDocument.signature.SE?.toLowerCase() ?? "")
+                                        {
+
+                                            case "":
+                                                break;
+
+                                            case "hex":
+                                                bufferEncoding = 'hex';
+                                                break;
+
+                                            case 'base64':
+                                                bufferEncoding = 'base64';
+                                                break;
+
+                                            default:
+                                                ocmfJSONDocument.validationStatus = chargyInterfaces.VerificationResult.UnknownSignatureFormat;
+
+                                        }
+
+                                        // Parse the DER-encoded signature
+                                        const signatureObj = ECDSASignature.decode(Buffer.from(ocmfJSONDocument.signature.SD, bufferEncoding), 'der');
+
+                                        // Extract the r and s components of the signature
+                                        ocmfJSONDocument.signatureRS =  {
+                                            value:  ocmfJSONDocument.signature.SD,
+                                            r:      signatureObj.r.toString(16),
+                                            s:      signatureObj.s.toString(16)
+                                        };
+
+                                    }
+                                    catch (exception)
+                                    {
+                                        ocmfJSONDocument.validationStatus = chargyInterfaces.VerificationResult.InvalidSignature;
+                                    }
+
+                                    //#endregion
+
+                                    if (PublicKey && ocmfJSONDocument.validationStatus === chargyInterfaces.VerificationResult.Unvalidated)
                                         await this.validateOCMFSignature(ocmfJSONDocument, PublicKey);
 
                                     ocmfJSONDocuments.push(ocmfJSONDocument);

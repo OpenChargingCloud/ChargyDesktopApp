@@ -1589,6 +1589,14 @@ body {
                             background-color:   orange;
                         }
 
+                        .ocmfSeparator {
+                            color: #e20000;
+                        }
+
+                        .ocmfHighlight {
+                            color: #5c7aa9;
+                        }
+
                     }
                 }
 
@@ -1658,6 +1666,10 @@ body {
                         color:            #519ad0;
                     }
 
+                }
+
+                .error {
+                    color: #bd0000;
                 }
 
             }

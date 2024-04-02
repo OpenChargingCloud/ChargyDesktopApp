@@ -221,7 +221,7 @@ export class OCMFv1_0 extends ACrypt {
                 PlainTextDiv.parentElement.children[0].innerHTML  = "Plain text (OCMF|&lt;payload&gt;|&lt;signature&gt;)";
             }
 
-            PlainTextDiv.innerHTML = '<span style="color: #6e6eb9;">OCMF</span>' + (measurementValue.ocmfDocument?.raw?.substring(4) ?? "");
+            PlainTextDiv.innerHTML = '<span class="ocmfHighlight">OCMF</span>' + (measurementValue.ocmfDocument?.raw?.substring(4) ?? "");
 
             const firstIndex = PlainTextDiv.innerHTML.indexOf('|');
             if (firstIndex !== -1) {
@@ -230,7 +230,7 @@ export class OCMFv1_0 extends ACrypt {
 
             const lastIndex = PlainTextDiv.innerHTML.lastIndexOf('|');
             if (lastIndex !== -1 && lastIndex !== firstIndex) { // Überprüfen, dass es nicht das gleiche Vorkommen ist
-                PlainTextDiv.innerHTML = PlainTextDiv.innerHTML.substring(0, lastIndex) + '<span style="color: red;">|</span><span style="color: #6e6eb9;">' + PlainTextDiv.innerHTML.substring(lastIndex + 1) + '</span>';
+                PlainTextDiv.innerHTML = PlainTextDiv.innerHTML.substring(0, lastIndex) + '<span style="color: red;">|</span><span class="ocmfHighlight">' + PlainTextDiv.innerHTML.substring(lastIndex + 1) + '</span>';
             }
 
             PlainTextDiv.style.fontFamily  = "monospace";
@@ -354,13 +354,9 @@ export class OCMFv1_0 extends ACrypt {
                 SignatureExpectedDiv.parentElement.children[0].innerHTML  = "Erwartete Signatur (rs, hex)";
             }
 
-            if (typeof chargingSession.signature != 'string')
-                SignatureExpectedDiv.innerHTML                            = measurementValue.ocmfDocument?.signature.SD + "<br /><br />" +
-                                                                            "r: " + measurementValue.ocmfDocument?.signatureRS?.r?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") + "<br />" +
-                                                                            "s: " + measurementValue.ocmfDocument?.signatureRS?.s?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ");
-
-            else if (chargingSession.signature)
-                SignatureExpectedDiv.innerHTML                            = chargingSession.signature.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
+            SignatureExpectedDiv.innerHTML  = measurementValue.ocmfDocument?.signature.SD + "<br /><br />" +
+                                                 "r: " + measurementValue.ocmfDocument?.signatureRS?.r?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") + "<br />" +
+                                                 "s: " + measurementValue.ocmfDocument?.signatureRS?.s?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ");
 
         }
 

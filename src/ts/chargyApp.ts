@@ -3044,9 +3044,9 @@ export class ChargyApp {
 
         cryptoDataDiv.innerHTML         = '';
         bufferDiv.innerHTML             = '';
-        hashedBufferDiv.innerHTML       = '0x00000000000000000000000000000000000';
-        publicKeyDiv.innerHTML          = '0x00000000000000000000000000000000000';
-        signatureExpectedDiv.innerHTML  = '0x00000000000000000000000000000000000';
+        hashedBufferDiv.innerHTML       = '<span class="error">0x00000000000000000000000000000000000</stlye>';
+        publicKeyDiv.innerHTML          = '<span class="error">0x00000000000000000000000000000000000</stlye>';
+        signatureExpectedDiv.innerHTML  = '<span class="error">0x00000000000000000000000000000000000</stlye>';
         signatureCheckDiv.innerHTML     = '';
 
         if (measurementValue.method)
