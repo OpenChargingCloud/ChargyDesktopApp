@@ -391,13 +391,17 @@ export interface IOCMFJSONDocument {
 
     "@context":          string|string[],
 
+    raw?:                string,        // The raw OCMF document is used for visualization only.
     rawPayload?:         string,        // The raw OCMF payload can be used for calculating the signature, as OCMF does
                                         // not define a canonical format for calculating the signature which prevents a
                                         // meaningful interoperability of the signature verification process!
                                         // When the payload JSON was canonicalized, the rawPayload field is not needed.
+    hashAlgorithm?:      string,
+    hashValue?:          string,
 
     payload:             IOCMFPayload,
     signature:           IOCMFSignature,
+    signatureRS?:        chargyInterfaces.ISignatureRS,
     publicKey?:          string|chargyInterfaces.IPublicKeyXY,
 
     validationStatus?:   chargyInterfaces.VerificationResult

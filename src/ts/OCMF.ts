@@ -36,6 +36,10 @@ export interface IOCMFMeasurementValue extends chargyInterfaces.IMeasurementValu
     errorFlags?:                string;
     cumulatedLoss?:             Decimal;
     status:                     string;
+    ocmfDocument?:              ocmfTypes.IOCMFJSONDocument;
+//    ocmfRAW?:                   string;
+//    ocmfHashAlgorithm?:         string;
+//    ocmfHashValue?:             string;
 }
 
 export interface IOCMFMeasurement extends chargyInterfaces.IMeasurement
@@ -510,34 +514,35 @@ export class OCMF {
                                 // ToDo: There might be multiple OBIS meter readings per timestamp!
                                 if (CTR!.chargingSessions![0]!.measurements.length == 0)
                                     CTR!.chargingSessions![0]!.measurements.push({
-                                        "name":             chargyLib.OBIS2MeasurementName(readingIdentification ?? ""),
-                                        "scale":            1,      // Fix me!
-                                        "energyMeterId":    meterSerial,
-                                        "@context":         "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/OCMFv1.0+json",
-                                        "obis":             readingIdentification ?? "?",   // OBIS: "1-b:1.8.0"
-                                        "unit":             readingUnit,                    // "kWh"
-                                        "currentType":      readingCurrentType,             // "AC"
-                                        "values":           []
+                                        "name":            chargyLib.OBIS2MeasurementName(readingIdentification ?? ""),
+                                        "scale":           1,      // Fix me!
+                                        "energyMeterId":   meterSerial,
+                                        "@context":        "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/OCMFv1.0+json",
+                                        "obis":            readingIdentification ?? "?",   // OBIS: "1-b:1.8.0"
+                                        "unit":            readingUnit,                    // "kWh"
+                                        "currentType":     readingCurrentType,             // "AC"
+                                        "values":          []
                                     });
 
                                 CTR!.chargingSessions![0]!.measurements[0]!.values.push({
-                                    "timestamp":         timeStampISO8601,            // "2019-06-26T08:57:44,337+0000"
-                                    "timeSync":          timeSync,                    // "U"|"I"|"S"|"R"
-                                    "transaction":       transaction,                 // "B"|"C"|"X"|"E"|"L"|"R"|"A"|"P"|"S"|"T"|null
-                                    "value":             new Decimal(readingValue),   // 2935.6
-                                    "transactionType":   transactionType,             // "T"     ToDo: Serialize this to a string!
-                                    "pagination":        pagination,                  // "9289"
-                                    "errorFlags":        errorFlags,                  // ""
-                                    "cumulatedLoss":     cumulatedLoss                // 0.0
-                                                             ? new Decimal(cumulatedLoss)
-                                                             : undefined,
-                                    "status":            status,                      // "G"
-                                    // "signatures":        [{
-                                    //                          "value":  ocmfJSONDocument.signature["SD"]
-                                    //                      }],
-                                    "result":            {
-                                                             "status": ocmfJSONDocument.validationStatus ?? chargyInterfaces.VerificationResult.Unvalidated
-                                                         }
+                                    "timestamp":           timeStampISO8601,            // "2019-06-26T08:57:44,337+0000"
+                                    "timeSync":            timeSync,                    // "U"|"I"|"S"|"R"
+                                    "transaction":         transaction,                 // "B"|"C"|"X"|"E"|"L"|"R"|"A"|"P"|"S"|"T"|null
+                                    "value":               new Decimal(readingValue),   // 2935.6
+                                    "transactionType":     transactionType,             // "T"     ToDo: Serialize this to a string!
+                                    "pagination":          pagination,                  // "9289"
+                                    "errorFlags":          errorFlags,                  // ""
+                                    "cumulatedLoss":       cumulatedLoss                // 0.0
+                                                               ? new Decimal(cumulatedLoss)
+                                                               : undefined,
+                                    "status":              status,                      // "G"
+                                    // "signatures":          [{
+                                    //                            "value":  ocmfJSONDocument.signature["SD"]
+                                    //                        }],
+                                    "result":              {
+                                                               "status": ocmfJSONDocument.validationStatus ?? chargyInterfaces.VerificationResult.Unvalidated
+                                                           },
+                                    "ocmfDocument":        ocmfJSONDocument
                                 });
 
                             }
@@ -761,12 +766,10 @@ export class OCMF {
 
             //#region Setup crypto
 
-            const plaintext         = OCMFJSONDocument.rawPayload ?? JSON.stringify(OCMFJSONDocument.payload);
+            const plaintext      = OCMFJSONDocument.rawPayload ?? JSON.stringify(OCMFJSONDocument.payload);
 
-            let   curve:any         = null;
-            let   publicKey:any     = null;
-            let   hashValue:string  = "";
-            let   signature:any     = null;
+            let   curve:any      = null;
+            let   publicKey:any  = null;
 
             try
             {
@@ -775,42 +778,68 @@ export class OCMF {
                 {
 
                     case "ECDSA-secp192k1-SHA256":
-                        hashValue  = (await chargyLib.sha256(plaintext));
+                        OCMFJSONDocument.hashAlgorithm  = "SHA256";
+                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                        break;
+
+                    case "ECDSA-secp192r1-SHA256":
+                        OCMFJSONDocument.hashAlgorithm  = "SHA256";
+                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
                         break;
 
                     case "ECDSA-secp256k1-SHA256":
-                        hashValue  = (await chargyLib.sha256(plaintext));
+                        OCMFJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
+                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
                         curve      = new this.chargy.elliptic.ec('secp256k1');
                         break;
 
                     case "ECDSA-secp256k1-SHA256":
-                        hashValue  = (await chargyLib.sha256(plaintext));
-                        break;
-
-                    case "ECDSA-secp192r1-SHA256":
-                        hashValue  = (await chargyLib.sha256(plaintext));
+                        OCMFJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
+                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
                         break;
 
                     case "ECDSA-brainpool256r1-SHA256":
-                        hashValue  = (await chargyLib.sha256(plaintext));
+                        OCMFJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
+                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
                         break;
 
+                    // Note: Cryptographical wrong hash algorithm!
                     case "ECDSA-secp384r1-SHA256":
-                        hashValue  = (await chargyLib.sha256(plaintext));
+                        OCMFJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
+                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
                         curve      = new this.chargy.elliptic.ec('p384');
                         break;
 
+                    // Note: Cryptographical wrong hash algorithm!
                     case "ECDSA-brainpool384r1-SHA256":
-                        hashValue  = (await chargyLib.sha256(plaintext));
+                        OCMFJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
+                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
                         break;
 
-                    case "ECDSA-secp521r1-SHA256":
-                        hashValue  = (await chargyLib.sha256(plaintext));
+                    // Not an OCMF standard!
+                    case "ECDSA-secp384r1-SHA384":
+                        OCMFJSONDocument.hashAlgorithm  = "SHA384, 384 Bits, hex";
+                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                        curve      = new this.chargy.elliptic.ec('p384');
+                        break;
+
+                    // Not an OCMF standard!
+                    case "ECDSA-brainpool384r1-SHA384":
+                        OCMFJSONDocument.hashAlgorithm  = "SHA384, 384 Bits, hex";
+                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                        break;
+
+                    // Not an OCMF standard!
+                    case "ECDSA-secp521r1-SHA512":
+                        OCMFJSONDocument.hashAlgorithm  = "SHA512, 512 Bits, hex";
+                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
                         curve      = new this.chargy.elliptic.ec('p521');
                         break;
 
-                    default: // ECDSA-secp256r1-SHA256
-                        hashValue  = (await chargyLib.sha256(plaintext));
+                    // ECDSA-secp256r1-SHA256
+                    default:
+                        OCMFJSONDocument.hashAlgorithm  = "SHA256";
+                        OCMFJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
                         curve      = new this.chargy.elliptic.ec('p256');
                         break;
 
@@ -968,9 +997,10 @@ export class OCMF {
                 const signatureObj = ECDSASignature.decode(Buffer.from(OCMFJSONDocument.signature.SD, bufferEncoding), 'der');
 
                 // Extract the r and s components of the signature
-                signature = {
-                    r: signatureObj.r.toString(16),
-                    s: signatureObj.s.toString(16)
+                OCMFJSONDocument.signatureRS =  {
+                    value:  OCMFJSONDocument.signature.SD,
+                    r:      signatureObj.r.toString(16),
+                    s:      signatureObj.s.toString(16)
                 };
 
             }
@@ -987,7 +1017,7 @@ export class OCMF {
             try
             {
 
-                OCMFJSONDocument.validationStatus = publicKey.verify(hashValue, signature)
+                OCMFJSONDocument.validationStatus = publicKey.verify(OCMFJSONDocument.hashValue, OCMFJSONDocument.signatureRS)
                                                         ? chargyInterfaces.VerificationResult.ValidSignature
                                                         : chargyInterfaces.VerificationResult.InvalidSignature;
 
@@ -1057,6 +1087,7 @@ export class OCMF {
         let   ocmfSignature:any       = {};
 
         let   depth                   =  0;
+        let   ocmfStartIndex          = -1;
         let   startIndex              = -1;
         let   endIndex                = -1;
 
@@ -1072,7 +1103,8 @@ export class OCMF {
                     i               >= 3 &&
                     combinedOCMF[i] === 'F' && combinedOCMF[i-1] === 'M' && combinedOCMF[i-2] === 'C' && combinedOCMF[i-3] === 'O')
                 {
-                    ocmfStructure = 1;
+                    ocmfStructure    = 1;
+                    ocmfStartIndex  = i-3;
                     continue;
                 }
 
@@ -1138,6 +1170,7 @@ export class OCMF {
 
                                     const ocmfJSONDocument = {
                                         "@context":        "OCMF",
+                                        raw:                combinedOCMF.substring(ocmfStartIndex, endIndex + 1),
                                         rawPayload:         ocmfRAWPayload,
                                         payload:            ocmfPayload,
                                         signature:          ocmfSignature,

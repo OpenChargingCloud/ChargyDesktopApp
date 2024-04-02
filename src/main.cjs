@@ -343,58 +343,59 @@ ipcMain.on('setVerificationResult', (event, result) => {
 
             let status = "";
 
-            switch (singleResult.status)
-            {
+            status = singleResult.status;
+            // switch (singleResult.status)
+            // {
 
-                case 0:
-                    status = "No charge transparency records found";
-                    break;
+            //     case 0:
+            //         status = "No charge transparency records found";
+            //         break;
 
-                case 1:
-                    status = "Unknown session format";
-                    break;
+            //     case 1:
+            //         status = "Unknown session format";
+            //         break;
 
-                case 2:
-                    status = "Invalid session format";
-                    break;
+            //     case 2:
+            //         status = "Invalid session format";
+            //         break;
 
-                case 3:
-                    status = "Public key not found";
-                    break;
+            //     case 3:
+            //         status = "Public key not found";
+            //         break;
 
-                case 4:
-                    status = "Invalid public key";
-                    break;
+            //     case 4:
+            //         status = "Invalid public key";
+            //         break;
 
-                case 5:
-                    status = "Invalid signature";
-                    break;
+            //     case 5:
+            //         status = "Invalid signature";
+            //         break;
 
-                case 6:
-                    status = "Unvalidated";
-                    break;
+            //     case 6:
+            //         status = "Unvalidated";
+            //         break;
 
-                case 7:
-                    status = "Valid signature";
-                    break;
+            //     case 7:
+            //         status = "Valid signature";
+            //         break;
 
-                case 8:
-                    status = "Inconsistent timestamps";
-                    break;
+            //     case 8:
+            //         status = "Inconsistent timestamps";
+            //         break;
 
-                case 9:
-                    status = "At least two measurements required";
-                    break;
+            //     case 9:
+            //         status = "At least two measurements required";
+            //         break;
 
-                default:
-                    status = "Unknown session format";
-                    break;
+            //     default:
+            //         status = "Unknown session format";
+            //         break;
 
-            }
+            // }
 
             //#endregion
 
-            console.log(status + (singleResult.message != null ? " - " + singleResult.message : ""));
+            console.log(status + (singleResult.message ? " - " + singleResult.message : ""));
 
         }
 

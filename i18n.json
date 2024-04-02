@@ -51,11 +51,6 @@
         "en": "Unknown or invalid JSON charge transparency format!"
     },
 
-    "PublicKeyNotFound": {
-        "de": "Kein PublicKey gefunden!",
-        "en": "No public key found!"
-    },
-
     "UnknownOrInvalidPublicKeyFormat": {
         "de": "Unbekanntes oder ungültiges PublicKey-Format!",
         "en": "Unknown or invalid public key format!"
@@ -552,7 +547,12 @@
 
 
 
+    "Unvalidated": {
+        "de": "Unvalidiert",
+        "en": "Unvalidated"
+    },
 
+    
 
     "The given OCMF data does not have a valid header!": {
         "de": "Die übergebenen OCMF-Daten haben keinen gültigen Header!",
@@ -619,9 +619,9 @@
         "en": "The given OCMF meter value does not have a valid current type!"
     },
 
-    "Unknown charge transparency data format": {
-        "de": "Unbekanntes Transparenzdatenformat",
-        "en": "Unknown charge transparency data format"
+    "Unknown charge transparency data format!": {
+        "de": "Unbekanntes Transparenzdatenformat!",
+        "en": "Unknown charge transparency data format!"
     },
 
     "Energy meter not found": {
@@ -630,7 +630,7 @@
     },
 
     "Public key not found": {
-        "de": "Öffentlicher Schlüssel nicht gefunden",
+        "de": "Öffentlichen Schlüssel nicht gefunden",
         "en": "Public key not found"
     },
 

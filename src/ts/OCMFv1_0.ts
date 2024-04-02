@@ -19,10 +19,11 @@ import { Chargy }             from './chargy'
 import { ACrypt }             from './ACrypt'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
+import * as ocmf              from './OCMF'
 
-export interface IOCMFv1_0MeasurementValue extends chargyInterfaces.IMeasurementValue
+export interface IOCMFv1_0MeasurementValue extends ocmf.IOCMFMeasurementValue
 {
-    statusMeter:                 string,
+    statusMeter:                string,
     secondsIndex:               number,
     paginationId:               string,
     logBookIndex:               string
@@ -65,7 +66,7 @@ export class OCMFv1_0 extends ACrypt {
     async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
-        var sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
+        let sessionResult:chargyInterfaces.SessionVerificationResult = chargyInterfaces.SessionVerificationResult.Unvalidated;
 
         if (chargingSession.measurements)
         {
@@ -79,23 +80,73 @@ export class OCMFv1_0 extends ACrypt {
                 {
 
                     // Validate...
-                    // for (var measurementValue of measurement.values)
-                    // {
-                    //     measurementValue.measurement = measurement;
-                    //     await this.VerifyMeasurement(measurementValue as IOCMFv1_0MeasurementValue);
-                    // }
+                    for (var measurementValue of measurement.values)
+                    {
+                        measurementValue.measurement = measurement;
+                        await this.VerifyMeasurement(measurementValue as IOCMFv1_0MeasurementValue);
+                    }
 
 
                     // Find an overall result...
-                    sessionResult = chargyInterfaces.SessionVerificationResult.ValidSignature;
-
                     for (var measurementValue of measurement.values)
                     {
-                        if (sessionResult                   === chargyInterfaces.SessionVerificationResult.ValidSignature &&
-                            measurementValue.result?.status !== chargyInterfaces.VerificationResult.ValidSignature)
+                        if (measurementValue.result)
                         {
-                            sessionResult = chargyInterfaces.SessionVerificationResult.InvalidSignature;
+                            switch (measurementValue.result.status)
+                            {
+
+                                // Unvalidated
+                                // UnknownCTRFormat
+
+                                case chargyInterfaces.VerificationResult.EnergyMeterNotFound:
+                                    sessionResult = chargyInterfaces.SessionVerificationResult.EnergyMeterNotFound;
+                                    break;
+
+                                case chargyInterfaces.VerificationResult.UnknownSignatureFormat:
+                                    sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSignatureFormat;
+                                    break;
+    
+                                case chargyInterfaces.VerificationResult.PublicKeyNotFound:
+                                    sessionResult = chargyInterfaces.SessionVerificationResult.PublicKeyNotFound;
+                                    break;
+
+                                case chargyInterfaces.VerificationResult.UnknownPublicKeyFormat:
+                                    sessionResult = chargyInterfaces.SessionVerificationResult.UnknownPublicKeyFormat;
+                                    break;
+
+                                case chargyInterfaces.VerificationResult.InvalidPublicKey:
+                                    sessionResult = chargyInterfaces.SessionVerificationResult.InvalidPublicKey;
+                                    break;
+
+                                // InvalidMeasurement
+                                // InvalidStartValue
+                                // InvalidIntermediateValue
+                                // InvalidStopValue
+
+                                case chargyInterfaces.VerificationResult.InvalidSignature:
+                                    sessionResult = chargyInterfaces.SessionVerificationResult.InvalidSignature;
+                                    break;
+
+                                // NoOperation
+                                // StartValue
+                                // IntermediateValue
+                                // StopValue
+
+                                case chargyInterfaces.VerificationResult.ValidSignature:
+                                    sessionResult = chargyInterfaces.SessionVerificationResult.ValidSignature;
+                                    break;
+
+                                // ValidStartValue
+                                // ValidIntermediateValue
+                                // ValidStopValue
+                                // ValidationError
+
+                            }
                         }
+
+                        if (sessionResult !== chargyInterfaces.SessionVerificationResult.ValidSignature)
+                            break;
+
                     }
 
                 }
@@ -116,187 +167,13 @@ export class OCMFv1_0 extends ACrypt {
     async VerifyMeasurement(measurementValue: IOCMFv1_0MeasurementValue): Promise<IOCMFv1_0Result>
     {
 
-        function setResult(verificationResult: chargyInterfaces.VerificationResult)
-        {
-            cryptoResult.status     = verificationResult;
-            measurementValue.result = cryptoResult;
-            return cryptoResult;
-        }
-
         measurementValue.method = this;
 
-        // {
-        //
-        //     "FV": "1.0",
-        //     "GI": "SEAL AG",
-        //     "GS": "1850006a",
-        //     "GV": "1.34",
-        //
-        //     "PG": "T9289",
-        //
-        //     "MV": "Carlo Gavazzi",
-        //     "MM": "EM340-DIN.AV2.3.X.S1.PF",
-        //     "MS": "******240084S",
-        //     "MF": "B4",
-        //
-        //     "IS": true,
-        //     "IL": "TRUSTED",
-        //     "IF": ["OCCP_AUTH"],
-        //     "IT": "ISO14443",
-        //     "ID": "56213C05",
-        //
-        //     "RD": [{
-        //         "TM": "2019-06-26T08:57:44,337+0000 U",
-        //         "TX": "B",
-        //         "RV": 268.978,
-        //         "RI": "1-b:1.8.0",
-        //         "RU": "kWh",
-        //         "RT": "AC",
-        //         "EF": "",
-        //         "ST": "G"
-        //     }]
-        //
-        // }
+        // The measurement was already verified by the outer OCMF signature!
 
-        var reading = {
-
-           "FV": "1.0",
-           "GI": "SEAL AG",
-           "GS": "1850006a",
-           "GV": "1.34",
-
-           "PG": "T9289",
-
-           "MV": "Carlo Gavazzi",
-           "MM": "EM340-DIN.AV2.3.X.S1.PF",
-           "MS": "******240084S",
-           "MF": "B4",
-
-           "IS": true,
-           "IL": "TRUSTED",
-           "IF": ["OCCP_AUTH"],
-           "IT": "ISO14443",
-           "ID": "56213C05",
-
-           "RD": [{
-               "TM": "2019-06-26T08:57:44,337+0000 U",
-               "TX": "B",
-               "RV": 268.978,
-               "RI": "1-b:1.8.0",
-               "RU": "kWh",
-               "RT": "AC",
-               "EF": "",
-               "ST": "G"
-           }]
-
-        };
-
-
-        var serialized = JSON.stringify(reading);
-
-        var cryptoResult:IOCMFv1_0Result = {
-            status:                       chargyInterfaces.VerificationResult.ValidSignature,
-        };
-
-        return setResult(chargyInterfaces.VerificationResult.ValidSignature);
-
-        // var buffer        = new ArrayBuffer(320);
-        // var cryptoBuffer  = new DataView(buffer);
-
-        // var cryptoResult:IOCMFv1_0Result = {
-        //     status:                       VerificationResult.InvalidSignature,
-        //     meterId:                      SetHex        (cryptoBuffer, measurementValue.measurement.energyMeterId,                                  0),
-        //     timestamp:                    SetTimestamp32(cryptoBuffer, measurementValue.timestamp,                                                 10),
-        //     infoStatus:                   SetHex        (cryptoBuffer, measurementValue.infoStatus,                                                14, false),
-        //     secondsIndex:                 SetUInt32     (cryptoBuffer, measurementValue.secondsIndex,                                              15, true),
-        //     paginationId:                 SetHex        (cryptoBuffer, measurementValue.paginationId,                                              19, true),
-        //     obis:                         SetHex        (cryptoBuffer, measurementValue.measurement.obis,                                          23, false),
-        //     unitEncoded:                  SetInt8       (cryptoBuffer, measurementValue.measurement.unitEncoded,                                   29),
-        //     scale:                        SetInt8       (cryptoBuffer, measurementValue.measurement.scale,                                         30),
-        //     value:                        SetUInt64     (cryptoBuffer, measurementValue.value,                                                     31, true),
-        //     logBookIndex:                 SetHex        (cryptoBuffer, measurementValue.logBookIndex,                                              39, false),
-        //     authorizationStart:           SetText       (cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart["@id"],     41),
-        //     authorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp, 169)
-        // };
-
-        // var signatureExpected = measurementValue.signatures[0] as IECCSignature;
-        // if (signatureExpected != null)
-        // {
-
-        //     try
-        //     {
-
-        //         cryptoResult.signature = {
-        //             algorithm:  measurementValue.measurement.signatureInfos.algorithm,
-        //             format:     measurementValue.measurement.signatureInfos.format,
-        //             r:          signatureExpected.r,
-        //             s:          signatureExpected.s
-        //         };
-
-        //         // Only the first 24 bytes/192 bits are used!
-        //         cryptoResult.sha256value = (await this.sha256(cryptoBuffer)).substring(0, 48);
-
-
-        //         const meter = this.GetMeter(measurementValue.measurement.energyMeterId);
-        //         if (meter != null)
-        //         {
-
-        //             cryptoResult.meter = meter;
-
-        //             var iPublicKey = meter.publicKeys[0] as IPublicKey;
-        //             if (iPublicKey != null)
-        //             {
-
-        //                 try
-        //                 {
-
-        //                     cryptoResult.publicKey            = iPublicKey.value.toLowerCase();
-        //                     cryptoResult.publicKeyFormat      = iPublicKey.format;
-        //                     cryptoResult.publicKeySignatures  = iPublicKey.signatures;
-
-        //                     try
-        //                     {
-
-        //                         if (this.curve.keyFromPublic(cryptoResult.publicKey, 'hex').
-        //                                        verify       (cryptoResult.sha256value,
-        //                                                      cryptoResult.signature))
-        //                         {
-        //                             return setResult(VerificationResult.ValidSignature);
-        //                         }
-                                
-        //                         return setResult(VerificationResult.InvalidSignature);
-
-        //                     }
-        //                     catch (exception)
-        //                     {
-        //                         return setResult(VerificationResult.InvalidSignature);
-        //                     }
-
-        //                 }
-        //                 catch (exception)
-        //                 {
-        //                     return setResult(VerificationResult.InvalidPublicKey);
-        //                 }
-
-        //             }
-
-        //             else
-        //                 return setResult(VerificationResult.PublicKeyNotFound);
-
-        //         }
-
-        //         else
-        //             return setResult(VerificationResult.EnergyMeterNotFound);
-
-        //     }
-        //     catch (exception)
-        //     {
-        //         return setResult(VerificationResult.InvalidSignature);
-        //     }
-
-        // }
-
-        // return {} as IOCMFv1_0Result;
+        return {
+            status: measurementValue.result?.status ?? chargyInterfaces.VerificationResult.Unvalidated
+        }
 
     }
 
@@ -319,41 +196,47 @@ export class OCMFv1_0 extends ACrypt {
             }
         }
 
-        const result     = measurementValue.result as IOCMFv1_0Result;
+        const chargingSession    = measurementValue?.measurement?.chargingSession;
+        const result             = measurementValue.result as IOCMFv1_0Result;
+        const algorithmName      = (typeof chargingSession?.publicKey?.algorithm === "object")
+                                        ? chargingSession?.publicKey?.algorithm.name
+                                        : chargingSession?.publicKey?.algorithm;
+        const algorithmType      = (typeof chargingSession?.publicKey?.type      === "object")
+                                        ? chargingSession?.publicKey?.type.name
+                                        : chargingSession?.publicKey?.type;
 
-        const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
-        cryptoSpan.innerHTML = "OCMFCrypt01 (" + this.description + ")";
+        const cryptoSpan         = introDiv?.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
+        cryptoSpan.innerHTML     = "OCMFCrypt01 (" + algorithmName + ")";
 
         //#region Plain text
 
         if (PlainTextDiv != null)
         {
 
-            if (PlainTextDiv                           != undefined &&
-                PlainTextDiv.parentElement             != undefined &&
-                PlainTextDiv.parentElement             != undefined &&
-                PlainTextDiv.parentElement.children[0] != undefined)
+            if (PlainTextDiv &&
+                PlainTextDiv.parentElement &&
+                PlainTextDiv.parentElement &&
+                PlainTextDiv.parentElement.children[0])
             {
-                PlainTextDiv.parentElement.children[0].innerHTML = "Plain text (320 Bytes, hex)";
+                PlainTextDiv.parentElement.children[0].innerHTML  = "Plain text (OCMF|&lt;payload&gt;|&lt;signature&gt;)";
             }
 
-            PlainTextDiv.style.fontFamily  = "";
-            PlainTextDiv.style.whiteSpace  = "";
-            PlainTextDiv.style.maxHeight   = "";
-            PlainTextDiv.style.overflowY   = "";
+            PlainTextDiv.innerHTML = '<span style="color: #6e6eb9;">OCMF</span>' + (measurementValue.ocmfDocument?.raw?.substring(4) ?? "");
 
-            this.CreateLine("Zählernummer",             measurementValue.measurement.energyMeterId,                                                      result.meterId                                         || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Zeitstempel",              chargyLib.parseUTC(measurementValue.timestamp),                                                  result.timestamp                                       || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Status",                   chargyLib.hex2bin(measurementValue.statusMeter) + " (" + measurementValue.statusMeter + " hex)", result.infoStatus                                      || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Sekundenindex",            measurementValue.secondsIndex,                                                                   result.secondsIndex                                    || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Paginierungszähler",       parseInt(measurementValue.paginationId, 16),                                                     result.paginationId                                    || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("OBIS-Kennzahl",            measurementValue.measurement.obis,                                                               result.obis                                            || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded ?? 0,                                                   result.unitEncoded                                     || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                              result.scale                                           || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                                  result.value                                           || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                                          result.logBookIndex                                    || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",                 chargyLib.pad(result.authorizationStart,          128) || "",  infoDiv, PlainTextDiv);
-     //       this.CreateLine("Autorisierungszeitpunkt",  chargyLib.parseUTC(measurementValue.measurement.chargingSession.authorizationStart.timestamp),   chargyLib.pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, PlainTextDiv);
+            const firstIndex = PlainTextDiv.innerHTML.indexOf('|');
+            if (firstIndex !== -1) {
+                PlainTextDiv.innerHTML = PlainTextDiv.innerHTML.substring(0, firstIndex) + '<span style="color: red;">|</span>' + PlainTextDiv.innerHTML.substring(firstIndex + 1);
+            }
+
+            const lastIndex = PlainTextDiv.innerHTML.lastIndexOf('|');
+            if (lastIndex !== -1 && lastIndex !== firstIndex) { // Überprüfen, dass es nicht das gleiche Vorkommen ist
+                PlainTextDiv.innerHTML = PlainTextDiv.innerHTML.substring(0, lastIndex) + '<span style="color: red;">|</span><span style="color: #6e6eb9;">' + PlainTextDiv.innerHTML.substring(lastIndex + 1) + '</span>';
+            }
+
+            PlainTextDiv.style.fontFamily  = "monospace";
+            //PlainTextDiv.style.whiteSpace  = "pre";
+            PlainTextDiv.style.maxHeight   = "25vh";
+            PlainTextDiv.style.overflowY   = "scroll";
 
         }
 
@@ -364,15 +247,16 @@ export class OCMFv1_0 extends ACrypt {
         if (HashedPlainTextDiv != null)
         {
 
-            if (HashedPlainTextDiv                           != undefined &&
-                HashedPlainTextDiv.parentElement             != undefined &&
-                HashedPlainTextDiv.parentElement             != undefined &&
-                HashedPlainTextDiv.parentElement.children[0] != undefined)
+            if (HashedPlainTextDiv &&
+                HashedPlainTextDiv.parentElement &&
+                HashedPlainTextDiv.parentElement &&
+                HashedPlainTextDiv.parentElement.children[0])
             {
-                HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text (SHA256, 24 bytes, hex)";
+                HashedPlainTextDiv.parentElement.children[0].innerHTML = "Hashed payload (" + measurementValue.ocmfDocument?.hashAlgorithm + ")";
             }
 
-            HashedPlainTextDiv.innerHTML                                 = result.sha256value.match(/.{1,8}/g).join(" ");
+            HashedPlainTextDiv.innerHTML  = measurementValue.ocmfDocument?.hashValue?.match(/.{1,8}/g)?.join(" ")
+                                                ?? "0x00000000000000000000000000000000000";
 
         }
 
@@ -380,28 +264,39 @@ export class OCMFv1_0 extends ACrypt {
 
         //#region Public Key
 
-        if (PublicKeyDiv     != null &&
-            result.publicKey != null &&
-            result.publicKey != "")
+        if (PublicKeyDiv != null && measurementValue.ocmfDocument?.publicKey)
         {
 
-            if (PublicKeyDiv                           != undefined &&
-                PublicKeyDiv.parentElement             != undefined &&
-                PublicKeyDiv.parentElement             != undefined &&
-                PublicKeyDiv.parentElement.children[0] != undefined)
+            if (PublicKeyDiv &&
+                PublicKeyDiv.parentElement &&
+                PublicKeyDiv.parentElement &&
+                PublicKeyDiv.parentElement.children[0])
             {
-                PublicKeyDiv.parentElement.children[0].innerHTML       = "Public Key (" +
-                                                                         (result.publicKeyFormat
-                                                                             ? result.publicKeyFormat + ", "
-                                                                             : "") +
-                                                                         "hex)";
+
+                PublicKeyDiv.parentElement.children[0].innerHTML = (typeof measurementValue.ocmfDocument?.publicKey === 'string')
+
+                    ? "Public Key (" +
+                                                                            (algorithmType
+                                                                                ? algorithmType + ", "
+                                                                                : "") +
+                                                                       //     measurementValue.ocmfDocument.publicKey +
+                                                                            ", hex)"
+
+                    : "Public Key (" +
+                    measurementValue.ocmfDocument.publicKey.algorithm.substring(0, measurementValue.ocmfDocument.publicKey.algorithm.lastIndexOf('-')) +
+                   (measurementValue.ocmfDocument.publicKey.encoding ? ", " + measurementValue.ocmfDocument.publicKey.encoding : "") + ")";
+
             }
 
-            if (!chargyLib.IsNullOrEmpty(result.publicKey))
-                PublicKeyDiv.innerHTML                                 = result.publicKey.startsWith("04") // Add some space after '04' to avoid confused customers
-                                                                            ? "<span class=\"leadingFour\">04</span> "
-                                                                                + result.publicKey.substring(2).match(/.{1,8}/g)!.join(" ")
-                                                                            :   result.publicKey.match(/.{1,8}/g)!.join(" ");
+            PublicKeyDiv.innerHTML  = (typeof measurementValue.ocmfDocument?.publicKey === 'string')
+                ? measurementValue.ocmfDocument.publicKey.startsWith("04") // Add some space after '04' to avoid confused customers
+                      ? "<span class=\"leadingFour\">04</span> "
+                        + measurementValue.ocmfDocument.publicKey.substring(2).match(/.{1,8}/g)!.join(" ")
+                      :   measurementValue.ocmfDocument.publicKey.match(/.{1,8}/g)!.join(" ")
+                : (measurementValue.ocmfDocument.publicKey.value ?? "-") + "<br /><br />" +
+                   "x: " + measurementValue.ocmfDocument.publicKey.x.match(/.{1,8}/g)?.join(" ") + "<br />" +
+                   "y: " + measurementValue.ocmfDocument.publicKey.y.match(/.{1,8}/g)?.join(" ");
+
 
             //#region Public key signatures
 
@@ -424,8 +319,8 @@ export class OCMFv1_0 extends ACrypt {
                         const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
 
                         if (signatureDiv != null)
-                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession?.chargingStation,
-                                                                                                    measurementValue.measurement.chargingSession?.EVSE,
+                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement!.chargingSession!.chargingStation,
+                                                                                                    measurementValue.measurement!.chargingSession!.EVSE,
                                                                                                     //@ts-ignore
                                                                                                     measurementValue.measurement.chargingSession.EVSE.meters[0],
                                                                                                     //@ts-ignore
@@ -448,23 +343,24 @@ export class OCMFv1_0 extends ACrypt {
 
         //#region Signature expected
 
-        if (SignatureExpectedDiv != null && result.signature != null)
+        if (SignatureExpectedDiv != null && measurementValue.ocmfDocument?.signature.SD)
         {
 
-            if (SignatureExpectedDiv                           != undefined &&
-                SignatureExpectedDiv.parentElement             != undefined &&
-                SignatureExpectedDiv.parentElement             != undefined &&
-                SignatureExpectedDiv.parentElement.children[0] != undefined)
+            if (SignatureExpectedDiv &&
+                SignatureExpectedDiv.parentElement &&
+                SignatureExpectedDiv.parentElement  &&
+                SignatureExpectedDiv.parentElement.children[0])
             {
-                SignatureExpectedDiv.parentElement.children[0].innerHTML  = "Erwartete Signatur (" + (result.signature.format || "") + ", hex)";
+                SignatureExpectedDiv.parentElement.children[0].innerHTML  = "Erwartete Signatur (rs, hex)";
             }
 
-            if (result.signature.r && result.signature.s)
-                SignatureExpectedDiv.innerHTML                            = "r: " + result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") + "<br />" +
-                                                                            "s: " + result.signature.s.toLowerCase().match(/.{1,8}/g)?.join(" ");
+            if (typeof chargingSession.signature != 'string')
+                SignatureExpectedDiv.innerHTML                            = measurementValue.ocmfDocument?.signature.SD + "<br /><br />" +
+                                                                            "r: " + measurementValue.ocmfDocument?.signatureRS?.r?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") + "<br />" +
+                                                                            "s: " + measurementValue.ocmfDocument?.signatureRS?.s?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ");
 
-            else if (result.signature.value)
-                SignatureExpectedDiv.innerHTML                            = result.signature.value.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
+            else if (chargingSession.signature)
+                SignatureExpectedDiv.innerHTML                            = chargingSession.signature.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
 
         }
 
@@ -472,32 +368,32 @@ export class OCMFv1_0 extends ACrypt {
 
         //#region Signature check
 
-        if (SignatureCheckDiv != null)
+        if (SignatureCheckDiv != null && chargingSession.verificationResult != null)
         {
-            switch (result.status)
+            switch (chargingSession.verificationResult.status)
             {
 
-                case chargyInterfaces.VerificationResult.UnknownCTRFormat:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
-                    break;
+                // case SessionVerificationResult.UnknownCTRFormat:
+                //     signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
+                //     break;
 
-                case chargyInterfaces.VerificationResult.EnergyMeterNotFound:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
-                    break;
+                // case SessionVerificationResult.EnergyMeterNotFound:
+                //     signatureCheckValue.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
+                //     break;
 
-                case chargyInterfaces.VerificationResult.PublicKeyNotFound:
+                case chargyInterfaces.SessionVerificationResult.PublicKeyNotFound:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
                     break;
 
-                case chargyInterfaces.VerificationResult.InvalidPublicKey:
+                case chargyInterfaces.SessionVerificationResult.InvalidPublicKey:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
                     break;
 
-                case chargyInterfaces.VerificationResult.InvalidSignature:
+                case chargyInterfaces.SessionVerificationResult.InvalidSignature:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
                     break;
 
-                case chargyInterfaces.VerificationResult.ValidSignature:
+                case chargyInterfaces.SessionVerificationResult.ValidSignature:
                     SignatureCheckDiv.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
                     break;
 

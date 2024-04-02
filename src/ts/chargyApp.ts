@@ -2204,17 +2204,28 @@ export class ChargyApp {
                         this.maxlng = geoLocation.lng;
 
                     if (chargingSession.verificationResult)
+                    {
                         switch (chargingSession.verificationResult.status)
                         {
+
+                            case chargyInterfaces.SessionVerificationResult.Unvalidated:
+                                marker.bindPopup(this.chargy.GetLocalizedMessage("Unvalidated"));
+                                break;
 
                             case chargyInterfaces.SessionVerificationResult.UnknownSessionFormat:
                                 marker.bindPopup(this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"));
                                 break;
 
                             case chargyInterfaces.SessionVerificationResult.PublicKeyNotFound:
+                                marker.bindPopup(this.chargy.GetLocalizedMessage("Public key not found"));
+                                break;
+
                             case chargyInterfaces.SessionVerificationResult.InvalidPublicKey:
+                                marker.bindPopup(this.chargy.GetLocalizedMessage("Invalid public key"));
+                                break;
+
                             case chargyInterfaces.SessionVerificationResult.InvalidSignature:
-                                marker.bindPopup(this.chargy.GetLocalizedMessage("InvalidChargingSession"));
+                                marker.bindPopup(this.chargy.GetLocalizedMessage("Invalid signature"));
                                 break;
 
                             case chargyInterfaces.SessionVerificationResult.ValidSignature:
@@ -2222,6 +2233,7 @@ export class ChargyApp {
                                 break;
 
                         }
+                    }
 
                 }
 
@@ -2233,28 +2245,46 @@ export class ChargyApp {
                 verificationStatusDiv.className = "verificationStatus";
 
                 if (chargingSession.verificationResult)
+                {
                     switch (chargingSession.verificationResult.status)
                     {
 
+                        case chargyInterfaces.SessionVerificationResult.Unvalidated:
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-question-circle"></i> ' + this.chargy.GetLocalizedMessage("Unvalidated");
+                            break;
+
+                        case chargyInterfaces.SessionVerificationResult.UnknownCTRFormat:
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> '    + this.chargy.GetLocalizedMessage("Unknown charge transparency data format!");
+                            break;
+
+                        case chargyInterfaces.SessionVerificationResult.NoChargeTransparencyRecordsFound:
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> '    + this.chargy.GetLocalizedMessage("No charge transparency records found!");
+                            break;
+
+
                         case chargyInterfaces.SessionVerificationResult.UnknownSessionFormat:
-                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("InvalidChargingSession");
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> '    + this.chargy.GetLocalizedMessage("InvalidChargingSession");
                             break;
 
                         case chargyInterfaces.SessionVerificationResult.PublicKeyNotFound:
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> '    + this.chargy.GetLocalizedMessage("Public key not found");
+                            break;
+
                         case chargyInterfaces.SessionVerificationResult.InvalidPublicKey:
                         case chargyInterfaces.SessionVerificationResult.InvalidSignature:
-                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("InvalidChargingSession");
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> '    + this.chargy.GetLocalizedMessage("InvalidChargingSession");
                             break;
 
                         case chargyInterfaces.SessionVerificationResult.ValidSignature:
-                            verificationStatusDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + this.chargy.GetLocalizedMessage("ValidChargingSession");
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-check-circle"></i> '    + this.chargy.GetLocalizedMessage("ValidChargingSession");
                             break;
 
                         default:
-                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("InvalidChargingSession");
+                            verificationStatusDiv.innerHTML = '<i class="fas fa-times-circle"></i> '    + this.chargy.GetLocalizedMessage("InvalidChargingSession");
                             break;
 
                     }
+                }
 
                 //#endregion
 
@@ -2878,7 +2908,7 @@ export class ChargyApp {
                                         break;
 
                                     case chargyInterfaces.VerificationResult.UnknownCTRFormat:
-                                        icon = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("Unknown charge transparency data format");
+                                        icon = '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("Unknown charge transparency data format!");
                                         break;
 
                                     case chargyInterfaces.VerificationResult.EnergyMeterNotFound:

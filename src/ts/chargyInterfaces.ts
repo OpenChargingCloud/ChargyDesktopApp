@@ -683,44 +683,64 @@ export enum InformationRelevance {
 
 // Remember to update main.cjs "setVerificationResult" when you edit this enum!
 export enum SessionVerificationResult {
+
+    Unvalidated                       = "Unvalidated",
+
+    UnknownCTRFormat                  = "UnknownCTRFormat",
     NoChargeTransparencyRecordsFound  = "NoChargeTransparencyRecordsFound",
+
     UnknownSessionFormat              = "UnknownSessionFormat",
     InvalidSessionFormat              = "InvalidSessionFormat",
-    PublicKeyNotFound                 = "PublicKeyNotFound",
-    InvalidPublicKey                  = "InvalidPublicKey",
-    InvalidSignature                  = "InvalidSignature",
-    Unvalidated                       = "Unvalidated",
-    ValidSignature                    = "ValidSignature",
+    AtLeastTwoMeasurementsRequired    = "AtLeastTwoMeasurementsRequired",
     InconsistentTimestamps            = "InconsistentTimestamps",
-    AtLeastTwoMeasurementsRequired    = "AtLeastTwoMeasurementsRequired"
+    MissingStartValue                 = "MissingStartValue",
+    InvalidStartValue                 = "InvalidStartValue",
+    InvalidIntermediateValue          = "InvalidIntermediateValue",
+    MissingStopValue                  = "MissingStopValue",
+    InvalidStopValue                  = "InvalidStopValue",
+
+    EnergyMeterNotFound               = "EnergyMeterNotFound",
+    InvalidMeasurement                = "InvalidMeasurement",
+
+    PublicKeyNotFound                 = "PublicKeyNotFound",
+    UnknownPublicKeyFormat            = "UnknownPublicKeyFormat",
+    InvalidPublicKey                  = "InvalidPublicKey",
+
+    UnknownSignatureFormat            = "UnknownSignatureFormat",
+    InvalidSignature                  = "InvalidSignature",
+    ValidSignature                    = "ValidSignature"
+
 }
 
 export enum VerificationResult {
 
     Unvalidated               = "Unvalidated",
+    NoOperation               = "NoOperation",
 
     UnknownCTRFormat          = "UnknownCTRFormat",
-    UnknownSignatureFormat    = "UnknownSignatureFormat",
+
     EnergyMeterNotFound       = "EnergyMeterNotFound",
+    InvalidMeasurement        = "InvalidMeasurement",
+
+    InvalidStartValue         = "InvalidStartValue",
+    StartValue                = "StartValue",
+    ValidStartValue           = "ValidStartValue",
+
+    InvalidIntermediateValue  = "InvalidIntermediateValue",
+    IntermediateValue         = "IntermediateValue",
+    ValidIntermediateValue    = "ValidIntermediateValue",
+
+    InvalidStopValue          = "InvalidStopValue",
+    StopValue                 = "StopValue",
+    ValidStopValue            = "ValidStopValue",
+
     PublicKeyNotFound         = "PublicKeyNotFound",
     UnknownPublicKeyFormat    = "UnknownPublicKeyFormat",
     InvalidPublicKey          = "InvalidPublicKey",
 
-    InvalidMeasurement        = "InvalidMeasurement",
-    InvalidStartValue         = "InvalidStartValue",
-    InvalidIntermediateValue  = "InvalidIntermediateValue",
-    InvalidStopValue          = "InvalidStopValue",
+    UnknownSignatureFormat    = "UnknownSignatureFormat",
     InvalidSignature          = "InvalidSignature",
-
-    NoOperation               = "NoOperation",
-    StartValue                = "StartValue",
-    IntermediateValue         = "IntermediateValue",
-    StopValue                 = "StopValue",
-
     ValidSignature            = "ValidSignature",
-    ValidStartValue           = "ValidStartValue",
-    ValidIntermediateValue    = "ValidIntermediateValue",
-    ValidStopValue            = "ValidStopValue",
 
     ValidationError           = "ValidationError"
 

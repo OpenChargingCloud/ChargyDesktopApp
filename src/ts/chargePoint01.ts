@@ -766,7 +766,7 @@ export class ChargePointCrypt01 extends ACrypt {
             if (publicKeys.length == 0)
                 return {
                     status:    chargyInterfaces.SessionVerificationResult.PublicKeyNotFound,
-                    message:   this.chargy.GetLocalizedMessage("PublicKeyNotFound"),
+                    message:   this.chargy.GetLocalizedMessage("Public key notFound"),
                     certainty: 0
                 }
 
@@ -1054,10 +1054,9 @@ export class ChargePointCrypt01 extends ACrypt {
 
     {
 
-        if (measurementValue.measurement                                              === undefined ||
-            measurementValue.measurement.chargingSession                              === undefined ||
-            measurementValue.measurement.chargingSession.authorizationStart           === undefined)
-            //measurementValue.measurement.chargingSession.authorizationStart.timestamp === undefined)
+        if (measurementValue.measurement                                    === undefined ||
+            measurementValue.measurement.chargingSession                    === undefined ||
+            measurementValue.measurement.chargingSession.authorizationStart === undefined)
         {
             return {
                 status: chargyInterfaces.VerificationResult.InvalidMeasurement
