@@ -251,7 +251,7 @@ export class OCMF {
                     chargyLib.isOptionalJSONObject      (lossCompensation)     &&
 
                     chargyLib.isOptionalString          (chargePointIdType)    &&
-                    chargyLib.isOptionalString          (chargePointId)        )
+                    chargyLib.isOptionalString          (chargePointId))
                 {
 
                     //#region Validate pagination and transaction type
@@ -964,11 +964,11 @@ export class OCMF {
 
     //#endregion
 
-    //#region (private) parseAndConvertOCMF(OCMFValues, PublicKey?, ContainerInfos?)
+    //#region (private) parseOCMFJSONDocuments(OCMFValues, PublicKey?, ContainerInfos?)
 
-    private async parseAndConvertOCMF(OCMFValues:       string[],
-                                      PublicKey?:       string|chargyInterfaces.IPublicKeyXY,
-                                      ContainerInfos?:  any): Promise<ocmfTypes.IOCMFJSONDocument[] | string>
+    private async parseOCMFJSONDocuments(OCMFValues:       string[],
+                                         PublicKey?:       string|chargyInterfaces.IPublicKeyXY,
+                                         ContainerInfos?:  any): Promise<ocmfTypes.IOCMFJSONDocument[] | string>
     {
 
         // OCMF can be on a singe line or on multiple lines even within the embedded JSON!
@@ -981,14 +981,17 @@ export class OCMF {
         // {"FV":"1.0","GI":"SEAL AG","GS":"1850006a","GV":"1.34","PG":"T9289","MV":"Carlo Gavazzi","MM":"EM340-DIN.AV2.3.X.S1.PF","MS":"******240084S","MF":"B4","IS":true,"IL":"TRUSTED","IF":["OCCP_AUTH"],"IT":"ISO14443","ID":"56213C05","RD":[{"TM":"2019-06-26T08:57:44,337+0000 U","TX":"B","RV":268.978,"RI":"1-b:1.8.0","RU":"kWh","RT":"AC","EF":"","ST":"G"}]}|
         // {"SD":"304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"}
         //
-        // The OCMF payload should not have any '|' within the payload or signature, but you never know.
-        // Therefore we use a stateful '{' and '}' aware parser to split the OCMF into "OCMF|<payload>|<signature>".
+        // The OCMF payload should not have any '|' within the payload or signature, but you never know...
+        // therefore we use a stateful '{' and '}' aware parser to split the OCMF into "OCMF|<payload>|<signature>".
         //
         // For calculating the signature we have to use ocmfRAWPayload, as OCMF does not define a canonical format.
         // This means that non-functional JSON whitespaces can break the signature calculation and therefore inhibit
-        // a meaningful interoperability of the signature verification process!
+        // a meaningful interoperability of the signature verification process! This is a major design flaw in the
+        // OCMF standard!
 
-        // Multiple OCMF documents within a text are possible, e.g. for signed START and STOP meter values of a charging session:
+        // Multiple OCMF documents within a text are possible, e.g. for signed START and STOP meter values of a
+        // charging session. But a single OCMF document having a valid START and STOP meter value and just a single
+        // signature can already be a valid Charge Transparency Record!
         //
         // OCMF|<payload1>|<signature1>
         // OCMF|<payload2>|<signature2>
@@ -999,6 +1002,8 @@ export class OCMF {
         // OCMF|
         // <payload2>|
         // <signature2>
+
+        //#region Data
 
         const combinedOCMF            = OCMFValues.join('\n');
 
@@ -1014,11 +1019,15 @@ export class OCMF {
 
         let   ocmfJSONDocuments: Array<ocmfTypes.IOCMFJSONDocument> = [];
 
+        //#endregion
+
         try
         {
 
             for (let i = 0; i < combinedOCMF.length; i++)
             {
+
+                //#region OCMF header
 
                 if (ocmfStructure   == 0 &&
                     i               >= 3 &&
@@ -1029,6 +1038,10 @@ export class OCMF {
                     continue;
                 }
 
+                //#endregion
+
+                //#region |
+
                 if (ocmfStructure == 1 || ocmfStructure == 3)
                 {
                     if (combinedOCMF[i] === '|') {
@@ -1037,8 +1050,12 @@ export class OCMF {
                     }
                 }
 
+                //#endregion
+
                 if (ocmfStructure == 2 || ocmfStructure == 4)
                 {
+
+                    //#region {
 
                     if (combinedOCMF[i] === '{')
                     {
@@ -1052,6 +1069,8 @@ export class OCMF {
 
                     }
 
+                    //#endregion
+
                     if (combinedOCMF[i] === '}')
                     {
 
@@ -1062,7 +1081,11 @@ export class OCMF {
 
                             endIndex = i;
 
+                            //#region Copy OCMF
+
                             if (startIndex !== -1 && endIndex !== -1) {
+
+                                //#region Copy payload
 
                                 if (ocmfStructure == 2)
                                 {
@@ -1076,6 +1099,10 @@ export class OCMF {
                                         return "The " + (ocmfJSONDocuments.length + 1) + ". OCMF payload is not a valid JSON document!";
                                     }
                                 }
+
+                                //#endregion
+
+                                //#region Copy signature
 
                                 if (ocmfStructure == 4)
                                 {
@@ -1244,7 +1271,11 @@ export class OCMF {
 
                                 }
 
+                                //#endregion
+
                             }
+
+                            //#endregion
 
                             ocmfStructure++;
 
@@ -1298,12 +1329,12 @@ export class OCMF {
              certainty: 0
          }
 
-        const ocmfGroups  = new Map<String, Array<ocmfTypes.IOCMFJSONDocument>>();
-        const ocmfCTRs    = new Array<IOCMFChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>();
+        const ocmfJSONDocumentGroups  = new Map<String, Array<ocmfTypes.IOCMFJSONDocument>>();
+        const ocmfCTRs                = new Array<IOCMFChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>();
 
         //#endregion
 
-        const ocmfJSONDocuments = await this.parseAndConvertOCMF(
+        const ocmfJSONDocuments = await this.parseOCMFJSONDocuments(
                                             typeof OCMFValues === 'string'
                                                 ? [ OCMFValues ]
                                                 : OCMFValues,
@@ -1343,10 +1374,10 @@ export class OCMF {
                                            (ocmfJSONDocument.payload.CT ?? "") + "|" +
                                            (ocmfJSONDocument.payload.CI ?? "");
 
-                    if (!ocmfGroups.has(groupingKey))
-                        ocmfGroups.set(groupingKey, new Array<ocmfTypes.IOCMFJSONDocument>());
+                    if (!ocmfJSONDocumentGroups.has(groupingKey))
+                        ocmfJSONDocumentGroups.set(groupingKey, new Array<ocmfTypes.IOCMFJSONDocument>());
 
-                    ocmfGroups.get(groupingKey)!.push(ocmfJSONDocument);
+                    ocmfJSONDocumentGroups.get(groupingKey)!.push(ocmfJSONDocument);
 
                 }
                 catch (exception)
@@ -1362,32 +1393,36 @@ export class OCMF {
             //#endregion
 
             //ToDo: Order groups by timestamp!
-            for (const ocmfGroup of ocmfGroups.values())
+            for (const ocmfJSONDocumentGroup of ocmfJSONDocumentGroups.values())
             {
 
                 if (PublicKey)
-                    for (const ocmfJSON of ocmfGroup)
-                        await this.validateOCMFSignature(ocmfJSON, PublicKey);
+                    for (const ocmfJSONDocument of ocmfJSONDocumentGroup)
+                        if (ocmfJSONDocument.validationStatus === chargyInterfaces.VerificationResult.Unvalidated)
+                            await this.validateOCMFSignature(ocmfJSONDocument, PublicKey);
 
                 // Switch over the Firmware Version of the first OCMF within the group
-                switch (ocmfGroup[0]!.payload.FV)
+                if (ocmfJSONDocumentGroup[0])
                 {
+                    switch (ocmfJSONDocumentGroup[0].payload.FV)
+                    {
 
-                    // case "0.1":
-                    //     return await this.tryToParseOCMFv0_1(ocmfDataList as ocmfTypes.IOCMFData_v0_1[], PublicKey);
+                        // case "0.1":
+                        //     return await this.tryToParseOCMFv0_1(ocmfDataList as ocmfTypes.IOCMFData_v0_1[], PublicKey);
 
-                    case "1.0":
-                        ocmfCTRs.push(await this.tryToParseOCMFv1_0(ocmfGroup, PublicKey, ContainerInfos));
-                        break;
+                        case "1.0":
+                            ocmfCTRs.push(await this.tryToParseOCMFv1_0(ocmfJSONDocumentGroup, PublicKey, ContainerInfos));
+                            break;
 
-                    default:
-                        ocmfCTRs.push({
-                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            message:   this.chargy.GetLocalizedMessage("Unknown OCMF version!"),
-                            certainty: 0
-                        });
-                        break;
+                        default:
+                            ocmfCTRs.push({
+                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                message:   this.chargy.GetLocalizedMessage("Unknown OCMF version!"),
+                                certainty: 0
+                            });
+                            break;
 
+                    }
                 }
 
             }
