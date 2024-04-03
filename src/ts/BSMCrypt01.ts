@@ -887,6 +887,7 @@ export class BSMCrypt01 extends ACrypt {
                 publicKeys:          [{
                                          algorithm:       "secp256r1",
                                          format:          "DER",
+                                         encoding:        "hex",
                                          value:           common.meterInfo_publicKey
                                      }]
             });

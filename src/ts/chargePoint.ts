@@ -26,7 +26,7 @@ export interface IChargepointChargeTransparencyRecord extends chargyInterfaces.I
     //chargingSessions?:          Array<IAlfenChargingSession>;
 }
 
-export class Chargepoint01 {
+export class Chargepoint {
 
     private readonly chargy: Chargy;
 
@@ -34,9 +34,9 @@ export class Chargepoint01 {
         this.chargy  = chargy;
     }
 
-    //#region tryToParseChargepointFormat(SomeJSON)
+    //#region TryToParseChargepointFormat(SomeJSON)
 
-    public async tryToParseChargepointFormat(SomeJSON: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async TryToParseChargepointFormat(SomeJSON: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         try
@@ -208,7 +208,7 @@ export class Chargepoint01 {
                     sessionEnd   = parkingEnd;
 
 
-                var _CTR: IChargepointChargeTransparencyRecord = {
+                var CTR: IChargepointChargeTransparencyRecord = {
 
                     "@id":              "chargepoint-" + SomeJSON.additional_info.station_mac + "-" +
                                                          SomeJSON.additional_info.outlet      + "-" +
@@ -227,163 +227,143 @@ export class Chargepoint01 {
                         "type":         "userId"
                     },
 
-                    "chargingStationOperators": [
-                        {
+                    "chargingStationOperators": [{
 
-                            "@id":                      SomeJSON.company_name,
-                            "description": {
-                                "de":                   "chargepoint - Charging Station Operator Services"
-                            },
+                        "@id":                      SomeJSON.company_name,
+                        "description": {
+                            "de":                   "chargepoint - Charging Station Operator Services"
+                        },
 
-                            "contact": {
-                                "email":                    "sales@chargepoint.com",
-                                "web":                      "https://www.chargepoint.com",
-                                "logoUrl":                  "https://www.chargepoint.com/themes/chargepoint/logo.svg",
-                            },
+                        "contact": {
+                            "email":                    "sales@chargepoint.com",
+                            "web":                      "https://www.chargepoint.com",
+                            "logoUrl":                  "https://www.chargepoint.com/themes/chargepoint/logo.svg",
+                        },
 
-                            "support": {
-                                "hotline":                  "+49(69) 95307383",
-                                "email":                    "support.eu@chargepoint.com",
-                                "web":                      "https://chargepoint.charging.cloud/issues"
-                            },
+                        "support": {
+                            "hotline":                  "+49(69) 95307383",
+                            "email":                    "support.eu@chargepoint.com",
+                            "web":                      "https://chargepoint.charging.cloud/issues"
+                        },
 
-                            "privacy": {
-                                "contact":                  "ChargePoint, Attn: Data Protection Officer, ChargePoint Network (Netherlands) B.V., Hoogoorddreef 56E, 1101BE Amsterdam",
-                                "email":                    "privacy.eu@chargepoint.com ",
-                                "web":                      "https://de.chargepoint.com/privacy_policy"
-                            },
+                        "privacy": {
+                            "contact":                  "ChargePoint, Attn: Data Protection Officer, ChargePoint Network (Netherlands) B.V., Hoogoorddreef 56E, 1101BE Amsterdam",
+                            "email":                    "privacy.eu@chargepoint.com ",
+                            "web":                      "https://de.chargepoint.com/privacy_policy"
+                        },
 
-                            "chargingStations": [
-                                {
-                                    "@id":                      SomeJSON.additional_info.station_mac,
-                                    "geoLocation":              SomeJSON.geoLocation,
-                                    "address":                  SomeJSON.address,
-                                    "EVSEs": [
-                                        {
-                                            "@id":                      SomeJSON.EVSEId ?? SomeJSON.additional_info.station_mac + "-" + SomeJSON.additional_info.outlet,
-                                            "meters": [
-                                                {
-                                                    "@id":                 SomeJSON.additional_info.meter_serial,
-                                                    "manufacturer":       "Carlo Gavazzi",
-                                                    "manufacturerURL":    "https://www.gavazziautomation.com",
-                                                    "model":              "EM340-DIN.AV2.3.X.S1.X",
-                                                    "modelURL":           "https://www.gavazziautomation.com/fileadmin/images/PIM/DATASHEET/ENG/EM340_DS_ENG.pdf"
-                                                    // "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
-                                                    // "publicKeys": [
-                                                    //     {
-                                                    //         "algorithm":        "secp224k1",
-                                                    //         "format":           "DER",
-                                                    //         "value":            null
-                                                    //     }
-                                                    // ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ],
-
-                            "chargingTariffs": [{
-                                "@id":                  "default",
-                                "currency":             SomeJSON.additional_info.currency_code,
-                                "taxes": [
-                                    {
-                                        "@id":          "MwSt",
-                                        "percentage":   19.0,
-                                    }
-                                ]
-                            }],
-
-                            "parkingTariffs": [{
-                                "@id":                  "default",
-                                "currency":             SomeJSON.additional_info.currency_code,
-                                "taxes": [
-                                    {
-                                        "@id":          "MwSt",
-                                        "percentage":   19.0,
-                                    }
-                                ]
+                        "chargingStations": [{
+                            "@id":                      SomeJSON.additional_info.station_mac,
+                            "geoLocation":              SomeJSON.geoLocation,
+                            "address":                  SomeJSON.address,
+                            "EVSEs": [{
+                                "@id":                      SomeJSON.EVSEId ?? SomeJSON.additional_info.station_mac + "-" + SomeJSON.additional_info.outlet,
+                                "meters": [{
+                                    "@id":                 SomeJSON.additional_info.meter_serial,
+                                    "manufacturer":       "Carlo Gavazzi",
+                                    "manufacturerURL":    "https://www.gavazziautomation.com",
+                                    "model":              "EM340-DIN.AV2.3.X.S1.X",
+                                    "modelURL":           "https://www.gavazziautomation.com/fileadmin/images/PIM/DATASHEET/ENG/EM340_DS_ENG.pdf"
+                                    // "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+                                    // "publicKeys": [
+                                    //     {
+                                    //         "algorithm":        "secp224k1",
+                                    //         "format":           "DER",
+                                    //         "value":            null
+                                    //     }
+                                    // ]
+                                }]
                             }]
+                        }],
 
-                        }
-                    ],
+                        "chargingTariffs": [{
+                            "@id":                  "default",
+                            "currency":             SomeJSON.additional_info.currency_code,
+                            "taxes": [{
+                                "@id":          "MwSt",
+                                "percentage":   19.0,
+                            }]
+                        }],
 
-                    "chargingSessions": [
+                        "parkingTariffs": [{
+                            "@id":                  "default",
+                            "currency":             SomeJSON.additional_info.currency_code,
+                            "taxes": [{
+                                "@id":          "MwSt",
+                                "percentage":   19.0,
+                            }]
+                        }]
 
-                        {
+                    }],
 
-                            "original":                     SomeJSON.original,
-                            "signature":                    SomeJSON.signature,
+                    "chargingSessions": [{
 
-                            "@id":                          SomeJSON.additional_info.station_mac + "-" +
-                                                            SomeJSON.additional_info.outlet      + "-" +
-                                                            SomeJSON.additional_info.session_id,
-                            "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json",
-                            "begin":                        this.chargy.moment.unix(sessionStart).utc().format(),
-                            "end":                          this.chargy.moment.unix(sessionEnd).utc().format(),
-                            "EVSEId":                       SomeJSON.EVSEId ?? SomeJSON.additional_info.station_mac + "-" + SomeJSON.additional_info.outlet,
+                        "original":                     SomeJSON.original,
+                        "signature":                    SomeJSON.signature,
 
-                            "authorizationStart": {
-                                "@id":                      SomeJSON.additional_info.driver_info,
-                                "type":                     "userId"
-                            },
+                        "@id":                          SomeJSON.additional_info.station_mac + "-" +
+                                                        SomeJSON.additional_info.outlet      + "-" +
+                                                        SomeJSON.additional_info.session_id,
+                        "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json",
+                        "begin":                        this.chargy.moment.unix(sessionStart).utc().format(),
+                        "end":                          this.chargy.moment.unix(sessionEnd).utc().format(),
+                        "EVSEId":                       SomeJSON.EVSEId ?? SomeJSON.additional_info.station_mac + "-" + SomeJSON.additional_info.outlet,
 
-                            "chargingProductRelevance": {
-                                "time":                     chargyInterfaces.InformationRelevance.Informative,
-                                "energy":                   chargyInterfaces.InformationRelevance.Important,
-                                "parking":                  chargyInterfaces.InformationRelevance.Informative,
-                                "sessionFee":               chargyInterfaces.InformationRelevance.Informative,
-                            },
+                        "authorizationStart": {
+                            "@id":                      SomeJSON.additional_info.driver_info,
+                            "type":                     "userId"
+                        },
+
+                        "chargingProductRelevance": {
+                            "time":                     chargyInterfaces.InformationRelevance.Informative,
+                            "energy":                   chargyInterfaces.InformationRelevance.Important,
+                            "parking":                  chargyInterfaces.InformationRelevance.Informative,
+                            "sessionFee":               chargyInterfaces.InformationRelevance.Informative,
+                        },
+
+                        // "signatureInfos": {
+                        //     "hash":                     "SHA512",
+                        //     "hashTruncation":           "24",
+                        //     "algorithm":                "ECC",
+                        //     "curve":                    "secp192r1",
+                        //     "format":                   "rs"
+                        // },
+
+                        "measurements": [{
+
+                            "energyMeterId":        SomeJSON.additional_info.meter_serial,
+                            "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargePointCrypt01+json",
+                            "name":                 "Bezogene Energiemenge",//SomeJSON.energy != null && SomeJSON.energy.length > 0 ? SomeJSON.energy[0].type : "Bezogene Energiemenge",
+                            "obis":                 "1-0:1.8.0",
+                            "unit":                 SomeJSON.additional_info.energy_units,
+                    //        "unitEncoded":          CTRArray[0]["measuredValue"]["unitEncoded"],
+                    //        "valueType":            CTRArray[0]["measuredValue"]["valueType"],
+                            "scale":                0,
 
                             // "signatureInfos": {
-                            //     "hash":                     "SHA512",
-                            //     "hashTruncation":           "24",
-                            //     "algorithm":                "ECC",
-                            //     "curve":                    "secp192r1",
-                            //     "format":                   "rs"
+                            //     "hash":                 "SHA256",
+                            // // "hashTruncation":       "24",
+                            //     "algorithm":            "ECDSA",
+                            //     "curve":                "secp224k1",
+                            //     "format":               "rs"
                             // },
 
-                            "measurements": [
-
+                            "values": [
                                 {
-
-                                    "energyMeterId":        SomeJSON.additional_info.meter_serial,
-                                    "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargePointCrypt01+json",
-                                    "name":                 "Bezogene Energiemenge",//SomeJSON.energy != null && SomeJSON.energy.length > 0 ? SomeJSON.energy[0].type : "Bezogene Energiemenge",
-                                    "obis":                 "1-0:1.8.0",
-                                    "unit":                 SomeJSON.additional_info.energy_units,
-                            //        "unitEncoded":          CTRArray[0]["measuredValue"]["unitEncoded"],
-                            //        "valueType":            CTRArray[0]["measuredValue"]["valueType"],
-                                    "scale":                0,
-
-                                    // "signatureInfos": {
-                                    //     "hash":                 "SHA256",
-                                    // // "hashTruncation":       "24",
-                                    //     "algorithm":            "ECDSA",
-                                    //     "curve":                "secp224k1",
-                                    //     "format":               "rs"
-                                    // },
-
-                                    "values": [
-                                        {
-                                            "timestamp":        this.chargy.moment.unix(chargingStart).utc().format(),
-                                            "value":            SomeJSON.additional_info.meter_startreading,
-                                            signatures:         []
-                                        },
-                                        {
-                                            "timestamp":        this.chargy.moment.unix(chargingEnd).utc().format(),
-                                            "value":            SomeJSON.additional_info.meter_endreading,
-                                            signatures:         []
-                                        }
-                                    ]
-
+                                    "timestamp":        this.chargy.moment.unix(chargingStart).utc().format(),
+                                    "value":            SomeJSON.additional_info.meter_startreading,
+                                    signatures:         []
+                                },
+                                {
+                                    "timestamp":        this.chargy.moment.unix(chargingEnd).utc().format(),
+                                    "value":            SomeJSON.additional_info.meter_endreading,
+                                    signatures:         []
                                 }
-
                             ]
 
-                        }
+                        }]
 
-                    ],
+                    }],
 
                     "certainty":        1,
                     "status":           chargyInterfaces.SessionVerificationResult.Unvalidated
@@ -394,13 +374,13 @@ export class Chargepoint01 {
                 if (SomeJSON.parking && SomeJSON.parking.length > 0)
                 {
 
-                    _CTR.chargingSessions![0]!.parking = [];
+                    CTR.chargingSessions![0]!.parking = [];
 
                     for (let parking of SomeJSON.parking)
                     {
                         if (parking.seq_num != "SUBTOTAL")
                         {
-                            _CTR.chargingSessions![0]!.parking.push({
+                            CTR.chargingSessions![0]!.parking.push({
                                 "@id":     "-",
                                 begin:     this.chargy.moment.unix(parking.start_time_utc).utc().format(),
                                 end:       this.chargy.moment.unix(parking.end_time_utc).utc().format(),
@@ -411,7 +391,7 @@ export class Chargepoint01 {
 
                 }
 
-                return _CTR;
+                return CTR;
 
             }
 
@@ -468,7 +448,7 @@ export class Chargepoint01 {
 
                 //#endregion
 
-                var _CTR: IChargepointChargeTransparencyRecord = {
+                const CTR: IChargepointChargeTransparencyRecord = {
 
                     "@id":              "chargepoint-" + SomeJSON.station_mac + "-" +
                                                          SomeJSON.outlet      + "-" +
@@ -487,137 +467,119 @@ export class Chargepoint01 {
                         "type":         "userId"
                     },
 
-                    "chargingStationOperators": [
-                        {
+                    "chargingStationOperators": [{
 
-                            "@id":                      "chargepoint",
-                            "description": {
-                                "de":                   "chargepoint - Charging Station Operator Services"
-                            },
+                        "@id":                      "chargepoint",
+                        "description": {
+                            "de":                   "chargepoint - Charging Station Operator Services"
+                        },
 
-                            "contact": {
-                                "email":                    "sales@chargepoint.com",
-                                "web":                      "https://www.chargepoint.com",
-                                "logoUrl":                  "https://www.chargepoint.com/themes/chargepoint/logo.svg",
-                            },
+                        "contact": {
+                            "email":                    "sales@chargepoint.com",
+                            "web":                      "https://www.chargepoint.com",
+                            "logoUrl":                  "https://www.chargepoint.com/themes/chargepoint/logo.svg",
+                        },
 
-                            "support": {
-                                "hotline":                  "+49(69) 95307383",
-                                "email":                    "support.eu@chargepoint.com",
-                                "web":                      "https://chargepoint.charging.cloud/issues"
-                            },
+                        "support": {
+                            "hotline":                  "+49(69) 95307383",
+                            "email":                    "support.eu@chargepoint.com",
+                            "web":                      "https://chargepoint.charging.cloud/issues"
+                        },
 
-                            "privacy": {
-                                "contact":                  "chargepoint, Attn: Data Protection Officer, ChargePoint Network (Netherlands) B.V., Hoogoorddreef 56E, 1101BE Amsterdam",
-                                "email":                    "privacy.eu@chargepoint.com ",
-                                "web":                      "https://de.chargepoint.com/privacy_policy"
-                            },
+                        "privacy": {
+                            "contact":                  "chargepoint, Attn: Data Protection Officer, ChargePoint Network (Netherlands) B.V., Hoogoorddreef 56E, 1101BE Amsterdam",
+                            "email":                    "privacy.eu@chargepoint.com ",
+                            "web":                      "https://de.chargepoint.com/privacy_policy"
+                        },
 
-                            "chargingStations": [
+                        "chargingStations": [{
+                            "@id":                      SomeJSON.station_mac,
+                            "geoLocation":              SomeJSON.geoLocation,
+                            "address":                  SomeJSON.address,
+                            "EVSEs": [{
+                                "@id":                  SomeJSON.EVSEId ?? SomeJSON.station_mac + "-" + SomeJSON.outlet,
+                                "meters": [{
+                                    "@id":                SomeJSON.meter_serial,
+                                    "manufacturer":       "Carlo Gavazzi",
+                                    "manufacturerURL":    "https://www.gavazziautomation.com",
+                                    "model":              "EM340-DIN.AV2.3.X.S1.X",
+                                    "modelURL":           "https://www.gavazziautomation.com/fileadmin/images/PIM/DATASHEET/ENG/EM340_DS_ENG.pdf",
+                                    "signatureFormat":    "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
+                                    "signatureInfos": {
+                                            "hash":             "SHA256",
+                                            "hashTruncation":    24,
+                                            "algorithm":        "ECDSA",
+                                            "curve":            "secp224k1",
+                                            "format":           "rs"
+                                    },
+                                    "publicKeys": [{
+                                            "algorithm":        "secp224k1",
+                                            "format":           "DER",
+                                            "encoding":         "hex"
+                                    }]
+                                }]
+                            }]
+                        }]
+
+                    }],
+
+                    "chargingSessions": [{
+
+                        "original":               SomeJSON.original,
+                        "signature":              SomeJSON.signature,
+
+                        "@id":                    SomeJSON.station_mac + "-" +
+                                                  SomeJSON.outlet      + "-" +
+                                                  SomeJSON.session_id,
+                        "@context":               "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json",
+                        "begin":                  this.chargy.moment.unix(SomeJSON.start_time).utc().format(),
+                        "end":                    this.chargy.moment.unix(SomeJSON.end_time).utc().format(),
+                        "EVSEId":                 SomeJSON.EVSEId ?? (SomeJSON.station_mac + "-" + SomeJSON.outlet),
+
+                        "authorizationStart": {
+                            "@id":                SomeJSON.driver_info,
+                            "type":               "userId"
+                        },
+
+                        "chargingProductRelevance": {
+                            "time":               chargyInterfaces.InformationRelevance.Informative,
+                            "energy":             chargyInterfaces.InformationRelevance.Important,
+                            "parking":            chargyInterfaces.InformationRelevance.Informative,
+                            "sessionFee":         chargyInterfaces.InformationRelevance.Informative,
+                        },
+
+                        "measurements": [{
+
+                            "energyMeterId":  SomeJSON.meter_serial,
+                            "@context":       "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargePointCrypt01+json",
+                            "name":           "Bezogene Energiemenge",
+                            "obis":           "1-0:1.8.0",
+                            "unit":           SomeJSON.energy_units,
+                            "scale":          0,
+
+                            "values": [
                                 {
-                                    "@id":                      SomeJSON.station_mac,
-                                    "geoLocation":              SomeJSON.geoLocation,
-                                    "address":                  SomeJSON.address,
-                                    "EVSEs": [
-                                        {
-                                            "@id":                  SomeJSON.EVSEId ?? SomeJSON.station_mac + "-" + SomeJSON.outlet,
-                                            "meters": [
-                                                {
-                                                    "@id":                SomeJSON.meter_serial,
-                                                    "manufacturer":       "Carlo Gavazzi",
-                                                    "manufacturerURL":    "https://www.gavazziautomation.com",
-                                                    "model":              "EM340-DIN.AV2.3.X.S1.X",
-                                                    "modelURL":           "https://www.gavazziautomation.com/fileadmin/images/PIM/DATASHEET/ENG/EM340_DS_ENG.pdf",
-                                                    "signatureFormat":    "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
-                                                    "signatureInfos": {
-                                                         "hash":              "SHA256",
-                                                         "hashTruncation":     24,
-                                                         "algorithm":         "ECDSA",
-                                                         "curve":             "secp224k1",
-                                                         "format":            "rs"
-                                                    },
-                                                    "publicKeys": [
-                                                        {
-                                                             "algorithm":        "secp224k1",
-                                                             "format":           "DER"
-                                                             //"value":            null
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
+                                    "timestamp":        this.chargy.moment.unix(SomeJSON.start_time).utc().format(),
+                                    "value":            SomeJSON.meter_startreading,
+                                    "signatures":       []
+                                },
+                                {
+                                    "timestamp":        this.chargy.moment.unix(SomeJSON.end_time).utc().format(),
+                                    "value":            SomeJSON.meter_endreading,
+                                    "signatures":       []
                                 }
                             ]
 
-                        }
-                    ],
+                        }]
 
-                    "chargingSessions": [
+                    }],
 
-                        {
-
-                            "original":                     SomeJSON.original,
-                            "signature":                    SomeJSON.signature,
-
-                            "@id":                          SomeJSON.station_mac + "-" +
-                                                            SomeJSON.outlet      + "-" +
-                                                            SomeJSON.session_id,
-                            "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json",
-                            "begin":                        this.chargy.moment.unix(SomeJSON.start_time).utc().format(),
-                            "end":                          this.chargy.moment.unix(SomeJSON.end_time).utc().format(),
-                            "EVSEId":                       SomeJSON.EVSEId ?? SomeJSON.station_mac + "-" + SomeJSON.outlet,
-
-                            "authorizationStart": {
-                                "@id":                      SomeJSON.driver_info,
-                                "type":                     "userId"
-                            },
-
-                            "chargingProductRelevance": {
-                                "time":                     chargyInterfaces.InformationRelevance.Informative,
-                                "energy":                   chargyInterfaces.InformationRelevance.Important,
-                                "parking":                  chargyInterfaces.InformationRelevance.Informative,
-                                "sessionFee":               chargyInterfaces.InformationRelevance.Informative,
-                            },
-
-                            "measurements": [
-
-                                {
-
-                                    "energyMeterId":        SomeJSON.meter_serial,
-                                    "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargePointCrypt01+json",
-                                    "name":                 "Bezogene Energiemenge",
-                                    "obis":                 "1-0:1.8.0",
-                                    "unit":                 SomeJSON.energy_units,
-                                    "scale":                0,
-
-                                    "values": [
-                                        {
-                                            "timestamp":        this.chargy.moment.unix(SomeJSON.start_time).utc().format(),
-                                            "value":            SomeJSON.meter_startreading,
-                                            "signatures":       []
-                                        },
-                                        {
-                                            "timestamp":        this.chargy.moment.unix(SomeJSON.end_time).utc().format(),
-                                            "value":            SomeJSON.meter_endreading,
-                                            "signatures":       []
-                                        }
-                                    ]
-
-                                }
-
-                            ]
-
-                        }
-
-                    ],
-
-                    "certainty":        1,
-                    "status":           chargyInterfaces.SessionVerificationResult.Unvalidated
+                    "certainty":  1,
+                    "status":     chargyInterfaces.SessionVerificationResult.Unvalidated
 
                 };
 
-                return _CTR as chargyInterfaces.IChargeTransparencyRecord;
+                return CTR as chargyInterfaces.IChargeTransparencyRecord;
 
             }
 

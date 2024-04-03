@@ -16,7 +16,7 @@
  */
 
 import { Chargy }             from './chargy'
-import { Alfen01 }            from './Alfen01'
+import { Alfen }            from './Alfen'
 import { OCMF }               from './OCMF'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
@@ -232,7 +232,7 @@ export class SAFEXML  {
             {
 
                 case "alfen":
-                    return await new Alfen01(this.chargy).
+                    return await new Alfen(this.chargy).
                                      TryToParseALFENFormat(signedValues,
                                                            {});
 

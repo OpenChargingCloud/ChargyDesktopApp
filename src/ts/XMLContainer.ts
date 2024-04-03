@@ -19,7 +19,7 @@ import { Chargy }             from './chargy'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
 import { EMHCrypt01 }         from './EMHCrypt01'
-import { Alfen01 }            from './Alfen01'
+import { Alfen }            from './Alfen'
 import { OCMF }               from './OCMF'
 
 interface XMLContainerCommonFormat {

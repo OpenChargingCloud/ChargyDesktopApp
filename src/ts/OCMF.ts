@@ -1345,10 +1345,9 @@ export class OCMF {
                     switch (ocmfJSONDocumentGroup[0].payload.FV)
                     {
 
-                        // case "0.1":
-                        //     return await this.tryToParseOCMFv0_1(ocmfDataList as ocmfTypes.IOCMFData_v0_1[], PublicKey);
-
                         case "1.0":
+                        case "1.1":
+                        case "1.2":
                             ocmfCTRs.push(await this.tryToParseOCMFv1_0(ocmfJSONDocumentGroup, PublicKey, ContainerInfos));
                             break;
 

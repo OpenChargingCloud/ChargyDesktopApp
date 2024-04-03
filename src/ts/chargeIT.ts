@@ -16,7 +16,7 @@
  */
 
 import { Chargy }             from './chargy'
-import { Alfen01 }            from './Alfen01'
+import { Alfen }            from './Alfen'
 import { BSMCrypt01 }         from './BSMCrypt01'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
@@ -1015,7 +1015,7 @@ export class ChargeIT {
                         }
 
                         if (signedMeterValueContext.startsWith("ALFEN")) {
-                            return await new Alfen01(this.chargy).TryToParseALFENFormat(signedMeterValues.map(value => value.payload),
+                            return await new Alfen(this.chargy).TryToParseALFENFormat(signedMeterValues.map(value => value.payload),
                                          {
                                             EVSEId: evseId,
                                             chargingStation: {
@@ -1028,7 +1028,7 @@ export class ChargeIT {
                         if (containerFormat === oldChargeITContainerFormat) {
 
                             if (signedMeterValues[0].format == "ALFEN")
-                                return await new Alfen01(this.chargy).TryToParseALFENFormat(signedMeterValues.map(value => value.payload),
+                                return await new Alfen(this.chargy).TryToParseALFENFormat(signedMeterValues.map(value => value.payload),
                                          {
                                             EVSEId: evseId,
                                             chargingStation: {
@@ -1577,7 +1577,7 @@ export class ChargeIT {
                         return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, chargingStation_controllerSoftwareVersion, signedMeterValues);
 
                     if (smvContext?.startsWith("ALFEN"))
-                        return await new Alfen01(this.chargy).TryToParseALFENFormat(
+                        return await new Alfen(this.chargy).TryToParseALFENFormat(
                                          signedMeterValues.map(value => value.payload),
                                          {
                                              chargingSession: {

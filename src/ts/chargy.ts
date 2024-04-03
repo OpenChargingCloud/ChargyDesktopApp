@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-import { Buffer }                             from 'node:buffer';
-import { fileTypeFromBuffer }                 from 'file-type';
+import { Buffer }                           from 'node:buffer';
+import { fileTypeFromBuffer }               from 'file-type';
 
-import { Alfen01, AlfenCrypt01 }              from './Alfen01'
-import { BSMCrypt01 }                         from './BSMCrypt01'
-import { ChargeIT }                           from './chargeIT'
-import { Chargepoint01, ChargePointCrypt01 }  from './chargePoint01'
-import { EMHCrypt01 }                         from './EMHCrypt01'
-import { GDFCrypt01 }                         from './GDFCrypt01'
-import { Mennekes }                           from './Mennekes'
-import { OCMF }                               from './OCMF'
-import { OCMFv1_0 }                           from './OCMFv1_0'
-import { SAFEXML }                            from './SAFE_XML'
-import { XMLContainer }                       from './XMLContainer'
-import { OCPI }                               from './OCPI'
-import * as chargyInterfaces                  from './chargyInterfaces'
-import * as chargyLib                         from './chargyLib'
-import Decimal                                from 'decimal.js';
-import * as pdfjsLib                          from 'pdfjs-dist';
+import { Alfen, AlfenCrypt01 }              from './Alfen'
+import { BSMCrypt01 }                       from './BSMCrypt01'
+import { ChargeIT }                         from './chargeIT'
+import { Chargepoint, ChargePointCrypt01 }  from './chargePoint'
+import { EMHCrypt01 }                       from './EMHCrypt01'
+import { GDFCrypt01 }                       from './GDFCrypt01'
+import { Mennekes }                         from './Mennekes'
+import { OCMF }                             from './OCMF'
+import { OCMFv1_x }                         from './OCMFv1_x'
+import { SAFEXML }                          from './SAFE_XML'
+import { XMLContainer }                     from './XMLContainer'
+import { OCPI }                             from './OCPI'
+import * as chargyInterfaces                from './chargyInterfaces'
+import * as chargyLib                       from './chargyLib'
+import Decimal                              from 'decimal.js';
+import * as pdfjsLib                        from 'pdfjs-dist';
 
 export class Chargy {
 
@@ -747,7 +747,7 @@ export class Chargy {
             //#region ALFEN processing
 
             else if (textContent?.startsWith("AP;"))
-                processedFile.result = await new Alfen01(this).TryToParseALFENFormat(textContent, {});
+                processedFile.result = await new Alfen(this).TryToParseALFENFormat(textContent, {});
 
             //#endregion
 
@@ -892,7 +892,7 @@ export class Chargy {
 
                         const results = [
                             await new ChargeIT(this).     tryToParseChargeITContainerFormat(JSONContent),
-                            await new Chargepoint01(this).tryToParseChargepointFormat      (JSONContent),
+                            await new Chargepoint(this).TryToParseChargepointFormat      (JSONContent),
                             await new OCPI(this).         tryToParseOCPIFormat             (JSONContent)
                         ];
 
@@ -1485,7 +1485,7 @@ export class Chargy {
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/OCMFv1.0+json":
-                chargingSession.method = new OCMFv1_0(this);
+                chargingSession.method = new OCMFv1_x(this);
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json":

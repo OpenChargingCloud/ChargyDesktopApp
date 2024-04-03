@@ -110,17 +110,6 @@ export abstract class ACrypt {
     //#endregion
 
 
-    // abstract GenerateKeyPair(): any;
-
-
-
-    // abstract SignChargingSession  (chargingSession:         chargyInterfaces.IChargingSession,
-    //                                privateKey:              any):              Promise<chargyInterfaces.ISessionCryptoResult>;
-
-    // abstract SignMeasurement      (measurementValue:        chargyInterfaces.IMeasurementValue,
-    //                                privateKey:              any):               Promise<chargyInterfaces.ICryptoResult>;
-
-
     abstract VerifyChargingSession(chargingSession:         chargyInterfaces.IChargingSession):  Promise<chargyInterfaces.ISessionCryptoResult>;
 
     abstract VerifyMeasurement    (measurementValue:        chargyInterfaces.IMeasurementValue): Promise<chargyInterfaces.ICryptoResult>;

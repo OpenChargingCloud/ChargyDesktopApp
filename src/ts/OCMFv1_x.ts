@@ -53,12 +53,12 @@ export interface IOCMFv1_0Result extends chargyInterfaces.ICryptoResult
 }
 
 
-export class OCMFv1_0 extends ACrypt {
+export class OCMFv1_x extends ACrypt {
 
     readonly curve = new this.chargy.elliptic.ec('p256');
 
     constructor(chargy:  Chargy) {
-        super("ECC secp192r1",
+        super("OCMF",
               chargy);
     }
 
@@ -212,7 +212,6 @@ export class OCMFv1_0 extends ACrypt {
         {
 
             if (PlainTextDiv.parentElement &&
-                PlainTextDiv.parentElement &&
                 PlainTextDiv.parentElement.children[0])
             {
                 PlainTextDiv.parentElement.children[0].innerHTML  = "Plain text (OCMF|&lt;payload&gt;|&lt;signature&gt;)";
@@ -245,7 +244,6 @@ export class OCMFv1_0 extends ACrypt {
         {
 
             if (HashedPlainTextDiv.parentElement &&
-                HashedPlainTextDiv.parentElement &&
                 HashedPlainTextDiv.parentElement.children[0])
             {
                 HashedPlainTextDiv.parentElement.children[0].innerHTML = "Hashed payload (" + measurementValue.ocmfDocument.hashAlgorithm + ")";
@@ -260,11 +258,10 @@ export class OCMFv1_0 extends ACrypt {
 
         //#region Public key
 
-        if (PublicKeyDiv && measurementValue.ocmfDocument?.publicKey)
+        if (PublicKeyDiv && measurementValue.ocmfDocument.publicKey)
         {
 
             if (PublicKeyDiv.parentElement &&
-                PublicKeyDiv.parentElement &&
                 PublicKeyDiv.parentElement.children[0])
             {
 
@@ -289,36 +286,39 @@ export class OCMFv1_0 extends ACrypt {
 
         if (PublicKeyDiv &&
             PublicKeyDiv.parentElement &&
-            PublicKeyDiv.parentElement &&
             PublicKeyDiv.parentElement.children[3])
         {
+
             PublicKeyDiv.parentElement.children[3].innerHTML = "";
-        }
 
-        const result = measurementValue.result as IOCMFv1_0Result;
+            const result = measurementValue.result as IOCMFv1_0Result;
 
-        if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures)) {
+            if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures)) {
 
-            for (const signature of result.publicKeySignatures)
-            {
-
-                try
+                for (const signature of result.publicKeySignatures)
                 {
 
-                    const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
+                    try
+                    {
 
-                    if (signatureDiv)
-                        signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
-                                                                                                measurementValue.measurement.chargingSession.EVSE,
-                                                                                                //@ts-ignore
-                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                                                //@ts-ignore
-                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
-                                                                                                signature);
+                        const signatureDiv = PublicKeyDiv.parentElement.children[3].appendChild(document.createElement('div'));
+
+                        if (signatureDiv)
+                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(
+                                                               measurementValue.measurement.chargingSession?.chargingStation,
+                                                               measurementValue.measurement.chargingSession?.EVSE,
+                                                               //@ts-ignore
+                                                               measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                               //@ts-ignore
+                                                               measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                               signature
+                                                           );
+
+                    }
+                    catch (exception)
+                    { }
 
                 }
-                catch (exception)
-                { }
 
             }
 
@@ -332,7 +332,6 @@ export class OCMFv1_0 extends ACrypt {
         {
 
             if (SignatureExpectedDiv.parentElement &&
-                SignatureExpectedDiv.parentElement  &&
                 SignatureExpectedDiv.parentElement.children[0])
             {
                 SignatureExpectedDiv.parentElement.children[0].innerHTML  = "Erwartete Signatur (rs, hex)";
