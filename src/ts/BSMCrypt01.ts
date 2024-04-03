@@ -881,7 +881,7 @@ export class BSMCrypt01 extends ACrypt {
                                          hashTruncation:  0,
                                          algorithm:       chargyInterfaces.CryptoAlgorithms.ECC,
                                          curve:           "secp256r1",
-                                         format:          chargyInterfaces.SignatureFormats.rs
+                                         format:          chargyInterfaces.SignatureFormats.RS
                                      },
                 signatureFormat:     "BSMCrypt01",
                 publicKeys:          [{

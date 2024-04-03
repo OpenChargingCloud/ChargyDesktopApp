@@ -19,7 +19,7 @@ import { Chargy }             from './chargy'
 import { ACrypt }             from './ACrypt'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
-import Decimal from 'decimal.js';
+import Decimal                from 'decimal.js';
 
 export class Alfen01  {
 
@@ -43,9 +43,9 @@ export class Alfen01  {
             .join(""), 16);
     }
 
-    //#region tryToParseALFENFormat(Content)
+    //#region TryToParseALFENFormat(Content)
 
-    public async tryToParseALFENFormat(Content: string|string[], ContainerInfos: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async TryToParseALFENFormat(Content: string|string[], ContainerInfos: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         // AP;
@@ -379,7 +379,7 @@ export class Alfen01  {
                                      "hash":                 chargyInterfaces.CryptoHashAlgorithms.SHA256,
                                      "algorithm":            chargyInterfaces.CryptoAlgorithms.ECC,
                                      "curve":                common.PublicKeyFormat,
-                                     "format":               chargyInterfaces.SignatureFormats.rs,
+                                     "format":               chargyInterfaces.SignatureFormats.RS,
                                      "encoding":             "base32"
                                  },
 

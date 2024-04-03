@@ -171,27 +171,27 @@ export class SAFEXML  {
                         if (publicKey != null)
                         {
 
-                            publicKeyEncoding = publicKey.attributes.getNamedItem("encoding")   !== null ? publicKey.attributes.getNamedItem("encoding")!.value.trim().toLowerCase()  : "";
-                            publicKeyValue    = publicKey.textContent                           !== null ? publicKey.textContent.trim()                                               : "";
+                            publicKeyEncoding = publicKey.attributes.getNamedItem("encoding")?.value.trim().toLowerCase() ?? "";
+                            publicKeyValue    = publicKey.textContent?.trim()                                             ?? "";
 
                             switch (publicKeyEncoding)
                             {
 
                                 case "":
                                 case "plain":
-                                    publicKeyValue = Buffer.from(publicKeyValue, 'utf8').toString().trim();
+                                    publicKeyValue = Buffer.from(publicKeyValue, 'utf8').toString('hex').trim();
                                     break;
 
                                 case "base32":
-                                    publicKeyValue = Buffer.from(this.chargy.base32Decode(publicKeyValue, 'RFC4648')).toString().trim();
+                                    publicKeyValue = Buffer.from(this.chargy.base32Decode(publicKeyValue, 'RFC4648')).toString('hex').trim();
                                     break;
 
                                 case "base64":
-                                    publicKeyValue = Buffer.from(publicKeyValue, 'base64').toString().trim();
+                                    publicKeyValue = Buffer.from(publicKeyValue, 'base64').toString('hex').trim();
                                     break;
 
                                 case "hex":
-                                    publicKeyValue = Buffer.from(publicKeyValue, 'hex').toString().trim();
+                                    publicKeyValue = Buffer.from(publicKeyValue, 'hex').toString('hex').trim();
                                     break;
 
                                 default:
@@ -232,10 +232,16 @@ export class SAFEXML  {
             {
 
                 case "alfen":
-                    return await new Alfen01(this.chargy).tryToParseALFENFormat(signedValues, {});
+                    return await new Alfen01(this.chargy).
+                                     TryToParseALFENFormat(signedValues,
+                                                           {});
 
                 case "ocmf":
-                    return await new OCMF(this.chargy).TryToParseOCMF(signedValues, commonPublicKey);
+                    return await new OCMF(this.chargy).
+                                     TryToParseOCMF(signedValues,
+                                                    commonPublicKey,
+                                                    'hex',
+                                                    {});
 
             }
 

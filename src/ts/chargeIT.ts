@@ -367,7 +367,7 @@ export class ChargeIT {
                     "hashTruncation":       24,
                     "algorithm":            chargyInterfaces.CryptoAlgorithms.ECC,
                     "curve":                "secp192r1",
-                    "format":               chargyInterfaces.SignatureFormats.rs
+                    "format":               chargyInterfaces.SignatureFormats.RS
                 },
 
                 "values": [ ]
@@ -1015,7 +1015,7 @@ export class ChargeIT {
                         }
 
                         if (signedMeterValueContext.startsWith("ALFEN")) {
-                            return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload),
+                            return await new Alfen01(this.chargy).TryToParseALFENFormat(signedMeterValues.map(value => value.payload),
                                          {
                                             EVSEId: evseId,
                                             chargingStation: {
@@ -1028,7 +1028,7 @@ export class ChargeIT {
                         if (containerFormat === oldChargeITContainerFormat) {
 
                             if (signedMeterValues[0].format == "ALFEN")
-                                return await new Alfen01(this.chargy).tryToParseALFENFormat(signedMeterValues.map(value => value.payload),
+                                return await new Alfen01(this.chargy).TryToParseALFENFormat(signedMeterValues.map(value => value.payload),
                                          {
                                             EVSEId: evseId,
                                             chargingStation: {
@@ -1577,7 +1577,7 @@ export class ChargeIT {
                         return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, chargingStation_controllerSoftwareVersion, signedMeterValues);
 
                     if (smvContext?.startsWith("ALFEN"))
-                        return await new Alfen01(this.chargy).tryToParseALFENFormat(
+                        return await new Alfen01(this.chargy).TryToParseALFENFormat(
                                          signedMeterValues.map(value => value.payload),
                                          {
                                              chargingSession: {

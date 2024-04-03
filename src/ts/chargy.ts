@@ -747,7 +747,7 @@ export class Chargy {
             //#region ALFEN processing
 
             else if (textContent?.startsWith("AP;"))
-                processedFile.result = await new Alfen01(this).tryToParseALFENFormat(textContent, {});
+                processedFile.result = await new Alfen01(this).TryToParseALFENFormat(textContent, {});
 
             //#endregion
 
@@ -886,15 +886,17 @@ export class Chargy {
                         processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormat(JSONContent);
                     }
 
+                    // Some formats do not provide any context or format identifiers...
                     else
                     {
 
-                        // Some formats do not provide any context or format identifiers...
                         const results = [
                             await new ChargeIT(this).     tryToParseChargeITContainerFormat(JSONContent),
                             await new Chargepoint01(this).tryToParseChargepointFormat      (JSONContent),
                             await new OCPI(this).         tryToParseOCPIFormat             (JSONContent)
                         ];
+
+                        //#region Filter and sort results
 
                         const filteredResults = results.filter((ctr) => {
 
@@ -919,8 +921,10 @@ export class Chargy {
 
                         });
 
-                        if (sortedResults.length >= 1)
-                            processedFile.result = sortedResults[0]!;
+                        if (sortedResults.length >= 1 && sortedResults[0])
+                            processedFile.result = sortedResults[0];
+
+                        //#endregion
 
                     }
 

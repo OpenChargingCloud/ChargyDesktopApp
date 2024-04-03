@@ -103,7 +103,9 @@ export class OCPI {
                 signed_values[0].signed_data)
             {
 
-                return await new OCMF(this.chargy).TryToParseOCMF(signed_values[0].signed_data, public_key);
+                return await new OCMF(this.chargy).TryToParseOCMF(signed_values[0].signed_data,
+                                                                  public_key,
+                                                                  encoding_method);
 
             }
 
@@ -606,7 +608,7 @@ export class OCPI {
                         return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, chargingStation_controllerSoftwareVersion, signedMeterValues);
 
                     if (smvContext?.startsWith("ALFEN"))
-                        return await new Alfen01(this.chargy).tryToParseALFENFormat(
+                        return await new Alfen01(this.chargy).TryToParseALFENFormat(
                                          signedMeterValues.map(value => value.payload),
                                          {
                                              chargingSession: {

@@ -2,10 +2,10 @@
 <values>
   <value transactionId="1" context="Transaction.Begin">
     <signedData format="OCMF" encoding="plain">OCMF|{"FV":"1.0","GI":"BAUER Electronic BSM-WS36A-H01-1311-0000","GS":"001BZR1521070003","GV":"1.8:33C4:DB63, 08d1aa3","PG":"T22107","MV":"BAUER Electronic","MM":"BSM-WS36A-H01-1311-0000","MS":"001BZR1521070003","IS":true,"IT":"UNDEFINED","ID":"chargeIT up 12*4, id: 12345678abcdef","RD":[{"TM":"2020-10-08T10:22:39,000+0200 S","TX":"B","RV":0,"RI":"1-0:1.8.0*198","RU":"Wh","XV":88200,"XI":"1-0:1.8.0*255","XU":"Wh","XT":1,"RT":"AC","EF":"","ST":"G"}]}|{"SA":"ECDSA-secp256r1-SHA256","SD":"3045022005ce3f8aca29050cd9ca44faddb37dad3794d9c4dce701bd63aa4dc29f266334022100d1c231f870e7f815e037bc6ff8accc69f9fcf783d2fb9e90c88fd1c9bd20fd4b"}</signedData>
-    <publicKey encoding="plain">3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254</publicKey>
+    <publicKey encoding="hex">3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254</publicKey>
   </value>
   <value transactionId="1" context="Transaction.End">
     <signedData format="OCMF" encoding="plain">OCMF|{"FV":"1.0","GI":"BAUER Electronic BSM-WS36A-H01-1311-0000","GS":"001BZR1521070003","GV":"1.8:33C4:DB63, 08d1aa3","PG":"T22108","MV":"BAUER Electronic","MM":"BSM-WS36A-H01-1311-0000","MS":"001BZR1521070003","IS":true,"IT":"UNDEFINED","ID":"chargeIT up 12*4, id: 12345678abcdef","RD":[{"TM":"2020-10-08T10:27:37,000+0200 S","TX":"E","RV":150,"RI":"1-0:1.8.0*198","RU":"Wh","XV":88350,"XI":"1-0:1.8.0*255","XU":"Wh","XT":2,"RT":"AC","EF":"","ST":"G"}]}|{"SA":"ECDSA-secp256r1-SHA256","SD":"3046022100fa544eb800c940b30a87d2c075a0797e5089092b77a47f76433e63cb06c8832d022100e0e3c8370e19b8ef4caf295e3f676b43b12e092507ee81edc8cc7b9b2c9569bb"}</signedData>
-    <publicKey encoding="plain">3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254</publicKey>
+    <publicKey encoding="hex">3059301306072a8648ce3d020106082a8648ce3d030107034200044bfd02c1d85272ceea9977db26d72cc401d9e5602faeee7ec7b6b62f9c0cce34ad8d345d5ac0e8f65deb5ff0bb402b1b87926bd1b7fc2dbc3a9774e8e70c7254</publicKey>
   </value>
 </values>

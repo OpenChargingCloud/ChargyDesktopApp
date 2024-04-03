@@ -23,10 +23,10 @@ import * as ocmf              from './OCMF'
 
 export interface IOCMFv1_0MeasurementValue extends ocmf.IOCMFMeasurementValue
 {
-    statusMeter:                string,
-    secondsIndex:               number,
-    paginationId:               string,
-    logBookIndex:               string
+    statusMeter:                   string,
+    secondsIndex:                  number,
+    paginationId:                  string,
+    logBookIndex:                  string
 }
 
 export interface IOCMFv1_0Result extends chargyInterfaces.ICryptoResult
@@ -79,15 +79,18 @@ export class OCMFv1_0 extends ACrypt {
                 if (measurement.values && measurement.values.length > 1)
                 {
 
-                    // Validate...
+                    //#region Verify measurements...
+
                     for (var measurementValue of measurement.values)
                     {
                         measurementValue.measurement = measurement;
                         await this.VerifyMeasurement(measurementValue as IOCMFv1_0MeasurementValue);
                     }
 
+                    //#endregion
 
-                    // Find an overall result...
+                    //#region Find an overall result...
+
                     for (var measurementValue of measurement.values)
                     {
                         if (measurementValue.result)
@@ -149,6 +152,8 @@ export class OCMFv1_0 extends ACrypt {
 
                     }
 
+                    //#endregion
+
                 }
 
                 else
@@ -187,41 +192,33 @@ export class OCMFv1_0 extends ACrypt {
                           SignatureCheckDiv:     HTMLDivElement)
     {
 
-        if (measurementValue.measurement                                    === undefined ||
-            measurementValue.measurement.chargingSession                    === undefined ||
-            measurementValue.measurement.chargingSession.authorizationStart === undefined)
+        if (!measurementValue.measurement  ||
+            !measurementValue.ocmfDocument ||
+            !measurementValue.measurement.chargingSession)
         {
             return {
                 status: chargyInterfaces.VerificationResult.InvalidMeasurement
             }
         }
 
-        const chargingSession    = measurementValue?.measurement?.chargingSession;
-        const result             = measurementValue.result as IOCMFv1_0Result;
-        const algorithmName      = (typeof chargingSession?.publicKey?.algorithm === "object")
-                                        ? chargingSession?.publicKey?.algorithm.name
-                                        : chargingSession?.publicKey?.algorithm;
-        const algorithmType      = (typeof chargingSession?.publicKey?.type      === "object")
-                                        ? chargingSession?.publicKey?.type.name
-                                        : chargingSession?.publicKey?.type;
-
-        const cryptoSpan         = introDiv?.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
-        cryptoSpan.innerHTML     = "OCMFCrypt01 (" + algorithmName + ")";
+        const cryptoSpan      = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
+        cryptoSpan.innerHTML  = measurementValue.ocmfDocument.publicKey && typeof(measurementValue.ocmfDocument.publicKey) !== 'string'
+                                    ? "OCMFCrypt01 (" + measurementValue.ocmfDocument.publicKey.algorithm + ")"
+                                    : "OCMFCrypt01";
 
         //#region Plain text
 
-        if (PlainTextDiv != null)
+        if (PlainTextDiv)
         {
 
-            if (PlainTextDiv &&
-                PlainTextDiv.parentElement &&
+            if (PlainTextDiv.parentElement &&
                 PlainTextDiv.parentElement &&
                 PlainTextDiv.parentElement.children[0])
             {
                 PlainTextDiv.parentElement.children[0].innerHTML  = "Plain text (OCMF|&lt;payload&gt;|&lt;signature&gt;)";
             }
 
-            PlainTextDiv.innerHTML = '<span class="ocmfHighlight">OCMF</span>' + (measurementValue.ocmfDocument?.raw?.substring(4) ?? "");
+            PlainTextDiv.innerHTML = '<span class="ocmfHighlight">OCMF</span>' + (measurementValue.ocmfDocument.raw?.substring(4) ?? "");
 
             const firstIndex = PlainTextDiv.innerHTML.indexOf('|');
             if (firstIndex !== -1) {
@@ -244,98 +241,86 @@ export class OCMFv1_0 extends ACrypt {
 
         //#region Hashed plain text
 
-        if (HashedPlainTextDiv != null)
+        if (HashedPlainTextDiv)
         {
 
-            if (HashedPlainTextDiv &&
-                HashedPlainTextDiv.parentElement &&
+            if (HashedPlainTextDiv.parentElement &&
                 HashedPlainTextDiv.parentElement &&
                 HashedPlainTextDiv.parentElement.children[0])
             {
-                HashedPlainTextDiv.parentElement.children[0].innerHTML = "Hashed payload (" + measurementValue.ocmfDocument?.hashAlgorithm + ")";
+                HashedPlainTextDiv.parentElement.children[0].innerHTML = "Hashed payload (" + measurementValue.ocmfDocument.hashAlgorithm + ")";
             }
 
-            HashedPlainTextDiv.innerHTML  = measurementValue.ocmfDocument?.hashValue?.match(/.{1,8}/g)?.join(" ")
+            HashedPlainTextDiv.innerHTML  = measurementValue.ocmfDocument.hashValue?.match(/.{1,8}/g)?.join(" ")
                                                 ?? "0x00000000000000000000000000000000000";
 
         }
 
         //#endregion
 
-        //#region Public Key
+        //#region Public key
 
-        if (PublicKeyDiv != null && measurementValue.ocmfDocument?.publicKey)
+        if (PublicKeyDiv && measurementValue.ocmfDocument?.publicKey)
         {
 
-            if (PublicKeyDiv &&
-                PublicKeyDiv.parentElement &&
+            if (PublicKeyDiv.parentElement &&
                 PublicKeyDiv.parentElement &&
                 PublicKeyDiv.parentElement.children[0])
             {
 
-                PublicKeyDiv.parentElement.children[0].innerHTML = (typeof measurementValue.ocmfDocument?.publicKey === 'string')
-
-                    ? "Public Key (" +
-                                                                            (algorithmType
-                                                                                ? algorithmType + ", "
-                                                                                : "") +
-                                                                       //     measurementValue.ocmfDocument.publicKey +
-                                                                            ", hex)"
-
-                    : "Public Key (" +
-                    measurementValue.ocmfDocument.publicKey.algorithm.substring(0, measurementValue.ocmfDocument.publicKey.algorithm.lastIndexOf('-')) +
-                   (measurementValue.ocmfDocument.publicKey.encoding ? ", " + measurementValue.ocmfDocument.publicKey.encoding : "") + ")";
+                PublicKeyDiv.parentElement.children[0].innerHTML = typeof measurementValue.ocmfDocument?.publicKey === 'string'
+                                                                       ? "Public Key"
+                                                                       : "Public Key (" + measurementValue.ocmfDocument.publicKey.algorithm + ", " +
+                                                                                          measurementValue.ocmfDocument.publicKey.encoding + ")";
 
             }
 
-            PublicKeyDiv.innerHTML  = (typeof measurementValue.ocmfDocument?.publicKey === 'string')
-                ? measurementValue.ocmfDocument.publicKey.startsWith("04") // Add some space after '04' to avoid confused customers
-                      ? "<span class=\"leadingFour\">04</span> "
-                        + measurementValue.ocmfDocument.publicKey.substring(2).match(/.{1,8}/g)!.join(" ")
-                      :   measurementValue.ocmfDocument.publicKey.match(/.{1,8}/g)!.join(" ")
-                : (measurementValue.ocmfDocument.publicKey.value ?? "-") + "<br /><br />" +
-                   "x: " + measurementValue.ocmfDocument.publicKey.x.match(/.{1,8}/g)?.join(" ") + "<br />" +
-                   "y: " + measurementValue.ocmfDocument.publicKey.y.match(/.{1,8}/g)?.join(" ");
+            PublicKeyDiv.innerHTML = typeof measurementValue.ocmfDocument.publicKey === 'string'
+                                         ? measurementValue.ocmfDocument.publicKey
+                                         : "der: " + (measurementValue.ocmfDocument.publicKey.value ?? "-") + "<br /><br />" +
+                                           "x:   " +  measurementValue.ocmfDocument.publicKey.x.match(/.{1,8}/g)?.join(" ") + "<br />" +
+                                           "y:   " +  measurementValue.ocmfDocument.publicKey.y.match(/.{1,8}/g)?.join(" ");
 
+        }
 
-            //#region Public key signatures
+        //#endregion
 
-            if (PublicKeyDiv                           != undefined &&
-                PublicKeyDiv.parentElement             != undefined &&
-                PublicKeyDiv.parentElement             != undefined &&
-                PublicKeyDiv.parentElement.children[3] != undefined)
+        //#region Public key signatures (optional)
+
+        if (PublicKeyDiv &&
+            PublicKeyDiv.parentElement &&
+            PublicKeyDiv.parentElement &&
+            PublicKeyDiv.parentElement.children[3])
+        {
+            PublicKeyDiv.parentElement.children[3].innerHTML = "";
+        }
+
+        const result = measurementValue.result as IOCMFv1_0Result;
+
+        if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures)) {
+
+            for (const signature of result.publicKeySignatures)
             {
-                PublicKeyDiv.parentElement.children[3].innerHTML = "";
-            }
 
-            if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures)) {
-
-                for (const signature of result.publicKeySignatures)
+                try
                 {
 
-                    try
-                    {
+                    const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
 
-                        const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
-
-                        if (signatureDiv != null)
-                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement!.chargingSession!.chargingStation,
-                                                                                                    measurementValue.measurement!.chargingSession!.EVSE,
-                                                                                                    //@ts-ignore
-                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                                                    //@ts-ignore
-                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
-                                                                                                    signature);
-
-                    }
-                    catch (exception)
-                    { }
+                    if (signatureDiv)
+                        signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
+                                                                                                measurementValue.measurement.chargingSession.EVSE,
+                                                                                                //@ts-ignore
+                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                                                                //@ts-ignore
+                                                                                                measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                                                                signature);
 
                 }
+                catch (exception)
+                { }
 
             }
-
-            //#endregion
 
         }
 
@@ -343,20 +328,19 @@ export class OCMFv1_0 extends ACrypt {
 
         //#region Signature expected
 
-        if (SignatureExpectedDiv != null && measurementValue.ocmfDocument?.signature.SD)
+        if (SignatureExpectedDiv && measurementValue.ocmfDocument?.signature.SD)
         {
 
-            if (SignatureExpectedDiv &&
-                SignatureExpectedDiv.parentElement &&
+            if (SignatureExpectedDiv.parentElement &&
                 SignatureExpectedDiv.parentElement  &&
                 SignatureExpectedDiv.parentElement.children[0])
             {
                 SignatureExpectedDiv.parentElement.children[0].innerHTML  = "Erwartete Signatur (rs, hex)";
             }
 
-            SignatureExpectedDiv.innerHTML  = measurementValue.ocmfDocument?.signature.SD + "<br /><br />" +
-                                                 "r: " + measurementValue.ocmfDocument?.signatureRS?.r?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") + "<br />" +
-                                                 "s: " + measurementValue.ocmfDocument?.signatureRS?.s?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ");
+            SignatureExpectedDiv.innerHTML = "der: " +  measurementValue.ocmfDocument?.signature.SD + "<br /><br />" +
+                                             "r:   " + (measurementValue.ocmfDocument?.signatureRS?.r?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") ?? "-") + "<br />" +
+                                             "s:   " + (measurementValue.ocmfDocument?.signatureRS?.s?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") ?? "-");
 
         }
 
@@ -364,9 +348,9 @@ export class OCMFv1_0 extends ACrypt {
 
         //#region Signature check
 
-        if (SignatureCheckDiv != null && chargingSession.verificationResult != null)
+        if (SignatureCheckDiv && measurementValue.measurement.chargingSession.verificationResult)
         {
-            switch (chargingSession.verificationResult.status)
+            switch (measurementValue.measurement.chargingSession.verificationResult.status)
             {
 
                 // case SessionVerificationResult.UnknownCTRFormat:

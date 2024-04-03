@@ -495,20 +495,6 @@ export interface IMeasurements
     verificationResult?:        ICryptoResult;
 }
 
-export enum IECCurves {
-    secp192r1  = "secp192r1",
-    secp224k1  = "secp224k1",
-    secp256k1  = "secp256k1",
-    secp256r1  = "secp256r1",
-    secp384r1  = "secp384r1",
-    secp512r1  = "secp512r1"
-}
-
-export enum IEncoding {
-    hex     = "hex",
-    base64  = "base64"
-}
-
 export interface ISignatureInfos {
     hash:                       CryptoHashAlgorithms|string;
     hashTruncation?:                                 number;
@@ -518,20 +504,39 @@ export interface ISignatureInfos {
     encoding?:                  IEncoding           |string;
 }
 
+export enum IECCurves {
+    secp192r1   = "secp192r1",
+    secp224k1   = "secp224k1",
+    secp256k1   = "secp256k1",
+    secp256r1   = "secp256r1",
+    secp384r1   = "secp384r1",
+    secp512r1   = "secp512r1"
+}
+
+export enum IEncoding {
+    hex         = "hex",
+    base64      = "base64"
+}
+
+export enum PublicKeyFormats {
+    DER         = "DER",
+    XY          = "XY"
+}
+
 export enum SignatureFormats {
-    DER  = "DER",
-    rs   = "rs"
+    DER         = "DER",
+    RS          = "RS"
 }
 
 export enum CryptoAlgorithms {
-    RSA  = "RSA",
-    ECC  = "ECC"
+    RSA         = "RSA",
+    ECC         = "ECC"
 }
 
 export enum CryptoHashAlgorithms {
-    SHA256  = "SHA256",
-    SHA384  = "SHA384",
-    SHA512  = "SHA512"
+    SHA256      = "SHA256",
+    SHA384      = "SHA384",
+    SHA512      = "SHA512"
 }
 
 export enum DisplayPrefixes {
@@ -618,10 +623,10 @@ export interface IPublicKeyXY extends IPublicKey
 export interface IPublicKey
 {
     algorithm:                  string;
-    format:                     string;
-    previousValue?:             string;
+    format:                     string;            // e.g. "DER" | "rs"
+    encoding:                   IEncoding|string;  // e.g. "hex" | "base64"
     value?:                     string;
-    encoding?:                  string;
+    previousValue?:             string;
     signatures?:                any;
 }
 

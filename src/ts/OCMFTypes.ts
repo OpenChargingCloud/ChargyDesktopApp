@@ -396,8 +396,8 @@ export interface IOCMFJSONDocument {
                                         // not define a canonical format for calculating the signature which prevents a
                                         // meaningful interoperability of the signature verification process!
                                         // When the payload JSON was canonicalized, the rawPayload field is not needed.
-    hashAlgorithm?:      string,
-    hashValue?:          string,
+    hashAlgorithm:       string,
+    hashValue:           string,
 
     payload:             IOCMFPayload,
     signature:           IOCMFSignature,

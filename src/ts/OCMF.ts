@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
+
+// Note: More information about implementation details and limitations
+//       can be found within ~/documentation/OCMF/README.md!
+
 import { Chargy }             from './chargy'
 import * as ocmfTypes         from './OCMFTypes'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
 import Decimal                from 'decimal.js';
 
-// Note: OCMF is not really about signed meter values, but a container format for signed meter values.
-//       The signature is not about the meter values, but about the entire container.
-//       This has implications how OCMF is embeded within EV roaming protocols like OICP or OCPI,
-//       that expect signed meter values only!
 
 export interface IOCMFMeasurementValue extends chargyInterfaces.IMeasurementValue
 {
@@ -37,9 +37,6 @@ export interface IOCMFMeasurementValue extends chargyInterfaces.IMeasurementValu
     cumulatedLoss?:             Decimal;
     status:                     string;
     ocmfDocument?:              ocmfTypes.IOCMFJSONDocument;
-//    ocmfRAW?:                   string;
-//    ocmfHashAlgorithm?:         string;
-//    ocmfHashValue?:             string;
 }
 
 export interface IOCMFMeasurement extends chargyInterfaces.IMeasurement
@@ -83,86 +80,6 @@ export class OCMF {
     constructor(chargy:  Chargy) {
         this.chargy  = chargy;
     }
-
-    //#region tryToParseOCMFv0_1(OCMFDataList, PublicKey?)
-
-    // private async tryToParseOCMFv0_1(OCMFDataList:  ocmfTypes.IOCMFData_v0_1,
-    //                                  PublicKey?:    string) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
-    // {
-
-    //     // {
-    //     //     "FV": "0.1",
-    //     //     "VI": "ABL",
-    //     //     "VV": "1.4p3",
-    //     //
-    //     //     "PG": "T12345",
-    //     //
-    //     //     "MV": "Phoenix Contact",
-    //     //     "MM": "EEM-350-D-MCB",
-    //     //     "MS": "BQ27400330016",
-    //     //     "MF": "1.0",
-    //     //
-    //     //     "IS": "VERIFIED",
-    //     //     "IF": ["RFID_PLAIN", "OCPP_RS_TLS"],
-    //     //     "IT": "ISO14443",
-    //     //     "ID": "1F2D3A4F5506C7",
-    //     //
-    //     //     "RD": [{
-    //     //         "TM": "2018-07-24T13:22:04,000+0200 S",
-    //     //         "TX": "B",
-    //     //         "RV": 2935.6,
-    //     //         "RI": "1-b:1.8.e",
-    //     //         "RU": "kWh",
-    //     //         "EI": 567,
-    //     //         "ST": "G"
-    //     //     }]
-    //     // }
-
-    //     try
-    //     {
-
-    //         let VendorInformation  :string = OCMFDataList.VI != null ? OCMFDataList.VI.trim() : ""; // Some text about the manufacturer, model, variant, ... of e.g. the vendor.
-    //         let VendorVersion      :string = OCMFDataList.VV != null ? OCMFDataList.VV.trim() : ""; // Software version of the vendor.
-
-    //         let paging             :string = OCMFDataList.PG != null ? OCMFDataList.PG.trim() : ""; // Paging, as this data might be part of a larger context.
-    //         let transactionType     = ocmfTypes.OCMFTransactionTypes.undefined;
-    //         switch (paging[0]?.toLowerCase())
-    //         {
-
-    //             case 't':
-    //                 transactionType = ocmfTypes.OCMFTransactionTypes.transaction;
-    //                 break;
-
-    //             case 'f':
-    //                 transactionType = ocmfTypes.OCMFTransactionTypes.fiscal;
-    //                 break
-
-    //         }
-    //         let pagingId            = paging.substring(1);
-
-    //         let MeterVendor        :string = OCMFDataList.MV != null ? OCMFDataList.MV.trim() : ""; // Vendor of the device, optional.
-    //         let MeterModel         :string = OCMFDataList.MM != null ? OCMFDataList.MM.trim() : ""; // Model of the device, optional.
-    //         let MeterSerial        :string = OCMFDataList.MS != null ? OCMFDataList.MS.trim() : ""; // Serialnumber of the device, might be optional.
-    //         let MeterFirmware      :string = OCMFDataList.MF != null ? OCMFDataList.MF.trim() : ""; // Software version of the device.
-
-    //         return {
-    //             status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-    //             message:   this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
-    //             certainty: 0
-    //         }
-
-    //     } catch (exception)
-    //     {
-    //         return {
-    //             status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-    //             message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
-    //             certainty: 0
-    //         }
-    //     }
-
-    // }
-
-    //#endregion
 
     //#region (private) tryToParseOCMFv1_0(OCMFDataList, PublicKey?)
 
@@ -338,6 +255,7 @@ export class OCMF {
                                         "signatureFormat":              "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/OCMFv1.0+json",
                                         "publicKeys": [{
                                             "algorithm":                    "?",
+                                            "encoding":                     "?",
                                             "format":                       "?",
                                             "value":                        "?",
                                         }]
@@ -753,10 +671,11 @@ export class OCMF {
     //#endregion
 
 
-    //#region (private) validateOCMFSignature(OCMFJSONDocument, PublicKey)
+    //#region (private) validateOCMFSignature(OCMFJSONDocument, PublicKey, PublicKeyEncoding?)
 
-    private async validateOCMFSignature(OCMFJSONDocument:  ocmfTypes.IOCMFJSONDocument,
-                                        PublicKey:         string|chargyInterfaces.IPublicKeyXY): Promise<chargyInterfaces.VerificationResult>
+    private async validateOCMFSignature(OCMFJSONDocument:    ocmfTypes.IOCMFJSONDocument,
+                                        PublicKey:           string|chargyInterfaces.IPublicKeyXY,
+                                        PublicKeyEncoding?:  string): Promise<chargyInterfaces.VerificationResult>
     {
 
         // Note: We could also get the ECC curve from the DER-encoded public key!
@@ -844,7 +763,8 @@ export class OCMF {
                 if (typeof OCMFJSONDocument.publicKey === 'string')
                 {
 
-                    // Define an ASN.1 structure for an ECC public key
+                    //#region Define an ASN.1 structure for an ECC public key
+
                     const ECPoint = this.chargy.asn1.define('ECPoint', function () {
                         //@ts-ignore
                         this.seq().obj(
@@ -860,27 +780,54 @@ export class OCMF {
                         );
                     });
 
+                    //#endregion
 
+                    //#region Try to determine the public key encoding format
 
-                    // Most protocols do not have a method to indicate the public key encoding format!
-                    let   bufferEncoding: BufferEncoding  = 'hex';
-                    const hexRegex                        = /^[0-9A-Fa-f]+$/;
-                    const base64Regex                     = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
+                    let bufferEncoding: BufferEncoding | null = null;
 
-                    if (hexRegex.test(OCMFJSONDocument.publicKey))
-                        bufferEncoding = 'hex';
+                    if (PublicKeyEncoding)
+                    {
+                        switch (PublicKeyEncoding.toLowerCase())
+                        {
 
-                    else if (base64Regex.test(OCMFJSONDocument.publicKey))
-                        bufferEncoding = 'base64';
+                            case 'hex':
+                                bufferEncoding  = 'hex';
+                                break;
 
-                    else
+                            case 'base64':
+                                bufferEncoding  = 'base64';
+                                break;
+
+                        }
+                    }
+
+                    // Try to guess the encoding format
+                    if (bufferEncoding == null)
+                    {
+
+                        const hexRegex      = /^[0-9A-Fa-f]+$/;
+                        const base64Regex   = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
+
+                        if (hexRegex.test(OCMFJSONDocument.publicKey))
+                            bufferEncoding  = 'hex';
+
+                        else if (base64Regex.test(OCMFJSONDocument.publicKey))
+                            bufferEncoding  = 'base64';
+
+                    }
+
+                    // Or fail...
+                    if (bufferEncoding == null)
                     {
                         OCMFJSONDocument.validationStatus = chargyInterfaces.VerificationResult.UnknownPublicKeyFormat;
                         return OCMFJSONDocument.validationStatus;
                     }
 
+                    //#endregion
 
-                    // Parse the DER-encoded public key
+                    //#region Parse the DER-encoded public key
+
                     const publicKeyASN1  = ECPoint.decode(Buffer.from(OCMFJSONDocument.publicKey, bufferEncoding), 'der');
 
                                            // "1.2.840.10045.2.1"   => ECDSA and ECDH Public Key, https://www.alvestrand.no/objectid/1.2.840.10045.2.1.html
@@ -900,8 +847,16 @@ export class OCMF {
                                            // Will fail when the public key does not match the curve!
                     publicKey            = curve.keyFromPublic(publicKeyXY, 'hex');
 
+                    //#endregion
+
                     OCMFJSONDocument.publicKey = {
-                                                     algorithm:   OCMFJSONDocument.signature.SA!,
+                                                     algorithm:   OCMFJSONDocument.signature.SA
+                                                                      ? OCMFJSONDocument.signature.SA.substring(
+                                                                            OCMFJSONDocument.signature.SA.indexOf('-') + 1,
+                                                                            OCMFJSONDocument.signature.SA.lastIndexOf('-')
+                                                                        )
+                                                                      : 'secp256r1',
+                                                     encoding:    bufferEncoding,
                                                      format:      'XY',
                                                      value:       OCMFJSONDocument.publicKey,
                                                      x:           publicKeyXY.x,
@@ -964,44 +919,13 @@ export class OCMF {
 
     //#endregion
 
-    //#region (private) parseOCMFJSONDocuments(OCMFValues, PublicKey?, ContainerInfos?)
+    //#region (private) parseOCMFJSONDocuments(OCMFValues, PublicKey?, PublicKeyEncoding?, ContainerInfos?)
 
-    private async parseOCMFJSONDocuments(OCMFValues:       string[],
-                                         PublicKey?:       string|chargyInterfaces.IPublicKeyXY,
-                                         ContainerInfos?:  any): Promise<ocmfTypes.IOCMFJSONDocument[] | string>
+    private async parseOCMFJSONDocuments(OCMFValues:          string[],
+                                         PublicKey?:          string|chargyInterfaces.IPublicKeyXY,
+                                         PublicKeyEncoding?:  string,
+                                         ContainerInfos?:     any): Promise<ocmfTypes.IOCMFJSONDocument[] | string>
     {
-
-        // OCMF can be on a singe line or on multiple lines even within the embedded JSON!
-        //
-        // OCMF|<payload>|<signature>
-        //
-        // OCMF|{"FV":"1.0","GI":"SEAL AG","GS":"1850006a","GV":"1.34","PG":"T9289","MV":"Carlo Gavazzi","MM":"EM340-DIN.AV2.3.X.S1.PF","MS":"******240084S","MF":"B4","IS":true,"IL":"TRUSTED","IF":["OCCP_AUTH"],"IT":"ISO14443","ID":"56213C05","RD":[{"TM":"2019-06-26T08:57:44,337+0000 U","TX":"B","RV":268.978,"RI":"1-b:1.8.0","RU":"kWh","RT":"AC","EF":"","ST":"G"}]}|{"SD":"304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"}
-        //
-        // OCMF|
-        // {"FV":"1.0","GI":"SEAL AG","GS":"1850006a","GV":"1.34","PG":"T9289","MV":"Carlo Gavazzi","MM":"EM340-DIN.AV2.3.X.S1.PF","MS":"******240084S","MF":"B4","IS":true,"IL":"TRUSTED","IF":["OCCP_AUTH"],"IT":"ISO14443","ID":"56213C05","RD":[{"TM":"2019-06-26T08:57:44,337+0000 U","TX":"B","RV":268.978,"RI":"1-b:1.8.0","RU":"kWh","RT":"AC","EF":"","ST":"G"}]}|
-        // {"SD":"304402201455BF1082C9EB8B1272D7FA838EB44286B03AC96E8BAFC5E79E30C5B3E1B872022006286CA81AEE0FAFCB1D6A137FFB2C0DD014727E2AEC149F30CD5A7E87619139"}
-        //
-        // The OCMF payload should not have any '|' within the payload or signature, but you never know...
-        // therefore we use a stateful '{' and '}' aware parser to split the OCMF into "OCMF|<payload>|<signature>".
-        //
-        // For calculating the signature we have to use ocmfRAWPayload, as OCMF does not define a canonical format.
-        // This means that non-functional JSON whitespaces can break the signature calculation and therefore inhibit
-        // a meaningful interoperability of the signature verification process! This is a major design flaw in the
-        // OCMF standard!
-
-        // Multiple OCMF documents within a text are possible, e.g. for signed START and STOP meter values of a
-        // charging session. But a single OCMF document having a valid START and STOP meter value and just a single
-        // signature can already be a valid Charge Transparency Record!
-        //
-        // OCMF|<payload1>|<signature1>
-        // OCMF|<payload2>|<signature2>
-        //
-        // OCMF|
-        // <payload1>|
-        // <signature1>
-        // OCMF|
-        // <payload2>|
-        // <signature2>
 
         //#region Data
 
@@ -1107,6 +1031,8 @@ export class OCMF {
                                 if (ocmfStructure == 4)
                                 {
 
+                                    //#region Copy signature
+
                                     try
                                     {
                                         ocmfSignature = JSON.parse(combinedOCMF.substring(startIndex, endIndex + 1));
@@ -1116,87 +1042,81 @@ export class OCMF {
                                         return "The " + (ocmfJSONDocuments.length + 1) + ". OCMF signature is not a valid JSON document!";
                                     }
 
-                                    const ocmfJSONDocument:ocmfTypes.IOCMFJSONDocument = {
-                                        "@context":        "OCMF",
-                                        raw:                combinedOCMF.substring(ocmfStartIndex, endIndex + 1),
-                                        rawPayload:         ocmfRAWPayload,
-                                        payload:            ocmfPayload,
-                                        signature:          ocmfSignature,
-                                        publicKey:          PublicKey,
-                                        validationStatus:   PublicKey
-                                                                ? chargyInterfaces.VerificationResult.Unvalidated
-                                                                : chargyInterfaces.VerificationResult.PublicKeyNotFound
-                                    }
+                                    //#endregion
 
                                     //#region Hash the payload
 
-                                    const plaintext = ocmfJSONDocument.rawPayload ?? JSON.stringify(ocmfJSONDocument.payload);
+                                    let hashAlgorithm:     string                                     = "?";
+                                    let hashValue:         string                                     = "?";
+                                    let validationStatus:  chargyInterfaces.VerificationResult|null   = null;
+
+                                    const plaintext = ocmfRAWPayload ?? JSON.stringify(ocmfPayload);
 
                                     try
                                     {
 
-                                        switch (ocmfJSONDocument.signature.SA)
+                                        switch (ocmfSignature.SA)
                                         {
 
                                             case "ECDSA-secp192k1-SHA256":
-                                                ocmfJSONDocument.hashAlgorithm  = "SHA256";
-                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                hashAlgorithm  = "SHA256";
+                                                hashValue      = (await chargyLib.sha256(plaintext));
                                                 break;
 
                                             case "ECDSA-secp192r1-SHA256":
-                                                ocmfJSONDocument.hashAlgorithm  = "SHA256";
-                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                hashAlgorithm  = "SHA256";
+                                                hashValue      = (await chargyLib.sha256(plaintext));
                                                 break;
 
                                             case "ECDSA-secp256k1-SHA256":
-                                                ocmfJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
-                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                hashAlgorithm  = "SHA256, 256 Bits, hex";
+                                                hashValue      = (await chargyLib.sha256(plaintext));
                                                 break;
 
                                             case "ECDSA-secp256k1-SHA256":
-                                                ocmfJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
-                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                hashAlgorithm  = "SHA256, 256 Bits, hex";
+                                                hashValue      = (await chargyLib.sha256(plaintext));
                                                 break;
 
                                             case "ECDSA-brainpool256r1-SHA256":
-                                                ocmfJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
-                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                hashAlgorithm  = "SHA256, 256 Bits, hex";
+                                                hashValue      = (await chargyLib.sha256(plaintext));
                                                 break;
 
                                             // Note: Cryptographical wrong hash algorithm!
                                             case "ECDSA-secp384r1-SHA256":
-                                                ocmfJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
-                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                hashAlgorithm  = "SHA256, 256 Bits, hex";
+                                                hashValue      = (await chargyLib.sha256(plaintext));
                                                 break;
 
                                             // Note: Cryptographical wrong hash algorithm!
                                             case "ECDSA-brainpool384r1-SHA256":
-                                                ocmfJSONDocument.hashAlgorithm  = "SHA256, 256 Bits, hex";
-                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                hashAlgorithm  = "SHA256, 256 Bits, hex";
+                                                hashValue      = (await chargyLib.sha256(plaintext));
                                                 break;
 
                                             // Not an OCMF standard!
                                             case "ECDSA-secp384r1-SHA384":
-                                                ocmfJSONDocument.hashAlgorithm  = "SHA384, 384 Bits, hex";
-                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                hashAlgorithm  = "SHA384, 384 Bits, hex";
+                                                hashValue      = (await chargyLib.sha256(plaintext));
                                                 break;
 
                                             // Not an OCMF standard!
                                             case "ECDSA-brainpool384r1-SHA384":
-                                                ocmfJSONDocument.hashAlgorithm  = "SHA384, 384 Bits, hex";
-                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                hashAlgorithm  = "SHA384, 384 Bits, hex";
+                                                hashValue      = (await chargyLib.sha256(plaintext));
                                                 break;
 
                                             // Not an OCMF standard!
                                             case "ECDSA-secp521r1-SHA512":
-                                                ocmfJSONDocument.hashAlgorithm  = "SHA512, 512 Bits, hex";
-                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                hashAlgorithm  = "SHA512, 512 Bits, hex";
+                                                hashValue      = (await chargyLib.sha256(plaintext));
                                                 break;
 
                                             // ECDSA-secp256r1-SHA256
                                             default:
-                                                ocmfJSONDocument.hashAlgorithm  = "SHA256";
-                                                ocmfJSONDocument.hashValue      = (await chargyLib.sha256(plaintext));
+                                                hashAlgorithm  = "SHA256";
+                                                hashValue      = (await chargyLib.sha256(plaintext));
                                                 break;
 
                                         }
@@ -1204,10 +1124,26 @@ export class OCMF {
                                     }
                                     catch (exception)
                                     {
-                                        ocmfJSONDocument.validationStatus = chargyInterfaces.VerificationResult.UnknownSignatureFormat;
+                                        validationStatus = chargyInterfaces.VerificationResult.UnknownSignatureFormat;
                                     }
 
                                     //#endregion
+
+                                    const ocmfJSONDocument:ocmfTypes.IOCMFJSONDocument = {
+                                        "@context":        "OCMF",
+                                        raw:                combinedOCMF.substring(ocmfStartIndex, endIndex + 1),
+                                        rawPayload:         ocmfRAWPayload,
+                                        payload:            ocmfPayload,
+                                        signature:          ocmfSignature,
+                                        hashAlgorithm:      hashAlgorithm,
+                                        hashValue:          hashValue,
+                                        publicKey:          PublicKey,
+                                        validationStatus:   validationStatus
+                                                                ? validationStatus
+                                                                : PublicKey
+                                                                        ? chargyInterfaces.VerificationResult.Unvalidated
+                                                                        : chargyInterfaces.VerificationResult.PublicKeyNotFound
+                                    }
 
                                     //#region Parse the signature
 
@@ -1314,11 +1250,12 @@ export class OCMF {
 
     //#endregion
 
-    //#region TryToParseOCMF(OCMFValues, PublicKey?, ContainerInfos?)
+    //#region TryToParseOCMF(OCMFValues, PublicKey?, PublicKeyEncoding?, ContainerInfos?)
 
-    public async TryToParseOCMF(OCMFValues:       string|string[],
-                                PublicKey?:       string|chargyInterfaces.IPublicKeyXY,
-                                ContainerInfos?:  any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async TryToParseOCMF(OCMFValues:          string|string[],
+                                PublicKey?:          string|chargyInterfaces.IPublicKeyXY,
+                                PublicKeyEncoding?:  string,
+                                ContainerInfos?:     any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         //#region Data
@@ -1339,6 +1276,7 @@ export class OCMF {
                                                 ? [ OCMFValues ]
                                                 : OCMFValues,
                                             PublicKey,
+                                            PublicKeyEncoding,
                                             ContainerInfos
                                         );
 
