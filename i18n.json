@@ -98,6 +98,36 @@
         "en": "OBIS code"
     },
 
+    "Plain text": {
+        "de": "Klartext",
+        "en": "Plain text"
+    },
+
+    "payload": {
+        "de": "Datensatz",
+        "en": "payload"
+    },
+
+    "signature": {
+        "de": "Signatur",
+        "en": "signature"
+    },
+
+    "Hashed payload": {
+        "de": "Gehashter Datensatz",
+        "en": "Hashed payload"
+    },
+
+    "Public Key": {
+        "de": "Öffentlicher Schlüssel",
+        "en": "Public Key"
+    },
+
+    "Expected signature": {
+        "de": "Erwartete Signatur",
+        "en": "Expected signature"
+    },
+
 
     "MissingOrInvalidEVSEId": {
         "de": "Fehlende oder ungültige EVSE Id!",
@@ -552,7 +582,11 @@
         "en": "Unvalidated"
     },
 
-    
+    "The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature": {
+        "de": "Folgende Daten des Ladevorgangs sind <span class=\"important\">mess- und eichrechtsrelevant</span> und damit gemäß {methodName} {cryptoAlgorithm}Teil der digitalen Signatur:",
+        "en": "The following data of the charging session is <span class=\"important\">relevant for metrological and legal metrological purposes</span> and therefore according to {methodName} {cryptoAlgorithm}part of the digital signature:"
+    },
+
 
     "The given OCMF data does not have a valid header!": {
         "de": "Die übergebenen OCMF-Daten haben keinen gültigen Header!",

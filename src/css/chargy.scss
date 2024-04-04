@@ -1553,7 +1553,7 @@ body {
                         padding:                11px 10px 6px 10px;
                         width:                  calc(100% - 20px);
                     }
-                    
+
                 }
 
                 .errorblock {
@@ -1571,6 +1571,7 @@ body {
                 }
 
                 #buffer {
+
                     .value {
 
                         .entry {
@@ -1590,14 +1591,38 @@ body {
                         }
 
                         .ocmfSeparator {
-                            color: #e20000;
+                            color:              #e20000;
                         }
 
                         .ocmfHighlight {
-                            color: #5c7aa9;
+                            color:              #5c7aa9;
+                        }
+
+                        .compactValue {
+                            display:            block;
+                        }
+
+                        .prettyValue {
+
+                            display:            none;
+
+                            .string {
+                                color:            rgb(174, 45, 45)
+                            }
+
+                            .number {
+                                color:            rgb(43, 110, 43)
+                            }
+
+                            .boolean {
+                                color:            rgb(56, 56, 144)
+                            }
+
                         }
 
                     }
+
+
                 }
 
                 #publicKey {

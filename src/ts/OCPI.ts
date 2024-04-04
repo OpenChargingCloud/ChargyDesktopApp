@@ -16,7 +16,7 @@
  */
 
 import { Chargy }             from './chargy'
-import { Alfen }            from './Alfen'
+import { Alfen }              from './Alfen'
 import { BSMCrypt01 }         from './BSMCrypt01'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
@@ -103,9 +103,9 @@ export class OCPI {
                 signed_values[0].signed_data)
             {
 
-                return await new OCMF(this.chargy).TryToParseOCMF(signed_values[0].signed_data,
-                                                                  public_key,
-                                                                  encoding_method);
+                return await new OCMF(this.chargy).TryToParseOCMFDocument(signed_values[0].signed_data,
+                                                                          public_key,
+                                                                          encoding_method);
 
             }
 

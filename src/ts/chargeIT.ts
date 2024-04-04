@@ -16,11 +16,11 @@
  */
 
 import { Chargy }             from './chargy'
-import { Alfen }            from './Alfen'
+import { Alfen }              from './Alfen'
 import { BSMCrypt01 }         from './BSMCrypt01'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
-import { ChargyApp }          from './chargyApp'
+
 
 export class ChargeIT {
 
@@ -46,9 +46,9 @@ export class ChargeIT {
     }
 
 
-    //#region tryToParseOldChargeITMeterValuesFormat(CTR, evseId, address, geoLocation, signedMeterValues)
+    //#region TryToParseOldChargeITMeterValuesFormat(CTR, evseId, address, geoLocation, signedMeterValues)
 
-    public async tryToParseOldChargeITMeterValuesFormat(CTR:                any,
+    public async TryToParseOldChargeITMeterValuesFormat(CTR:                any,
                                                         evseId:             string,
                                                         address:            any,
                                                         geoLocation:        any,
@@ -405,10 +405,10 @@ export class ChargeIT {
     //#endregion
 
 
-    //#region tryToParseChargeITContainerFormat(SomeJSON)
+    //#region TryToParseChargeITContainerFormat(SomeJSON)
 
     // The chargeIT mobility data format does not always provide context information or format identifiers!
-    public async tryToParseChargeITContainerFormat(SomeJSON: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async TryToParseChargeITContainerFormat(SomeJSON: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         const errors    = new Array<String>();
@@ -1040,7 +1040,7 @@ export class ChargeIT {
                         }
 
                         if (signedMeterValueContext === oldChargeITMeterValueFormat)
-                            return await this.tryToParseOldChargeITMeterValuesFormat(CTR,
+                            return await this.TryToParseOldChargeITMeterValuesFormat(CTR,
                                                                                      evseId,
                                                                                      address,
                                                                                      geoLocation,

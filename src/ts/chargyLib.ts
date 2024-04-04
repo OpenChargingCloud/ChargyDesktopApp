@@ -1030,3 +1030,53 @@ export function CloneCTR(CTR: chargyInterfaces.IChargeTransparencyRecord): charg
     return clonedCTR;
 
 }
+
+
+//#region jsonPrettyPrinter(value, indentLevel = 0)
+
+export function jsonPrettyPrinter(value: any, indentLevel: number = 0): string {
+
+    const indent = ' '.repeat(indentLevel * 4);
+    let html = '';
+
+    if (Array.isArray(value)) {
+        html += '[<br />';
+        value.forEach((item, index) => {
+            html += `${indent}    ${jsonPrettyPrinter(item, indentLevel + 1)}`;
+            if (index < value.length - 1) {
+                html += ',';
+            }
+            html += '<br />';
+        });
+        html += `${indent}]`;
+    }
+
+    else if (typeof value === 'object' && value !== null)
+    {
+        html += '{<br />';
+        const keys = Object.keys(value);
+        keys.forEach((key, index) => {
+            html += `${indent}    <b>${key}</b>: ${jsonPrettyPrinter(value[key], indentLevel + 1)}`;
+            if (index < keys.length - 1) {
+                html += ',';
+            }
+            html += '<br />';
+        });
+        html += `${indent}}`;
+    }
+
+        else if (typeof value === 'string') {
+        html += `<span class="string">"${value}"</span>`;
+    } else if (typeof value === 'number') {
+        html += `<span class="number">${value}</span>`;
+    } else if (typeof value === 'boolean') {
+        html += `<span class="boolean">${value}</span>`;
+    } else {
+        html += value;
+    }
+
+    return html;
+
+}
+
+//#endregion

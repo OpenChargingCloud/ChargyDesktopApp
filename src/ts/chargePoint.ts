@@ -26,7 +26,7 @@ export interface IChargepointChargeTransparencyRecord extends chargyInterfaces.I
     //chargingSessions?:          Array<IAlfenChargingSession>;
 }
 
-export class Chargepoint {
+export class ChargePoint {
 
     private readonly chargy: Chargy;
 

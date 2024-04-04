@@ -16,7 +16,7 @@
  */
 
 import { Chargy }             from './chargy'
-import { Alfen }            from './Alfen'
+import { Alfen }              from './Alfen'
 import { OCMF }               from './OCMF'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
@@ -25,7 +25,7 @@ export class SAFEXML  {
 
     private readonly chargy: Chargy;
 
-    constructor(chargy:  Chargy) {
+    constructor(chargy: Chargy) {
         this.chargy  = chargy;
     }
 
@@ -40,9 +40,10 @@ export class SAFEXML  {
         try
         {
 
-            let commonFormat           = "";
-            let commonPublicKey        = "";
-            let signedValues:string[]  = [];
+            let commonFormat             = "";
+            let commonPublicKey          = "";
+            let commonPublicKeyEncoding  = "";
+            let signedValues:string[]    = [];
 
             let values = XMLDocument.querySelectorAll("values");
             if (values.length == 1)
@@ -168,57 +169,64 @@ export class SAFEXML  {
 
                         // Note: The public key is optional!
                         const publicKey  = valueList[i]?.querySelector("publicKey");
-                        if (publicKey != null)
+                        if (publicKey)
                         {
 
                             publicKeyEncoding = publicKey.attributes.getNamedItem("encoding")?.value.trim().toLowerCase() ?? "";
                             publicKeyValue    = publicKey.textContent?.trim()                                             ?? "";
 
-                            switch (publicKeyEncoding)
-                            {
+                            // switch (publicKeyEncoding)
+                            // {
 
-                                case "":
-                                case "plain":
-                                    publicKeyValue = Buffer.from(publicKeyValue, 'utf8').toString('hex').trim();
-                                    break;
+                            //     case "":
+                            //     case "plain":
+                            //         //publicKeyValue = Buffer.from(publicKeyValue, 'utf8').toString('hex').trim();
+                            //         break;
 
-                                case "base32":
-                                    publicKeyValue = Buffer.from(this.chargy.base32Decode(publicKeyValue, 'RFC4648')).toString('hex').trim();
-                                    break;
+                            //     case "base32":
+                            //         publicKeyValue = Buffer.from(this.chargy.base32Decode(publicKeyValue, 'RFC4648')).toString('hex').trim();
+                            //         break;
 
-                                case "base64":
-                                    publicKeyValue = Buffer.from(publicKeyValue, 'base64').toString('hex').trim();
-                                    break;
+                            //     case "base64":
+                            //         publicKeyValue = Buffer.from(publicKeyValue, 'base64').toString('hex').trim();
+                            //         break;
 
-                                case "hex":
-                                    publicKeyValue = Buffer.from(publicKeyValue, 'hex').toString('hex').trim();
-                                    break;
+                            //     case "hex":
+                            //         //publicKeyValue = Buffer.from(publicKeyValue, 'hex').toString('hex').trim();
+                            //         break;
 
-                                default:
-                                    return {
-                                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                        message:   "Unkown public key encoding within the given SAFE XML!",
-                                        certainty: 0
-                                    }
+                            //     default:
+                            //         return {
+                            //             status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                            //             message:   "Unkown public key encoding within the given SAFE XML!",
+                            //             certainty: 0
+                            //         }
 
+                            // }
+
+                            if (chargyLib.IsNullOrEmpty(publicKeyValue)) return {
+                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                message:   "The public key within the given SAFE XML must not be empty!",
+                                certainty: 0
                             }
 
-                            if (chargyLib.IsNullOrEmpty(publicKeyValue))
-                                return {
-                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:   "The public key within the given SAFE XML must not be empty!",
-                                    certainty: 0
-                                }
-
                             else if (commonPublicKey == "")
-                                commonPublicKey = publicKeyValue;
+                                commonPublicKey          = publicKeyValue;
 
-                            else if (publicKeyValue != commonPublicKey)
-                                return {
-                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:   "Invalid mixture of different public keys within the given SAFE XML!",
-                                    certainty: 0
-                                }
+                            else if (commonPublicKeyEncoding == "")
+                                commonPublicKeyEncoding  = publicKeyEncoding;
+
+                            else if (publicKeyValue != commonPublicKey) return {
+                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                message:   "Invalid mixture of different public keys within the given SAFE XML!",
+                                certainty: 0
+                            }
+
+                            else if (publicKeyEncoding != commonPublicKeyEncoding) return {
+                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                message:   "Invalid mixture of different public key encodings within the given SAFE XML!",
+                                certainty: 0
+                            }
 
                         }
 
@@ -238,10 +246,10 @@ export class SAFEXML  {
 
                 case "ocmf":
                     return await new OCMF(this.chargy).
-                                     TryToParseOCMF(signedValues,
-                                                    commonPublicKey,
-                                                    'hex',
-                                                    {});
+                                     TryToParseOCMFDocuments(signedValues,
+                                                             commonPublicKey,
+                                                             commonPublicKeyEncoding,
+                                                             {});
 
             }
 

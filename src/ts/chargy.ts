@@ -21,18 +21,16 @@ import { fileTypeFromBuffer }               from 'file-type';
 import { Alfen, AlfenCrypt01 }              from './Alfen'
 import { BSMCrypt01 }                       from './BSMCrypt01'
 import { ChargeIT }                         from './chargeIT'
-import { Chargepoint, ChargePointCrypt01 }  from './chargePoint'
+import { ChargePoint, ChargePointCrypt01 }  from './chargePoint'
 import { EMHCrypt01 }                       from './EMHCrypt01'
 import { GDFCrypt01 }                       from './GDFCrypt01'
 import { Mennekes }                         from './Mennekes'
-import { OCMF }                             from './OCMF'
-import { OCMFv1_x }                         from './OCMFv1_x'
+import { OCMF, OCMFv1_x }                   from './OCMF'
 import { SAFEXML }                          from './SAFE_XML'
 import { XMLContainer }                     from './XMLContainer'
 import { OCPI }                             from './OCPI'
 import * as chargyInterfaces                from './chargyInterfaces'
 import * as chargyLib                       from './chargyLib'
-import Decimal                              from 'decimal.js';
 import * as pdfjsLib                        from 'pdfjs-dist';
 
 export class Chargy {
@@ -740,7 +738,7 @@ export class Chargy {
             //#region OCMF processing
 
             else if (textContent?.startsWith("OCMF"))
-                processedFile.result = await new OCMF(this).TryToParseOCMF(textContent);
+                processedFile.result = await new OCMF(this).TryToParseOCMFDocument(textContent);
 
             //#endregion
 
@@ -883,7 +881,7 @@ export class Chargy {
                              JSONContext.startsWith("https://www.eneco.com/contexts/charging-station-json")     ||
                              JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
                     {
-                        processedFile.result = await new ChargeIT(this).tryToParseChargeITContainerFormat(JSONContent);
+                        processedFile.result = await new ChargeIT(this).TryToParseChargeITContainerFormat(JSONContent);
                     }
 
                     // Some formats do not provide any context or format identifiers...
@@ -891,8 +889,8 @@ export class Chargy {
                     {
 
                         const results = [
-                            await new ChargeIT(this).     tryToParseChargeITContainerFormat(JSONContent),
-                            await new Chargepoint(this).TryToParseChargepointFormat      (JSONContent),
+                            await new ChargeIT(this).     TryToParseChargeITContainerFormat(JSONContent),
+                            await new ChargePoint(this).TryToParseChargepointFormat      (JSONContent),
                             await new OCPI(this).         tryToParseOCPIFormat             (JSONContent)
                         ];
 
