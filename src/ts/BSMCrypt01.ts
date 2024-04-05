@@ -1199,6 +1199,7 @@ export class BSMCrypt01 extends ACrypt {
     }
 
     async ViewMeasurement(measurementValue:      IBSMMeasurementValue,
+                          errorDiv:              HTMLDivElement,
                           introDiv:              HTMLDivElement,
                           infoDiv:               HTMLDivElement,
                           PlainTextDiv:          HTMLDivElement,

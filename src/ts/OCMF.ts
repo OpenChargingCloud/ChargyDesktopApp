@@ -187,6 +187,7 @@ export class OCMFv1_x extends ACrypt {
     }
 
     async ViewMeasurement(measurementValue:      IOCMFv1_0MeasurementValue,
+                          errorDiv:              HTMLDivElement,
                           introDiv:              HTMLDivElement,
                           infoDiv:               HTMLDivElement,
                           PlainTextDiv:          HTMLDivElement,
@@ -317,9 +318,9 @@ export class OCMFv1_x extends ACrypt {
 
             PublicKeyDiv.innerHTML = typeof measurementValue.ocmfDocument.publicKey === 'string'
                                          ? measurementValue.ocmfDocument.publicKey
-                                         : "der: "           + (measurementValue.ocmfDocument.publicKey.value ?? "-") + "<br /><br />" +
-                                           "x:&nbsp;&nbsp; " +  measurementValue.ocmfDocument.publicKey.x.match(/.{1,8}/g)?.join(" ") + "<br />" +
-                                           "y:&nbsp;&nbsp; " +  measurementValue.ocmfDocument.publicKey.y.match(/.{1,8}/g)?.join(" ");
+                                         : "der: "           + (measurementValue.ocmfDocument.publicKey.value?.match(/.{1,8}/g)?.join(" ") ?? "-") + "<br /><br />" +
+                                           "x:&nbsp;&nbsp; " +  measurementValue.ocmfDocument.publicKey.x.     match(/.{1,8}/g)?.join(" ") + "<br />" +
+                                           "y:&nbsp;&nbsp; " +  measurementValue.ocmfDocument.publicKey.y.     match(/.{1,8}/g)?.join(" ");
 
         }
 
@@ -380,9 +381,9 @@ export class OCMFv1_x extends ACrypt {
                 SignatureExpectedDiv.parentElement.children[0].innerHTML  = this.chargy.GetLocalizedMessage("Expected signature") + " (rs, hex)";
             }
 
-            SignatureExpectedDiv.innerHTML = "der: " +  measurementValue.ocmfDocument?.signature.SD + "<br /><br />" +
-                                             "r:   " + (measurementValue.ocmfDocument?.signatureRS?.r?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") ?? "-") + "<br />" +
-                                             "s:   " + (measurementValue.ocmfDocument?.signatureRS?.s?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") ?? "-");
+            SignatureExpectedDiv.innerHTML = "der: "           +  measurementValue.ocmfDocument?.signature.SD.                                   match(/.{1,8}/g)?.join(" ") + "<br /><br />" +
+                                             "r:&nbsp;&nbsp; " + (measurementValue.ocmfDocument?.signatureRS?.r?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") ?? "-") + "<br />" +
+                                             "s:&nbsp;&nbsp; " + (measurementValue.ocmfDocument?.signatureRS?.s?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") ?? "-");
 
         }
 

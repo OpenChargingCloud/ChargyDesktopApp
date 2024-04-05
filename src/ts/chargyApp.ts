@@ -94,7 +94,8 @@ export class ChargyApp {
     private errorTextDiv:                  HTMLDivElement;
     private feedbackDiv:                   HTMLDivElement;
     private overlayDiv:                    HTMLDivElement;
-    private overlayOkButton:               HTMLButtonElement;
+    private overlayLeftButton:             HTMLButtonElement;
+    private overlayRightButton:            HTMLButtonElement;
     private issueTrackerDiv:               HTMLDivElement;
     private privacyStatement:              HTMLDivElement;
 
@@ -159,7 +160,8 @@ export class ChargyApp {
         this.aboutButton               = document.getElementById('aboutButton')                              as HTMLButtonElement;
         this.fullScreenButton          = document.getElementById('fullScreenButton')                         as HTMLButtonElement;
         this.appQuitButton             = document.getElementById('appQuitButton')                            as HTMLButtonElement;
-        this.overlayOkButton           = document.getElementById('overlayOkButton')                          as HTMLButtonElement;
+        this.overlayLeftButton         = document.getElementById('overlayLeftButton')                        as HTMLButtonElement;
+        this.overlayRightButton        = document.getElementById('overlayRightButton')                       as HTMLButtonElement;
         this.fileInputButton           = document.getElementById('fileInputButton')                          as HTMLButtonElement;
         this.pasteButton               = document.getElementById('pasteButton')                              as HTMLButtonElement;
 
@@ -784,9 +786,9 @@ export class ChargyApp {
 
         //#endregion
 
-        //#region Handle the 'Overlay Ok'-button
+        //#region Handle the 'Overlay Left'-button
 
-        this.overlayOkButton.onclick = (ev: MouseEvent) => {
+        this.overlayLeftButton.onclick = (ev: MouseEvent) => {
             this.overlayDiv.style.display = 'none';
         }
 
@@ -3015,56 +3017,66 @@ export class ChargyApp {
 
         function doError(text: String)
         {
-            errorDiv.innerHTML           = '<i class="fas fa-times-circle"></i> ' + text;
-            introDiv.style.display       = "none";
+            errorDiv.innerHTML          = '<i class="fas fa-times-circle"></i> ' + text;
+            introDiv.style.display      = "none";
         }
 
-        let errorDiv            = this.overlayDiv.querySelector('#error')      as HTMLDivElement;
-        let introDiv            = this.overlayDiv.querySelector('#intro')      as HTMLDivElement;
-        errorDiv.innerHTML      = "";
-        introDiv.style.display  = "block";
+        //#region Headline
 
-        if (measurementValue             == null ||
-            measurementValue.measurement == null)
+        const headlineDiv               = this.overlayDiv.querySelector('.headline')  as HTMLDivElement;
+        const errorDiv                  = headlineDiv.    querySelector('.error')     as HTMLDivElement;
+        const introDiv                  = headlineDiv.    querySelector('.intro')     as HTMLDivElement;
+        errorDiv.innerHTML              = "";
+        introDiv.style.display          = "block";
+
+        //#endregion
+
+        if (!measurementValue?.measurement ||
+            !measurementValue.method)
         {
             doError(this.chargy.GetLocalizedMessage("Unknown meter data record format!"));
+            return;
         }
-
 
         //#region Show data and result on overlay
 
         this.overlayDiv.style.display = 'block';
 
-        let cryptoDataDiv           = this.overlayDiv.querySelector('#cryptoData')                as HTMLDivElement;
-        let bufferDiv               = this.overlayDiv.querySelector('#buffer .value')             as HTMLDivElement;
-        let hashedBufferDiv         = this.overlayDiv.querySelector('#hashedBuffer .value')       as HTMLDivElement;
-        let publicKeyDiv            = this.overlayDiv.querySelector('#publicKey .value')          as HTMLDivElement;
-        let signatureExpectedDiv    = this.overlayDiv.querySelector('#signatureExpected .value')  as HTMLDivElement;
-        let signatureCheckDiv       = this.overlayDiv.querySelector('#signatureCheck')            as HTMLDivElement;
+        const dataDiv                   = this.overlayDiv.querySelector('.data')                      as HTMLDivElement;
+        const cryptoDataDiv             = dataDiv.        querySelector('#cryptoData')                as HTMLDivElement;
+        const bufferDiv                 = dataDiv.        querySelector('#buffer .value')             as HTMLDivElement;
+        const hashedBufferDiv           = dataDiv.        querySelector('#hashedBuffer .value')       as HTMLDivElement;
+        const publicKeyDiv              = dataDiv.        querySelector('#publicKey .value')          as HTMLDivElement;
+        const signatureExpectedDiv      = dataDiv.        querySelector('#signatureExpected .value')  as HTMLDivElement;
 
         cryptoDataDiv.innerHTML         = '';
         bufferDiv.innerHTML             = '';
         hashedBufferDiv.innerHTML       = '<span class="error">0x00000000000000000000000000000000000</stlye>';
         publicKeyDiv.innerHTML          = '<span class="error">0x00000000000000000000000000000000000</stlye>';
         signatureExpectedDiv.innerHTML  = '<span class="error">0x00000000000000000000000000000000000</stlye>';
-        signatureCheckDiv.innerHTML     = '';
-
-        if (measurementValue.method)
-            measurementValue.method.ViewMeasurement(measurementValue,
-                                                    introDiv,
-                                                    cryptoDataDiv,
-                                                    bufferDiv,
-                                                    hashedBufferDiv,
-                                                    publicKeyDiv,
-                                                    signatureExpectedDiv,
-                                                    signatureCheckDiv);
-
-        else
-        {
-            doError(this.chargy.GetLocalizedMessage("Unknown meter data record format!"));
-        }
 
         //#endregion
+
+        //#region Footer
+
+        const footerDiv                 = this.overlayDiv.querySelector('.footer')                    as HTMLDivElement;
+        const signatureCheckDiv         = footerDiv.      querySelector('#signatureCheck')            as HTMLDivElement;
+
+        signatureCheckDiv.innerHTML     = '';
+
+        //#endregion
+
+        measurementValue.method.ViewMeasurement(measurementValue,
+                                                errorDiv,
+                                                introDiv,
+
+                                                cryptoDataDiv,
+                                                bufferDiv,
+                                                hashedBufferDiv,
+                                                publicKeyDiv,
+                                                signatureExpectedDiv,
+
+                                                signatureCheckDiv);
 
     }
 

@@ -714,6 +714,7 @@ export class AlfenCrypt01 extends ACrypt {
     }
 
     async ViewMeasurement(measurementValue:      IAlfenMeasurementValue,
+                          errorDiv:              HTMLDivElement,
                           introDiv:              HTMLDivElement,
                           infoDiv:               HTMLDivElement,
                           PlainTextDiv:          HTMLDivElement,

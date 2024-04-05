@@ -1006,6 +1006,7 @@ export class ChargePointCrypt01 extends ACrypt {
     }
 
     async ViewMeasurement(measurementValue:      IChargepointMeasurementValue,
+                          errorDiv:              HTMLDivElement,
                           introDiv:              HTMLDivElement,
                           infoDiv:               HTMLDivElement,
                           PlainTextDiv:          HTMLDivElement,

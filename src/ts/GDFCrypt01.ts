@@ -218,6 +218,7 @@ export class GDFCrypt01 extends ACrypt {
     }
 
     async ViewMeasurement(measurementValue:      IGDFMeasurementValue,
+                          errorDiv:              HTMLDivElement,
                           introDiv:              HTMLDivElement,
                           infoDiv:               HTMLDivElement,
                           PlainTextDiv:          HTMLDivElement,

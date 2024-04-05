@@ -311,45 +311,59 @@
         <div id="overlay">
             <div id="overlayText">
 
-                <div id="error"></div>
+                <div class="headline">
 
-                <div id="intro">
-                    Folgende Daten des Ladevorgangs sind <span class="important">mess- und eichrechtsrelevant</span> und damit gemäß <span id="cryptoAlgorithm"></span> Teil der digitalen Signatur:
+                    <div class="error"></div>
+
+                    <div class="intro">
+                        Folgende Daten des Ladevorgangs sind <span class="important">mess- und eichrechtsrelevant</span> und damit gemäß <span id="cryptoAlgorithm"></span> Teil der digitalen Signatur:
+                    </div>
+
                 </div>
 
-                <div id="cryptoData"></div>
+                <div class="data">
 
-                <div id="buffer" class="infoblock">
-                    <div class="description">Puffer</div>
-                    <div class="value">0x0000000000000000000000000000000000000000000000000000000000000000</div>
+                    <div id="cryptoData"></div>
+
+                    <div id="buffer" class="infoblock">
+                        <div class="description">Puffer</div>
+                        <div class="value">0x0000000000000000000000000000000000000000000000000000000000000000</div>
+                    </div>
+
+                    <div id="hashedBuffer" class="infoblock">
+                        <div class="description">Hashed Puffer (SHA512)</div>
+                        <div class="value">0x0000000000000000000000000000000000000000000000000000000000000000</div>
+                    </div>
+
+                    <div id="publicKey" class="infoblock">
+                        <div class="description">Public Key</div>
+                        <div class="value"><span style="color: rgb(171, 30, 30)">0x0000000000000000000000000000000000000000000000000000000000000000</span></div>
+                        <div class="sigHead"></div>
+                        <div class="signatures"></div>
+                    </div>
+
+                    <div id="signatureExpected" class="infoblock">
+                        <div class="description">Erwartete Signatur</div>
+                        <div class="value">0x0000000000000000000000000000000000000000000000000000000000000000</div>
+                    </div>
+
+                    <div id="invalidSignature" class="infoblock errorblock">
+                        <div class="description">Ungültige Signatur</div>
+                        <div class="value">0x0000000000000000000000000000000000000000000000000000000000000000</div>
+                    </div>
+
                 </div>
 
-                <div id="hashedBuffer" class="infoblock">
-                    <div class="description">Hashed Puffer (SHA512)</div>
-                    <div class="value">0x0000000000000000000000000000000000000000000000000000000000000000</div>
-                </div>
+                <div class="spacer"></div>
 
-                <div id="publicKey" class="infoblock">
-                    <div class="description">Public Key</div>
-                    <div class="value"><span style="color: rgb(171, 30, 30)">0x0000000000000000000000000000000000000000000000000000000000000000</span></div>
-                    <div class="sigHead"></div>
-                    <div class="signatures"></div>
-                </div>
+                <div class="footer">
 
-                <div id="signatureExpected" class="infoblock">
-                    <div class="description">Erwartete Signatur</div>
-                    <div class="value">0x0000000000000000000000000000000000000000000000000000000000000000</div>
-                </div>
+                    <button id="overlayLeftButton"><i class="fas fa-arrow-alt-circle-left"></i></button>
 
-                <div id="invalidSignature" class="infoblock errorblock">
-                    <div class="description">Ungültige Signatur</div>
-                    <div class="value">0x0000000000000000000000000000000000000000000000000000000000000000</div>
-                </div>
+                    <div id="signatureCheck"></div>
 
-                <div id="signatureCheck"></div>
+                    <button id="overlayRightButton"><i class="fas fa-arrow-alt-circle-right"></i></button>
 
-                <div id="overlayOkButtonDiv">
-                    <button id="overlayOkButton"><i class="fas fa-arrow-alt-circle-left"></i></button>
                 </div>
 
             </div>

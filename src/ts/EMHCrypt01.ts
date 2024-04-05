@@ -233,6 +233,7 @@ export class EMHCrypt01 extends ACrypt {
     }
 
     async ViewMeasurement(measurementValue:      IEMHMeasurementValue,
+                          errorDiv:              HTMLDivElement,
                           introDiv:              HTMLDivElement,
                           infoDiv:               HTMLDivElement,
                           PlainTextDiv:          HTMLDivElement,

@@ -115,6 +115,7 @@ export abstract class ACrypt {
     abstract VerifyMeasurement    (measurementValue:        chargyInterfaces.IMeasurementValue): Promise<chargyInterfaces.ICryptoResult>;
 
     abstract ViewMeasurement      (measurementValue:        chargyInterfaces.IMeasurementValue,
+                                   errorDiv:                HTMLDivElement,
                                    introDiv:                HTMLDivElement,
                                    infoDiv:                 HTMLDivElement,
                                    bufferValue:             HTMLDivElement,
