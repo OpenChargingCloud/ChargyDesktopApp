@@ -186,6 +186,146 @@ export class OCMFv1_x extends ACrypt {
 
     }
 
+
+    private PayloadDictionary(Path: string, Key: string): string
+    {
+
+        if (Path === "RD")
+        {
+            switch (Key)
+            {
+
+                    case "TM":
+                        return "Time";
+
+                    case "TX":
+                        return "Transaction";
+
+                    case "RV":
+                        return "Reading Value";
+
+                    case "RI":
+                        return "Reading Identification";
+
+                    case "RU":
+                        return "Reading Unit";
+
+                    case "RT":
+                        return "Reading Current Type";
+
+                    case "CL":
+                        return "Cumulated Loss";
+
+                    case "EF":
+                        return "Error Flags";
+
+                    case "ST":
+                        return "Status";
+
+
+                    default:
+                        return Key;
+
+            }
+        }
+
+        switch (Key)
+        {
+
+            case "FV":
+                return "Format Version";
+
+            case "GI":
+                return "Gateway Identification";
+
+            case "GS":
+                return "Gateway Serial";
+
+            case "GV":
+                return "Gateway Version";
+
+
+            case "PG":
+                return "Pagination";
+
+
+            case "MV":
+                return "Meter Vendor";
+
+            case "MM":
+                return "Meter Model";
+
+            case "MS":
+                return "Meter Serial";
+
+            case "MF":
+                return "Meter Firmware";
+
+
+            case "IS":
+                return "Identification Status";
+
+            case "IL":
+                return "Identification Level";
+
+            case "IF":
+                return "Identification Flags";
+
+            case "IT":
+                return "Identification Type";
+
+            case "ID":
+                return "Identification Data";
+
+            case "TT":
+                return "Tariff Text";
+
+
+            case "LC":
+                return "Loss Compensation";
+
+
+            case "CT":
+                return "Charge Point Identification Type";
+
+            case "CI":
+                return "Charge Point Identification";
+
+
+            case "RD":
+                return "Reading";
+
+
+            default:
+                return Key;
+
+        }
+    }
+
+    private SignatureDictionary(Path: string, Key: string): string
+    {
+        switch (Key)
+        {
+
+            case "SA":
+                return "Signature Algorithm";
+
+            case "SE":
+                return "Signature Encoding";
+
+            case "SM":
+                return "Signature Mime Type";
+
+            case "SD":
+                return "Signature Data";
+
+
+            default:
+                return Key;
+
+        }
+    }
+
     async ViewMeasurement(measurementValue:      IOCMFv1_0MeasurementValue,
                           errorDiv:              HTMLDivElement,
                           introDiv:              HTMLDivElement,
@@ -267,9 +407,9 @@ export class OCMFv1_x extends ACrypt {
             prettyValueDiv.className = "prettyValue";
             PlainTextDiv.appendChild(prettyValueDiv);
 
-            prettyValueDiv.style.whiteSpace  = "pre";
+            //prettyValueDiv.style.whiteSpace  = "pre";
 
-            prettyValueDiv.innerHTML = '<span class="ocmfHighlight">OCMF</span><br /><span class="ocmfSeparator">|</span><br />' + chargyLib.jsonPrettyPrinter(measurementValue.ocmfDocument.payload) + '<br /><span class="ocmfSeparator">|</span><br />' + chargyLib.jsonPrettyPrinter(measurementValue.ocmfDocument.signature);
+            prettyValueDiv.innerHTML = '<span class="ocmfHighlight">OCMF</span><span class="ocmfSeparator">|</span><br />' + chargyLib.jsonPrettyPrinter(measurementValue.ocmfDocument.payload, this.PayloadDictionary) + '<span class="ocmfSeparator">|</span><br />' + chargyLib.jsonPrettyPrinter(measurementValue.ocmfDocument.signature, this.SignatureDictionary);
 
             prettyValueDiv.onclick = () => {
                 compactValueDiv.style.display = 'block';

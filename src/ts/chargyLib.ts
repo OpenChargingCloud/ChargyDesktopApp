@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import * as exp from 'node:constants';
 import * as chargyInterfaces  from './chargyInterfaces'
 import Decimal                from 'decimal.js';
 
@@ -1032,48 +1033,102 @@ export function CloneCTR(CTR: chargyInterfaces.IChargeTransparencyRecord): charg
 }
 
 
-//#region jsonPrettyPrinter(value, indentLevel = 0)
+//#region jsonPrettyPrinter(value, KeyLookup?)
 
-export function jsonPrettyPrinter(value: any, indentLevel: number = 0): string {
+export function jsonPrettyPrinter(value:       any,
+                                  KeyLookup?: (path: string, key: string) => string): string
+{
 
-    const indent = ' '.repeat(indentLevel * 4);
-    let html = '';
+    return _jsonPrettyPrinter(
+               value,
+               0,
+               "",
+               KeyLookup ?? ((path: string, key: string) => key)
+           );
+
+}
+
+function _jsonPrettyPrinter(value:        any,
+                            indentLevel:  number,
+                            path:         string,
+                            keyLookup:   (path: string, key: string) => string): string
+{
+
+    const indent = '&nbsp;'.repeat(indentLevel * 4);
+    let   html   = '';
+
+    //#region Arrays
 
     if (Array.isArray(value)) {
+
         html += '[<br />';
+
         value.forEach((item, index) => {
-            html += `${indent}    ${jsonPrettyPrinter(item, indentLevel + 1)}`;
-            if (index < value.length - 1) {
+
+            html += `${indent}&nbsp;&nbsp;&nbsp;&nbsp;${_jsonPrettyPrinter(item, indentLevel + 1, path, keyLookup)}`;
+
+            if (index < value.length - 1)
                 html += ',';
-            }
+
             html += '<br />';
+
         });
+
         html += `${indent}]`;
+
     }
+
+    //#endregion
+
+    //#region Objects
 
     else if (typeof value === 'object' && value !== null)
     {
+
         html += '{<br />';
         const keys = Object.keys(value);
-        keys.forEach((key, index) => {
-            html += `${indent}    <b>${key}</b>: ${jsonPrettyPrinter(value[key], indentLevel + 1)}`;
-            if (index < keys.length - 1) {
-                html += ',';
-            }
-            html += '<br />';
+
+        let maxKeyLength = 0;
+
+        keys.forEach(key => {
+            maxKeyLength          = Math.max(keyLookup(path, key).length + 1, maxKeyLength);
         });
+
+        keys.forEach((key, index) => {
+
+            const newPath         = path ? `${path}.${key}` : key;
+            const keyName         = keyLookup(path, key);
+            const requiredSpaces  = '&nbsp;'.repeat(maxKeyLength - keyName.length);
+            html += `${indent}&nbsp;&nbsp;&nbsp;&nbsp;${'<span class="jsonKeyName">' + keyName + '</span>' + requiredSpaces + '(<span class="jsonKey">' + key + '</span>)'}: ${_jsonPrettyPrinter(value[key], indentLevel + 1, newPath, keyLookup)}`;
+
+            if (index < keys.length - 1)
+                html += ',';
+
+            html += '<br />';
+
+        });
+
         html += `${indent}}`;
+
     }
 
-        else if (typeof value === 'string') {
-        html += `<span class="string">"${value}"</span>`;
-    } else if (typeof value === 'number') {
-        html += `<span class="number">${value}</span>`;
-    } else if (typeof value === 'boolean') {
-        html += `<span class="boolean">${value}</span>`;
-    } else {
+    //#endregion
+
+    //#region Primitive types
+
+    else if (typeof value === 'string')
+        html += `<span class="jsonString">"${value}"</span>`;
+
+    else if (typeof value === 'number')
+        html += `<span class="jsonNumber">${value}</span>`;
+
+    else if (typeof value === 'boolean')
+        html += `<span class="jsonBoolean">${value}</span>`;
+
+    //#endregion
+
+    else
         html += value;
-    }
 
     return html;
 

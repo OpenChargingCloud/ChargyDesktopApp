@@ -1480,6 +1480,10 @@ body {
 
                 .headline {
 
+                    .error {
+                        color: #bd0000;
+                    }
+
                     .intro {
 
                         margin:                 5px 0px 10px 0px;
@@ -1613,22 +1617,25 @@ body {
 
                                 display:            none;
 
-                                .string {
-                                    color:            rgb(174, 45, 45)
+                                .jsonKey {
+                                    font-weight:      bold;
                                 }
 
-                                .number {
+                                .jsonString {
+                                    color:            rgb(56, 56, 144)
+                                }
+
+                                .jsonNumber {
                                     color:            rgb(43, 110, 43)
                                 }
 
-                                .boolean {
-                                    color:            rgb(56, 56, 144)
+                                .jsonBoolean {
+                                    color:            rgb(174, 45, 45)
                                 }
 
                             }
 
                         }
-
 
                     }
 
@@ -1719,10 +1726,6 @@ body {
                         color:            #519ad0;
                     }
 
-                }
-
-                .error {
-                    color: #bd0000;
                 }
 
             }
