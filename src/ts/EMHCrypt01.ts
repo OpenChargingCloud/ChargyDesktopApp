@@ -253,10 +253,19 @@ export class EMHCrypt01 extends ACrypt {
             }
         }
 
-        const result     = measurementValue.result as IEMHCrypt01Result;
+        const result = measurementValue.result as IEMHCrypt01Result;
 
-        const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
-        cryptoSpan.innerHTML = "EMHCrypt01 (" + this.description + ")";
+        //#region Headline / Introduction
+
+        if (introDiv)
+        {
+            introDiv.innerHTML = this.chargy.GetLocalizedMessage("The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature").
+                                            replace("{methodName}",       "EMHCrypt01").
+                                            replace("{cryptoAlgorithm}",   this.description);
+        }
+
+        //#endregion
+
 
         //#region Plain text
 
@@ -405,6 +414,7 @@ export class EMHCrypt01 extends ACrypt {
         }
 
         //#endregion
+
 
         //#region Signature check
 

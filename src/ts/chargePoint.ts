@@ -1030,14 +1030,23 @@ export class ChargePointCrypt01 extends ACrypt {
         const chargingSession    = measurementValue?.measurement?.chargingSession;
         const result             = measurementValue.result as IChargePointCrypt01Result;
         const algorithmName      = (typeof chargingSession?.publicKey?.algorithm === "object")
-                                        ? chargingSession?.publicKey?.algorithm.name
-                                        : chargingSession?.publicKey?.algorithm;
+                                        ? chargingSession?.publicKey?.algorithm.name ?? ""
+                                        : chargingSession?.publicKey?.algorithm      ?? "";
         const algorithmType      = (typeof chargingSession?.publicKey?.type      === "object")
                                         ? chargingSession?.publicKey?.type.name
                                         : chargingSession?.publicKey?.type;
 
-        const cryptoSpan         = introDiv?.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
-        cryptoSpan.innerHTML   = "ChargePointCrypt01 (" + algorithmName + ")";
+        //#region Headline / Introduction
+
+        if (introDiv)
+        {
+            introDiv.innerHTML = this.chargy.GetLocalizedMessage("The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature").
+                                            replace("{methodName}",       "ChargePointCrypt01").
+                                            replace("{cryptoAlgorithm}",   algorithmName);
+        }
+
+        //#endregion
+
 
         //#region Plain text
 
@@ -1198,6 +1207,7 @@ export class ChargePointCrypt01 extends ACrypt {
         }
 
         //#endregion
+
 
         //#region Signature check
 

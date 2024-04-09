@@ -726,8 +726,17 @@ export class AlfenCrypt01 extends ACrypt {
 
         const result     = measurementValue.result as IAlfenCrypt01Result;
 
-        const cryptoSpan = introDiv.querySelector('#cryptoAlgorithm') as HTMLSpanElement;
-        cryptoSpan.innerHTML = "AlfenCrypt01 (" + this.description + ")";
+        //#region Headline / Introduction
+
+        if (introDiv)
+        {
+            introDiv.innerHTML = this.chargy.GetLocalizedMessage("The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature").
+                                            replace("{methodName}",       "AlfenCrypt01").
+                                            replace("{cryptoAlgorithm}",   this.description);
+        }
+
+        //#endregion
+
 
         //#region Plain text
 
@@ -876,6 +885,7 @@ export class AlfenCrypt01 extends ACrypt {
         }
 
         //#endregion
+
 
         //#region Signature check
 
