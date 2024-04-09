@@ -712,7 +712,7 @@ export class Chargy {
                         processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
                         if (processedFile.result.status &&
-                           (processedFile.result.status === chargyInterfaces.SessionVerificationResult.Unvalidated ||
+                           (//processedFile.result.status === chargyInterfaces.SessionVerificationResult.Unvalidated ||
                             processedFile.result.status === chargyInterfaces.SessionVerificationResult.InvalidSignature))
                         {
                             processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
