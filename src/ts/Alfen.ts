@@ -99,7 +99,7 @@ export class Alfen  {
                 if (elements?.length != 6 && elements?.length != 7)
                     return {
                         status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   "Invalid number of array elements!",
+                        message:   this.chargy.GetLocalizedMessage("Invalid number of signed meter values!"),
                         certainty: 0
                     };
 
@@ -116,7 +116,7 @@ export class Alfen  {
                 else if (elements[3] !== common.PublicKey)
                     return {
                         status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   "Inconsistent public keys!",
+                        message:   this.chargy.GetLocalizedMessage("Inconsistent public keys!"),
                         certainty: 0
                     };
 
@@ -130,7 +130,7 @@ export class Alfen  {
                 {
                     return {
                         status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   "Invalid data format!",
+                        message:   this.chargy.GetLocalizedMessage("Invalid charging session format!"),
                         certainty: 0
                     };
                 }
@@ -164,88 +164,88 @@ export class Alfen  {
                     common.AdapterId = AdapterId;
                 else if (AdapterId !== common.AdapterId)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent adapter identification!",
-                        certainty: 0
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:    this.chargy.GetLocalizedMessage("Inconsistent Alfen adapter identification!"),
+                        certainty:  0
                     };
 
                 if (common.AdapterFWVersion === "")
                     common.AdapterFWVersion = AdapterFWVersion;
                 else if (AdapterFWVersion !== common.AdapterFWVersion)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent adapter firmware version!",
-                        certainty: 0
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:    this.chargy.GetLocalizedMessage("Inconsistent Alfen adapter firmware version!"),
+                        certainty:  0
                     };
 
                 if (common.AdapterFWChecksum === "")
                     common.AdapterFWChecksum = AdapterFWChecksum;
                 else if (AdapterFWChecksum !== common.AdapterFWChecksum)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent adapter firmware checksum!",
-                        certainty: 0
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:    this.chargy.GetLocalizedMessage("Inconsistent Alfen adapter firmware checksum!"),
+                        certainty:  0
                     };
 
                 if (common.MeterId === "")
                     common.MeterId = MeterId;
                 else if (MeterId !== common.MeterId)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent meter identification!",
-                        certainty: 0
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:    this.chargy.GetLocalizedMessage("Inconsistent meter identification!"),
+                        certainty:  0
                     };
 
                 if (common.ObisId === "")
                     common.ObisId = ObisId;
                 else if (ObisId !== common.ObisId)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent OBIS identification!",
-                        certainty: 0
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:    this.chargy.GetLocalizedMessage("Inconsistent OBIS code!"),
+                        certainty:  0
                     };
 
                 if (common.UnitEncoded === 0)
                     common.UnitEncoded = UnitEncoded;
                 else if (UnitEncoded !== common.UnitEncoded)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent unit (encoded) value!",
-                        certainty: 0
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:    this.chargy.GetLocalizedMessage("Inconsistent unit (encoded) value!"),
+                        certainty:  0
                     };
 
                 if (common.Scalar === "")
                     common.Scalar = Scalar;
                 else if (Scalar !== common.Scalar)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent measurement scalar!",
-                        certainty: 0
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:    this.chargy.GetLocalizedMessage("Inconsistent measurement scalar!"),
+                        certainty:  0
                     };
 
                 if (common.UID === "")
                     common.UID = UID;
                 else if (UID !== common.UID)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent user identification!",
-                        certainty: 0
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:    this.chargy.GetLocalizedMessage("Inconsistent user identification!"),
+                        certainty:  0
                     };
 
                 if (common.InternalSessionId === 0)
                     common.InternalSessionId = InternalSessionId;
                 else if (InternalSessionId !== common.InternalSessionId)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:  "Inconsistent internal charging session identification!",
-                        certainty: 0
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                        message:    this.chargy.GetLocalizedMessage("Inconsistent internal charging session identification!"),
+                        certainty:  0
                     };
 
                 if (previousTimestamp !== "" && previousTimestamp > Timestamp)
                     return {
-                        status:   chargyInterfaces.SessionVerificationResult.InconsistentTimestamps,
-                        message:  "Inconsistent timestamps!",
-                        certainty: 0
+                        status:     chargyInterfaces.SessionVerificationResult.InconsistentTimestamps,
+                        message:    this.chargy.GetLocalizedMessage("Inconsistent timestamps!"),
+                        certainty:  0
                     };
                 else
                     previousTimestamp = Timestamp;
@@ -428,9 +428,9 @@ export class Alfen  {
         catch (exception)
         {
             return {
-                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
-                certainty: 0
+                status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:    this.chargy.GetLocalizedMessage("Exception occured: ") + (exception instanceof Error ? exception.message : exception),
+                certainty:  0
             }
         }
 
@@ -731,8 +731,8 @@ export class AlfenCrypt01 extends ACrypt {
         if (introDiv)
         {
             introDiv.innerHTML = this.chargy.GetLocalizedMessage("The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature").
-                                            replace("{methodName}",       "AlfenCrypt01").
-                                            replace("{cryptoAlgorithm}",   this.description);
+                                             replace("{methodName}",       "AlfenCrypt01").
+                                             replace("{cryptoAlgorithm}",   this.description);
         }
 
         //#endregion
@@ -747,7 +747,7 @@ export class AlfenCrypt01 extends ACrypt {
                 PlainTextDiv.parentElement &&
                 PlainTextDiv.parentElement.children[0])
             {
-                PlainTextDiv.parentElement.children[0].innerHTML = "Plain text (320 Bytes, hex)";
+                PlainTextDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Plain text") + " (320 Bytes, hex)";
             }
 
             PlainTextDiv.style.fontFamily  = "";
@@ -755,25 +755,25 @@ export class AlfenCrypt01 extends ACrypt {
             PlainTextDiv.style.maxHeight   = "";
             PlainTextDiv.style.overflowY   = "";
 
-            this.CreateLine("Adapter Id",                  measurementValue.measurement.adapterId,                                                   result.adapterId              || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Adapter Firmware Version",    measurementValue.measurement.adapterFWVersion,                                            result.adapterFWVersion       || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Adapter Firmware Prüfsumme",  measurementValue.measurement.adapterFWChecksum,                                           result.adapterFWChecksum      || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Zählernummer",                measurementValue.measurement.energyMeterId,                                               result.meterId                || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Meter status",                chargyLib.hex2bin(measurementValue.statusMeter, true) + " (" + measurementValue.statusMeter + " hex)<br /><span class=\"statusInfos\">" +
-                                                           this.DecodeMeterStatus(measurementValue.statusMeter).join("<br />") + "</span>",
-                                                                                                                                                     result.statusMeter            || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Adapter status",              chargyLib.hex2bin(measurementValue.statusAdapter, true) + " (" + measurementValue.statusAdapter + " hex)<br /><span class=\"statusInfos\">" +
-                                                           this.DecodeAdapterStatus(measurementValue.statusAdapter).join("<br />") + "</span>",    
-                                                                                                                                                     result.statusAdapter          || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Sekundenindex",               measurementValue.secondsIndex,                                                            result.secondsIndex           || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Zeitstempel",                 chargyLib.UTC2human(measurementValue.timestamp),                                          result.timestamp              || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("OBIS-Kennzahl",               measurementValue.measurement.obis,                                                        result.obisId                 || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Einheit (codiert)",           measurementValue.measurement.unitEncoded ?? 0,                                            result.unitEncoded            || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Skalierung",                  measurementValue.measurement.scale,                                                       result.scalar                 || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Messwert",                    measurementValue.value + " Wh",                                                           result.value                  || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Autorisierung",              (measurementValue.measurement.chargingSession?.authorizationStart["@id"] ?? "") + " hex",  chargyLib.pad(result.uid, 20) || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("SessionId",                  (measurementValue.measurement.chargingSession?.["@id"] ?? ""),                             result.sessionId              || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Paginierungszähler",          measurementValue.paginationId,                                                            result.paging                 || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Adapter Id",                 measurementValue.measurement.adapterId,                                                   result.adapterId              || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Adapter Firmware Version",   measurementValue.measurement.adapterFWVersion,                                            result.adapterFWVersion       || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Adapter Firmware Checksum",  measurementValue.measurement.adapterFWChecksum,                                           result.adapterFWChecksum      || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Meter number",               measurementValue.measurement.energyMeterId,                                               result.meterId                || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Meter status",               chargyLib.hex2bin(measurementValue.statusMeter, true) + " (" + measurementValue.statusMeter + " hex)<br /><span class=\"statusInfos\">" +
+                                                                   this.DecodeMeterStatus(measurementValue.statusMeter).join("<br />") + "</span>",
+                                                                                                                                                            result.statusMeter            || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Adapter status",             chargyLib.hex2bin(measurementValue.statusAdapter, true) + " (" + measurementValue.statusAdapter + " hex)<br /><span class=\"statusInfos\">" +
+                                                                   this.DecodeAdapterStatus(measurementValue.statusAdapter).join("<br />") + "</span>",    
+                                                                                                                                                             result.statusAdapter          || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Seconds index",               measurementValue.secondsIndex,                                                            result.secondsIndex           || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Timestamp",                   chargyLib.UTC2human(measurementValue.timestamp),                                          result.timestamp              || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("OBIS code",                   measurementValue.measurement.obis,                                                        result.obisId                 || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Unit (encoded)",              measurementValue.measurement.unitEncoded ?? 0,                                            result.unitEncoded            || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Scaling",                     measurementValue.measurement.scale,                                                       result.scalar                 || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Measurement Value",           measurementValue.value + " Wh",                                                           result.value                  || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Authorization",              (measurementValue.measurement.chargingSession?.authorizationStart["@id"] ?? "") + " hex",  chargyLib.pad(result.uid, 20) || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("SessionId",                  (measurementValue.measurement.chargingSession?.["@id"] ?? ""),                             result.sessionId              || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Pagination counter",          measurementValue.paginationId,                                                            result.paging                 || "",  infoDiv, PlainTextDiv);
 
         }
 
@@ -787,7 +787,7 @@ export class AlfenCrypt01 extends ACrypt {
             if (HashedPlainTextDiv.parentElement &&
                 HashedPlainTextDiv.parentElement.children[0])
             {
-                HashedPlainTextDiv.parentElement.children[0].innerHTML = "Hashed plain text (SHA256, hex)";
+                HashedPlainTextDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Hashed plain text") + " (SHA256, hex)";
             }
 
             HashedPlainTextDiv.innerHTML = result.hashValue.match(/.{1,8}/g).join(" ");
@@ -807,7 +807,7 @@ export class AlfenCrypt01 extends ACrypt {
                 PublicKeyDiv.parentElement &&
                 PublicKeyDiv.parentElement.children[0])
             {
-                PublicKeyDiv.parentElement.children[0].innerHTML = "Public Key (" +
+                PublicKeyDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Public Key") + " (" +
                                                                    (result.publicKeyFormat
                                                                        ? result.publicKeyFormat + ", "
                                                                        : "") +
@@ -815,7 +815,7 @@ export class AlfenCrypt01 extends ACrypt {
             }
 
             if (!chargyLib.IsNullOrEmpty(result.publicKey))
-                PublicKeyDiv.innerHTML                                 = result.publicKey.match(/.{1,4}/g)?.join(" ") ?? "";
+                PublicKeyDiv.innerHTML                           = result.publicKey.match(/.{1,4}/g)?.join(" ") ?? "";
 
         }
 
@@ -872,7 +872,7 @@ export class AlfenCrypt01 extends ACrypt {
                 SignatureExpectedDiv.parentElement &&
                 SignatureExpectedDiv.parentElement.children[0])
             {
-                SignatureExpectedDiv.parentElement.children[0].innerHTML = "Erwartete Signatur (" + (result.signature.format ?? "") + ", hex)";
+                SignatureExpectedDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Expected signature") + " (" + (result.signature.format ?? "") + ", hex)";
             }
 
             if (result.signature.r && result.signature.s)
@@ -895,32 +895,32 @@ export class AlfenCrypt01 extends ACrypt {
             {
 
                 case chargyInterfaces.VerificationResult.UnknownCTRFormat:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">' + this.chargy.GetLocalizedMessage("Unknown charge transparency data format!") + '</div>';
                     break;
 
                 case chargyInterfaces.VerificationResult.EnergyMeterNotFound:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">' + this.chargy.GetLocalizedMessage("Invalid energy meter") + '</div>';
                     break;
 
                 case chargyInterfaces.VerificationResult.PublicKeyNotFound:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">' + this.chargy.GetLocalizedMessage("Public key not found") + '</div>';
                     break;
 
                 case chargyInterfaces.VerificationResult.InvalidPublicKey:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">' + this.chargy.GetLocalizedMessage("Invalid public key") + '</div>';
                     break;
 
                 case chargyInterfaces.VerificationResult.InvalidSignature:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">' + this.chargy.GetLocalizedMessage("Invalid signature") + '</div>';
                     break;
 
                 case chargyInterfaces.VerificationResult.ValidSignature:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">' + this.chargy.GetLocalizedMessage("Valid signature") + '</div>';
                     break;
 
 
                 default:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
+                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">' + this.chargy.GetLocalizedMessage("Invalid signature") + '</div>';
                     break;
 
             }
@@ -938,25 +938,25 @@ export class AlfenCrypt01 extends ACrypt {
     private DecodeMeterStatus(statusValueHex: string) : Array<string>
     {
 
-        let statusArray:string[] = [];
+        const statusArray:string[] = [];
 
         try
         {
 
-            let status = parseInt(statusValueHex, 16);
+            const status = parseInt(statusValueHex, 16);
 
             //#region Status flags MID meter   (Bit  0-15)
 
             // see also: DZG DVH4013 paragraph 13.2.1
 
             if ((status &    1) ==    1)
-                statusArray.push("RTC error");          // Non-fatal error
+                statusArray.push(this.chargy.GetLocalizedMessage("RTC error"));          // Non-fatal error
 
             if ((status &    2) ==    2)
-                statusArray.push("EEPROM error");       // Fatal error!
+                statusArray.push(this.chargy.GetLocalizedMessage("EEPROM error"));       // Fatal error!
 
             if ((status &    4) ==    4)
-                statusArray.push("Dataflash error");    // Fatal error!
+                statusArray.push(this.chargy.GetLocalizedMessage("Dataflash error"));    // Fatal error!
 
             // reserved     8
             // reserved    16
@@ -965,16 +965,16 @@ export class AlfenCrypt01 extends ACrypt {
             // reserved   128
 
             if ((status &  256) ==  256)
-                statusArray.push("Phase L1 failure");
+                statusArray.push(this.chargy.GetLocalizedMessage("Phase L1 failure"));
 
             if ((status &  512) ==  512)
-                statusArray.push("Phase L2 failure");
+                statusArray.push(this.chargy.GetLocalizedMessage("Phase L2 failure"));
 
             if ((status & 1024) == 1024)
-                statusArray.push("Phase L3 failure");
+                statusArray.push(this.chargy.GetLocalizedMessage("Phase L3 failure"));
 
             if ((status & 2048) == 2048)
-                statusArray.push("Phase sequence wrong");
+                statusArray.push(this.chargy.GetLocalizedMessage("Phase sequence wrong"));
 
             // reserved  4096
             // reserved  8192
@@ -986,7 +986,7 @@ export class AlfenCrypt01 extends ACrypt {
         }
         catch (exception)
         {
-            statusArray.push("Invalid meter status!");
+            statusArray.push(this.chargy.GetLocalizedMessage("Invalid meter status!"));
         }
 
         return statusArray;
@@ -1000,17 +1000,17 @@ export class AlfenCrypt01 extends ACrypt {
     private DecodeAdapterStatus(statusValueHex: string) : Array<string>
     {
 
-        let statusArray:string[] = [];
+        const statusArray:string[] = [];
 
         try
         {
 
-            let status = parseInt(statusValueHex, 16);
+            const status = parseInt(statusValueHex, 16);
 
             //#region Status flags LMN adapter (Bit 16-31)
 
             if ((status & 1) == 1)
-                statusArray.push("Adapter fatal error");
+                statusArray.push(this.chargy.GetLocalizedMessage("Adapter fatal error"));
 
             // reserved     2
             // reserved     4
@@ -1024,29 +1024,29 @@ export class AlfenCrypt01 extends ACrypt {
 
             // Ensures, that no energy has been consumed between charging sessions!
             if ((status &  1024) ==  1024)
-                statusArray.push("Stop and Start Meter reading mismatch");
+                statusArray.push(this.chargy.GetLocalizedMessage("Stop and Start Meter reading mismatch"));
 
             if ((status &  2048) ==  2048)
-                statusArray.push("Intermediate command");
+                statusArray.push(this.chargy.GetLocalizedMessage("Intermediate command"));
 
             if ((status &  4096) ==  4096)
-                statusArray.push("Stop charge command");
+                statusArray.push(this.chargy.GetLocalizedMessage("Stop charge command"))
 
             if ((status &  8192) ==  8192)
-                statusArray.push("Start charge command");
+                statusArray.push(this.chargy.GetLocalizedMessage("Start charge command"));
 
             if ((status & 16384) == 16384)
-                statusArray.push("Adapter memory error");
+                statusArray.push(this.chargy.GetLocalizedMessage("Adapter memory error"));
 
             if ((status & 32768) == 32768)
-                statusArray.push("Meter communication error");
+                statusArray.push(this.chargy.GetLocalizedMessage("Meter communication error"));
 
             //#endregion
 
         }
         catch (exception)
         {
-            statusArray.push("Invalid status!");
+            statusArray.push(this.chargy.GetLocalizedMessage("Invalid status!"));
         }
 
         return statusArray;

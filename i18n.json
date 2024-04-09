@@ -36,6 +36,16 @@
         "en": "No charge transparency records found!"
     },
 
+    "Invalid number of signed meter values!" : {
+        "de": "Ungültige Anzahl signierter Messwerte!",
+        "en": "Invalid number of signed meter values!"
+    },
+
+    "Invalid charging session format!": {
+        "de": "Ungültiges Ladevorgangsformat!",
+        "en": "Invalid charging session format!"
+    },
+
     "Unknown or invalid charge transparency record!": {
         "de": "Unbekannter oder ungültiger Transparenzdatensatz!",
         "en": "Unknown or invalid charge transparency record!"
@@ -59,6 +69,11 @@
     "UnknownOrInvalidChargingSessionFormat": {
         "de": "Unbekanntes oder ungültiges Ladevorgangsformat!",
         "en": "Unknown or invalid charging session format!"
+    },
+
+    "Inconsistent public keys!": {
+        "de": "Inkonsistente öffentliche Schlüssel!",
+        "en": "Inconsistent public keys!"
     },
 
     "ValidChargingSession": {
@@ -96,6 +111,11 @@
     "OBIS code": {
         "de": "OBIS-Kennzahl",
         "en": "OBIS code"
+    },
+
+    "Inconsistent OBIS code!": {
+        "de": "Inkonsistente OBIS-Kennzahl!",
+        "en": "Inconsistent OBIS code!"
     },
 
     "Plain text": {
@@ -269,6 +289,11 @@
     "MissingOrInvalid_SignedMeterValue_MeterInfoP": {
         "de": "Fehlende oder ungültige Zählerinformationen im %p. signierten Messwert!",
         "en": "Missing or invalid meter information within the %p. signed meter value!"
+    },
+
+    "Inconsistent meter identification!": {
+        "de": "Inkonsistente Zähleridentifikation!",
+        "en": "Inconsistent meter identification!"
     },
 
     "MissingOrInvalid_SignedMeterValue_MeterInfo_MeterIdP": {
@@ -658,6 +683,11 @@
         "en": "Unknown charge transparency data format!"
     },
 
+    "Invalid energy meter": {
+        "de": "Ungültiger Energiezähler",
+        "en": "Invalid energy meter"
+    },
+
     "Energy meter not found": {
         "de": "Energiezähler nicht gefunden",
         "en": "Energy meter not found"
@@ -731,6 +761,207 @@
     "End value": {
         "de": "Endwert",
         "en": "End value"
+    },
+
+    "Inconsistent Alfen adapter identification!": {
+        "de": "Inkonsistente Alfen-Adapter-Identifikation!",
+        "en": "Inconsistent Alfen adapter identification!"
+    },
+
+    "Inconsistent Alfen adapter firmware version!": {
+        "de": "Inkonsistente Alfen-Adapter-Firmwareversion!",
+        "en": "Inconsistent Alfen adapter firmware version!"
+    },
+
+    "Inconsistent Alfen adapter firmware checksum!": {
+        "de": "Inkonsistente Alfen-Adapter-Firmware-Prüfsumme!",
+        "en": "Inconsistent Alfen adapter firmware checksum!"
+    },
+
+    "Inconsistent unit (encoded) value!" : {
+        "de": "Inkonsistenter (enkodierter) Einheitenwert!",
+        "en": "Inconsistent unit (encoded) value!"
+    },
+
+    "Inconsistent measurement scalar!" : {
+        "de": "Inkonsistenter Messwert-Skalierungsfaktor!",
+        "en": "Inconsistent measurement scalar!"
+    },
+
+    "Inconsistent user identification!" : {
+        "de": "Inkonsistente Benutzeridentifikation!",
+        "en": "Inconsistent user identification!"
+    },
+
+    "Inconsistent internal charging session identification!" : {
+        "de": "Inkonsistente interne Ladevorgangsidentifikation!",
+        "en": "Inconsistent internal charging session identification!"
+    },
+
+    "Inconsistent timestamps!": {
+        "de": "Inkonsistente Zeitstempel!",
+        "en": "Inconsistent timestamps!"
+    },
+
+    "Exception occured: ": {
+        "de": "Ausnahmefehler aufgetreten: ",
+        "en": "Exception occured: "
+    },
+
+    "Hashed plain text": {
+        "de": "Gehashter Klartext",
+        "en": "Hashed plain text"
+    },
+
+    "Adapter Id": {
+        "de": "Adapter-Identifikation",
+        "en": "Adapter Id"
+    },
+
+    "Adapter Firmware Version": {
+        "de": "Adapter-Firmware-Version",
+        "en": "Adapter Firmware Version"
+    },
+
+    "Adapter Firmware Checksum": {
+        "de": "Adapter-Firmware-Prüfsumme",
+        "en": "Adapter Firmware Checksum"
+    },
+
+    "Meter number": {
+        "de": "Zählernummer",
+        "en": "Meter number"
+    },
+
+    "Meter status": {
+        "de": "Zählerstatus",
+        "en": "Meter status"
+    },
+
+    "Adapter status": {
+        "de": "Adapterstatus",
+        "en": "Adapter status"
+    },
+
+    "Seconds index": {
+        "de": "Sekundenindex",
+        "en": "Seconds index"
+    },
+
+    "Timestamp": {
+        "de": "Zeitstempel",
+        "en": "Timestamp"
+    },
+
+    "Unit (encoded)": {
+        "de": "Einheit (codiert)",
+        "en": "Unit (encoded)"
+    },
+
+    "Scaling": {
+        "de": "Skalierung",
+        "en": "Scaling"
+    },
+
+    "Measurement Value": {
+        "de": "Messwert",
+        "en": "Measurement Value"
+    },
+
+    "Autorisierung":
+    {
+        "de": "Autorisierung",
+        "en": "Authorization"
+    },
+
+    "SessionId": {
+        "de": "SessionId",
+        "en": "SessionId"
+    },
+
+    "Pagination counter": {
+        "de": "Paginierungszähler",
+        "en": "Pagination counter"
+    },
+
+    "Invalid meter status!": {
+        "de": "Ungültiger Zählerstatus!",
+        "en": "Invalid meter status!"
+    },
+
+    "RTC error": {
+        "de": "RTC-Fehler",
+        "en": "RTC error"
+    },
+
+    "EEPROM error": {
+        "de": "EEPROM-Fehler",
+        "en": "EEPROM error"
+    },
+
+    "Dataflash error": {
+        "de": "Dataspeicher-Fehler",
+        "en": "Dataflash error"
+    },
+
+    "Phase L1 failure": {
+        "de": "Phasenausfall L1",
+        "en": "Phase L1 failure"
+    },
+
+    "Phase L2 failure": {
+        "de": "Phasenausfall L2",
+        "en": "Phase L2 failure"
+    },
+
+    "Phase L3 failure": {
+        "de": "Phasenausfall L3",
+        "en": "Phase L3 failure"
+    },
+
+    "Phase sequence wrong": {
+        "de": "Falsche Phasenfolge",
+        "en": "Phase sequence wrong"
+    },
+
+    "Adapter fatal error": {
+        "de": "Schwerer Adapter-Fehler",
+        "en": "Adapter fatal error"
+    },
+
+    "Stop and Start Meter reading mismatch": {
+        "de": "Start- und Endzählerstand stimmen nicht überein",
+        "en": "Stop and Start Meter reading mismatch"
+    },
+
+    "Intermediate command": {
+        "de": "Zwischenbefehl",
+        "en": "Intermediate command"
+    },
+
+    "Stop charge command": {
+        "de": "Ladevorgang beenden",
+        "en": "Stop charge command"
+    },
+
+    "Start charge command": {
+        "de": "Ladevorgang starten",
+        "en": "Start charge command"
+    },
+
+    "Adapter memory error": {
+        "de": "Adapter-Speicherfehler",
+        "en": "Adapter memory error"
+    },
+
+    "Meter communication error": {
+        "de": "Zählerkommunikationsfehler",
+        "en": "Meter communication error"
+    },
+
+    "Invalid status!": {
+        "de": "Ungültiger Status!",
+        "en": "Invalid status!"
     }
 
 }

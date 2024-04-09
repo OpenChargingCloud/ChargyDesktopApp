@@ -65,6 +65,21 @@ export abstract class ACrypt {
 
     //#region Protected methods
 
+    protected CreateLocalizedLine(id:         string,
+                                  value:      string|number,
+                                  valueHEX:   string,
+                                  infoDiv:    HTMLDivElement,
+                                  bufferDiv:  HTMLDivElement)
+    {
+
+        var lineDiv = chargyLib.CreateDiv(infoDiv, "row");
+                      chargyLib.CreateDiv(lineDiv, "id",    this.chargy.GetLocalizedMessage(id));
+                      chargyLib.CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value?.toString()));
+
+        this.AddToVisualBuffer(valueHEX, bufferDiv, lineDiv);
+
+    }
+
     protected CreateLine(id:         string,
                          value:      string|number,
                          valueHEX:   string,
