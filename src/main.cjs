@@ -288,10 +288,6 @@ ipcMain.on('getAppFileNames', (event) => {
     event.returnValue = [ applicationFileName, appAsarFileName ];
 });
 
-ipcMain.on('getAppVersion', (event) => {
-    event.returnValue = app.getVersion();
-});
-
 ipcMain.on('getAppEdition', (event) => {
     event.returnValue = applicationEdition;
 });

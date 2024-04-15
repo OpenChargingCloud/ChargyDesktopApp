@@ -1381,6 +1381,7 @@ body {
 
                 #feedback {
 
+                    display:            none;
                     width:              100%;
                     padding:            20px 20px 40px 20px;
                     width:              calc(100% - 40px);
@@ -1424,6 +1425,7 @@ body {
                         }
 
                         #eMail {
+                            display:            none;
                             i {
                                 position:           relative;
                                 top:                1px;
@@ -1431,6 +1433,7 @@ body {
                         }
 
                         #hotline {
+                            display:            none;
                             i {
                                 position:           relative;
                                 top:                2px;
@@ -1442,10 +1445,6 @@ body {
 
                 }
 
-            }
-
-            #clear {
-                clear:          both;
             }
 
         }
@@ -1752,7 +1751,7 @@ body {
                 position:               relative;
                 top:                    5%;
                 width:                  calc(90% - 20px);
-                height:                 calc(90% - 50px);                
+                height:                 calc(90% - 50px);
                 margin:                 auto;
                 padding:                1px;
                 background-color:     #f5f5f5;

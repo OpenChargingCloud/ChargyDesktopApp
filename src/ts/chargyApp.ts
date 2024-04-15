@@ -42,7 +42,6 @@ export class ChargyApp {
 
     public  appEdition:                    string              = "";
     public  copyright:                     string              = "";
-    public  appVersion:                    string              = "";
     public  versionsURL:                   string              = "";
     public  defaultFeedbackEMail:          string[]            = [];
     public  defaultFeedbackHotline:        string[]            = [];
@@ -171,7 +170,6 @@ export class ChargyApp {
         this.exportButtonDiv           = document.getElementById('exportButtonDiv')                          as HTMLDivElement;
         this.exportButton              = this.exportButtonDiv.   querySelector("#exportButton")              as HTMLButtonElement;
 
-        this.appVersion                = this.ipcRenderer.sendSync('getAppVersion')     ?? "";
         this.appEdition                = this.ipcRenderer.sendSync('getAppEdition')     ?? "";
         this.copyright                 = this.ipcRenderer.sendSync('getCopyright')      ?? "&copy; 2018-2024 GraphDefined GmbH";
         this.versionsURL               = versionsURL                                    ?? "https://open.charging.cloud/chargy/desktop/versions";
@@ -211,10 +209,10 @@ export class ChargyApp {
         //#region Set infos of the about section
 
             (this.softwareInfosDiv. querySelector("#appEdition")             as HTMLSpanElement).innerHTML = this.appEdition;
-            (this.softwareInfosDiv. querySelector("#appVersion")             as HTMLSpanElement).innerHTML = this.appVersion;
+            (this.softwareInfosDiv. querySelector("#appVersion")             as HTMLSpanElement).innerHTML = this.packageJson.version;
             (this.softwareInfosDiv. querySelector("#copyright")              as HTMLSpanElement).innerHTML = this.copyright;
 
-            (this.openSourceLibsDiv.querySelector("#chargyVersion")          as HTMLSpanElement).innerHTML = this.appVersion;
+            (this.openSourceLibsDiv.querySelector("#chargyVersion")          as HTMLSpanElement).innerHTML = this.packageJson.version;
 
         if (this.packageJson.devDependencies)
         {
@@ -276,7 +274,7 @@ export class ChargyApp {
                 let   data:any      = {};
 
                 data["timestamp"]                  = new Date().toISOString();
-                data["chargyVersion"]              = this.appVersion;
+                data["chargyVersion"]              = this.packageJson.version;
                 data["platform"]                   = process.platform;
 
                 data["invalidCTR"]                 = (newIssueForm.querySelector("#invalidCTR")                as HTMLInputElement).checked;
@@ -413,7 +411,7 @@ export class ChargyApp {
                                 for (let version of this.currentAppInfos.versions)
                                 {
 
-                                    const thisVersion    = this.appVersion.split('.');
+                                    const thisVersion    = this.packageJson.version.split('.');
                                     const remoteVersion  = version.version.split('.');
 
                                     //#region Find current version package
@@ -1147,11 +1145,19 @@ export class ChargyApp {
 
         //#region Issue Tracker
 
-        this.showIssueTrackerButton.onclick = (ev: MouseEvent) => {
-            this.issueTrackerDiv.style.display   = 'block';
-            this.privacyStatement.style.display  = "none";
-            this.issueTrackerText.scrollTop = 0;
+        if (this.defaultIssueURL !== "")
+        {
+
+            this.showIssueTrackerButton.style.display = "block";
+
+            this.showIssueTrackerButton.onclick = (ev: MouseEvent) => {
+                this.issueTrackerDiv.style.display    = 'block';
+                this.privacyStatement.style.display   = "none";
+                this.issueTrackerText.scrollTop       = 0;
+            }
         }
+        else
+            this.showIssueTrackerButton.style.display = "none";
 
         //#endregion
 
@@ -1161,9 +1167,12 @@ export class ChargyApp {
 
         if (feedbackEMail && feedbackEMail.length == 2)
         {
-            this.feedbackEMailAnchor.href       = "mailto:" + feedbackEMail[0] + feedbackEMail[1];
-            this.feedbackEMailAnchor.innerHTML += feedbackEMail[0];
+            this.feedbackEMailAnchor.style.display = "block";
+            this.feedbackEMailAnchor.href          = "mailto:" + feedbackEMail[0] + feedbackEMail[1];
+            this.feedbackEMailAnchor.innerHTML    += feedbackEMail[0];
         }
+        else
+            this.feedbackEMailAnchor.style.display = "none";
 
         //#endregion
 
@@ -1173,9 +1182,12 @@ export class ChargyApp {
 
         if (feedbackHotline && feedbackHotline.length == 2)
         {
-            this.feedbackHotlineAnchor.href       = "tel:" + feedbackHotline[0];
-            this.feedbackHotlineAnchor.innerHTML += feedbackHotline[1];
+            this.feedbackHotlineAnchor.style.display = "block";
+            this.feedbackHotlineAnchor.href          = "tel:" + feedbackHotline[0];
+            this.feedbackHotlineAnchor.innerHTML    += feedbackHotline[1];
         }
+        else
+            this.feedbackHotlineAnchor.style.display = "none";
 
         //#endregion
 
@@ -1398,7 +1410,7 @@ export class ChargyApp {
                 "description":          app.description,
 
                 "version": {
-                    "version":              this.appVersion,
+                    "version":              this.packageJson.version,
                     "releaseDate":          version.releaseDate,
                     "description":          version.description,
                     "tags":                 version.tags,
