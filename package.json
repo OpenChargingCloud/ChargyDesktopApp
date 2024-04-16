@@ -1,7 +1,11 @@
 {
   "name": "chargytransparenzsoftware",
   "version": "1.4.6",
-  "description": "Chargy ist eine Transparenzsoftware für das Eichrecht in der Elektromobilität. Hiermit können Endkunden und E-Mobilitäts-Anbieter die Plausibilitäts und Validität von Ladevorgängen überprüfen.",
+  "description": "Chargy ist eine Transparenzsoftware für das Eichrecht in der Elektromobilität womit Endkunden die korrekte Messung und Abrechnung von Ladevorgängen überprüfen können.",
+  "author": "GraphDefined GmbH <achim.friedland@graphdefined.com>",
+  "license": "AGPL-3.0-or-later",
+  "homepage": "https://github.com/OpenChargingCloud/ChargyDesktopApp",
+  "repository": "https://github.com/OpenChargingCloud/ChargyDesktopApp",
   "main": "src/main.cjs",
   "type": "module",
   "scripts": {
@@ -10,7 +14,6 @@
     "dist": "electron-builder",
     "postinstall": "install-app-deps"
   },
-  "repository": "https://github.com/OpenChargingCloud/ChargyDesktopApp",
   "keywords": [
     "Chargy",
     "Transparenzsoftware",
@@ -27,28 +30,29 @@
     "Ladestationen",
     "charging stations"
   ],
-  "author": "GraphDefined GmbH <achim.friedland@graphdefined.com>",
-  "license": "AGPL-3.0-or-later",
-  "homepage": "https://github.com/OpenChargingCloud/ChargyDesktopApp",
   "devDependencies": {
     "@types/chart.js": "^2.9.41",
     "@types/decompress": "^4.2.7",
     "@types/elliptic": "^6.4.18",
     "@types/leaflet": "^1.9.11",
     "@types/node": "^20.12.7",
-    "electron": "^29.3.0",
+    "css-loader": "^7.1.1",
+    "electron": "^30.0.0",
     "electron-builder": "^24.13.3",
     "electron-localshortcut": "^3.2.1",
+    "file-loader": "^6.2.0",
     "sass": "^1.75.0",
+    "style-loader": "^4.0.0",
     "ts-loader": "^9.5.1",
     "typescript": "^5.4.5",
-    "webpack": "^5.89.0",
+    "webpack": "^5.91.0",
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.5.2",
     "asn1.js": "^5.4.1",
     "base32-decode": "^1.0.0",
-    "chart.js": "^4.4.1",
+    "chart.js": "^4.4.2",
     "decimal.js": "^10.4.3",
     "decompress": "^4.2.1",
     "decompress-bzip2": "^4.0.0",
@@ -58,7 +62,7 @@
     "leaflet": "^1.9.4",
     "leaflet.awesome-markers": "^2.0.5",
     "moment": "^2.30.1",
-    "pdfjs-dist": "^4.0.379",
+    "pdfjs-dist": "^4.1.392",
     "safe-stable-stringify": "^2.4.3"
   },
   "build": {

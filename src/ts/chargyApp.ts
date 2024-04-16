@@ -22,6 +22,8 @@ import * as chargyLib         from './chargyLib'
 import Decimal                from 'decimal.js';
 import * as L                 from 'leaflet';
 
+import '@fortawesome/fontawesome-free/css/all.min.css';
+
 // import { debug } from "util";
 // import * as crypto from "crypto";
 // import { readSync } from "fs";
@@ -120,6 +122,27 @@ export class ChargyApp {
                 feedbackHotline?:      string[],
                 issueURL?:             string) {
 
+        //#region Set parameters
+
+        this.versionsURL               = versionsURL         ?? "https://chargy.charging.cloud/apps/desktop/versions";
+        this.showFeedbackSection       = showFeedbackSection ?? false;
+        this.defaultFeedbackEMail      = feedbackEMail       ?? [];
+        this.defaultFeedbackHotline    = feedbackHotline     ?? [];
+        this.defaultIssueURL           = issueURL            ?? "";
+
+        //#endregion
+
+        //#region Load JavaScript libraries
+
+        this.elliptic                  = require('elliptic');
+        this.moment                    = require('moment');
+        this.asn1                      = require('asn1.js');
+        this.base32Decode              = require('base32-decode')
+
+        //#endregion
+
+        //#region Set up the GUI
+
         this.appDiv                    = document.getElementById('app')                                      as HTMLDivElement;
         this.headlineDiv               = document.getElementById('headline')                                 as HTMLDivElement;
         this.verifyframeDiv            = document.getElementById('verifyframe')                              as HTMLDivElement;
@@ -136,7 +159,6 @@ export class ChargyApp {
         this.applicationHashDiv        = document.getElementById('applicationHash')                          as HTMLDivElement;
         this.applicationHashValueDiv   = this.applicationHashDiv.querySelector("#value")                     as HTMLDivElement;
 
-        this.showFeedbackSection       = showFeedbackSection ?? false;
         this.feedbackDiv               = document.getElementById('feedback')                                 as HTMLDivElement;
         this.feedbackMethodsDiv        = this.feedbackDiv.       querySelector("#feedbackMethods")           as HTMLDivElement;
         this.showIssueTrackerButton    = this.feedbackMethodsDiv.querySelector("#showIssueTracker")          as HTMLButtonElement;
@@ -172,20 +194,14 @@ export class ChargyApp {
 
         this.appEdition                = this.ipcRenderer.sendSync('getAppEdition')     ?? "";
         this.copyright                 = this.ipcRenderer.sendSync('getCopyright')      ?? "&copy; 2018-2024 GraphDefined GmbH";
-        this.versionsURL               = versionsURL                                    ?? "https://open.charging.cloud/chargy/desktop/versions";
-        this.defaultIssueURL           = issueURL                                       ?? "https://open.charging.cloud/chargy/desktop/issues";
-        this.defaultFeedbackEMail      = feedbackEMail   != undefined ? feedbackEMail   : ["support@open.charging.cloud", "?subject=Chargy%20Support"];
-        this.defaultFeedbackHotline    = feedbackHotline != undefined ? feedbackHotline : ["+491728930852",               "+49 172 8930852"];
+        
         this.commandLineArguments      = this.ipcRenderer.sendSync('getCommandLineArguments');
         this.packageJson               = this.ipcRenderer.sendSync('getPackageJson');
         this.i18n                      = this.ipcRenderer.sendSync('getI18N');
         this.httpHost                  = this.ipcRenderer.sendSync('getHTTPConfig')[0];
         this.httpPort                  = this.ipcRenderer.sendSync('getHTTPConfig')[1];
 
-        this.elliptic                  = require('elliptic');
-        this.moment                    = require('moment');
-        this.asn1                      = require('asn1.js');
-        this.base32Decode              = require('base32-decode')
+        //#endregion
 
         this.chargy                    = new Chargy(this.i18n,
                                                     this.UILanguage,
@@ -3104,7 +3120,7 @@ export class ChargyApp {
 // Remember to set the "applicationEdition" in main.cjs
 
 const app = new ChargyApp(
-                "https://lichtblick.c.charging.cloud/chargy/desktop/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
+                "https://chargy.charging.cloud/apps/desktop/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
                 false, // Show Feedback Section
                 ["support.emobility@lichtblick.de", "?subject=Chargy%20Support"],
                 ["+4993219319101",                  "+49 9321 9319 101"],

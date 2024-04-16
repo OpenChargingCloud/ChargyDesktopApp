@@ -10,11 +10,24 @@ module.exports = [
         extensions: ["", ".ts", ".js"]
       },
       module: {
-        rules: [{
-          test: /\.ts$/,
-          //include: /src/,
-          use: [{ loader: 'ts-loader' }]
-        }]
+        rules: [
+          {
+            test: /\.ts$/,
+            //include: /src/,
+            use: [{ loader: 'ts-loader' }]
+          },
+          {
+            test: /\.css$/,
+            use: ['style-loader', 'css-loader']
+          },
+          {
+            test: /\.(woff|woff2|eot|ttf|otf|svg)$/,
+            type: 'asset/resource',
+            generator: {
+              filename: 'assets/fonts/[name][ext][query]' // Path and naming of your fonts
+            }
+          }
+        ]
       },
       externals: {
         'asn1':         'asn1.js',
