@@ -60,6 +60,60 @@
     }
   },
   "chargingTariffs": [
+    {
+      "id": "DE*GDF*T12345678",
+      "@context": "https://open.charging.cloud/ctx/chargingTariffs/OCPIv2.1.1",
+      "currency": "EUR",
+      "tariff_alt_text": [
+        {
+          "language": "en",
+          "text": "Adhoc 0.44€/kWh + 0.3€ Session fee; 8,4ct/min after 3 hours"
+        }
+      ],
+      "elements": [
+        {
+          "price_components": [
+            {
+              "type": "ENERGY",
+              "price": 0.44,
+              "step_size": 1000
+            },
+            {
+              "type": "FLAT",
+              "price": 0.3,
+              "step_size": 1
+            },
+            {
+              "type": "TIME",
+              "price": 0.0,
+              "step_size": 60
+            }
+          ],
+          "restrictions": {
+            "max_duration": 10800
+          }
+        },
+        {
+          "price_components": [
+            {
+              "type": "ENERGY",
+              "price": 0.44,
+              "step_size": 1000
+            },
+            {
+              "type": "TIME",
+              "price": 5.04,
+              "step_size": 60
+            }
+          ]
+        }
+      ],
+      "created": "2023-12-31T23:00:00.000Z",
+      "last_updated": "2023-12-31T23:00:00.000Z",
+      "signatures": [
+        
+      ]
+    }
   ],
   "signedMeterValues" : [ {
     "payload" : "AP;0;3;AJ2J7LYMGCIWT4AHUJPPFIIVB3FGRV2JQ2HVZG2I;BIHEIWSHAAA2WZUZOYYDCNWTWAFACRC2I4ADGAEDQ4AAAABABMI5UAEVRZFV4AIAAEEAB7Y6AD4N2AIAAAAAAABQGQ3DKNCGIZATKOJVGU4DAAAAAAAAAAAWAAAAAKYAAAAA====;X7KCDU5IJHGUW64LDYHYR7IXRPPSKCMWAMQOVZVRNGRX6BEIHX3TFKUDJGEMUI5W5CJFTPDEWR7F6===;",
@@ -73,6 +127,8 @@
     "formatVersion" : "0",
     "encoding" : "BASE64",
     "manufacturer" : "Alfen BV" 
-  } ]
-
+  } ],
+  "signatures": [
+    
+  ]
 }
