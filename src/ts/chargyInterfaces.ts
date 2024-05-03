@@ -1,6 +1,6 @@
 ﻿/*
  * Copyright (c) 2018-2024 GraphDefined GmbH <achim.friedland@graphdefined.com>
- * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
+ * This file is part of Chargy WebApp <https://github.com/OpenChargingCloud/ChargyWebApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,6 +107,7 @@ export interface IChargeTransparencyRecord
     chargingStationOperators?:  Array<IChargingStationOperator>;
     chargingPools?:             Array<IChargingPool>;
     chargingStations?:          Array<IChargingStation>;
+    chargingTariffs?:           Array<IChargingTariff>;
     publicKeys?:                Array<IPublicKeyInfo>;
     chargingSessions?:          Array<IChargingSession>;
     eMobilityProviders?:        Array<IEMobilityProvider>;
@@ -203,11 +204,10 @@ export interface IChargingStationOperator
     chargingPools?:             Array<IChargingPool>;
     chargingStations?:          Array<IChargingStation>;
     EVSEs?:                     Array<IEVSE>;
-    tariffs?:                   Array<ITariff>;
     publicKeys?:                Array<IPublicKey>;
 
-    chargingTariffs?:           Array<ITariff>;
-    parkingTariffs?:            Array<ITariff>;
+    chargingTariffs?:           Array<IChargingTariff>;
+    parkingTariffs?:            Array<IParkingTariff>;
 
 }
 
@@ -243,7 +243,7 @@ export interface IChargingPool
     geoLocation?:               IGeoLocation;
     chargingStationOperator?:   IChargingStationOperator;
     chargingStations?:          Array<IChargingStation>;
-    tariffs?:                   Array<ITariff>;
+    chargingTariffs?:           Array<IChargingTariff>;
     publicKeys?:                Array<IPublicKey>;
 }
 
@@ -269,7 +269,7 @@ export interface IChargingStation
     EVSEs:                      Array<IEVSE>;
     EVSEIds?:                   Array<string>;
     meters?:                    Array<IMeter>;
-    tariffs?:                   Array<ITariff>;
+    chargingTariffs?:           Array<IChargingTariff>;
     publicKeys?:                Array<IPublicKey>;
 }
 
@@ -281,7 +281,7 @@ export interface IEVSE
     chargingStation?:           IChargingStation;
     chargingStationId?:         string;
     meters:                     Array<IMeter>;
-    tariffs?:                   Array<ITariff>;
+    chargingTariffs?:           Array<IChargingTariff>;
     publicKeys?:                Array<IPublicKey>;
     connectors?:                Array<IConnector>;
 }
@@ -343,17 +343,8 @@ export interface IEMobilityProvider
     "@id":                      string;
     "@context"?:                string;
     description:                IMultilanguageText;
-    tariffs:                    Array<ITariff>;
+    chargingTariffs:            Array<IChargingTariff>;
     publicKeys?:                Array<IPublicKey>;
-}
-
-export interface ITariff
-{
-    "@id":                      string;
-    "@context"?:                string;
-    description?:               IMultilanguageText;
-    currency?:                  string;
-    taxes?:                     Array<ITaxes>;
 }
 
 export interface ITaxes
@@ -395,8 +386,9 @@ export interface IChargingSession
     meter?:                     IMeter;
     publicKey?:                 IPublicKeyInfo;
     tariffId?:                  string;
-    tariff?:                    ITariff;
-    costs?:                     IChargingCosts;
+    chargingTariffs?:           Array<IChargingTariff>;
+    chargingPeriods?:           Array<IChargingPeriod>;
+    totalCosts?:                IChargingCosts;
     authorizationStart:         IAuthorization;
     authorizationStop?:         IAuthorization;
     product?:                   IChargingProduct;
@@ -789,7 +781,7 @@ export interface IVersionSignature {
 }
 
 export interface IMultilanguageText {
-    [key: string]: string;
+    [key: string]:  string;
 }
 
 export interface IResult {
@@ -820,5 +812,103 @@ export function isIFileInfo(obj: any): obj is IFileInfo {
 }
 
 export interface IExtendedFileInfo extends IFileInfo {
-    result:         IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult
+    result:                 IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult
+}
+
+export interface IChargingPeriod
+{
+    startTimestamp:                 string,
+    stopTimestamp?:                 string,
+    endTimestamp?:                  string,
+    chargingTariffId:               string,
+    activeChargingTariffElement?:   IChargingTariffElement,
+    costs:                          IChargingCosts
+}
+
+export enum DayOfWeek
+{
+    Sunday     = 0,
+    Monday     = 1,
+    Tuesday    = 2,
+    Wednesday  = 3,
+    Thursday   = 4,
+    Friday     = 5,
+    Saturday   = 6
+}
+
+export interface ITariffRestriction {
+    start_time:             string,
+    end_time:               string,
+    start_date:             string,
+    end_date:               string,
+    min_kwh:                Decimal,
+    max_kwh:                Decimal,
+    min_power:              Decimal,
+    max_power:              Decimal,
+    min_duration:           number,
+    max_duration:           number,
+    day_of_week:            Array<DayOfWeek>
+}
+
+export interface IPriceComponent {
+    type:                       string,
+    price:                      Decimal,
+    step_size:                  number
+}
+
+export interface IChargingTariffElement {
+    price_components:           Array<IPriceComponent>,
+    restrictions:               ITariffRestriction
+}
+
+export interface IDisplayText {
+    language:                   string,
+    text:                       string
+}
+
+// OCPI v2.1.1 + extensions
+export interface IChargingTariff {
+
+    "@id":                      string;
+    "@context"?:                string|Array<string>,
+    country_code?:              string,
+    party_id?:                  string,
+    shortName?:                 IMultilanguageText;
+    summary?:               IMultilanguageText;
+    tariff_alt_url?:            string,
+    currency?:                  string,
+    taxes?:                     Array<ITaxes>;
+    elements?:                  Array<IChargingTariffElement>
+
+    //energy_mix?:                IEnergyMix,
+
+    not_before?:                string,
+    not_after?:                 string,
+    created?:                   string,
+    last_updated?:              string,
+
+    signatures?:                Array<ISignatureRS>
+
+}
+
+export interface IParkingTariff {
+
+    "@id":                      string;
+    "@context"?:                string|Array<string>,
+    country_code?:              string,
+    party_id?:                  string,
+    description?:               IMultilanguageText;
+    tariff_alt_text?:           Array<IDisplayText>,
+    tariff_alt_url?:            string,
+    currency?:                  string,
+    taxes?:                     Array<ITaxes>;
+    elements?:                  Array<IChargingTariffElement>
+
+    not_before?:                string,
+    not_after?:                 string,
+    created?:                   string,
+    last_updated?:              string,
+
+    signatures?:                Array<ISignatureRS>
+
 }

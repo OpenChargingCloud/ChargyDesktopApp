@@ -32,44 +32,23 @@
     "type": "Typ-2 Socket",
     "losses": 2.1
   },
-  "chargingCostsInfo": {
-    "total": 2.05,
-    "currency": "€",
-    "reservation": {
-       "amount": 12.1,
-       "unit": "min",
-       "cost": 0.2
-    },
-    "energy": {
-       "amount": 12.0,
-       "unit": "kWh",
-       "cost": 1.23
-    },
-    "time": {
-       "amount": 253,
-       "unit": "min",
-       "cost": 0.74
-    },
-    "idle": {
-       "amount": 12,
-       "unit": "min",
-       "cost": 0.3
-    },
-    "flat": {
-       "cost": 0.3
-    }
-  },
   "chargingTariffs": [
     {
-      "id": "DE*GDF*T12345678",
+      "@id": "DE*GDF*T12345678",
       "@context": "https://open.charging.cloud/ctx/chargingTariffs/OCPIv2.1.1",
       "currency": "EUR",
-      "tariff_alt_text": [
-        {
-          "language": "en",
-          "text": "Adhoc 0.44€/kWh + 0.3€ Session fee; 8,4ct/min after 3 hours"
-        }
-      ],
+      "shortName": {
+          "de": "Adhoc",
+          "en": "Adhoc"
+      },
+      "summary": {
+          "de": "0.44€/kWh + 0.3€ Startgebühr; 8,4ct/min nach 3 Stunden",
+          "en": "0.44€/kWh + 0.3€ Session fee; 8,4ct/min after 3 hours"
+      },
+      "description": {
+          "de": "Adhoc Standardtarif mit einer Blockadegebühr nach 3 Stunden",
+          "en": "Adhoc standard tariff having a blocking fee after 3 hours"
+      },
       "elements": [
         {
           "price_components": [
@@ -130,5 +109,43 @@
   } ],
   "signatures": [
     
-  ]
+  ],
+  "chargingPeriods": [
+    {
+      "startTimestamp": "2020-02-18T07:13:25.000Z",
+      "costs": {}
+    },
+    {
+      "startTimestamp": "2020-02-18T10:13:25.000Z",
+      "endTimestamp": "2020-02-18T11:25:42.000Z",
+      "costs": {}
+    }
+  ],
+  "totalCosts": {
+    "total": 2.05,
+    "currency": "€",
+    "reservation": {
+       "amount": 12.1,
+       "unit": "min",
+       "cost": 0.2
+    },
+    "energy": {
+       "amount": 12.0,
+       "unit": "kWh",
+       "cost": 1.23
+    },
+    "time": {
+       "amount": 253,
+       "unit": "min",
+       "cost": 0.74
+    },
+    "idle": {
+       "amount": 12,
+       "unit": "min",
+       "cost": 0.3
+    },
+    "flat": {
+       "cost": 0.3
+    }
+  }
 }

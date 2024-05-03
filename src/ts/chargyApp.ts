@@ -33,86 +33,93 @@ export class ChargyApp {
 
     //#region Data
 
-    private readonly leaflet:              any;
-    private readonly map:                  L.Map;
+    private readonly leaflet:                   any;
+    private readonly map:                       L.Map;
 
-    private readonly elliptic:             any;
-    private readonly moment:               any;
-    private readonly chargy:               Chargy;
-    private readonly asn1:                 any;
-    private readonly base32Decode:         any;
+    private readonly elliptic:                  any;
+    private readonly moment:                    any;
+    private readonly chargy:                    Chargy;
+    private readonly asn1:                      any;
+    private readonly base32Decode:              any;
 
-    public  appEdition:                    string              = "";
-    public  copyright:                     string              = "";
-    public  versionsURL:                   string              = "";
-    public  defaultFeedbackEMail:          string[]            = [];
-    public  defaultFeedbackHotline:        string[]            = [];
-    public  defaultIssueURL:               string              = "";
-    private ipcRenderer                                        = require('electron').ipcRenderer; // (window as any)?.electron?.ipcRenderer;
-    private commandLineArguments:          Array<string>       = [];
-    public  packageJson:                   any                 = {};
-    public  i18n:                          any                 = {};
-    public  UILanguage:                    string              = "de";
-    private httpPort:                      number              = 0;
-    private httpHost:                      string              = "localhost";
+    public  appEdition:                         string              = "";
+    public  copyright:                          string              = "";
+    public  versionsURL:                        string              = "";
+    public  defaultFeedbackEMail:               string[]            = [];
+    public  defaultFeedbackHotline:             string[]            = [];
+    public  defaultIssueURL:                    string              = "";
+    public  packageJson:                        any                 = {};
+    public  i18n:                               any                 = {};
+    public  UILanguage:                         string              = "de";
 
-    private currentAppInfos:               any                 = null;
-    private currentVersionInfos:           any                 = null;
-    private currentPackage:                any                 = null;
-    private applicationHash:               string              = "";
+    private ipcRenderer                                             = require('electron').ipcRenderer; // (window as any)?.electron?.ipcRenderer;
+    private commandLineArguments:               Array<string>       = [];
+    private httpPort:                           number              = 0;
+    private httpHost:                           string              = "localhost";
 
-    private markers:                       any                 = [];
-    private minlat:                        number              = +1000;
-    private maxlat:                        number              = -1000;
-    private minlng:                        number              = +1000;
-    private maxlng:                        number              = -1000;
+    private currentAppInfos:                    any                 = null;
+    private currentVersionInfos:                any                 = null;
+    private currentPackage:                     any                 = null;
+    private applicationHash:                    string              = "";
 
-    private appDiv:                        HTMLDivElement;
-    private headlineDiv:                   HTMLDivElement;
-    private verifyframeDiv:                HTMLDivElement;
+    private markers:                            any                 = [];
+    private minlat:                             number              = +1000;
+    private maxlat:                             number              = -1000;
+    private minlng:                             number              = +1000;
+    private maxlng:                             number              = -1000;
 
-    private updateAvailableButton:         HTMLButtonElement;
-    private aboutButton:                   HTMLButtonElement;
-    private fullScreenButton:              HTMLButtonElement;
-    private appQuitButton:                 HTMLButtonElement;
+    private appDiv:                             HTMLDivElement;
+    private headlineDiv:                        HTMLDivElement;
+    private verifyframeDiv:                     HTMLDivElement;
 
-    private updateAvailableScreen:         HTMLDivElement;
-    private inputDiv:                      HTMLDivElement;
-    private inputInfosDiv:                 HTMLDivElement;
-    private aboutScreenDiv:                HTMLDivElement;
-    private applicationHashDiv:            HTMLDivElement;
-    private applicationHashValueDiv:       HTMLDivElement;
-    private chargingSessionScreenDiv:      HTMLDivElement;
-    private invalidDataSetsScreenDiv:      HTMLDivElement;
-    private inputButtonsDiv:               HTMLDivElement;
-    private backButton:                    HTMLButtonElement;
-    private exportButtonDiv:               HTMLDivElement;
-    private exportButton:                  HTMLButtonElement;
-    private fileInputButton:               HTMLButtonElement;
-    private fileInput:                     HTMLInputElement;
-    private pasteButton:                   HTMLButtonElement;
-    private detailedInfosDiv:              HTMLDivElement;
-    private errorTextDiv:                  HTMLDivElement;
-    private feedbackDiv:                   HTMLDivElement;
-    private overlayDiv:                    HTMLDivElement;
-    private overlayLeftButton:             HTMLButtonElement;
-    private overlayRightButton:            HTMLButtonElement;
-    private issueTrackerDiv:               HTMLDivElement;
-    private privacyStatement:              HTMLDivElement;
+    private updateAvailableButton:              HTMLButtonElement;
+    private aboutButton:                        HTMLButtonElement;
+    private fullScreenButton:                   HTMLButtonElement;
+    private appQuitButton:                      HTMLButtonElement;
 
-    private showFeedbackSection:           Boolean;
-    private feedbackMethodsDiv:            HTMLDivElement;
-    private feedbackEMailAnchor:           HTMLAnchorElement;
-    private feedbackHotlineAnchor:         HTMLAnchorElement;
-    private showIssueTrackerButton:        HTMLButtonElement;
-    private issueTrackerText:              HTMLDivElement;
-    private sendIssueButton:               HTMLButtonElement;
-    private issueBackButton:               HTMLButtonElement;
+    private updateAvailableScreen:              HTMLDivElement;
+    private inputDiv:                           HTMLDivElement;
+    private inputInfosDiv:                      HTMLDivElement;
+    private aboutScreenDiv:                     HTMLDivElement;
+    private applicationHashDiv:                 HTMLDivElement;
+    private applicationHashValueDiv:            HTMLDivElement;
+    private chargingSessionScreenDiv:           HTMLDivElement;
+    private invalidDataSetsScreenDiv:           HTMLDivElement;
+    private inputButtonsDiv:                    HTMLDivElement;
+    private backButton:                         HTMLButtonElement;
+    private exportButtonDiv:                    HTMLDivElement;
+    private exportButton:                       HTMLButtonElement;
+    private fileInputButton:                    HTMLButtonElement;
+    private fileInput:                          HTMLInputElement;
+    private pasteButton:                        HTMLButtonElement;
+    private detailedInfosDiv:                   HTMLDivElement;
+    private errorTextDiv:                       HTMLDivElement;
+    private feedbackDiv:                        HTMLDivElement;
 
-    private showPrivacyStatement:          HTMLButtonElement;
-    private privacyStatementAccepted:      HTMLInputElement;
-    private softwareInfosDiv:              HTMLDivElement;
-    private openSourceLibsDiv:             HTMLDivElement;
+    private chargingTariffDetailsDiv:           HTMLDivElement;
+    private chargingTariffDetailsLeftButton:    HTMLButtonElement;
+
+    private chargingPeriodDetailsDiv:           HTMLDivElement;
+    private chargingPeriodDetailsLeftButton:    HTMLButtonElement;
+
+    private measurementsDetailsDiv:             HTMLDivElement;
+    private measurementsDetailsLeftButton:      HTMLButtonElement;
+    private issueTrackerDiv:                    HTMLDivElement;
+    private privacyStatement:                   HTMLDivElement;
+
+    private showFeedbackSection:                Boolean;
+    private feedbackMethodsDiv:                 HTMLDivElement;
+    private feedbackEMailAnchor:                HTMLAnchorElement;
+    private feedbackHotlineAnchor:              HTMLAnchorElement;
+    private showIssueTrackerButton:             HTMLButtonElement;
+    private issueTrackerText:                   HTMLDivElement;
+    private sendIssueButton:                    HTMLButtonElement;
+    private issueTrackerLeftButton:             HTMLButtonElement;
+
+    private showPrivacyStatement:               HTMLButtonElement;
+    private privacyStatementAccepted:           HTMLInputElement;
+    private softwareInfosDiv:                   HTMLDivElement;
+    private openSourceLibsDiv:                  HTMLDivElement;
 
     //#endregion
 
@@ -143,54 +150,77 @@ export class ChargyApp {
 
         //#region Set up the GUI
 
-        this.appDiv                    = document.getElementById('app')                                      as HTMLDivElement;
-        this.headlineDiv               = document.getElementById('headline')                                 as HTMLDivElement;
-        this.verifyframeDiv            = document.getElementById('verifyframe')                              as HTMLDivElement;
+        this.appDiv                                   = document.getElementById('app')                                      as HTMLDivElement;
+        this.headlineDiv                              = document.getElementById('headline')                                 as HTMLDivElement;
+        this.verifyframeDiv                           = document.getElementById('verifyframe')                              as HTMLDivElement;
 
-        this.updateAvailableScreen     = document.getElementById('updateAvailableScreen')                    as HTMLDivElement;
-        this.chargingSessionScreenDiv  = document.getElementById('chargingSessionScreen')                    as HTMLDivElement;
-        this.invalidDataSetsScreenDiv  = document.getElementById('invalidDataSetsScreen')                    as HTMLDivElement;
-        this.detailedInfosDiv          = document.getElementById('detailedInfos')                            as HTMLDivElement;
-        this.inputDiv                  = document.getElementById('input')                                    as HTMLDivElement;
-        this.inputInfosDiv             = document.getElementById('inputInfos')                               as HTMLDivElement;
-        this.errorTextDiv              = document.getElementById('errorText')                                as HTMLDivElement;
-        this.overlayDiv                = document.getElementById('overlay')                                  as HTMLDivElement;
+        this.updateAvailableScreen                    = document.getElementById('updateAvailableScreen')                    as HTMLDivElement;
+        this.chargingSessionScreenDiv                 = document.getElementById('chargingSessionScreen')                    as HTMLDivElement;
+        this.invalidDataSetsScreenDiv                 = document.getElementById('invalidDataSetsScreen')                    as HTMLDivElement;
+        this.detailedInfosDiv                         = document.getElementById('detailedInfos')                            as HTMLDivElement;
+        this.inputDiv                                 = document.getElementById('input')                                    as HTMLDivElement;
+        this.inputInfosDiv                            = document.getElementById('inputInfos')                               as HTMLDivElement;
+        this.errorTextDiv                             = document.getElementById('errorText')                                as HTMLDivElement;
 
-        this.applicationHashDiv        = document.getElementById('applicationHash')                          as HTMLDivElement;
-        this.applicationHashValueDiv   = this.applicationHashDiv.querySelector("#value")                     as HTMLDivElement;
+        this.applicationHashDiv                       = document.getElementById('applicationHash')                          as HTMLDivElement;
+        this.applicationHashValueDiv                  = this.applicationHashDiv.querySelector("#value")                     as HTMLDivElement;
 
-        this.feedbackDiv               = document.getElementById('feedback')                                 as HTMLDivElement;
-        this.feedbackMethodsDiv        = this.feedbackDiv.       querySelector("#feedbackMethods")           as HTMLDivElement;
-        this.showIssueTrackerButton    = this.feedbackMethodsDiv.querySelector("#showIssueTracker")          as HTMLButtonElement;
-        this.feedbackEMailAnchor       = this.feedbackMethodsDiv.querySelector("#eMail")                     as HTMLAnchorElement;
-        this.feedbackHotlineAnchor     = this.feedbackMethodsDiv.querySelector("#hotline")                   as HTMLAnchorElement;
+        this.feedbackDiv                              = document.getElementById('feedback')                                 as HTMLDivElement;
+        this.feedbackMethodsDiv                       = this.feedbackDiv.       querySelector("#feedbackMethods")           as HTMLDivElement;
+        this.showIssueTrackerButton                   = this.feedbackMethodsDiv.querySelector("#showIssueTracker")          as HTMLButtonElement;
+        this.feedbackEMailAnchor                      = this.feedbackMethodsDiv.querySelector("#eMail")                     as HTMLAnchorElement;
+        this.feedbackHotlineAnchor                    = this.feedbackMethodsDiv.querySelector("#hotline")                   as HTMLAnchorElement;
 
-        this.issueTrackerDiv           = document.getElementById('issueTracker')                             as HTMLDivElement;
-        this.issueTrackerText          = this.issueTrackerDiv.   querySelector("#issueTrackerText")          as HTMLDivElement;
-        this.privacyStatement          = this.issueTrackerDiv.   querySelector("#privacyStatement")          as HTMLDivElement;
-        this.issueBackButton           = this.issueTrackerDiv.   querySelector("#issueBackButton")           as HTMLButtonElement;
-        this.showPrivacyStatement      = this.issueTrackerDiv.   querySelector("#showPrivacyStatement")      as HTMLButtonElement;
-        this.privacyStatementAccepted  = this.issueTrackerDiv.   querySelector("#privacyStatementAccepted")  as HTMLInputElement;
-        this.sendIssueButton           = this.issueTrackerDiv.   querySelector("#sendIssueButton")           as HTMLButtonElement;
+        this.aboutScreenDiv                           = document.getElementById('aboutScreen')                              as HTMLDivElement;
+        this.softwareInfosDiv                         = this.aboutScreenDiv.    querySelector("#softwareInfos")             as HTMLDivElement;
+        this.openSourceLibsDiv                        = this.aboutScreenDiv.    querySelector("#openSourceLibs")            as HTMLDivElement;
 
-        this.aboutScreenDiv            = document.getElementById('aboutScreen')                              as HTMLDivElement;
-        this.softwareInfosDiv          = this.aboutScreenDiv.    querySelector("#softwareInfos")             as HTMLDivElement;
-        this.openSourceLibsDiv         = this.aboutScreenDiv.    querySelector("#openSourceLibs")            as HTMLDivElement;
+        this.updateAvailableButton                    = document.getElementById('updateAvailableButton')                    as HTMLButtonElement;
+        this.aboutButton                              = document.getElementById('aboutButton')                              as HTMLButtonElement;
+        this.fullScreenButton                         = document.getElementById('fullScreenButton')                         as HTMLButtonElement;
+        this.appQuitButton                            = document.getElementById('appQuitButton')                            as HTMLButtonElement;
 
-        this.updateAvailableButton     = document.getElementById('updateAvailableButton')                    as HTMLButtonElement;
-        this.aboutButton               = document.getElementById('aboutButton')                              as HTMLButtonElement;
-        this.fullScreenButton          = document.getElementById('fullScreenButton')                         as HTMLButtonElement;
-        this.appQuitButton             = document.getElementById('appQuitButton')                            as HTMLButtonElement;
-        this.overlayLeftButton         = document.getElementById('overlayLeftButton')                        as HTMLButtonElement;
-        this.overlayRightButton        = document.getElementById('overlayRightButton')                       as HTMLButtonElement;
-        this.fileInputButton           = document.getElementById('fileInputButton')                          as HTMLButtonElement;
-        this.pasteButton               = document.getElementById('pasteButton')                              as HTMLButtonElement;
+        this.chargingTariffDetailsDiv                 = document.getElementById('chargingTariffDetails')                    as HTMLDivElement;
+        this.chargingTariffDetailsLeftButton          = this.chargingTariffDetailsDiv.querySelector(".overlayLeftButton")   as HTMLButtonElement;
+        this.chargingTariffDetailsLeftButton.onclick  = () => {
+                                                            this.chargingTariffDetailsDiv.style.display = 'none';
+                                                        }
 
-        this.inputButtonsDiv           = document.getElementById('inputButtons')                             as HTMLDivElement;
-        this.backButton                = this.inputButtonsDiv.   querySelector("#backButton")                as HTMLButtonElement;
+        this.chargingPeriodDetailsDiv                 = document.getElementById('chargingPeriodDetails')                    as HTMLDivElement;
+        this.chargingPeriodDetailsLeftButton          = this.chargingPeriodDetailsDiv.querySelector(".overlayLeftButton")   as HTMLButtonElement;
+        this.chargingPeriodDetailsLeftButton.onclick  = () => {
+                                                            this.chargingPeriodDetailsDiv.style.display = 'none';
+                                                        }
 
-        this.exportButtonDiv           = document.getElementById('exportButtonDiv')                          as HTMLDivElement;
-        this.exportButton              = this.exportButtonDiv.   querySelector("#exportButton")              as HTMLButtonElement;
+        this.measurementsDetailsDiv                   = document.getElementById('measurementsDetails')                      as HTMLDivElement;
+        this.measurementsDetailsLeftButton            = this.measurementsDetailsDiv.querySelector(".overlayLeftButton")     as HTMLButtonElement;
+        this.measurementsDetailsLeftButton.onclick    = () => {
+                                                            this.measurementsDetailsDiv.style.display = 'none';
+                                                        }
+
+        this.issueTrackerDiv                          = document.getElementById('issueTracker')                             as HTMLDivElement;
+        this.issueTrackerText                         = this.issueTrackerDiv.   querySelector(".overlayText")               as HTMLDivElement;
+        this.privacyStatement                         = this.issueTrackerDiv.   querySelector("#privacyStatement")          as HTMLDivElement;
+        this.showPrivacyStatement                     = this.issueTrackerDiv.   querySelector("#showPrivacyStatement")      as HTMLButtonElement;
+        this.privacyStatementAccepted                 = this.issueTrackerDiv.   querySelector("#privacyStatementAccepted")  as HTMLInputElement;
+        this.sendIssueButton                          = this.issueTrackerDiv.   querySelector("#sendIssueButton")           as HTMLButtonElement;
+        this.issueTrackerLeftButton                   = this.issueTrackerDiv.   querySelector(".overlayLeftButton")         as HTMLButtonElement;
+        this.issueTrackerLeftButton.onclick           = () => {
+                                                            this.issueTrackerDiv.style.display = 'none';
+                                                        }
+
+        this.fileInputButton                          = document.getElementById('fileInputButton')                          as HTMLButtonElement;
+        this.pasteButton                              = document.getElementById('pasteButton')                              as HTMLButtonElement;
+
+        this.inputButtonsDiv                          = document.getElementById('inputButtons')                             as HTMLDivElement;
+        this.backButton                               = this.inputButtonsDiv.   querySelector("#backButton")                as HTMLButtonElement;
+
+        this.exportButtonDiv                          = document.getElementById('exportButtonDiv')                          as HTMLDivElement;
+        this.exportButton                             = this.exportButtonDiv.   querySelector("#exportButton")              as HTMLButtonElement;
+
+        //#endregion
+
+        //#region IPC
 
         this.appEdition                = this.ipcRenderer.sendSync('getAppEdition')     ?? "";
         this.copyright                 = this.ipcRenderer.sendSync('getCopyright')      ?? "&copy; 2018-2024 GraphDefined GmbH";
@@ -203,12 +233,12 @@ export class ChargyApp {
 
         //#endregion
 
-        this.chargy                    = new Chargy(this.i18n,
-                                                    this.UILanguage,
-                                                    this.elliptic,
-                                                    this.moment,
-                                                    this.asn1,
-                                                    this.base32Decode);
+        this.chargy                                   = new Chargy(this.i18n,
+                                                                   this.UILanguage,
+                                                                   this.elliptic,
+                                                                   this.moment,
+                                                                   this.asn1,
+                                                                   this.base32Decode);
 
 
         //#region OnWindowResize
@@ -273,7 +303,7 @@ export class ChargyApp {
             this.issueTrackerText.scrollTop = this.issueTrackerText.scrollHeight;
         }
 
-        this.privacyStatementAccepted.onchange = (ev: Event) => {
+        this.privacyStatementAccepted.onchange = () => {
             this.sendIssueButton.disabled  = !this.privacyStatementAccepted.checked;
         }
 
@@ -363,10 +393,6 @@ export class ChargyApp {
                 alert("Leider ist ein Fehler bei der Datenübertragung aufgetreten. Bitte probieren Sie es erneut!");
             }
 
-        }
-
-        this.issueBackButton.onclick = (ev: MouseEvent) => {
-            this.issueTrackerDiv.style.display = 'none';
         }
 
         //#endregion
@@ -729,13 +755,13 @@ export class ChargyApp {
         this.fullScreenButton.onclick = (ev: MouseEvent) => {
             if (d.fullScreen || d.mozFullScreen || d.webkitIsFullScreen)
             {
-                this.overlayDiv.classList.remove("fullScreen");
+                this.measurementsDetailsDiv.classList.remove("fullScreen");
                 chargyLib.closeFullscreen();
                 this.fullScreenButton.innerHTML = '<i class="fas fa-expand"></i>';
             }
             else
             {
-                this.overlayDiv.classList.add("fullScreen");
+                this.measurementsDetailsDiv.classList.add("fullScreen");
                 chargyLib.openFullscreen();
                 this.fullScreenButton.innerHTML = '<i class="fas fa-compress"></i>';
             }
@@ -796,14 +822,6 @@ export class ChargyApp {
                 alert('Failed to save the charge transparency record!' + exception);
             }
 
-        }
-
-        //#endregion
-
-        //#region Handle the 'Overlay Left'-button
-
-        this.overlayLeftButton.onclick = (ev: MouseEvent) => {
-            this.overlayDiv.style.display = 'none';
         }
 
         //#endregion
@@ -1626,8 +1644,8 @@ export class ChargyApp {
                         if (chargingSession.end)
                         {
 
-                            let endUTC   = chargyLib.parseUTC(chargingSession.end);
-                            let duration = this.moment.duration(endUTC - chargyLib.parseUTC(chargingSession.begin));
+                            const endUTC   = chargyLib.parseUTC(chargingSession.end);
+                            const duration = this.moment.duration(endUTC - chargyLib.parseUTC(chargingSession.begin));
 
                             dateDiv.innerHTML += " - " +
                                                 (Math.floor(duration.asDays()) > 0 ? endUTC.format("dddd") + " " : "") +
@@ -2097,7 +2115,7 @@ export class ChargyApp {
                 try
                 {
 
-                    if (chargingSession.costs != null)
+                    if (chargingSession.totalCosts != null)
                     {
 
                         var costsInfoDiv        = tableDiv.appendChild(document.createElement('div'));
@@ -2113,7 +2131,7 @@ export class ChargyApp {
                         var costsDiv            = textDiv.appendChild(document.createElement('div'));
                         costsDiv.classList.add("costs");
 
-                        if (chargingSession.costs.total != 0)
+                        if (chargingSession.totalCosts.total != 0)
                         {
 
                             var totalCostsDiv      = costsDiv.appendChild(document.createElement('div'));
@@ -2121,11 +2139,11 @@ export class ChargyApp {
 
                             var totalCostsCost     = totalCostsDiv.appendChild(document.createElement('div'));
                             totalCostsCost.classList.add("totalCost");
-                            totalCostsCost.innerHTML     = chargingSession.costs.total.toString();
+                            totalCostsCost.innerHTML     = chargingSession.totalCosts.total.toString();
 
                             var totalCostsCurrency = totalCostsDiv.appendChild(document.createElement('div'));
                             totalCostsCurrency.classList.add("totalCostCurrency");
-                            totalCostsCurrency.innerHTML = chargingSession.costs.currency;
+                            totalCostsCurrency.innerHTML = chargingSession.totalCosts.currency;
 
                         }
 
@@ -2579,19 +2597,112 @@ export class ChargyApp {
 
                     //#endregion
 
-                    //#region Show charging costs and tariffs...
+                    //#region Show charging tariffs...
 
-                    if (chargingSession.costs)
+                    if (chargingSession.chargingTariffs && chargingSession.chargingTariffs.length > 0)
                     {
 
-                        const costsAndTariffInfosDiv = chargyLib.CreateDiv(this.detailedInfosDiv,  "costsAndTariffInfos");
-                                                       chargyLib.CreateDiv(costsAndTariffInfosDiv,  "headline2",
-                                                                           this.chargy.GetLocalizedMessage("Costs and Tariffs"));
+                        // Should we also test whether the charging periods are valid?
 
-                        var costsTableDiv       = costsAndTariffInfosDiv.appendChild(document.createElement('div'));
+                        const tariffInfosDiv = chargyLib.CreateDiv(this.detailedInfosDiv,  "chargingTariffsInfos");
+                                               chargyLib.CreateDiv(tariffInfosDiv,  "headline2",
+                                                                   this.chargy.GetLocalizedMessage("Charging Tariffs"));
+
+                        var tariffTableDiv       = tariffInfosDiv.appendChild(document.createElement('div'));
+                        tariffTableDiv.classList.add("tariffsTable");
+
+                        for (const tariff of chargingSession.chargingTariffs)
+                        {
+
+                            var chargingPeriodRow      = tariffTableDiv.appendChild(document.createElement('div'));
+                            chargingPeriodRow.classList.add("chargingTariffRow");
+                            chargingPeriodRow.onclick  = () => {
+                                this.showChargingTariffDetails(tariff);
+                            };
+
+                            var tariffShortName        = chargingPeriodRow.appendChild(document.createElement('div'));
+                            tariffShortName.classList.add("shortName");
+                            tariffShortName.innerHTML  = tariff.shortName && Object.keys(tariff.shortName).length > 0
+                                                                ? tariff.shortName[this.UILanguage] ?? tariff["@id"] ?? ""
+                                                                : tariff["@id"] ?? "";
+
+                            if (tariff.summary && Object.keys(tariff.summary).length > 0)
+                            {
+                                var tariffSummary        = chargingPeriodRow.appendChild(document.createElement('div'));
+                                tariffSummary.classList.add("summary");
+                                tariffSummary.innerText  = tariff.summary[this.UILanguage] ?? "";
+                            }
+
+                        }
+
+                    }
+
+                    //#endregion
+
+                    //#region Show charging periods (when more than one exists)
+
+                    if (chargingSession.chargingPeriods && chargingSession.chargingPeriods.length > 1)
+                    {
+
+                        const totalCostsDiv          = chargyLib.CreateDiv(this.detailedInfosDiv,  "chargingPeriodsInfos");
+                                                       chargyLib.CreateDiv(totalCostsDiv,  "headline2",
+                                                                           this.chargy.GetLocalizedMessage("Charging Periods"));
+
+                        var chargingPeriodsTableDiv  = totalCostsDiv.appendChild(document.createElement('div'));
+                        chargingPeriodsTableDiv.classList.add("chargingPeriodsTable");
+
+                        for (let i=0; i<chargingSession.chargingPeriods.length; i++)
+                        {
+
+                            const chargingPeriod = chargingSession.chargingPeriods[i];
+
+                            if (chargingPeriod)
+                            {
+
+                                var chargingPeriodRow        = chargingPeriodsTableDiv.appendChild(document.createElement('div'));
+                                chargingPeriodRow.classList.add("chargingPeriodRow");
+                                chargingPeriodRow.onclick    = () => {
+                                    this.showChargingPeriodDetails(chargingPeriod);
+                                };
+
+                                const startTimestmapDiv      = chargingPeriodRow.appendChild(document.createElement('div'));
+                                startTimestmapDiv.classList.add("startTimestamp");
+                                startTimestmapDiv.innerHTML  = chargyLib.parseUTC(chargingPeriod.startTimestamp).format('DD.MM.YYYY HH:mm:ss');
+
+                                const duration = this.moment.duration(
+                                                     chargyLib.parseUTC(chargingPeriod.endTimestamp  ??
+                                                     chargingPeriod.stopTimestamp ??
+                                                     chargingSession.chargingPeriods[i+1]?.startTimestamp ??
+                                                     "")
+                                                      -
+                                                     chargyLib.parseUTC(chargingPeriod.startTimestamp)
+                                                 );
+
+                                const durationDiv            = chargingPeriodRow.appendChild(document.createElement('div'));
+                                durationDiv.classList.add("duration");
+                                durationDiv.innerHTML        = duration.hours() + "h " + duration.minutes() + "m" + duration.seconds() + "s";
+
+                            }
+
+                        }
+
+                    }
+
+                    //#endregion
+
+                    //#region Show charging total costs
+
+                    if (chargingSession.totalCosts)
+                    {
+
+                        const totalCostsDiv     = chargyLib.CreateDiv(this.detailedInfosDiv,  "totalCosts");
+                                                  chargyLib.CreateDiv(totalCostsDiv,  "headline2",
+                                                                      this.chargy.GetLocalizedMessage("Total Costs"));
+
+                        var costsTableDiv       = totalCostsDiv.appendChild(document.createElement('div'));
                         costsTableDiv.classList.add("costsTable");
 
-                        if (chargingSession.costs.reservation?.cost != null)
+                        if (chargingSession.totalCosts.reservation?.cost != null)
                         {
 
                             var reservationCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
@@ -2603,23 +2714,23 @@ export class ChargyApp {
 
                             var reservationCostsAmount   = reservationCostsRow.appendChild(document.createElement('div'));
                             reservationCostsAmount.classList.add("amount");
-                            reservationCostsAmount.innerHTML  = chargingSession.costs.reservation.amount.toString();
+                            reservationCostsAmount.innerHTML  = chargingSession.totalCosts.reservation.amount.toString();
 
                             var reservationCostsUnit     = reservationCostsRow.appendChild(document.createElement('div'));
                             reservationCostsUnit.classList.add("unit");
-                            reservationCostsUnit.innerHTML    = chargingSession.costs.reservation.unit;
+                            reservationCostsUnit.innerHTML    = chargingSession.totalCosts.reservation.unit;
 
                             var reservationCostsCost     = reservationCostsRow.appendChild(document.createElement('div'));
                             reservationCostsCost.classList.add("cost");
-                            reservationCostsCost.innerHTML   = chargingSession.costs.reservation.cost.toString();
+                            reservationCostsCost.innerHTML   = chargingSession.totalCosts.reservation.cost.toString();
 
                             var reservationCostsCurrency = reservationCostsRow.appendChild(document.createElement('div'));
                             reservationCostsCurrency.classList.add("currency");
-                            reservationCostsCurrency.innerHTML   = chargingSession.costs.currency;
+                            reservationCostsCurrency.innerHTML   = chargingSession.totalCosts.currency;
 
                         }
 
-                        if (chargingSession.costs.energy?.cost != null)
+                        if (chargingSession.totalCosts.energy?.cost != null)
                         {
 
                             var energyCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
@@ -2631,23 +2742,23 @@ export class ChargyApp {
 
                             var energyCostsAmount   = energyCostsRow.appendChild(document.createElement('div'));
                             energyCostsAmount.classList.add("amount");
-                            energyCostsAmount.innerHTML  = chargingSession.costs.energy.amount.toString();
+                            energyCostsAmount.innerHTML  = chargingSession.totalCosts.energy.amount.toString();
 
                             var energyCostsUnit     = energyCostsRow.appendChild(document.createElement('div'));
                             energyCostsUnit.classList.add("unit");
-                            energyCostsUnit.innerHTML    = chargingSession.costs.energy.unit;
+                            energyCostsUnit.innerHTML    = chargingSession.totalCosts.energy.unit;
 
                             var energyCostsCost     = energyCostsRow.appendChild(document.createElement('div'));
                             energyCostsCost.classList.add("cost");
-                            energyCostsCost.innerHTML   = chargingSession.costs.energy.cost.toString();
+                            energyCostsCost.innerHTML   = chargingSession.totalCosts.energy.cost.toString();
 
                             var energyCostsCurrency = energyCostsRow.appendChild(document.createElement('div'));
                             energyCostsCurrency.classList.add("currency");
-                            energyCostsCurrency.innerHTML   = chargingSession.costs.currency;
+                            energyCostsCurrency.innerHTML   = chargingSession.totalCosts.currency;
 
                         }
 
-                        if (chargingSession.costs.time?.cost != null)
+                        if (chargingSession.totalCosts.time?.cost != null)
                         {
 
                             var timeCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
@@ -2659,23 +2770,23 @@ export class ChargyApp {
 
                             var timeCostsAmount   = timeCostsRow.appendChild(document.createElement('div'));
                             timeCostsAmount.classList.add("amount");
-                            timeCostsAmount.innerHTML  = chargingSession.costs.time.amount.toString();
+                            timeCostsAmount.innerHTML  = chargingSession.totalCosts.time.amount.toString();
 
                             var timeCostsUnit     = timeCostsRow.appendChild(document.createElement('div'));
                             timeCostsUnit.classList.add("unit");
-                            timeCostsUnit.innerHTML    = chargingSession.costs.time.unit;
+                            timeCostsUnit.innerHTML    = chargingSession.totalCosts.time.unit;
 
                             var timeCostsCost     = timeCostsRow.appendChild(document.createElement('div'));
                             timeCostsCost.classList.add("cost");
-                            timeCostsCost.innerHTML   = chargingSession.costs.time.cost.toString();
+                            timeCostsCost.innerHTML   = chargingSession.totalCosts.time.cost.toString();
 
                             var timeCostsCurrency = timeCostsRow.appendChild(document.createElement('div'));
                             timeCostsCurrency.classList.add("currency");
-                            timeCostsCurrency.innerHTML   = chargingSession.costs.currency;
+                            timeCostsCurrency.innerHTML   = chargingSession.totalCosts.currency;
 
                         }
 
-                        if (chargingSession.costs.idle?.cost != null)
+                        if (chargingSession.totalCosts.idle?.cost != null)
                         {
 
                             var idleCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
@@ -2687,23 +2798,23 @@ export class ChargyApp {
 
                             var idleCostsAmount   = idleCostsRow.appendChild(document.createElement('div'));
                             idleCostsAmount.classList.add("amount");
-                            idleCostsAmount.innerHTML  = chargingSession.costs.idle.amount.toString();
+                            idleCostsAmount.innerHTML  = chargingSession.totalCosts.idle.amount.toString();
 
                             var idleCostsUnit     = idleCostsRow.appendChild(document.createElement('div'));
                             idleCostsUnit.classList.add("unit");
-                            idleCostsUnit.innerHTML    = chargingSession.costs.idle.unit;
+                            idleCostsUnit.innerHTML    = chargingSession.totalCosts.idle.unit;
 
                             var idleCostsCost     = idleCostsRow.appendChild(document.createElement('div'));
                             idleCostsCost.classList.add("cost");
-                            idleCostsCost.innerHTML   = chargingSession.costs.idle.cost.toString();
+                            idleCostsCost.innerHTML   = chargingSession.totalCosts.idle.cost.toString();
 
                             var idleCostsCurrency = idleCostsRow.appendChild(document.createElement('div'));
                             idleCostsCurrency.classList.add("currency");
-                            idleCostsCurrency.innerHTML   = chargingSession.costs.currency;
+                            idleCostsCurrency.innerHTML   = chargingSession.totalCosts.currency;
 
                         }
 
-                        if (chargingSession.costs.flat?.cost != null)
+                        if (chargingSession.totalCosts.flat?.cost != null)
                         {
 
                             var flatCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
@@ -2721,11 +2832,11 @@ export class ChargyApp {
 
                             var flatCostsCost     = flatCostsRow.appendChild(document.createElement('div'));
                             flatCostsCost.classList.add("cost");
-                            flatCostsCost.innerHTML   = chargingSession.costs.flat.cost.toString();
+                            flatCostsCost.innerHTML   = chargingSession.totalCosts.flat.cost.toString();
 
                             var flatCostsCurrency = flatCostsRow.appendChild(document.createElement('div'));
                             flatCostsCurrency.classList.add("currency");
-                            flatCostsCurrency.innerHTML   = chargingSession.costs.currency;
+                            flatCostsCurrency.innerHTML   = chargingSession.totalCosts.currency;
 
                         }
 
@@ -3038,6 +3149,150 @@ export class ChargyApp {
 
     //#endregion
 
+    //#region showChargingTariffDetails
+
+    private showChargingTariffDetails(measurementValue:  chargyInterfaces.IChargingTariff) : void
+    {
+
+        function doError(text: String)
+        {
+            errorDiv.innerHTML          = '<i class="fas fa-times-circle"></i> ' + text;
+            introDiv.style.display      = "none";
+        }
+
+        //#region Headline
+
+        const headlineDiv               = this.chargingTariffDetailsDiv.querySelector('.headline')  as HTMLDivElement;
+        const errorDiv                  = headlineDiv.    querySelector('.error')                   as HTMLDivElement;
+        const introDiv                  = headlineDiv.    querySelector('.intro')                   as HTMLDivElement;
+        errorDiv.innerHTML              = "";
+        introDiv.style.display          = "block";
+
+        //#endregion
+
+        // if (!measurementValue?.measurement ||
+        //     !measurementValue.method)
+        // {
+        //     doError(this.chargy.GetLocalizedMessage("Unknown meter data record format!"));
+        //     return;
+        // }
+
+        //#region Show data and result on overlay
+
+        this.chargingTariffDetailsDiv.style.display = 'block';
+
+        // const dataDiv                   = this.overlayDiv.querySelector('.data')                      as HTMLDivElement;
+        // const cryptoDataDiv             = dataDiv.        querySelector('#cryptoData')                as HTMLDivElement;
+        // const bufferDiv                 = dataDiv.        querySelector('#buffer .value')             as HTMLDivElement;
+        // const hashedBufferDiv           = dataDiv.        querySelector('#hashedBuffer .value')       as HTMLDivElement;
+        // const publicKeyDiv              = dataDiv.        querySelector('#publicKey .value')          as HTMLDivElement;
+        // const signatureExpectedDiv      = dataDiv.        querySelector('#signatureExpected .value')  as HTMLDivElement;
+
+        // cryptoDataDiv.innerHTML         = '';
+        // bufferDiv.innerHTML             = '';
+        // hashedBufferDiv.innerHTML       = '<span class="error">0x00000000000000000000000000000000000</stlye>';
+        // publicKeyDiv.innerHTML          = '<span class="error">0x00000000000000000000000000000000000</stlye>';
+        // signatureExpectedDiv.innerHTML  = '<span class="error">0x00000000000000000000000000000000000</stlye>';
+
+        //#endregion
+
+        //#region Footer
+
+        const footerDiv                 = this.measurementsDetailsDiv.querySelector('.footer')                    as HTMLDivElement;
+        const signatureCheckDiv         = footerDiv.      querySelector('#signatureCheck')            as HTMLDivElement;
+
+        signatureCheckDiv.innerHTML     = '';
+
+        //#endregion
+
+        // measurementValue.method.ViewMeasurement(measurementValue,
+        //                                         errorDiv,
+        //                                         introDiv,
+
+        //                                         cryptoDataDiv,
+        //                                         bufferDiv,
+        //                                         hashedBufferDiv,
+        //                                         publicKeyDiv,
+        //                                         signatureExpectedDiv,
+
+        //                                         signatureCheckDiv);
+
+    }
+
+    //#endregion
+
+    //#region showChargingPeriodDetails
+
+    private showChargingPeriodDetails(chargingPeriod:  chargyInterfaces.IChargingPeriod) : void
+    {
+
+        function doError(text: String)
+        {
+            errorDiv.innerHTML          = '<i class="fas fa-times-circle"></i> ' + text;
+            introDiv.style.display      = "none";
+        }
+
+        //#region Headline
+
+        const headlineDiv               = this.chargingTariffDetailsDiv.querySelector('.headline')  as HTMLDivElement;
+        const errorDiv                  = headlineDiv.    querySelector('.error')                   as HTMLDivElement;
+        const introDiv                  = headlineDiv.    querySelector('.intro')                   as HTMLDivElement;
+        errorDiv.innerHTML              = "";
+        introDiv.style.display          = "block";
+
+        //#endregion
+
+        // if (!measurementValue?.measurement ||
+        //     !measurementValue.method)
+        // {
+        //     doError(this.chargy.GetLocalizedMessage("Unknown meter data record format!"));
+        //     return;
+        // }
+
+        //#region Show data and result on overlay
+
+        this.chargingPeriodDetailsDiv.style.display = 'block';
+
+        // const dataDiv                   = this.overlayDiv.querySelector('.data')                      as HTMLDivElement;
+        // const cryptoDataDiv             = dataDiv.        querySelector('#cryptoData')                as HTMLDivElement;
+        // const bufferDiv                 = dataDiv.        querySelector('#buffer .value')             as HTMLDivElement;
+        // const hashedBufferDiv           = dataDiv.        querySelector('#hashedBuffer .value')       as HTMLDivElement;
+        // const publicKeyDiv              = dataDiv.        querySelector('#publicKey .value')          as HTMLDivElement;
+        // const signatureExpectedDiv      = dataDiv.        querySelector('#signatureExpected .value')  as HTMLDivElement;
+
+        // cryptoDataDiv.innerHTML         = '';
+        // bufferDiv.innerHTML             = '';
+        // hashedBufferDiv.innerHTML       = '<span class="error">0x00000000000000000000000000000000000</stlye>';
+        // publicKeyDiv.innerHTML          = '<span class="error">0x00000000000000000000000000000000000</stlye>';
+        // signatureExpectedDiv.innerHTML  = '<span class="error">0x00000000000000000000000000000000000</stlye>';
+
+        //#endregion
+
+        //#region Footer
+
+        const footerDiv                 = this.measurementsDetailsDiv.querySelector('.footer')                    as HTMLDivElement;
+        const signatureCheckDiv         = footerDiv.      querySelector('#signatureCheck')            as HTMLDivElement;
+
+        signatureCheckDiv.innerHTML     = '';
+
+        //#endregion
+
+        // measurementValue.method.ViewMeasurement(measurementValue,
+        //                                         errorDiv,
+        //                                         introDiv,
+
+        //                                         cryptoDataDiv,
+        //                                         bufferDiv,
+        //                                         hashedBufferDiv,
+        //                                         publicKeyDiv,
+        //                                         signatureExpectedDiv,
+
+        //                                         signatureCheckDiv);
+
+    }
+
+    //#endregion
+
     //#region showMeasurementCryptoDetails
 
     private showMeasurementCryptoDetails(measurementValue:  chargyInterfaces.IMeasurementValue) : void
@@ -3051,9 +3306,9 @@ export class ChargyApp {
 
         //#region Headline
 
-        const headlineDiv               = this.overlayDiv.querySelector('.headline')  as HTMLDivElement;
-        const errorDiv                  = headlineDiv.    querySelector('.error')     as HTMLDivElement;
-        const introDiv                  = headlineDiv.    querySelector('.intro')     as HTMLDivElement;
+        const headlineDiv               = this.measurementsDetailsDiv.querySelector('.headline')  as HTMLDivElement;
+        const errorDiv                  = headlineDiv.                querySelector('.error')     as HTMLDivElement;
+        const introDiv                  = headlineDiv.                querySelector('.intro')     as HTMLDivElement;
         errorDiv.innerHTML              = "";
         introDiv.style.display          = "block";
 
@@ -3068,14 +3323,14 @@ export class ChargyApp {
 
         //#region Show data and result on overlay
 
-        this.overlayDiv.style.display = 'block';
+        this.measurementsDetailsDiv.style.display = 'block';
 
-        const dataDiv                   = this.overlayDiv.querySelector('.data')                      as HTMLDivElement;
-        const cryptoDataDiv             = dataDiv.        querySelector('#cryptoData')                as HTMLDivElement;
-        const bufferDiv                 = dataDiv.        querySelector('#buffer .value')             as HTMLDivElement;
-        const hashedBufferDiv           = dataDiv.        querySelector('#hashedBuffer .value')       as HTMLDivElement;
-        const publicKeyDiv              = dataDiv.        querySelector('#publicKey .value')          as HTMLDivElement;
-        const signatureExpectedDiv      = dataDiv.        querySelector('#signatureExpected .value')  as HTMLDivElement;
+        const dataDiv                   = this.measurementsDetailsDiv.querySelector('.data')                      as HTMLDivElement;
+        const cryptoDataDiv             = dataDiv.                    querySelector('#cryptoData')                as HTMLDivElement;
+        const bufferDiv                 = dataDiv.                    querySelector('#buffer .value')             as HTMLDivElement;
+        const hashedBufferDiv           = dataDiv.                    querySelector('#hashedBuffer .value')       as HTMLDivElement;
+        const publicKeyDiv              = dataDiv.                    querySelector('#publicKey .value')          as HTMLDivElement;
+        const signatureExpectedDiv      = dataDiv.                    querySelector('#signatureExpected .value')  as HTMLDivElement;
 
         cryptoDataDiv.innerHTML         = '';
         bufferDiv.innerHTML             = '';
@@ -3087,8 +3342,8 @@ export class ChargyApp {
 
         //#region Footer
 
-        const footerDiv                 = this.overlayDiv.querySelector('.footer')                    as HTMLDivElement;
-        const signatureCheckDiv         = footerDiv.      querySelector('#signatureCheck')            as HTMLDivElement;
+        const footerDiv                 = this.measurementsDetailsDiv.querySelector('.footer')                    as HTMLDivElement;
+        const signatureCheckDiv         = footerDiv.                  querySelector('#signatureCheck')            as HTMLDivElement;
 
         signatureCheckDiv.innerHTML     = '';
 

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2024 GraphDefined GmbH <achim.friedland@graphdefined.com>
- * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
+ * This file is part of Chargy WebApp <https://github.com/OpenChargingCloud/ChargyWebApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -343,6 +343,8 @@ export class Alfen  {
                      }
                  ],
 
+                 "chargingTariffs":  ContainerInfos.chargingTariffs,
+
                  "chargingSessions": [
 
                      {
@@ -358,10 +360,11 @@ export class Alfen  {
                              "@id":                      common.UID,
                          },
 
-                         "costs":                        ContainerInfos.chargingCosts,
+                         "chargingTariffs":              ContainerInfos.chargingTariffs,
+                         "chargingPeriods":              ContainerInfos.chargingPeriods,
+                         "totalCosts":                   ContainerInfos.totalCosts,
 
                          "measurements": [
-
                              {
 
                                  "energyMeterId":        common.MeterId,
@@ -386,7 +389,6 @@ export class Alfen  {
                                  "values": [ ]
 
                              }
-
                          ]
 
                      }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-body {
+ body {
 
     margin:             0;
     padding:            0;
@@ -1241,7 +1241,101 @@ body {
 
                     }
 
-                    .costsAndTariffInfos {
+                    .chargingTariffsInfos {
+
+                        .headline2 {
+                            margin-top: 0.6vh;
+                            font-weight: bold;
+                        }
+
+                        .tariffsTable {
+
+                            display:            table-row-group;
+
+                            .chargingTariffRow {
+
+                                display:            table-row;
+                                cursor:             zoom-in;
+
+
+                                .shortName {
+                                    display:            table-cell;
+                                    padding-left:       12px;
+                                    padding-right:      2vw;
+                                    border-radius:      4px 0px 0px 4px;
+                                    white-space:        nowrap;
+                                }
+
+                                .summary {
+                                    display:            table-cell;
+                                    padding-left:       12px;
+                                    padding-right:      2vw;
+                                    border-radius:      0px 4px 4px 0px;
+                                    white-space:        nowrap;
+                                }
+
+                                .description {
+                                    display:            table-cell;
+                                    padding-left:       12px;
+                                    padding-right:      2vw;
+                                    border-radius:      0px 4px 4px 0px;
+                                    white-space:        nowrap;
+                                }
+
+                            }
+
+                            .chargingTariffRow:hover {
+                                background-color:     #72b3e2;
+                            }
+
+                        }
+
+                    }
+
+                    .chargingPeriodsInfos {
+
+                        .headline2 {
+                            margin-top: 0.6vh;
+                            font-weight: bold;
+                        }
+
+                        .chargingPeriodsTable {
+
+                            display:            table-row-group;
+
+                            .chargingPeriodRow {
+
+                                display:            table-row;
+                                cursor:             zoom-in;
+
+
+                                .startTimestamp {
+                                    display:            table-cell;
+                                    padding-left:       12px;
+                                    padding-right:      2vw;
+                                    border-radius:      4px 0px 0px 4px;
+                                    white-space:        nowrap;
+                                }
+
+                                .duration {
+                                    display:            table-cell;
+                                    padding-left:       12px;
+                                    padding-right:      2vw;
+                                    border-radius:      0px 4px 4px 0px;
+                                    white-space:        nowrap;
+                                }
+
+                            }
+
+                            .chargingPeriodRow:hover {
+                                background-color:     #72b3e2;
+                            }
+
+                        }
+
+                    }
+
+                    .totalCosts {
 
                         .headline2 {
                             margin-top: 0.6vh;
@@ -1449,9 +1543,8 @@ body {
 
         }
 
-        #overlay {
+        .overlay {
 
-            display:                none;
             position:               absolute;
             font-family:            sans-serif;
             font-size:              90%;
@@ -1460,7 +1553,7 @@ body {
             height:                 100vh;
             margin:                 auto;
 
-            #overlayText {
+            .overlayText {
 
                 position:               relative;
                 top:                    5%;
@@ -1495,6 +1588,60 @@ body {
                     }
 
                 }
+
+                .spacer {
+                    flex-grow:          1;
+                    visibility:         hidden;
+                }
+
+                .footer {
+
+                    display:            flex;
+                    justify-content:    space-between;
+                    align-items:        end;
+
+                    .overlayLeftButton {
+                        border:             0;
+                        outline:            0;
+                        background-color:   transparent;
+                        color:            #b6d8f1;
+                        margin:             4px;
+                        font-size:          280%;
+                    }
+
+                    .overlayLeftButton:hover {
+                        color:            #519ad0;
+                    }
+
+                    .overlayRightButton {
+                        visibility:         hidden;
+                        border:             0;
+                        outline:            0;
+                        background-color:   transparent;
+                        color:            #b6d8f1;
+                        margin:             4px;
+                        font-size:          280%;
+                    }
+
+                    .overlayRightButton:hover {
+                        color:            #519ad0;
+                    }
+
+                }
+
+            }
+
+            .overlayText::-webkit-scrollbar {
+                display:            none;
+            }
+
+        }
+
+        #chargingTariffDetails {
+
+            display:    none;
+
+            .overlayText {
 
                 .data {
 
@@ -1670,29 +1817,7 @@ body {
 
                 }
 
-                .spacer {
-                    flex-grow:          1;
-                    visibility:         hidden;
-                }
-
                 .footer {
-
-                    display:            flex;
-                    justify-content:    space-between;
-                    align-items:        end;
-
-                    #overlayLeftButton {
-                        border:             0;
-                        outline:            0;
-                        background-color:   transparent;
-                        color:            #b6d8f1;
-                        margin:             4px;
-                        font-size:          280%;
-                    }
-
-                    #overlayLeftButton:hover {
-                        color:            #519ad0;
-                    }
 
                     #signatureCheck {
 
@@ -1711,55 +1836,265 @@ body {
 
                     }
 
-                    #overlayRightButton {
+                    .overlayRightButton {
                         visibility:         hidden;
-                        border:             0;
-                        outline:            0;
-                        background-color:   transparent;
-                        color:            #b6d8f1;
-                        margin:             4px;
-                        font-size:          280%;
-                    }
-
-                    #overlayRightButton:hover {
-                        color:            #519ad0;
                     }
 
                 }
 
             }
 
-            #overlayText::-webkit-scrollbar {
-                display:            none;
+        }
+
+        #chargingPeriodDetails {
+
+            display:    none;
+
+            .overlayText {
+
+                .footer {
+
+                    #signatureCheck {
+
+                        margin:         4vh 0 2vh 0;
+                        text-align:     center;
+                        font-size:      150%;
+                        
+                        i {
+                            font-size: 200%;
+                        }
+
+                        #description {
+                            position: relative;
+                            line-height: 200%;
+                        }
+
+                    }
+
+                    .overlayRightButton {
+                        visibility:         hidden;
+                    }
+
+                }
+
+            }
+
+        }
+
+        #measurementsDetails {
+
+            display:    none;
+
+            .overlayText {
+
+                .data {
+
+                    #cryptoData {
+
+                        display:                table;
+                        margin-bottom:          5px;
+
+                        .row {
+
+                            display:                table-row;
+
+                            .id {
+                                display:                table-cell;
+                                padding:                2px 10px 1px 8px;
+                                font-weight:            bold;
+                                border-radius:          4px 0px 0px 4px;
+                            }
+
+                            .value {
+
+                                display:                table-cell;
+                                padding:                2px 8px 1px 0px;
+                                border-radius:          0px 4px 4px 0px;
+
+                                .statusInfos {
+                                    font-style:             italic;
+                                    font-size:              90%;
+                                }
+
+                            }
+
+                        }
+
+                        .row:hover {
+                            background-color:       orange;
+                        }
+
+                        .overEntry {
+                            background-color:       orange;
+                        }
+
+                    }
+
+                    .infoblock {
+
+                        font-family:            monospace;
+                        font-size:              110%;
+                        margin-bottom:          10px;
+
+                        .description {
+                            position:               relative;
+                            top:                    8px;
+                            left:                   10px;
+                            background-color:       #98c3e2;
+                            display:                inline-block;
+                            padding:                1px 6px;
+                            border-radius:          4px;
+                            font-size:              85%;
+                        }
+
+                        .value {
+                            overflow-wrap:          break-word;
+                            background-color:       #E1E1E1;
+                            border-radius:          4px;
+                            padding:                11px 10px 6px 10px;
+                            width:                  calc(100% - 20px);
+                        }
+
+                    }
+
+                    .errorblock {
+
+                        display:                    none;
+
+                        .description {
+                            background-color:       #980000;
+                        }
+
+                        .value {
+                            background-color:       #dfbcbc;
+                        }
+                        
+                    }
+
+                    #buffer {
+
+                        .value {
+
+                            .entry {
+                                display:            inline;
+                                padding:            1px 4px 1px 4px;
+                                margin-left:        -4px;
+                                border-radius:      4px;
+                                word-break:         break-all;
+                            }
+
+                            .entry:hover {
+                                background-color:   orange;
+                            }
+
+                            .overEntry {
+                                background-color:   orange;
+                            }
+
+                            .ocmfSeparator {
+                                color:              #e20000;
+                            }
+
+                            .ocmfHighlight {
+                                color:              #5c7aa9;
+                            }
+
+                            .compactValue {
+                                display:            block;
+                            }
+
+                            .prettyValue {
+
+                                display:            none;
+
+                                .jsonKey {
+                                    font-weight:      bold;
+                                }
+
+                                .jsonString {
+                                    color:            rgb(56, 56, 144)
+                                }
+
+                                .jsonNumber {
+                                    color:            rgb(43, 110, 43)
+                                }
+
+                                .jsonBoolean {
+                                    color:            rgb(174, 45, 45)
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                    #publicKey {
+
+                        .value {
+                            .leadingFour {
+                                color:              #969696;
+                            }
+                        }
+
+                        .sigHead {
+                            display:            none;
+                            padding:            5px 10px 0px 10px;
+                            font-size:          80%;
+                        }
+
+                        .signatures {
+
+                            display:            flex;
+                            padding:            3px 0px 0px 0px;
+                            font-family:        sans-serif;
+                            font-size:          70%;
+                            color:              #6d6d6d;
+
+                            i {
+                                padding:            0px 3px 0px 10px;
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                .footer {
+
+                    #signatureCheck {
+
+                        margin:         4vh 0 2vh 0;
+                        text-align:     center;
+                        font-size:      150%;
+                        
+                        i {
+                            font-size: 200%;
+                        }
+
+                        #description {
+                            position: relative;
+                            line-height: 200%;
+                        }
+
+                    }
+
+                    .overlayRightButton {
+                        visibility:         hidden;
+                    }
+
+                }
+
             }
 
         }
 
         #issueTracker {
 
-            position:               absolute;
-            font-family:            sans-serif;
-            font-size:              90%;
-            background-color:     rgba(0, 0, 0, 0.3);
-            width:                  100vw;
-            height:                 100vh;
-            margin:                 auto;
-            //border-radius:          8px;
+            display:    none;
 
-            #issueTrackerText {
-
-                position:               relative;
-                top:                    5%;
-                width:                  calc(90% - 20px);
-                height:                 calc(90% - 50px);
-                margin:                 auto;
-                padding:                1px;
-                background-color:     #f5f5f5;
-                border:                 10px solid #f5f5f5;
-                border-radius:          6px;
-                box-shadow:             2px 0 16px 0 rgba(0,0,0,.3);
-                overflow-y:             scroll;
-                z-index:                9000;
+            .overlayText {
 
                 #headline {
                     padding:                8px 8px 0px 8px;
@@ -1870,31 +2205,6 @@ body {
 
                 }
 
-                #issueBackButtonDiv {
-
-                    // position:       fixed;
-                    // left:           6%;
-                    // bottom:         10%;
-
-                    #issueBackButton {
-                        border:             0;
-                        outline:            0;
-                        background-color:   transparent;
-                        color:            #b6d8f1;
-                        margin:             4px;
-                        font-size:          280%;
-                    }
-
-                    #issueBackButton:hover {
-                        color:            #519ad0;
-                    }
-
-                }
-
-            }
-
-            #issueTrackerText::-webkit-scrollbar {
-                display:            none;
             }
 
         }

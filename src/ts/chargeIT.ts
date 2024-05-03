@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2024 GraphDefined GmbH <achim.friedland@graphdefined.com>
- * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
+ * This file is part of Chargy WebApp <https://github.com/OpenChargingCloud/ChargyWebApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1142,23 +1142,27 @@ export class ChargeIT {
                 const connectorInfo_type                         = SomeJSON.connectorInfo?.type;
                 const connectorInfo_losses                       = SomeJSON.connectorInfo?.losses;
 
-                const chargingCostsInfo                          = SomeJSON.chargingCostsInfo;
-                const chargingCostsInfo_total                    = SomeJSON.chargingCostsInfo?.total;
-                const chargingCostsInfo_currency                 = SomeJSON.chargingCostsInfo?.currency;
-                const chargingCostsInfo_reservation              = SomeJSON.chargingCostsInfo?.reservation;
-                const chargingCostsInfo_reservation_cost         = SomeJSON.chargingCostsInfo?.reservation?.cost;
-                const chargingCostsInfo_reservation_unit         = SomeJSON.chargingCostsInfo?.reservation?.unit;
-                const chargingCostsInfo_energy                   = SomeJSON.chargingCostsInfo?.energy;
-                const chargingCostsInfo_energy_cost              = SomeJSON.chargingCostsInfo?.energy?.cost;
-                const chargingCostsInfo_energy_unit              = SomeJSON.chargingCostsInfo?.energy?.unit;
-                const chargingCostsInfo_time                     = SomeJSON.chargingCostsInfo?.time;
-                const chargingCostsInfo_time_cost                = SomeJSON.chargingCostsInfo?.time?.cost;
-                const chargingCostsInfo_time_unit                = SomeJSON.chargingCostsInfo?.time?.unit;
-                const chargingCostsInfo_idle                     = SomeJSON.chargingCostsInfo?.idle;
-                const chargingCostsInfo_idle_cost                = SomeJSON.chargingCostsInfo?.idle?.cost;
-                const chargingCostsInfo_idle_unit                = SomeJSON.chargingCostsInfo?.idle?.unit;
-                const chargingCostsInfo_flat                     = SomeJSON.chargingCostsInfo?.flat;
-                const chargingCostsInfo_flat_cost                = SomeJSON.chargingCostsInfo?.flat?.cost;
+                const chargingTariffs                            = SomeJSON.chargingTariffs;
+
+                const chargingPeriods                            = SomeJSON.chargingPeriods;
+
+                const totalCosts                                 = SomeJSON.totalCosts;
+                const totalCosts_total                           = SomeJSON.totalCosts?.total;
+                const totalCosts_currency                        = SomeJSON.totalCosts?.currency;
+                const totalCosts_reservation                     = SomeJSON.totalCosts?.reservation;
+                const totalCosts_reservation_cost                = SomeJSON.totalCosts?.reservation?.cost;
+                const totalCosts_reservation_unit                = SomeJSON.totalCosts?.reservation?.unit;
+                const totalCosts_energy                          = SomeJSON.totalCosts?.energy;
+                const totalCosts_energy_cost                     = SomeJSON.totalCosts?.energy?.cost;
+                const totalCosts_energy_unit                     = SomeJSON.totalCosts?.energy?.unit;
+                const totalCosts_time                            = SomeJSON.totalCosts?.time;
+                const totalCosts_time_cost                       = SomeJSON.totalCosts?.time?.cost;
+                const totalCosts_time_unit                       = SomeJSON.totalCosts?.time?.unit;
+                const totalCosts_idle                            = SomeJSON.totalCosts?.idle;
+                const totalCosts_idle_cost                       = SomeJSON.totalCosts?.idle?.cost;
+                const totalCosts_idle_unit                       = SomeJSON.totalCosts?.idle?.unit;
+                const totalCosts_flat                            = SomeJSON.totalCosts?.flat;
+                const totalCosts_flat_cost                       = SomeJSON.totalCosts?.flat?.cost;
 
                 const signedMeterValues                          = SomeJSON.signedMeterValues;
 
@@ -1356,69 +1360,85 @@ export class ChargeIT {
 
                 //#endregion
 
-                //#region chargingCostsInfo
+                //#region chargingTariffs
 
-                if (chargingCostsInfo)
+                if (chargingTariffs)
                 {
 
-                    if (!chargyLib.isMandatoryNumber(chargingCostsInfo_total))
-                        errors.push(this.chargy.GetLocalizedMessage("Missing or invalid total costs within the charging costs!"));
-
-                    if (!chargyLib.isMandatoryString(chargingCostsInfo_currency))
-                        errors.push(this.chargy.GetLocalizedMessage("Missing or invalid currency within the charging costs!"));
-
-                    if (chargingCostsInfo_reservation)
+                    for (let i = 0; i < chargingTariffs.length; i++)
                     {
 
-                        if (!chargyLib.isMandatoryNumber(chargingCostsInfo_reservation_cost))
+                        const chargingTariff = chargingTariffs[i];
+
+                    }
+
+                }
+
+                //#endregion
+
+                //#region totalCosts
+
+                if (totalCosts)
+                {
+
+                    if (!chargyLib.isMandatoryNumber(totalCosts_total))
+                        errors.push(this.chargy.GetLocalizedMessage("Missing or invalid total costs within the charging costs!"));
+
+                    if (!chargyLib.isMandatoryString(totalCosts_currency))
+                        errors.push(this.chargy.GetLocalizedMessage("Missing or invalid currency within the charging costs!"));
+
+                    if (totalCosts_reservation)
+                    {
+
+                        if (!chargyLib.isMandatoryNumber(totalCosts_reservation_cost))
                             errors.push(this.chargy.GetLocalizedMessage("Missing or invalid reservation cost within the charging costs!"));
 
                         // ToDo: Check for valid reservation unit
-                        if (!chargyLib.isMandatoryString(chargingCostsInfo_reservation_unit))
+                        if (!chargyLib.isMandatoryString(totalCosts_reservation_unit))
                             errors.push(this.chargy.GetLocalizedMessage("Missing or invalid reservation unit within the charging costs!"));
 
                     }
 
-                    if (chargingCostsInfo_energy)
+                    if (totalCosts_energy)
                     {
 
-                        if (!chargyLib.isMandatoryNumber(chargingCostsInfo_energy_cost))
+                        if (!chargyLib.isMandatoryNumber(totalCosts_energy_cost))
                             errors.push(this.chargy.GetLocalizedMessage("Missing or invalid energy cost within the charging costs!"));
 
                         // ToDo: Check for valid energy unit
-                        if (!chargyLib.isMandatoryString(chargingCostsInfo_energy_unit))
+                        if (!chargyLib.isMandatoryString(totalCosts_energy_unit))
                             errors.push(this.chargy.GetLocalizedMessage("Missing or invalid energy unit within the charging costs!"));
 
                     }
 
-                    if (chargingCostsInfo_time)
+                    if (totalCosts_time)
                     {
 
-                        if (!chargyLib.isMandatoryNumber(chargingCostsInfo_time_cost))
+                        if (!chargyLib.isMandatoryNumber(totalCosts_time_cost))
                             errors.push(this.chargy.GetLocalizedMessage("Missing or invalid time cost within the charging costs!"));
 
                         // ToDo: Check for valid time unit
-                        if (!chargyLib.isMandatoryString(chargingCostsInfo_time_unit))
+                        if (!chargyLib.isMandatoryString(totalCosts_time_unit))
                             errors.push(this.chargy.GetLocalizedMessage("Missing or invalid time unit within the charging costs!"));
 
                     }
 
-                    if (chargingCostsInfo_idle)
+                    if (totalCosts_idle)
                     {
 
-                        if (!chargyLib.isMandatoryNumber(chargingCostsInfo_idle_cost))
+                        if (!chargyLib.isMandatoryNumber(totalCosts_idle_cost))
                             errors.push(this.chargy.GetLocalizedMessage("Missing or invalid idle cost within the charging costs!"));
 
                         // ToDo: Check for valid idle unit
-                        if (!chargyLib.isMandatoryString(chargingCostsInfo_idle_unit))
+                        if (!chargyLib.isMandatoryString(totalCosts_idle_unit))
                             errors.push(this.chargy.GetLocalizedMessage("Missing or invalid idle unit within the charging costs!"));
 
                     }
 
-                    if (chargingCostsInfo_flat)
+                    if (totalCosts_flat)
                     {
 
-                        if (!chargyLib.isMandatoryNumber(chargingCostsInfo_flat_cost))
+                        if (!chargyLib.isMandatoryNumber(totalCosts_flat_cost))
                             errors.push(this.chargy.GetLocalizedMessage("Missing or invalid flat cost within the charging costs!"));
 
                     }
@@ -1562,7 +1582,9 @@ export class ChargeIT {
                                             }
                                         ]
                                     }
-                                ]
+                                ],
+
+                                "chargingTariffs":          chargingTariffs
 
                             }
                         ],
@@ -1591,7 +1613,6 @@ export class ChargeIT {
                                                 firmwareVersion:  chargingStation_controllerSoftwareVersion,
                                                 legalCompliance:  {
                                                     conformity: [{
-
                                                         freeText:  chargingStation_compliance
                                                     }],
                                                     calibration: [{
@@ -1603,7 +1624,9 @@ export class ChargeIT {
                                              },
                                             energyMeter:          meterInfo,
                                             connector:            connectorInfo,
-                                            chargingCosts:        chargingCostsInfo
+                                            chargingTariffs:      chargingTariffs,
+                                            chargingPeriods:      chargingPeriods,
+                                            totalCosts:           totalCosts
                                          });
 
                 }
