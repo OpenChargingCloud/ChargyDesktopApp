@@ -912,3 +912,5 @@ export interface IParkingTariff {
     signatures?:                Array<ISignatureRS>
 
 }
+
+export type ShowPKIDetailsFunction = (pkiData: any) => void;

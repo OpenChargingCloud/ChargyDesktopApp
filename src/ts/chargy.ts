@@ -37,12 +37,13 @@ export class Chargy {
 
     //#region Data
 
-    public  readonly i18n:          any;
-    public  readonly UILanguage:    string;
-    public  readonly elliptic:      any;
-    public  readonly moment:        any;
-    public  readonly asn1:          any;
-    public  readonly base32Decode:  any;
+    public  readonly i18n:            any;
+    public  readonly UILanguage:      string;
+    public  readonly elliptic:        any;
+    public  readonly moment:          any;
+    public  readonly asn1:            any;
+    public  readonly base32Decode:    any;
+    public  readonly showPKIDetails:  chargyInterfaces.ShowPKIDetailsFunction;
 
     private chargingStationOperators  = new Array<chargyInterfaces.IChargingStationOperator>();
     private chargingPools             = new Array<chargyInterfaces.IChargingPool>();
@@ -59,19 +60,21 @@ export class Chargy {
 
     //#endregion
 
-    constructor(i18n:          any,
-                UILanguage:    string,
-                elliptic:      any,
-                moment:        any,
-                asn1:          any,
-                base32Decode:  any) {
+    constructor(i18n:            any,
+                UILanguage:      string,
+                elliptic:        any,
+                moment:          any,
+                asn1:            any,
+                base32Decode:    any,
+                ShowPKIDetails:  chargyInterfaces.ShowPKIDetailsFunction) {
 
-        this.i18n          = i18n;
-        this.UILanguage    = UILanguage;
-        this.elliptic      = elliptic;
-        this.moment        = moment;
-        this.asn1          = asn1;
-        this.base32Decode  = base32Decode;
+        this.i18n            = i18n;
+        this.UILanguage      = UILanguage;
+        this.elliptic        = elliptic;
+        this.moment          = moment;
+        this.asn1            = asn1;
+        this.base32Decode    = base32Decode;
+        this.showPKIDetails  = ShowPKIDetails;
 
     }
 
@@ -238,7 +241,7 @@ export class Chargy {
                               //           update(Input, 'utf8').
                               //           digest('hex');
 
-            var result = new this.elliptic.ec('secp256k1').
+            var result = new this.elliptic.ec('secp256r1').
                                   keyFromPublic(signature.publicKey, 'hex').
                                   verify       (sha256value,
                                                 signature.signature);

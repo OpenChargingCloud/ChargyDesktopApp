@@ -366,16 +366,28 @@ export class EMHCrypt01 extends ACrypt {
                     try
                     {
 
-                        const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
+                        const signatureDiv = PublicKeyDiv.parentElement?.children[3]?.appendChild(document.createElement('div'));
 
-                        if (signatureDiv != null)
-                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession?.chargingStation,
-                                                                                                    measurementValue.measurement.chargingSession?.EVSE,
-                                                                                                    //@ts-ignore
-                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                                                    //@ts-ignore
-                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
-                                                                                                    signature);
+                        if (signatureDiv)
+                        {
+
+                            signatureDiv.classList.add("signature");
+
+                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(
+                                                               measurementValue.measurement.chargingSession?.chargingStation,
+                                                               measurementValue.measurement.chargingSession?.EVSE,
+                                                               //@ts-ignore
+                                                               measurementValue.measurement.chargingSession.EVSE.meters[0],
+                                                               //@ts-ignore
+                                                               measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                               signature
+                                                           );
+
+                            signatureDiv.onclick  = () => {
+                                this.chargy.showPKIDetails({});
+                            }
+
+                        }
 
                     }
                     catch (exception)

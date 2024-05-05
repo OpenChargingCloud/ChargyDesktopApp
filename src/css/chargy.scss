@@ -268,6 +268,9 @@
                                 font-family:        monospace;
                                 font-size:          110%;
                                 margin-top:         3px;
+                                background-color:   rgb(192 192 192 / 30%);
+                                padding:            6px 8px;
+                                border-radius:      4px;
                             }
 
                             #sigHead {
@@ -495,7 +498,7 @@
                                                 .signer {
                                                     display:            table-cell;
                                                     padding:            2px 0px 2px 5px;
-                                                    vertical-align:     middle;                                                
+                                                    vertical-align:     middle;
                                                     font-size:          85%;
                                                 }
 
@@ -2046,13 +2049,20 @@
                         .signatures {
 
                             display:            flex;
-                            padding:            3px 0px 0px 0px;
+                            padding-left:       5px;
                             font-family:        sans-serif;
                             font-size:          70%;
                             color:              #6d6d6d;
 
-                            i {
-                                padding:            0px 3px 0px 10px;
+                            .signature {
+
+                                padding:            3px 7px 2px 5px;
+                                cursor:             zoom-in;
+
+                                i {
+                                    padding-right:      4px;
+                                }
+
                             }
 
                         }
@@ -2102,6 +2112,7 @@
 
                 form {
 
+                    flex-grow:          2;
                     padding:            5px 20px 20px 20px;
 
                     .label {
@@ -2201,6 +2212,24 @@
                             color:              #999999;
                         }
 
+                    }
+
+                }
+
+            }
+
+        }
+
+        #pkiDetails {
+
+            display:    none;
+
+            .overlayText {
+
+                .footer {
+
+                    .overlayRightButton {
+                        visibility:         hidden;
                     }
 
                 }
