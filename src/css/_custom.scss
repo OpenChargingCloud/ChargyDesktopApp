@@ -1,6 +1,6 @@
 ﻿/*
  * Copyright (c) 2018-2024 GraphDefined GmbH <achim.friedland@graphdefined.com>
- * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
+ * This file is part of Chargy WebApp <https://github.com/OpenChargingCloud/ChargyWebApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-body {
+ body {
 
     #app {
 
@@ -23,11 +23,11 @@ body {
 
         #headline {
 
-            #logo {
+            //#logo {
                 //background-image:     url('../images/ChargePoint_logo_HEX.png');
-                background-image:     url('../images/chargeIT-logo.jpg');
+                //background-image:     url('../images/chargeIT-logo.jpg');
                 //background-image:     url('../images/ENECO_eMobility_Logo.png');
-            }
+            //}
 
             #windowButtons {
                 button:hover {
@@ -42,7 +42,7 @@ body {
             #leftbar {
                 #input {
 
-                    background-color:   #f1f1f1;
+                    background-color:    #e2e2e2;
 
                     #inputInfos {
                         #buttonsDiv {
@@ -50,7 +50,8 @@ body {
                             button {
 
                                 color:              #3a1d27;
-                                background:         radial-gradient(farthest-corner at 39px 40px, #fbd789 0%, #ed9828 35%, #CC0B12 70%);
+                                //background:         none;
+                                background-color:   rgb(133 180 169);
 
                                 i {
                                     font-size:          120%;
@@ -60,7 +61,22 @@ body {
 
                             button:hover {
                                 color:              #ffffff;
-                                background:         radial-gradient(farthest-corner at 39px 40px, #f9e8c2 0%, #ebad5c 40%, #ed4f54 80%);
+                                //background:         radial-gradient(farthest-corner at 39px 40px, #f9e8c2 0%, #ebad5c 40%, #ed4f54 80%);
+                                background-color:   rgb(133 180 169);
+                            }
+
+                        }
+                    }
+
+                    #chargingSessionScreen {
+                        #chargingSessions {
+
+                            .chargingSession {
+                                background-color:   #e9e9e9;
+                            }
+
+                            .activated {
+                                background-color:   rgb(133 180 169);
                             }
 
                         }
@@ -80,19 +96,106 @@ body {
                         }
                     }
 
+                    #inputButtons {
+
+                        #backButton {
+                            color:            #888888;
+                        }
+
+                        #backButton:hover {
+                            color:            #000000;
+                        }
+
+                        #exportButtonDiv {
+
+                            #exportButton {
+                                color:            #aaaaaa;
+                            }
+
+                            #exportButton:hover {
+                                color:            #000000;
+                            }
+
+                        }
+
+                    }
+
+                    #aboutScreen {
+
+                        .linkButton {
+                            background-color:    #e2e2e2;
+                            font-weight:           bold;
+                        }
+
+                        .linkButton:hover {
+                            color:               #777777;
+                            background-color:    #e9e9e9;
+                        }
+
+                        #TOSP {
+                            a {
+                                color:   #444444;
+                            }
+                        }
+
+                    }
+
                 }
             }
 
             #rightbar {
 
-                background-color: #f1f1f1;
-                // width:              calc(50% - 15px);
-                // border-radius:      8px 8px 8px 8px;
-                // height:             calc(100% - 15px);
+                background-color:    #e2e2e2;
+
+                #detailedInfos {
+
+                    color:           #000000;
+
+                    .headline {
+                        color:       #000000;
+                    }
+
+                    .energyMeterInfos {
+
+                        .meterManufacturer {
+                            .meterManufacturerValue {
+                                a {
+                                    color:   #444444
+                                }
+                            }
+                        }
+
+                        .meterModel {
+                            .meterModelValue {
+                                a {
+                                    color:   #444444
+                                }
+                            }
+                        }
+
+                    }
+
+                    .measurementValues {
+
+                        .measurementValue {
+                            .verificationStatus {
+                                .fa-check-circle {
+                                    color:          rgb(133 180 169);
+                                }
+                            }
+                        }
+
+                        .measurementValue:hover {
+                            background-color:   #aaaaaa;
+                        }
+                    }
+
+                }
 
                 #feedback {
 
-                    color:            #34668a;
+                    display:           none !important;
+                    color:           #34668a;
 
                     #feedbackMethods {
                         button:hover, a:hover {
@@ -106,10 +209,105 @@ body {
 
         }
 
+        #measurementsDetails {
+            .overlayText {
+
+                background-color:    #e2e2e2;
+                border:              20px solid #e2e2e2;
+
+                .data {
+
+                    #cryptoData {
+                        .row:hover {
+                            background-color:   rgb(252 188 103);
+                        }
+                    }
+
+
+                    #buffer {
+                        .description {
+                            background-color:    rgb(133, 180, 169);
+                        }
+                        .value {
+                            background-color:    #cecece
+                        }
+                    }
+
+                    #hashedBuffer {
+                        .description {
+                            background-color:    rgb(133, 180, 169);
+                        }
+                        .value {
+                            background-color:    #cecece
+                        }
+                    }
+
+                    #publicKey {
+                        .description {
+                            background-color:    rgb(133, 180, 169);
+                        }
+                        .value {
+                            background-color:    #cecece
+                        }
+                    }
+
+                    #signatureExpected {
+                        .description {
+                            background-color:    rgb(133, 180, 169);
+                        }
+                        .value {
+                            background-color:    #cecece
+                        }
+                    }
+
+                }
+
+                .infoblock {
+
+                    .description {
+                        background-color:    #e2e2e2;
+                        font-weight:         bold;
+                    }
+
+                    .value {
+                        background-color:    #d0d0d0
+                    }
+
+                }
+                
+                .footer {
+
+                    .overlayLeftButton {
+                        color:            #888888;
+                    }
+
+                    .overlayLeftButton:hover {
+                        color:            #000000;
+                    }
+
+                    #signatureCheck {
+                        .fa-check-circle {
+                            color:            rgb(133, 180, 169)
+                        }
+                    }
+
+                }
+
+            }
+        }
+
         #issueTracker {
-            display:                none;
+            display:                 none;
         }
 
     }
 
+}
+
+.fa-check-circle {
+    color:          rgb(51 71 71);
+}
+
+.leaflet-container a {
+    color:          #444444;
 }

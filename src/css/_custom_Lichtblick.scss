@@ -1,6 +1,6 @@
 ﻿/*
  * Copyright (c) 2018-2024 GraphDefined GmbH <achim.friedland@graphdefined.com>
- * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
+ * This file is part of Chargy WebApp <https://github.com/OpenChargingCloud/ChargyWebApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@
 
                                 color:              #3a1d27;
                                 //background:         none;
-                                background-color:   #d6e5e1;
+                                background-color:   rgb(133 180 169);
 
                                 i {
                                     font-size:          120%;
@@ -62,7 +62,7 @@
                             button:hover {
                                 color:              #ffffff;
                                 //background:         radial-gradient(farthest-corner at 39px 40px, #f9e8c2 0%, #ebad5c 40%, #ed4f54 80%);
-                                background-color:   #5b9787;
+                                background-color:   rgb(133 180 169);
                             }
 
                         }
@@ -76,7 +76,7 @@
                             }
 
                             .activated {
-                                background-color:   #d6e5e1;
+                                background-color:   rgb(133 180 169);
                             }
 
                         }
@@ -146,9 +146,6 @@
             #rightbar {
 
                 background-color:    #e2e2e2;
-                // width:              calc(50% - 15px);
-                // border-radius:      8px 8px 8px 8px;
-                // height:             calc(100% - 15px);
 
                 #detailedInfos {
 
@@ -179,6 +176,15 @@
                     }
 
                     .measurementValues {
+
+                        .measurementValue {
+                            .verificationStatus {
+                                .fa-check-circle {
+                                    color:          rgb(133 180 169);
+                                }
+                            }
+                        }
+
                         .measurementValue:hover {
                             background-color:   #aaaaaa;
                         }
@@ -188,7 +194,7 @@
 
                 #feedback {
 
-                    display:           none;
+                    display:           none !important;
                     color:           #34668a;
 
                     #feedbackMethods {
@@ -203,11 +209,58 @@
 
         }
 
-        #overlay {
-            #overlayText {
+        #measurementsDetails {
+            .overlayText {
 
                 background-color:    #e2e2e2;
                 border:              20px solid #e2e2e2;
+
+                .data {
+
+                    #cryptoData {
+                        .row:hover {
+                            background-color:   rgb(252 188 103);
+                        }
+                    }
+
+
+                    #buffer {
+                        .description {
+                            background-color:    rgb(133, 180, 169);
+                        }
+                        .value {
+                            background-color:    #cecece
+                        }
+                    }
+
+                    #hashedBuffer {
+                        .description {
+                            background-color:    rgb(133, 180, 169);
+                        }
+                        .value {
+                            background-color:    #cecece
+                        }
+                    }
+
+                    #publicKey {
+                        .description {
+                            background-color:    rgb(133, 180, 169);
+                        }
+                        .value {
+                            background-color:    #cecece
+                        }
+                    }
+
+                    #signatureExpected {
+                        .description {
+                            background-color:    rgb(133, 180, 169);
+                        }
+                        .value {
+                            background-color:    #cecece
+                        }
+                    }
+
+                }
 
                 .infoblock {
 
@@ -221,15 +274,21 @@
                     }
 
                 }
-
+                
                 .footer {
 
-                    #overlayLeftButton {
+                    .overlayLeftButton {
                         color:            #888888;
                     }
 
-                    #overlayLeftButton:hover {
+                    .overlayLeftButton:hover {
                         color:            #000000;
+                    }
+
+                    #signatureCheck {
+                        .fa-check-circle {
+                            color:            rgb(133, 180, 169)
+                        }
                     }
 
                 }
@@ -246,7 +305,7 @@
 }
 
 .fa-check-circle {
-    color:          #85b4a9;
+    color:          rgb(51 71 71);
 }
 
 .leaflet-container a {

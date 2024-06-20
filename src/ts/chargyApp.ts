@@ -2198,8 +2198,10 @@ export class ChargyApp {
                 const greenMarker   = leaflet.AwesomeMarkers?.icon({
                     prefix:               'fa',
                     icon:                 'charging-station',
-                    markerColor:          'green',
-                    iconColor:            '#c2ec8e'
+                    //markerColor:          'green',
+                    //iconColor:            '#c2ec8e'
+                    markerColor:          'cadetblue',
+                    iconColor:            '#c1e9e0'
                 });
 
                 let markerIcon      = redMarker;
