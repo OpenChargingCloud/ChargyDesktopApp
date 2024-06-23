@@ -87,11 +87,11 @@
       "target": [
         "nsis"
       ],
-      "icon": "src/icons/ENECO_eMobility_Icon.ico"
+      "icon": "src/icons/chargy_shield3.ico"
     },
     "nsis": {
       "perMachine": true,
-      "installerIcon": "src/icons/ENECO_eMobility_Icon.ico",
+      "installerIcon": "src/icons/chargy_shield3.ico",
       "deleteAppDataOnUninstall": true,
       "runAfterFinish": true
     },
@@ -99,10 +99,10 @@
       "target": [
         "deb"
       ],
-      "icon": "src/icons/ENECO_eMobility_Icon.png"
+      "icon": "src/icons/chargy_shield3"
     },
     "mac": {
-      "icon": "./src/icons/ENECO_eMobility_Icon.icns",
+      "icon": "./src/icons/chargy_shield3.icns",
       "category": "public.app-category.utilities",
       "type": "distribution",
       "target": [
