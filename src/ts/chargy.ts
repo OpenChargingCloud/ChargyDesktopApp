@@ -743,12 +743,18 @@ export class Chargy {
             else if (textContent?.startsWith("OCMF"))
                 processedFile.result = await new OCMF(this).TryToParseOCMFDocument(textContent);
 
+            else if (textContent?.startsWith("\"OCMF") && textContent?.endsWith("\""))
+                processedFile.result = await new OCMF(this).TryToParseOCMFDocument(textContent.substring(1, textContent.length - 1));
+
             //#endregion
 
             //#region ALFEN processing
 
             else if (textContent?.startsWith("AP;"))
                 processedFile.result = await new Alfen(this).TryToParseALFENFormat(textContent, {});
+
+            else if (textContent?.startsWith("\"AP;") && textContent?.endsWith("\""))
+                processedFile.result = await new Alfen(this).TryToParseALFENFormat(textContent.substring(1, textContent.length - 1), {});
 
             //#endregion
 
