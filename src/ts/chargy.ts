@@ -469,9 +469,9 @@ export class Chargy {
                                     if (compressedFile.type === "file")
                                     {
                                         expandedFileInfos.push({
-                                                            name: compressedFile.path?.substring(compressedFile.path.lastIndexOf('/') + 1 ?? FileInfo.name),
-                                                            data: compressedFile.data
-                                                        });
+                                            name: compressedFile.path.substring(compressedFile.path.lastIndexOf('/') + 1),// ?? FileInfo.name,
+                                            data: compressedFile.data
+                                        });
                                     }
                                 }
 

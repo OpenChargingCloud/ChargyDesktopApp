@@ -1,0 +1,185 @@
+{
+  "@context": "https://www.chargeit-mobility.com/contexts/charging-station-json-v1",
+  "@id": "af032557-c62c-414b-aecc-41ea59877305",
+  "chargePointInfo": {
+    "placeInfo": {
+      "geoLocation": {
+        "lat": 48.03552,
+        "lon": 10.50669
+      },
+      "address": {
+        "street": "Breitenbergstr. 2",
+        "town": "Mindelheim",
+        "zipCode": "87719"
+      }
+    },
+    "evseId": "DE*BDO*E8025334492*2"
+  },
+  "chargingStationInfo": {
+    "manufacturer": "Alfen B.V.",
+    "type": "Eve Single Pro-line",
+    "serialNumber": "2020-24-T-042",
+    "controllerSoftwareVersion": "v1.2.34",
+    "compliance": "PTB XYZ",
+    "calibration": "CSA 1234"
+  },
+  "meterInfo": {
+    "firmwareVersion": "123",
+    "type": "eHZ IW8E EMH",
+    "manufacturer": "EMH",
+    "publicKeySignatures": [
+      {
+        "signer":           "Open Charging Cloud",
+        "publicKey":        "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+        "timestamp":        "2019-06-30T00:00:00Z",
+        "comment":          { "en": "Hello world!" },
+        "notBefore":        "2018-11-04T16:47:01Z",
+        "notAfter":         "2023-03-12T13:54:12Z",
+        "operations": {
+            "signCertificates":  false,
+            "signMeterValues":   true
+        },
+        "revocationURIs":   [],
+        "algorithm":        "secp256k1",
+        "format":           "DER",
+        "value":            "303502181dce9223416d64e5362bc8eb46eddf23adcb74382b602e1f021900eca85b1a48bc1f64d25951e947c7e48fa0b070b82e2cae41"
+      },
+      {
+        "signer":           "chargeIT mobility",
+        "publicKey":        "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
+        "timestamp":        "2019-06-30T00:00:00Z",
+        "comment":          { "en": "Hello world!" },
+        "notBefore":        "2018-11-04T16:47:01Z",
+        "notAfter":         "2023-03-12T13:54:12Z",
+        "operations": {
+            "signCertificates":  false,
+            "signMeterValues":   true
+        },
+        "revocationURIs":   [],
+        "algorithm":        "secp256k1",
+        "format":           "DER",
+        "value":            "303502181dce9223416d64e5362bc8eb46eddf23adcb74382b602e1f021900eca85b1a48bc1f64d25951e947c7e48fa0b070b82e2cae41"
+      }
+    ]
+  },
+  "connectorInfo": {
+    "type": "Typ-2 Socket",
+    "losses": 2.1
+  },
+  "chargingTariffs": [
+    {
+      "@id": "DE*GDF*T12345678",
+      "@context": "https://open.charging.cloud/ctx/chargingTariffs/OCPIv2.1.1",
+      "currency": "EUR",
+      "shortName": {
+          "de": "Adhoc",
+          "en": "Adhoc"
+      },
+      "summary": {
+          "de": "0.44€/kWh + 0.3€ Startgebühr; 8,4ct/min nach 3 Stunden",
+          "en": "0.44€/kWh + 0.3€ Session fee; 8,4ct/min after 3 hours"
+      },
+      "description": {
+          "de": "Adhoc Standardtarif mit einer Blockadegebühr nach 3 Stunden",
+          "en": "Adhoc standard tariff having a blocking fee after 3 hours"
+      },
+      "elements": [
+        {
+          "price_components": [
+            {
+              "type": "ENERGY",
+              "price": 0.44,
+              "step_size": 1000
+            },
+            {
+              "type": "FLAT",
+              "price": 0.3,
+              "step_size": 1
+            },
+            {
+              "type": "TIME",
+              "price": 0.0,
+              "step_size": 60
+            }
+          ],
+          "restrictions": {
+            "max_duration": 10800
+          }
+        },
+        {
+          "price_components": [
+            {
+              "type": "ENERGY",
+              "price": 0.44,
+              "step_size": 1000
+            },
+            {
+              "type": "TIME",
+              "price": 5.04,
+              "step_size": 60
+            }
+          ]
+        }
+      ],
+      "created": "2023-12-31T23:00:00.000Z",
+      "last_updated": "2023-12-31T23:00:00.000Z",
+      "signatures": [
+        
+      ]
+    }
+  ],
+  "signedMeterValues" : [ {
+    "payload" : "AP;0;3;AJ2J7LYMGCIWT4AHUJPPFIIVB3FGRV2JQ2HVZG2I;BIHEIWSHAAA2WZUZOYYDCNWTWAFACRC2I4ADGAEDQ4AAAABABMI5UAEVRZFV4AIAAEEAB7Y6AD4N2AIAAAAAAABQGQ3DKNCGIZATKOJVGU4DAAAAAAAAAAAWAAAAAKYAAAAA====;X7KCDU5IJHGUW64LDYHYR7IXRPPSKCMWAMQOVZVRNGRX6BEIHX3TFKUDJGEMUI5W5CJFTPDEWR7F6===;",
+    "format" : "ALFEN",
+    "formatVersion" : "0",
+    "encoding" : "BASE64",
+    "manufacturer" : "Alfen BV" 
+  }, {
+    "payload" : "AP;1;3;AJ2J7LYMGCIWT4AHUJPPFIIVB3FGRV2JQ2HVZG2I;BIHEIWSHAAA2WZUZOYYDCNWTWAFACRC2I4ADGAEDQ4AAAAAQFRGNUAFWZFFV4AIAAEEAB7Y6AA7ASAQAAAAAAABQGQ3DKNCGIZATKOJVGU4DAAAAAAAAAAAWAAAAALAAAAAA====;FXINYN5UF2LKAS633476F7V2GQGBP22KBCZD3TOSJCFLCFGYAAYTVJFIA7637NKQ22CZSEB2AOJJO===;",
+    "format" : "ALFEN",
+    "formatVersion" : "0",
+    "encoding" : "BASE64",
+    "manufacturer" : "Alfen BV" 
+  } ],
+  "signatures": [
+    
+  ],
+  "chargingPeriods": [
+    {
+      "startTimestamp": "2020-02-18T07:13:25.000Z",
+      "costs": {}
+    },
+    {
+      "startTimestamp": "2020-02-18T10:13:25.000Z",
+      "endTimestamp": "2020-02-18T11:25:42.000Z",
+      "costs": {}
+    }
+  ],
+  "totalCosts": {
+    "total": 2.05,
+    "currency": "€",
+    "reservation": {
+       "amount": 12.1,
+       "unit": "min",
+       "cost": 0.2
+    },
+    "energy": {
+       "amount": 12.0,
+       "unit": "kWh",
+       "cost": 1.23
+    },
+    "time": {
+       "amount": 253,
+       "unit": "min",
+       "cost": 0.74
+    },
+    "idle": {
+       "amount": 12,
+       "unit": "min",
+       "cost": 0.3
+    },
+    "flat": {
+       "cost": 0.3
+    }
+  }
+}
