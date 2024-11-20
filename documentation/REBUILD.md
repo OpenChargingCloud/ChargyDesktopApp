@@ -35,6 +35,7 @@ $ npm install safe-stable-stringify --save
 $ npm install webpack --save-dev
 $ npm install webpack-cli --save-dev
 $ npm install ts-loader --save-dev
+$ npm install cyclonedx/cyclonedx-npm --save-dev
 ```
 
 ## Updating all Node.js modules
