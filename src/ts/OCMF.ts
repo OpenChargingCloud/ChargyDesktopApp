@@ -1086,29 +1086,30 @@ export class OCMF {
 
                 //#endregion
 
-                if (chargyLib.isOptionalString          (formatVersion)        &&
-                    chargyLib.isOptionalString          (gatewayInformation)   &&
-                    chargyLib.isOptionalString          (gatewaySerial)        &&
-                    chargyLib.isOptionalString          (gatewayVersion)       &&
+                if (chargyLib.isOptionalString          (formatVersion)            &&
+                    chargyLib.isOptionalString          (gatewayInformation)       &&
+                    chargyLib.isOptionalString          (gatewaySerial)            &&
+                    chargyLib.isOptionalString          (gatewayVersion)           &&
 
-                    chargyLib.isMandatoryString         (paging)               &&
+                    chargyLib.isMandatoryString         (paging)                   &&
 
-                    chargyLib.isOptionalString          (meterVendor)          &&
-                    chargyLib.isOptionalString          (meterModel)           &&
-                    chargyLib.isMandatoryString         (meterSerial)          &&
-                    chargyLib.isOptionalString          (meterFirmware)        &&
+                    chargyLib.isOptionalString          (meterVendor)              &&
+                    chargyLib.isOptionalString          (meterModel)               &&
+                    chargyLib.isMandatoryString         (meterSerial)              &&
+                    chargyLib.isOptionalString          (meterFirmware)            &&
 
-                    chargyLib.isMandatoryBoolean        (identificationStatus) &&
-                    chargyLib.isOptionalString          (identificationLevel)  &&
-                    //chargyLib.isMandatoryArrayOfStrings (identificationFlags)  &&
-                    chargyLib.isOptionalArrayOfStrings  (identificationFlags)  &&  // Note: Some vendors do not use this MANDATORY field!
-                    chargyLib.isMandatoryString         (identificationType)   &&
-                    chargyLib.isOptionalString          (identificationData)   &&
-                    chargyLib.isOptionalString          (tariffText)           &&
+                    chargyLib.isMandatoryBoolean        (identificationStatus)     &&
+                    chargyLib.isOptionalString          (identificationLevel)      &&
+                    //chargyLib.isMandatoryArrayOfStrings (identificationFlags)      &&
+                    chargyLib.isOptionalArrayOfStrings  (identificationFlags)      &&  // Note: Some vendors do not use this MANDATORY field!
+                    chargyLib.isMandatoryString         (identificationType)       &&
+                    chargyLib.isOptionalString          (identificationData)       &&
+                    chargyLib.isOptionalString          (tariffText)               &&
 
-                    chargyLib.isOptionalJSONObject      (lossCompensation)     &&
+                    chargyLib.isOptionalString          (controlerFirmwareVersion) &&
+                    chargyLib.isOptionalJSONObject      (lossCompensation)         &&
 
-                    chargyLib.isOptionalString          (chargePointIdType)    &&
+                    chargyLib.isOptionalString          (chargePointIdType)        &&
                     chargyLib.isOptionalString          (chargePointId))
                 {
 
@@ -1345,7 +1346,7 @@ export class OCMF {
                                 if (CTR!.chargingSessions![0]!.measurements.length == 0)
                                     CTR!.chargingSessions![0]!.measurements.push({
                                         "name":            chargyLib.OBIS2MeasurementName(readingIdentification ?? ""),
-                                        "scale":           1,      // Fix me!
+                                        "scale":           0,
                                         "energyMeterId":   meterSerial,
                                         "@context":        "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/OCMFv1.0+json",
                                         "obis":            readingIdentification ?? "?",   // OBIS: "1-b:1.8.0"
@@ -2290,6 +2291,8 @@ export class OCMF {
                         case "1.0":
                         case "1.1":
                         case "1.2":
+                        case "1.3":
+                        case "1.4":
                             ocmfCTRs.push(await this.tryToParseOCMFv1_0(ocmfJSONDocumentGroup, PublicKey, ContainerInfos));
                             break;
 

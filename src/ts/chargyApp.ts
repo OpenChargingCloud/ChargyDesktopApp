@@ -2937,7 +2937,7 @@ export class ChargyApp {
                             }
                             else
                             {
-                                currentValue = new Decimal(currentValue.toFixed(Math.abs(measurementValue.measurement.scale)));
+                                //currentValue = new Decimal(currentValue.toFixed(Math.abs(measurementValue.measurement.scale)));
                             }
 
                             // Show energy value
@@ -3001,13 +3001,15 @@ export class ChargyApp {
                                           ? (currentValue.minus(previousValue).toNumber() >= 0 ? "+" : "") +
                                             (measurementValue.value_displayPrecision
                                                  ? parseFloat((currentValue.minus(previousValue)).toFixed(Math.abs(measurementValue.value_displayPrecision)))
-                                                 : parseFloat((currentValue.minus(previousValue)).toFixed(Math.abs(measurementValue.measurement.scale))))
+                                                 //: parseFloat((currentValue.minus(previousValue)).toFixed(Math.abs(measurementValue.measurement.scale))))
+                                                 : parseFloat((currentValue.minus(previousValue)).toString()))
                                           : "0");
 
                             // Unit
                             if (measurementCounter <= 1)
                                 chargyLib.CreateDiv(measurementValueDiv, "unit2",  "");
-                            else
+
+                            else if (measurementValue.value_displayPrefix)
                             {
                                 switch (measurementValue.value_displayPrefix)
                                 {
@@ -3026,6 +3028,23 @@ export class ChargyApp {
 
                                     default:
                                         chargyLib.CreateDiv(measurementValueDiv, "unit2",  "Wh");
+                                        break;
+
+                                }
+                            }
+                            else
+                            {
+                                switch (measurement.unit)
+                                {
+
+                                    case "kWh":
+                                    case "KILO_WATT_HOURS":
+                                        chargyLib.CreateDiv(measurementValueDiv, "unit1", "kWh");
+                                        break;
+
+                                    // "WATT_HOURS"
+                                    default:
+                                        chargyLib.CreateDiv(measurementValueDiv, "unit1", "Wh");
                                         break;
 
                                 }
