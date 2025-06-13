@@ -1247,9 +1247,9 @@ export class BSMCrypt01 extends ACrypt {
             //this.CreateLine("RCR",         (measurementValue.RCR      * 10).toFixed(measurementValue.RCR_Precision)      + " " + measurementValue.RCR_Prefix      + "Wh",    result.RCR         || "", infoDiv, PlainTextDiv);
             //this.CreateLine("TotWhImp",    (measurementValue.TotWhImp * 10).toFixed(measurementValue.TotWhImp_Precision) + " " + measurementValue.TotWhImp_Prefix + "Wh",    result.TotWhImp    || "", infoDiv, PlainTextDiv);
             //this.CreateLine("W",            measurementValue.W.             toFixed(measurementValue.W_Precision)        + " " + measurementValue.W_Prefix        + "Watt",  result.W           || "", infoDiv, PlainTextDiv);
-            this.CreateLine("RCR",          measurementValue.RCR      * 10 + " " + measurementValue.RCR_Unit,       result.RCR         || "", infoDiv, PlainTextDiv);
-            this.CreateLine("TotWhImp",     measurementValue.TotWhImp * 10 + " " + measurementValue.TotWhImp_Unit,  result.TotWhImp    || "", infoDiv, PlainTextDiv);
-            this.CreateLine("W",            measurementValue.W             + " " + measurementValue.W_Unit,         result.W           || "", infoDiv, PlainTextDiv);
+            this.CreateLine("RCR",          measurementValue.RCR * (10 ** measurementValue.RCR_SF) + " " + measurementValue.RCR_Unit,                                        result.RCR         || "", infoDiv, PlainTextDiv);
+            this.CreateLine("TotWhImp",     measurementValue.TotWhImp * (10 ** measurementValue.TotWhImp_SF) + " " + measurementValue.TotWhImp_Unit,                         result.TotWhImp    || "", infoDiv, PlainTextDiv);
+            this.CreateLine("W",            measurementValue.W * (10 ** measurementValue.W_SF) + " " + measurementValue.W_Unit,                                              result.W           || "", infoDiv, PlainTextDiv);
             this.CreateLine("MA1",          measurementValue.MA1,                                                                                                            result.MA1         || "", infoDiv, PlainTextDiv);
             this.CreateLine("RCnt",         measurementValue.RCnt,                                                                                                           result.RCnt        || "", infoDiv, PlainTextDiv);
             this.CreateLine("OS",           measurementValue.OS,                                                                                                             result.OS          || "", infoDiv, PlainTextDiv);
