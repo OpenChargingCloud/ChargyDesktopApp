@@ -54,8 +54,12 @@ export function IsAPublicKeyLookup(data: IChargeTransparencyRecord|IPublicKeyLoo
         return false;
 
     let publicKeyLookup = data as IPublicKeyLookup;
+    let chargeTransparencyRecord = data as IChargeTransparencyRecord;
 
-    return publicKeyLookup.publicKeys !== undefined;
+    return Array.isArray(publicKeyLookup.publicKeys) &&
+           chargeTransparencyRecord.chargingSessions === undefined &&
+           chargeTransparencyRecord.begin            === undefined &&
+           chargeTransparencyRecord.end              === undefined;
 
 }
 
@@ -808,7 +812,7 @@ export interface IFileInfo {
 }
 
 export function isIFileInfo(obj: any): obj is IFileInfo {
-    return obj.name && typeof obj.name === 'string' && obj.data && (obj.data instanceof ArrayBuffer || ArrayBuffer.isView(obj.data));
+    return !!(obj?.name && typeof obj.name === 'string' && obj.data && (obj.data instanceof ArrayBuffer || ArrayBuffer.isView(obj.data)));
 }
 
 export interface IExtendedFileInfo extends IFileInfo {
