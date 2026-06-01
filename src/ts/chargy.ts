@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Buffer }                           from 'node:buffer';
+import { Buffer }                           from 'buffer';
 import { fileTypeFromBuffer }               from 'file-type';
 
 import { Alfen, AlfenCrypt01 }              from './Alfen'
@@ -358,7 +358,9 @@ export class Chargy {
                             try
                             {
 
-                                let compressedFiles:Array<chargyInterfaces.TarInfo> = await decompress(Buffer.from(FileInfo.data),
+                                let compressedFiles:Array<chargyInterfaces.TarInfo> = await decompress(Buffer.from(FileInfo.data instanceof ArrayBuffer
+                                                                                                                       ? new Uint8Array(FileInfo.data)
+                                                                                                                       : FileInfo.data),
                                                                                                        { plugins: [ decompressTar(),
                                                                                                                     decompressTargz(),
                                                                                                                     decompressTarbz2(),
@@ -550,9 +552,9 @@ export class Chargy {
                     pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
 
                     const pdfDocument  = fileInfo.data
-                                            ? await pdfjsLib.getDocument(fileInfo.data).promise
+                                            ? await pdfjsLib.getDocument({ data: fileInfo.data }).promise
                                             : fileInfo.path
-                                                  ? await pdfjsLib.getDocument(fileInfo.path).promise
+                                                  ? await pdfjsLib.getDocument({ url: fileInfo.path }).promise
                                                   : null;
 
                     if (pdfDocument)

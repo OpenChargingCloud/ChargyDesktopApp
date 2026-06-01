@@ -1,13 +1,29 @@
-// webpack.config.js
+const isDevelopment = process.env.NODE_ENV === 'development';
+const webpack       = require('webpack');
+
 module.exports = [
     {
-      mode:    'development',
+      mode:    isDevelopment ? 'development' : 'production',
       entry:   './src/ts/chargyApp.ts',
-      target:  'electron-renderer',
-      devtool: "eval-source-map",  // Do not use in production!
-      //devtool: "source-map",     // Secure, but very slow: Use in production!
+      target:  'web',
+      devtool: isDevelopment ? "eval-source-map" : "source-map",
       resolve: {
-        extensions: ["", ".ts", ".js"]
+        extensions: ["", ".ts", ".js"],
+        alias: {
+          'node:buffer': require.resolve('buffer/')
+        },
+        fallback: {
+          assert:    false,
+          buffer:    require.resolve('buffer/'),
+          constants: false,
+          crypto:    false,
+          events:    false,
+          fs:        false,
+          path:      false,
+          stream:    false,
+          util:      false,
+          zlib:      false
+        }
       },
       module: {
         rules: [
@@ -33,6 +49,12 @@ module.exports = [
         'asn1':         'asn1.js',
         'base32decode': 'base32-decode'
       },
+      plugins: [
+        new webpack.NormalModuleReplacementPlugin(/^node:buffer$/, 'buffer'),
+        new webpack.ProvidePlugin({
+          Buffer: ['buffer', 'Buffer']
+        })
+      ],
       output: {
         path: __dirname + '/src/build',
         filename: 'chargyApp-bundle.js'

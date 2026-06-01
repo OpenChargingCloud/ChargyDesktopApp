@@ -29,17 +29,19 @@
 
     <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
+    base-uri 'self';
+    object-src 'none';
+    form-action 'none';
     connect-src 'self' 
       https://chargy.charging.cloud
       https://open.charging.cloud/chargy/
       https://lichtblick.c.charging.cloud/chargy/
       https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/;
     img-src 'self' data: https:;
-    script-src 'self' 'unsafe-inline' 'unsafe-eval';
+    script-src 'self';
     style-src 'self' 'unsafe-inline';
   ">
 <!-- style-src 'unsafe-inline' required for leaflet and markers! -->
-<!-- script-src 'unsafe-eval' only required for faster WebPack during development! -->
 
     <!-- <link rel="icon"       href="/favicon.png"                    type="image/png" /> -->
     <!-- <link rel="stylesheet" href="css/fontawesome-all.min.css"     type="text/css" /> -->
@@ -48,14 +50,6 @@
     <link rel="stylesheet" href="css/chargy.css"                  type="text/css" />
 
     <script type="module" src="build/chargyApp-bundle.js"></script>
-    <script>
-        function OpenLink(url)
-        {
-            if (url.startsWith("https://"))
-                require('electron').shell.openExternal(url);
-        }
-    </script>
-
   </head>
 
   <body>
@@ -118,7 +112,7 @@
                                 <div class="license"><button class="linkButton" href="https://github.com/OpenChargingCloud/ChargyDesktopApp/blob/master/LICENSE">Copyright &copy; 2018-2024 GraphDefined GmbH<br />AGPL v3 License</button></div>
                             </div>
                             <div class="lib">
-                                <div class="name">Electron <script>document.write(process.versions.electron)</script></div>
+                                <div class="name">Electron <span id="electronVersion"></span></div>
                                 <div class="license"><button class="linkButton" href="https://github.com/electron/electron/blob/master/LICENSE">Copyright &copy; 2013-2020 GitHub Inc.<br />MIT License</button></div>
                             </div>
                             <div class="lib">
@@ -130,15 +124,15 @@
                                 <div class="license"><button class="linkButton" href="https://github.com/parro-it/electron-localshortcut/blob/master/license">Copyright &copy; 2017 Andrea Parodi<br />MIT License</button></div>
                             </div>
                             <div class="lib">
-                                <div class="name">Chromium <script>document.write(process.versions.chrome)</script></div>
+                                <div class="name">Chromium <span id="chromiumVersion"></span></div>
                                 <div class="license"><button class="linkButton" href="https://github.com/chromium/chromium/blob/master/LICENSE">Copyright &copy; 2015 The Chromium Authors<br />MIT License</button></div>
                             </div>
                             <div class="lib">
-                                <div class="name">Node.js <script>document.write(process.versions.node)</script></div>
+                                <div class="name">Node.js <span id="nodeVersion"></span></div>
                                 <div class="license"><button class="linkButton" href="https://github.com/nodejs/node/blob/master/LICENSE">Copyright &copy; Node.js contributors<br />MIT License</button></div>
                             </div>
                             <div class="lib">
-                                <div class="name">OpenSSL <script>document.write(process.versions.openssl)</script></div>
+                                <div class="name">OpenSSL <span id="opensslVersion"></span></div>
                                 <div class="license"><button class="linkButton" href="https://github.com/openssl/openssl/blob/master/LICENSE.txt">Copyright &copy; 1998-2018 The OpenSSL Project<br />Copyright &copy; 1995-1998 Eric A. Young, Tim J. Hudson<br />Apache License v2.0</button></div>
                             </div>
                             <div class="lib">
@@ -244,17 +238,17 @@
                         </div>
 
                         <div id="TOSP">
-                            Diese Software ist einer der Gewinner des <a href="javascript:OpenLink('https://www.it-leistungsschau.de/programm/TOSP2019/')">1.
+                            Diese Software ist einer der Gewinner des <a href="#" data-external-url="https://www.it-leistungsschau.de/programm/TOSP2019/">1.
                             Th&uuml;ringer Open Source Preises</a> im März 2019. Der Preis wurde verliehen durch
-                            <a href="javascript:OpenLink('https://www.itnet-th.de')">ITnet Thüringen e.V.</a> and the
-                            <a href="javascript:OpenLink('https://www.thueringen.de/th6/tmwwdg/')">Thüringer Ministerium für Wirtschaft, Wissenschaft und Digitale Gesellschaft</a>
-                            <!-- This software is one of the winners of the <a href="javascript:OpenLink('https://www.it-leistungsschau.de/programm/TOSP2019/')">1st
+                            <a href="#" data-external-url="https://www.itnet-th.de">ITnet Thüringen e.V.</a> and the
+                            <a href="#" data-external-url="https://www.thueringen.de/th6/tmwwdg/">Thüringer Ministerium für Wirtschaft, Wissenschaft und Digitale Gesellschaft</a>
+                            <!-- This software is one of the winners of the <a href="#" data-external-url="https://www.it-leistungsschau.de/programm/TOSP2019/">1st
                             Thuringian Open Source Prize</a> in March 2019. The prize was awarded by
-                            <a href="javascript:OpenLink('https://www.itnet-th.de')">ITnet Thüringen e.V.</a> and the
-                            <a href="javascript:OpenLink('https://www.thueringen.de/th6/tmwwdg/')">Thuringian Ministry for Economic Affairs, Science and Digital Society</a>-->
+                            <a href="#" data-external-url="https://www.itnet-th.de">ITnet Thüringen e.V.</a> and the
+                            <a href="#" data-external-url="https://www.thueringen.de/th6/tmwwdg/">Thuringian Ministry for Economic Affairs, Science and Digital Society</a>-->
                             <div id="logos">
-                                <a id="TMWWDG" href="javascript:OpenLink('https://www.thueringen.de/th6/tmwwdg/')"><img src="images/TMWWDG.svg"                 alt="Thüringer Ministerium für Wirtschaft, Wissenschaft und Digitale Gesellschaft"></a>
-                                <a id="ITnet"  href="javascript:OpenLink('https://www.itnet-th.de')"              ><img src="images/ITnet_Thueringen_small.png" alt="ITnet Thüringen e.V."></a>
+                                <a id="TMWWDG" href="#" data-external-url="https://www.thueringen.de/th6/tmwwdg/"><img src="images/TMWWDG.svg"                 alt="Thüringer Ministerium für Wirtschaft, Wissenschaft und Digitale Gesellschaft"></a>
+                                <a id="ITnet"  href="#" data-external-url="https://www.itnet-th.de"              ><img src="images/ITnet_Thueringen_small.png" alt="ITnet Thüringen e.V."></a>
                             </div>
                         </div>
 
@@ -577,14 +571,6 @@
         </div>
 
     </div>
-
-    <script type="text/javascript">
-
-        // You can also require other files to run in this process
-        require('./renderer.cjs')
-
-    </script>
-
   </body>
 
 </html>

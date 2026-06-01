@@ -1,8 +1,9 @@
 // Modules to control application life and create native browser window
 
-const { app, BrowserWindow, dialog, ipcMain } = require('electron')
+const { app, BrowserWindow, dialog, ipcMain, shell } = require('electron')
 const path                                    = require('path');
 const fs                                      = require('fs');
+const crypto                                  = require('crypto');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -15,6 +16,42 @@ let commandLineArguments  = [];
 let fileToOpen            = "";
 let httpHost              = "";
 let httpPort              = 0;
+const allowedReadPaths    = new Set();
+const allowedSavePaths    = new Set();
+
+function normalizePath(fileName) {
+    if (typeof fileName !== "string" || fileName.trim() === "")
+        return "";
+
+    return path.resolve(fileName.replace(/^file:\/\//i, ""));
+}
+
+function allowReadPath(fileName) {
+    const normalizedPath = normalizePath(fileName);
+    if (normalizedPath !== "")
+        allowedReadPaths.add(normalizedPath);
+    return normalizedPath;
+}
+
+function isAllowedWebUrl(url) {
+    try {
+        const parsedUrl = new URL(url);
+        return parsedUrl.protocol === "https:";
+    }
+    catch {
+        return false;
+    }
+}
+
+function sha512File(fileName) {
+    return new Promise((resolve, reject) => {
+        const hash = crypto.createHash('sha512');
+        const stream = fs.createReadStream(fileName);
+        stream.on('data', data => hash.update(data));
+        stream.on('error', reject);
+        stream.on('end', () => resolve(hash.digest('hex')));
+    });
+}
 
 
 // Run in development mode via run.sh
@@ -34,6 +71,11 @@ if (process.argv.length >= 2 && process.argv[0].endsWith("electron.exe") && proc
 else
     commandLineArguments = process.argv.slice(1);
 
+for (const commandLineArgument of commandLineArguments) {
+    if (typeof commandLineArgument === "string" && !commandLineArgument.startsWith("-"))
+        allowReadPath(commandLineArgument);
+}
+
 
 function createWindow () {
 
@@ -47,11 +89,14 @@ function createWindow () {
         icon:               `${app.getAppPath()}/src/icons/chargy_icon.png`,
 
         webPreferences: {
-            nodeIntegration:          true,
-            nodeIntegrationInWorker:  true,
-            contextIsolation:         false,
-            enableRemoteModule:       true,
-       //     preload:          path.join(__dirname, 'preload.js')
+            preload:                  path.join(__dirname, 'preload.cjs'),
+            nodeIntegration:          false,
+            nodeIntegrationInWorker:  false,
+            contextIsolation:         true,
+            sandbox:                  true,
+            enableRemoteModule:       false,
+            webSecurity:              true,
+            allowRunningInsecureContent: false
         },
 
         // Don't show the window until it's ready, this prevents any white flickering
@@ -60,7 +105,20 @@ function createWindow () {
     });
 
     mainWindow.removeMenu();
-    mainWindow.loadURL(`file://${app.getAppPath()}/src/index.html`);
+    mainWindow.loadFile(path.join(app.getAppPath(), 'src', 'index.html'));
+
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        if (isAllowedWebUrl(url))
+            shell.openExternal(url);
+        return { action: 'deny' };
+    });
+
+    mainWindow.webContents.on('will-navigate', (event, url) => {
+        const targetUrl = new URL(url);
+        const appUrl = new URL(`file://${path.join(app.getAppPath(), 'src', 'index.html')}`);
+        if (targetUrl.href !== appUrl.href)
+            event.preventDefault();
+    });
 
     if (app.commandLine.hasSwitch('inspect') && !app.commandLine.hasSwitch('nogui'))
         mainWindow.webContents.openDevTools();
@@ -232,12 +290,25 @@ app.whenReady().then(() => {
         }
 
         if (!isNaN(httpPort))
-            console.log("Starting Chargy HTTP API on " + httpHost + " port " + httpPort);
+            console.log("Chargy HTTP API is disabled in the hardened renderer. Requested endpoint was " + httpHost + ":" + httpPort);
+
+        httpHost = "";
+        httpPort = 0;
 
     }
 
     createWindow();
 
+});
+
+app.on('web-contents-created', (_event, contents) => {
+    contents.on('will-attach-webview', event => {
+        event.preventDefault();
+    });
+
+    contents.session.setPermissionRequestHandler((_webContents, _permission, callback) => {
+        callback(false);
+    });
 });
 
 app.on('activate', function () {
@@ -265,59 +336,81 @@ app.on('activate', function () {
 // Mac OS X IPC communication "file open with..."
 app.on('open-file', (event, path) => {
     event.preventDefault();
-    fileToOpen = path;
+    fileToOpen = allowReadPath(path);
     if (mainWindow != null)
         mainWindow.webContents.send('receiveFileToOpen', fileToOpen);
 });
 
-
-
-ipcMain.on('isDebug', (event) => {
-  event.returnValue = app.commandLine.hasSwitch('inspect');
+ipcMain.on('getAppContext', (event) => {
+    event.returnValue = {
+        appEdition: applicationEdition,
+        copyright,
+        commandLineArguments,
+        packageJson: require('../package.json'),
+        i18n: require('../i18n.json'),
+        httpConfig: [ httpHost, httpPort ],
+        fileToOpen,
+        isDebug: app.commandLine.hasSwitch('inspect'),
+        noGUI: app.commandLine.hasSwitch('nogui'),
+        platform: process.platform,
+        versions: {
+            chrome: process.versions.chrome,
+            electron: process.versions.electron,
+            node: process.versions.node,
+            openssl: process.versions.openssl
+        }
+    };
 });
 
-ipcMain.on('getHTTPConfig', (event) => {
-  event.returnValue = [ httpHost, httpPort ];
+ipcMain.handle('showSaveDialog', async () => {
+    const fileName = dialog.showSaveDialogSync(null,
+                                               {
+                                                   title:        'Transparenzdatensätze exportieren',
+                                                   defaultPath:  app.getPath('documents') + '/Ladevorgaenge.chargy',
+                                               });
+    if (fileName != null)
+        allowedSavePaths.add(normalizePath(fileName));
+
+    return fileName;
 });
 
-ipcMain.on('noGUI', (event) => {
-  event.returnValue = app.commandLine.hasSwitch('nogui');
+ipcMain.handle('writeTextFile', async (_event, fileName, content) => {
+    const normalizedPath = normalizePath(fileName);
+    if (!allowedSavePaths.has(normalizedPath))
+        throw new Error('Saving to this path was not approved by the user.');
+
+    await fs.promises.writeFile(normalizedPath, content, 'utf-8');
+    return true;
 });
 
-ipcMain.on('getAppFileNames', (event) => {
-    event.returnValue = [ applicationFileName, appAsarFileName ];
+ipcMain.handle('readFile', async (_event, fileName) => {
+    const normalizedPath = normalizePath(fileName);
+    if (!allowedReadPaths.has(normalizedPath))
+        throw new Error('Reading this path was not approved by the application.');
+
+    const data = await fs.promises.readFile(normalizedPath);
+    return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
 });
 
-ipcMain.on('getAppEdition', (event) => {
-    event.returnValue = applicationEdition;
+ipcMain.handle('calculateApplicationHash', async () => {
+    if (applicationFileName === "" || appAsarFileName === "")
+        return "";
+
+    const sha512a = await sha512File(applicationFileName);
+    const sha512b = await sha512File(appAsarFileName);
+    return crypto.createHash('sha512').update(sha512a).update(sha512b).digest('hex');
 });
 
-ipcMain.on('getCopyright', (event) => {
-    event.returnValue = copyright;
+ipcMain.handle('sha256Hex', async (_event, content) => {
+    return crypto.createHash('sha256').update(String(content), 'utf8').digest('hex');
 });
 
-ipcMain.on('getCommandLineArguments', (event) => {
-    event.returnValue = commandLineArguments;
-});
+ipcMain.handle('openExternal', async (_event, url) => {
+    if (!isAllowedWebUrl(url))
+        return false;
 
-ipcMain.on('getPackageJson', (event) => {
-    event.returnValue = require('../package.json');
-});
-
-ipcMain.on('getI18N', (event) => {
-    event.returnValue = require('../i18n.json');
-});
-
-ipcMain.on('getFileToOpen', (event) => {
-    event.returnValue = fileToOpen;
-});
-
-ipcMain.on('showSaveDialog', (event, arg) => {
-    event.returnValue = dialog.showSaveDialogSync(null,
-                                                  {
-                                                      title:        'Transparenzdatensätze exportieren',
-                                                      defaultPath:  app.getPath('documents') + '/Ladevorgaenge.chargy',
-                                                  });
+    await shell.openExternal(url);
+    return true;
 })
 
 ipcMain.on('setVerificationResult', (event, result) => {

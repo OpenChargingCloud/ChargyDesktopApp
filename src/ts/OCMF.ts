@@ -1673,7 +1673,7 @@ export class OCMF {
 
                 OCMFJSONDocument.publicKey ??= PublicKey;
 
-                let publicKeyBytes:ArrayBuffer|null = null;
+                let publicKeyBytes:ArrayBuffer|Uint8Array|null = null;
 
                 if (typeof OCMFJSONDocument.publicKey === 'string')
                 {

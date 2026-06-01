@@ -21,6 +21,7 @@ import * as chargyLib         from './chargyLib'
 
 import Decimal                from 'decimal.js';
 import * as L                 from 'leaflet';
+import 'leaflet.awesome-markers';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -28,6 +29,43 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 // import * as crypto from "crypto";
 // import { readSync } from "fs";
 // import { version } from "punycode";
+
+interface ChargyElectronAPI {
+    getAppContext(): {
+        appEdition: string;
+        copyright: string;
+        commandLineArguments: string[];
+        packageJson: any;
+        i18n: any;
+        httpConfig: [string, number];
+        fileToOpen: string;
+        isDebug: boolean;
+        noGUI: boolean;
+        platform: string;
+        versions: {
+            chrome?: string;
+            electron?: string;
+            node?: string;
+            openssl?: string;
+        };
+    };
+    showSaveDialog(): Promise<string | undefined>;
+    writeTextFile(fileName: string, content: string): Promise<boolean>;
+    readFile(fileName: string): Promise<ArrayBuffer>;
+    calculateApplicationHash(): Promise<string>;
+    sha256Hex(content: string): Promise<string>;
+    openExternal(url: string): Promise<boolean>;
+    setVerificationResult(result: any): boolean;
+    on(channel: 'receiveReadClipboard', listener: () => void): () => void;
+    on(channel: 'receiveFileToOpen', listener: (filename: string) => void): () => void;
+    on(channel: 'receiveFilesToOpen', listener: (filenames: string[]) => void): () => void;
+}
+
+declare global {
+    interface Window {
+        chargyElectron: ChargyElectronAPI;
+    }
+}
 
 export class ChargyApp {
 
@@ -52,10 +90,12 @@ export class ChargyApp {
     public  i18n:                               any                 = {};
     public  UILanguage:                         string              = "de";
 
-    private ipcRenderer                                             = require('electron').ipcRenderer; // (window as any)?.electron?.ipcRenderer;
+    private readonly electron:                  ChargyElectronAPI   = window.chargyElectron;
+    private readonly appContext:                ReturnType<ChargyElectronAPI["getAppContext"]>;
     private commandLineArguments:               Array<string>       = [];
     private httpPort:                           number              = 0;
     private httpHost:                           string              = "localhost";
+    private platform:                           string              = "";
 
     private currentAppInfos:                    any                 = null;
     private currentVersionInfos:                any                 = null;
@@ -134,6 +174,7 @@ export class ChargyApp {
 
         //#region Set parameters
 
+        this.appContext                = this.electron.getAppContext();
         this.versionsURL               = versionsURL         ?? "https://chargy.charging.cloud/apps/desktop/versions";
         this.showFeedbackSection       = showFeedbackSection ?? false;
         this.defaultFeedbackEMail      = feedbackEMail       ?? [];
@@ -231,14 +272,15 @@ export class ChargyApp {
 
         //#region IPC
 
-        this.appEdition                = this.ipcRenderer.sendSync('getAppEdition')     ?? "";
-        this.copyright                 = this.ipcRenderer.sendSync('getCopyright')      ?? "&copy; 2018-2024 GraphDefined GmbH";
+        this.appEdition                = this.appContext.appEdition                     ?? "";
+        this.copyright                 = this.appContext.copyright                      ?? "&copy; 2018-2024 GraphDefined GmbH";
         
-        this.commandLineArguments      = this.ipcRenderer.sendSync('getCommandLineArguments');
-        this.packageJson               = this.ipcRenderer.sendSync('getPackageJson');
-        this.i18n                      = this.ipcRenderer.sendSync('getI18N');
-        this.httpHost                  = this.ipcRenderer.sendSync('getHTTPConfig')[0];
-        this.httpPort                  = this.ipcRenderer.sendSync('getHTTPConfig')[1];
+        this.commandLineArguments      = this.appContext.commandLineArguments;
+        this.packageJson               = this.appContext.packageJson;
+        this.i18n                      = this.appContext.i18n;
+        this.httpHost                  = this.appContext.httpConfig[0];
+        this.httpPort                  = this.appContext.httpConfig[1];
+        this.platform                  = this.appContext.platform;
 
         //#endregion
 
@@ -271,6 +313,10 @@ export class ChargyApp {
             (this.softwareInfosDiv. querySelector("#copyright")              as HTMLSpanElement).innerHTML = this.copyright;
 
             (this.openSourceLibsDiv.querySelector("#chargyVersion")          as HTMLSpanElement).innerHTML = this.packageJson.version;
+            (this.openSourceLibsDiv.querySelector("#electronVersion")        as HTMLSpanElement).innerHTML = this.appContext.versions.electron ?? "";
+            (this.openSourceLibsDiv.querySelector("#chromiumVersion")        as HTMLSpanElement).innerHTML = this.appContext.versions.chrome   ?? "";
+            (this.openSourceLibsDiv.querySelector("#nodeVersion")            as HTMLSpanElement).innerHTML = this.appContext.versions.node     ?? "";
+            (this.openSourceLibsDiv.querySelector("#opensslVersion")         as HTMLSpanElement).innerHTML = this.appContext.versions.openssl  ?? "";
 
         if (this.packageJson.devDependencies)
         {
@@ -333,7 +379,7 @@ export class ChargyApp {
 
                 data["timestamp"]                  = new Date().toISOString();
                 data["chargyVersion"]              = this.packageJson.version;
-                data["platform"]                   = process.platform;
+                data["platform"]                   = this.platform;
 
                 data["invalidCTR"]                 = (newIssueForm.querySelector("#invalidCTR")                as HTMLInputElement).checked;
                 data["InvalidStationData"]         = (newIssueForm.querySelector("#InvalidStationData")        as HTMLInputElement).checked;
@@ -412,24 +458,20 @@ export class ChargyApp {
 
         //#region Calculate application hash
 
-        const appFileNames  = this.ipcRenderer.sendSync('getAppFileNames') ?? [];
-
-        if (Array.isArray(appFileNames) && appFileNames[0] !== "" && appFileNames[1] !== "")
-        {
-            this.calcApplicationHash(appFileNames[0],
-                                     appFileNames[1],
-                                     applicationHash => { 
-                                         this.applicationHash                          = applicationHash;
-                                         this.applicationHashValueDiv.innerHTML        = applicationHash.match(/.{1,8}/g)?.join(" ") ?? "";
-                                     },
-                                     errorMessage => {
-                                         this.applicationHashValueDiv.style.fontStyle  = "italics";
-                                         this.applicationHashValueDiv.innerHTML        = errorMessage;
-                                     });
-        }
-
-        else
-            this.applicationHashValueDiv.innerHTML = "Kann nicht berechnet werden!";
+        this.electron.calculateApplicationHash()
+            .then(applicationHash => {
+                if (applicationHash !== "")
+                {
+                    this.applicationHash                          = applicationHash;
+                    this.applicationHashValueDiv.innerHTML        = applicationHash.match(/.{1,8}/g)?.join(" ") ?? "";
+                }
+                else
+                    this.applicationHashValueDiv.innerHTML        = "Kann nicht berechnet werden!";
+            })
+            .catch(error => {
+                this.applicationHashValueDiv.style.fontStyle      = "italic";
+                this.applicationHashValueDiv.innerHTML            = error instanceof Error ? error.message : String(error);
+            });
 
         //#endregion
 
@@ -482,8 +524,8 @@ export class ChargyApp {
                                             for (let _package of this.currentVersionInfos.packages)
                                             {
                                                 if (_package.isInstaller == null &&
-                                                    (_package.platform === process.platform ||
-                                                    (_package.platforms != null && Array.isArray(_package.platforms) && _package.platforms.indexOf(process.platform) > -1)))
+                                                    (_package.platform === this.platform ||
+                                                    (_package.platforms != null && Array.isArray(_package.platforms) && _package.platforms.indexOf(this.platform) > -1)))
                                                 {
                                                     this.currentPackage = _package;
                                                 }
@@ -624,7 +666,18 @@ export class ChargyApp {
                                                 {
                                                     const downloadURLDiv = downloadURLsDiv.appendChild(document.createElement('div'));
                                                     downloadURLDiv.className = "downloadURL";
-                                                    downloadURLDiv.innerHTML = "<a href=\"javascript:OpenLink('" + versionpackage.downloadURLs[downloadURLName] + "')\" title=\"" + versionpackage.downloadURLs[downloadURLName] + "\"><i class=\"fas fa-globe\"></i>" + downloadURLName + "</a>";
+
+                                                    const downloadURLAnchor = downloadURLDiv.appendChild(document.createElement('a'));
+                                                    downloadURLAnchor.href = "#";
+                                                    downloadURLAnchor.title = versionpackage.downloadURLs[downloadURLName];
+                                                    downloadURLAnchor.dataset["externalUrl"] = versionpackage.downloadURLs[downloadURLName];
+                                                    downloadURLAnchor.innerHTML = "<i class=\"fas fa-globe\"></i>" + downloadURLName;
+                                                    downloadURLAnchor.onclick = (ev: MouseEvent) => {
+                                                        ev.preventDefault();
+                                                        const link = downloadURLAnchor.dataset["externalUrl"];
+                                                        if (link && link.startsWith("https://"))
+                                                            this.electron.openExternal(link);
+                                                    };
                                                 }
 
                                             }
@@ -686,7 +739,7 @@ export class ChargyApp {
 
         //#region Handle the 'About'-button
 
-        this.aboutButton.onclick = (ev: MouseEvent) => {
+        this.aboutButton.onclick = async (ev: MouseEvent) => {
 
             this.updateAvailableScreen.style.display     = "none";
             this.inputDiv.style.flexDirection            = "";
@@ -739,10 +792,10 @@ export class ChargyApp {
                                     const signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
 
                                     if (signatureDiv != null)
-                                        signatureDiv.innerHTML = this.checkApplicationHashSignature(this.currentAppInfos,
-                                                                                                    this.currentVersionInfos,
-                                                                                                    this.currentPackage,
-                                                                                                    signature);
+                                        signatureDiv.innerHTML = await this.checkApplicationHashSignature(this.currentAppInfos,
+                                                                                                          this.currentVersionInfos,
+                                                                                                          this.currentPackage,
+                                                                                                          signature);
 
                                 }
                             }
@@ -821,12 +874,11 @@ export class ChargyApp {
             try
             {
 
-                const path = this.ipcRenderer.sendSync('showSaveDialog')
+                const path = await this.electron.showSaveDialog();
 
                 if (path != null)
-                    require('original-fs').writeFileSync(path,
-                                                         JSON.stringify(this.chargy.currentCTR, null, '\t'),
-                                                         'utf-8');
+                    await this.electron.writeTextFile(path,
+                                                      JSON.stringify(this.chargy.currentCTR, null, '\t'));
 
             }
             catch(exception)
@@ -841,7 +893,6 @@ export class ChargyApp {
 
         //#region Modify external links to be opened in the external web browser
 
-        const shell        = require('electron').shell;
         const linkButtons  = document.getElementsByClassName('linkButton') as HTMLCollectionOf<HTMLButtonElement>;
 
         for (let i = 0; i < linkButtons.length; i++) {
@@ -850,12 +901,29 @@ export class ChargyApp {
 
             if (linkButton != null)
             {
-                linkButton.onclick = function (this: GlobalEventHandlers, ev: MouseEvent) {
+                linkButton.onclick = (ev: MouseEvent) => {
                     ev.preventDefault();
                     const link = linkButton.getAttribute("href");
-                    if (link && (link.startsWith("http://") || link.startsWith("https://"))) {
-                        shell.openExternal(link);
-                    }
+                    if (link && link.startsWith("https://"))
+                        this.electron.openExternal(link);
+                }
+            }
+
+        }
+
+        const externalLinks = document.querySelectorAll('[data-external-url]') as NodeListOf<HTMLElement>;
+
+        for (let i = 0; i < externalLinks.length; i++) {
+
+            const externalLink = externalLinks[i];
+
+            if (externalLink != null)
+            {
+                externalLink.onclick = (ev: MouseEvent) => {
+                    ev.preventDefault();
+                    const link = externalLink.getAttribute("data-external-url");
+                    if (link && link.startsWith("https://"))
+                        this.electron.openExternal(link);
                 }
             }
 
@@ -922,7 +990,7 @@ export class ChargyApp {
 
         //#region Handle IPC message "receiveReadClipboard" (Ctrl+V)
 
-        this.ipcRenderer.on('receiveReadClipboard', async (event:any) => {
+        this.electron.on('receiveReadClipboard', async () => {
             await this.readClipboard();
         });
 
@@ -931,11 +999,11 @@ export class ChargyApp {
         //#region Handle 'Open file'-events...
 
         // e.g. on Mac OS X - when app is running
-        this.ipcRenderer.on('receiveFileToOpen', (event:any, filename:string) => {
+        this.electron.on('receiveFileToOpen', (filename:string) => {
             this.readFileFromDisk(filename);
         });
 
-        this.ipcRenderer.on('receiveFilesToOpen', (event:any, filenames:string[]) => {
+        this.electron.on('receiveFilesToOpen', (filenames:string[]) => {
             this.readFilesFromDisk(filenames);
         });
 
@@ -946,7 +1014,7 @@ export class ChargyApp {
         // ToDo: This is a work around, as events from main.js seem to fire too early!
 
         // File to open on Mac OS X
-        const filename = this.ipcRenderer.sendSync('getFileToOpen');
+        const filename = this.appContext.fileToOpen;
         if (filename !== "")
             this.readFileFromDisk(filename);
 
@@ -964,199 +1032,7 @@ export class ChargyApp {
 
         if (this.httpPort !== 0)
         {
-
-            const http            = require('http');
-            const url             = require('url');
-            const chargyHTTP      = new Chargy(
-                                        this.i18n,
-                                        this.UILanguage,
-                                        require('elliptic'),
-                                        require('moment'),
-                                        require('asn1'),
-                                        require('base32decode'),
-                                        this.showPKIDetails.bind(this)
-                                    );
-            const maxContentSize  = 20*1024*1024;
-
-            try
-            {
-
-                http.createServer(function (request:any, response:any ) {
-
-                    const requestData = url.parse(request.url, true);
-
-                    if (requestData.pathname === "/verify" || requestData.pathname === "/convert")
-                    {
-
-                        if (request.headers["content-length"] != undefined)
-                        {
-
-                            const contentLength = parseInt(request.headers["content-length"]);
-
-                            if (isNaN(contentLength))
-                            {
-                                response.writeHead(400);
-                                response.write("The size of the transmitted transparency record is invalid!");
-                                response.end();
-                            }
-
-                            else if (contentLength > maxContentSize)
-                            {
-                                response.writeHead(400);
-                                response.write("The size of the transmitted transparency record is too large!");
-                                response.end();
-                            }
-
-                            else
-                            {
-
-                                let binaryData:Array<Buffer>  = [];
-                                let contentSize               = 0;
-
-                                request.on('data', (binaryDataChunk: any) => {
-
-                                    contentSize += binaryDataChunk.length;
-
-                                    if (contentSize > maxContentSize)
-                                    {
-                                        response.writeHead(400, {'Content-Type': 'text/plain'});
-                                        response.write("The size of the transmitted transparency record is too large!");
-                                        response.end();
-                                    }
-
-                                    else
-                                        binaryData.push(binaryDataChunk);
-
-                                })
-
-                                request.on('end', async () => {
-
-                                    let result = await chargyHTTP.DetectAndConvertContentFormat([{
-                                        name: "http request",
-                                        data: Buffer.concat(binaryData)
-                                    }]);
-
-                                    if (chargyInterfaces.IsAChargeTransparencyRecord(result))
-                                    {
-
-                                        response.writeHead(200, {'Content-Type': 'application/json'});
-
-                                        let results = result.chargingSessions?.map((session: any) => session.verificationResult);
-
-                                        if (results != undefined)
-                                        {
-
-                                            let status = new Array<string>();
-
-                                            for (const singleResult of results)
-                                            {
-
-                                                //#region Convert status enum to text
-
-                                                switch (singleResult?.status)
-                                                {
-
-                                                    case 0:
-                                                        status.push("Unknown session format");
-                                                        break;
-
-                                                    case 1:
-                                                        status.push("Invalid session format");
-                                                        break;
-
-                                                    case 2:
-                                                        status.push("Public key not found");
-                                                        break;
-
-                                                    case 3:
-                                                        status.push("Invalid public key");
-                                                        break;
-
-                                                    case 4:
-                                                        status.push("Invalid signature");
-                                                        break;
-
-                                                    case 5:
-                                                        status.push("Valid signature");
-                                                        break;
-
-                                                    case 6:
-                                                        status.push("Inconsistent timestamps");
-                                                        break;
-
-                                                    case 7:
-                                                        status.push("At least two measurements required");
-                                                        break;
-
-                                                    default:
-                                                        status.push("Unknown session format");
-                                                        break;
-
-                                                }
-
-                                                //#endregion
-
-                                            }
-
-                                            if (requestData.pathname === "/verify")
-                                                response.write(JSON.stringify(status.length > 1 ? status : status[0],
-                                                                              null,
-                                                                              requestData.query.pretty !== undefined ? 2 : 0));
-
-                                            else if (requestData.pathname === "/convert")
-                                            {
-
-                                                const stringify = require('safe-stable-stringify');
-
-                                                response.write(stringify(chargyHTTP.currentCTR,
-                                                                         null,
-                                                                         requestData.query.pretty !== undefined ? 2 : 0));
-
-                                            }
-
-                                        }
-
-                                        else
-                                            response.write(JSON.stringify({ "message": "Invalid transparency format!" }));
-
-                                    }
-                                    else
-                                    {
-                                        response.writeHead(400, {'Content-Type': 'application/json'});
-                                        response.write(JSON.stringify({ "message": "Invalid transparency format!" }));
-                                    }
-
-                                    response.end();
-
-                                })
-
-                            }
-
-                        }
-                        else
-                        {
-                            response.writeHead(400, {'Content-Type': 'text/plain'});
-                            response.write("Please upload any kind of transparency record(s) for verification.");
-                            response.end();
-                        }
-
-                    }
-
-                    else
-                    {
-                        response.writeHead(400, {'Content-Type': 'text/plain'});
-                        response.write("Please use POST /verify or /convert for the verification or conversion of transparency records.");
-                        response.end();
-                    }
-
-                }).listen(this.httpPort,
-                          this.httpHost);
-
-            }
-            catch (Exception)
-            {
-                console.log("Could not start HTTP API: " + Exception);
-            }
+            console.warn("The embedded HTTP API is disabled in the hardened renderer. Move it to the main process or a dedicated CLI service before re-enabling --http.");
 
         }
 
@@ -1174,7 +1050,7 @@ export class ChargyApp {
             zoomOffset:     -1,
             id:           'mapbox/light-v10',
             accessToken:  'pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w'
-        }).addTo(this.map);
+        } as L.TileLayerOptions & { accessToken: string }).addTo(this.map);
 
     }
 
@@ -1281,7 +1157,7 @@ export class ChargyApp {
         // console.log(text);
         // console.log(context);
 
-        this.ipcRenderer.sendSync('setVerificationResult', result);
+        this.electron.setVerificationResult(result);
 
     }
 
@@ -1318,16 +1194,16 @@ export class ChargyApp {
 
     //#region readFile(s)FromDisk()
 
-    private readFileFromDisk(file: string|File): void {
+    private async readFileFromDisk(file: string|File): Promise<void> {
 
         if (typeof file == 'string')
-            this.readFilesFromDisk([ file ]);
+            await this.readFilesFromDisk([ file ]);
         else
-            this.readFilesFromDisk([ file.name ]);
+            await this.readFilesFromDisk([ file ]);
 
     }
 
-    private readFilesFromDisk(files: string[]|FileList): void {
+    private async readFilesFromDisk(files: string[]|FileList|File[]): Promise<void> {
         if (files != null && files.length > 0)
         {
 
@@ -1352,7 +1228,6 @@ export class ChargyApp {
 
             //#endregion
 
-            let fs          = require('original-fs');
             let loadedFiles = new Array<chargyInterfaces.IFileInfo>();
 
             for (const filename of filesToLoad)
@@ -1362,11 +1237,15 @@ export class ChargyApp {
                     try
                     {
 
+                        const fileData = filename instanceof File
+                                             ? await filename.arrayBuffer()
+                                             : await this.electron.readFile((filename.path ?? filename.name).replace("file://", ""));
+
                         loadedFiles.push({
                                        "name":  filename.name,
                                        "path":  filename.path,
                                        "type":  filename.type,
-                                       "data":  fs.readFileSync((filename.path ?? filename.name).replace("file://", ""))
+                                       "data":  fileData
                                     });
 
                     }
@@ -1391,62 +1270,12 @@ export class ChargyApp {
     //#endregion
 
 
-    //#region calcApplicationHash(...)
-
-    private calcApplicationHash(filename1: string,
-                                filename2: string,
-                                onSuccess: (applicationHash: string) => void,
-                                OnError:   (errorMessage:    string) => void)
-    {
-
-        const fs                       = require('original-fs');
-        const sha512a                  = require('crypto').createHash('sha512');
-        const stream1                  = fs.createReadStream(filename1);
-        const applicationHashValueDiv  = this.applicationHashValueDiv;
-
-        stream1.on('data', function(data: any) {
-            sha512a.update(data)
-        })
-
-        stream1.on('error', function() {
-            OnError("File '" + filename1 + "' not found!");
-        })
-
-        stream1.on('end', function() {
-
-            const sha512b  = require('crypto').createHash('sha512');
-            const stream2  = fs.createReadStream(filename2);
-
-            stream2.on('data', function(data: any) {
-                sha512b.update(data)
-            })
-
-            stream2.on('error', function() {
-                OnError("File '" + filename2 + "' not found!");
-            })
-
-            stream2.on('end', function() {
-
-                var sha512hash = require('crypto').createHash('sha512');
-                sha512hash.update(sha512a.digest('hex'));
-                sha512hash.update(sha512b.digest('hex'));
-
-                onSuccess(sha512hash.digest('hex'));
-
-            })
-
-        })
-
-    }
-
-    //#endregion
-
     //#region checkApplicationHashSignature(...)
 
-    private checkApplicationHashSignature(app:        any,
-                                          version:    any,
-                                          _package:   any,
-                                          signature:  any): string
+    private async checkApplicationHashSignature(app:        any,
+                                                version:    any,
+                                                _package:   any,
+                                                signature:  any): Promise<string>
     {
 
         if (app == null || version == null || _package == null || signature == null)
@@ -1489,9 +1318,7 @@ export class ChargyApp {
             //ToDo: Checking the timestamp might be usefull!
 
             var Input       = JSON.stringify(toCheck);
-            var sha256value = require('crypto').createHash('sha256').
-                                                update(Input, 'utf8').
-                                                digest('hex');
+            var sha256value = await this.electron.sha256Hex(Input);
 
             var result = new this.elliptic.ec('secp256k1').
                                   keyFromPublic(signature.publicKey, 'hex').
@@ -1539,10 +1366,10 @@ export class ChargyApp {
         if (chargyInterfaces.IsAChargeTransparencyRecord(result))
         {
 
-            if (!this.ipcRenderer.sendSync('noGUI'))
+            if (!this.appContext.noGUI)
                 await this.showChargeTransparencyRecord(result);
 
-            this.ipcRenderer.sendSync('setVerificationResult', result.chargingSessions?.map(session => session.verificationResult));
+            this.electron.setVerificationResult(result.chargingSessions?.map(session => session.verificationResult));
 
         }
 
@@ -2178,24 +2005,21 @@ export class ChargyApp {
                 while(this.markers.length > 0)
                     this.map.removeLayer(this.markers.pop());
 
-                const leaflet       = require('leaflet');
-                const markers       = require('leaflet.awesome-markers');
-
-                const redMarker     = leaflet.AwesomeMarkers?.icon({
+                const redMarker     = (L as any).AwesomeMarkers?.icon({
                     prefix:               'fa',
                     icon:                 'exclamation',
                     markerColor:          'red',
                     iconColor:            '#ecc8c3'
                 });
 
-                const orangeMarker  = leaflet.AwesomeMarkers?.icon({
+                const orangeMarker  = (L as any).AwesomeMarkers?.icon({
                     prefix:               'fa',
                     icon:                 'question',
                     markerColor:          'orange',
                     iconColor:            '#ae6a0a'
                 });
 
-                const greenMarker   = leaflet.AwesomeMarkers?.icon({
+                const greenMarker   = (L as any).AwesomeMarkers?.icon({
                     prefix:               'fa',
                     icon:                 'charging-station',
                     //markerColor:          'green',
@@ -2250,8 +2074,8 @@ export class ChargyApp {
                 {
 
                     const marker = markerIcon == null
-                                       ? leaflet.marker([geoLocation.lat, geoLocation.lng]).addTo(this.map)
-                                       : leaflet.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(this.map);
+                                       ? L.marker([geoLocation.lat, geoLocation.lng]).addTo(this.map)
+                                       : L.marker([geoLocation.lat, geoLocation.lng], { icon: markerIcon }).addTo(this.map);
 
                     if (markerIcon != null)
                         this.markers.push(marker);
@@ -2566,16 +2390,12 @@ export class ChargyApp {
                         if (meter.manufacturer && meter.manufacturer.length > 0)
                             chargyLib.CreateDiv2(energyMeterInfosDiv, "meterManufacturer",
                                                  this.chargy.GetLocalizedMessage("Manufacturer"),
-                                                 meter.manufacturerURL && meter.manufacturerURL.length > 0
-                                                     ? "<a href=\"javascript:OpenLink('" + meter.manufacturerURL + "')\">" + meter.manufacturer + "</a>"
-                                                     : meter.manufacturer);
+                                                 meter.manufacturer);
 
                         if (meter.model && meter.model.length > 0)
                             chargyLib.CreateDiv2(energyMeterInfosDiv, "meterModel",
                                                  this.chargy.GetLocalizedMessage("Model"),
-                                                 meter.modelURL && meter.modelURL.length > 0
-                                                     ? "<a href=\"javascript:OpenLink('" + meter.modelURL + "')\">" + meter.model + "</a>"
-                                                     : meter.model);
+                                                 meter.model);
 
                         if (meter.hardwareVersion && meter.hardwareVersion.length > 0)
                             chargyLib.CreateDiv2(energyMeterInfosDiv, "meterHardwareVersion",

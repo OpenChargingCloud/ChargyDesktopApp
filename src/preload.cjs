@@ -1,12 +1,36 @@
-// All of the Node.js APIs are available in the preload process.
-// It has the same sandbox as a Chrome extension.
-window.addEventListener('DOMContentLoaded', () => {
-  const replaceText = (selector, text) => {
-    const element = document.getElementById(selector)
-    if (element) element.innerText = text
-  }
+const { contextBridge, ipcRenderer } = require('electron');
 
-  for (const type of ['chrome', 'node', 'electron']) {
-    replaceText(`${type}-version`, process.versions[type])
-  }
-})
+const validChannels = new Set([
+    'receiveReadClipboard',
+    'receiveFileToOpen',
+    'receiveFilesToOpen'
+]);
+
+contextBridge.exposeInMainWorld('chargyElectron', {
+
+    getAppContext: () => ipcRenderer.sendSync('getAppContext'),
+
+    showSaveDialog: () => ipcRenderer.invoke('showSaveDialog'),
+
+    writeTextFile: (fileName, content) => ipcRenderer.invoke('writeTextFile', fileName, content),
+
+    readFile: fileName => ipcRenderer.invoke('readFile', fileName),
+
+    calculateApplicationHash: () => ipcRenderer.invoke('calculateApplicationHash'),
+
+    sha256Hex: content => ipcRenderer.invoke('sha256Hex', content),
+
+    openExternal: url => ipcRenderer.invoke('openExternal', url),
+
+    setVerificationResult: result => ipcRenderer.sendSync('setVerificationResult', result),
+
+    on: (channel, listener) => {
+        if (!validChannels.has(channel))
+            throw new Error(`Unsupported IPC channel: ${channel}`);
+
+        const subscription = (_event, ...args) => listener(...args);
+        ipcRenderer.on(channel, subscription);
+        return () => ipcRenderer.removeListener(channel, subscription);
+    }
+
+});

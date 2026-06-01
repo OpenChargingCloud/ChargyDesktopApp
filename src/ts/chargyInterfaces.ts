@@ -790,7 +790,7 @@ export interface IResult {
 }
 
 export interface TarInfo {
-    data:           Buffer,
+    data:           ArrayBuffer|Uint8Array,
     mode:           number,
     mtime:          string,
     path:           string
@@ -801,14 +801,14 @@ export interface IFileInfo {
     name:           string,
     path?:          string,
     type?:          string,
-    data?:          ArrayBuffer,
+    data?:          ArrayBuffer|Uint8Array,
     info?:          string,
     error?:         string,
     exception?:     any
 }
 
 export function isIFileInfo(obj: any): obj is IFileInfo {
-    return obj.status !== undefined && obj.name && typeof obj.name === 'string' && obj.data && obj.data instanceof ArrayBuffer;
+    return obj.name && typeof obj.name === 'string' && obj.data && (obj.data instanceof ArrayBuffer || ArrayBuffer.isView(obj.data));
 }
 
 export interface IExtendedFileInfo extends IFileInfo {
