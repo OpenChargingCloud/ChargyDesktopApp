@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy'
+import type { Chargy }        from './chargy'
 import { Alfen }              from './Alfen'
 import { BSMCrypt01 }         from './BSMCrypt01'
 import * as chargyInterfaces  from './chargyInterfaces'

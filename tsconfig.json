@@ -23,11 +23,15 @@
 
         /* Additional Checks */
         "noUncheckedIndexedAccess":           true,
+        "noUncheckedSideEffectImports":       true,
         "noPropertyAccessFromIndexSignature": true,
         "strictBindCallApply":                true,
         "strictFunctionTypes":                true,
         "strictPropertyInitialization":       true,
         "noImplicitOverride":                 true,
+        "verbatimModuleSyntax":               true,
+        "isolatedModules":                    true,
+        "allowUnusedLabels":                  false,
         // "noUnusedLocals":                     false,  // Report errors on unused locals
         // "noUnusedParameters":                 true,   // Report errors on unused parameters
         "noImplicitReturns":                  false,

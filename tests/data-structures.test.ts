@@ -23,6 +23,9 @@ import {
   isIPublicKeyXY,
   isISessionCryptoResult1,
   isISessionCryptoResult2,
+  } from "../src/ts/chargyInterfaces";
+
+import type {
   IChargeTransparencyRecord,
   ICryptoResult,
   IFileInfo,
