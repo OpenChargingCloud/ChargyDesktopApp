@@ -8,6 +8,9 @@
     "noEmit": true
   },
   "include": [
+    "testHelper.ts",
+    "**/*.test.ts",
+    "**/*.tests.ts",
     "./**/*.ts",
     "../vitest.config.ts",
     "../src/ts/declarations.d.ts"

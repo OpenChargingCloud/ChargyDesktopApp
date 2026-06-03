@@ -19,7 +19,7 @@
 // Note: More information about implementation details and limitations
 //       can be found within ~/documentation/OCMF/README.md!
 
-import { Chargy }             from './chargy'
+import type { Chargy }        from './chargy'
 import { ACrypt }             from './ACrypt'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
@@ -604,7 +604,7 @@ export interface IOCMFReading {
     //     "ST": "G"
     // }]
 
-    TM:         string,                 // Time:                          Specification to the system time of the reading and synchronization state.
+    TM?:        string,                 // Time:                          Specification to the system time of the reading and synchronization state.
                                         //                                The time is described according to ISO 8601 with a resolution of milliseconds. Accordingly, the format is according to the following scheme:
                                         //                                <yyyy>-<MM>-<dd>T<HH>:<mm>:<ss>,<fff><Time Zone> => 2018-07-24T13:22:04,000+0200
                                         //                                The indication of the time zone consists of a sign and a four-digit indication for hours and minutes.
@@ -653,7 +653,7 @@ export interface IOCMFReading {
     EF?:        string,                 // Error Flags:                   Optional statement about which quantities are no longer usable for billing due to an error. Each character in this
                                         //                                string identifies a quantity. The following characters are defined: "E" – Energy, "t" – Time
 
-    ST:         string                  // Status:                        State of the meter at the time of reading. Noted as abbreviation according to:
+    ST?:        string                  // Status:                        State of the meter at the time of reading. Noted as abbreviation according to:
                                         //
                                         //                                    Value   Identifier      Description
                                         //                                    ------- --------------- --------------------------------------------------------------------------------
@@ -766,8 +766,10 @@ export interface IOCMFPayload {
                                         //                                The version specification is coded according to the version of this document, i.e. 0.4 corresponds to major 0 and minor 4.
                                         //                                The revision (third digit) is not transmitted, since this does not change anything in the format itself.
     GI?:        string,                 // Gateway Identification:        Optional identifier of the manufacturer for the system which has generated the present data (manufacturer, model, variant, etc.).
+    VI?:        string,                 // Vendor Identification:         Legacy OCMF 0.1 name for the manufacturer/system identification. Newer OCMF versions use GI.
     GS?:        string,                 // Gateway Serial:                Optional serial number of the above mentioned system. This field is __conditionally mandatory__!
     GV?:        string,                 // Gateway Version:               Optional version designation of the manufacturer for the software of the above mentioned system.
+    VV?:        string,                 // Vendor Version:                Legacy OCMF 0.1 name for the software version. Newer OCMF versions use GV.
 
     //#endregion
 
@@ -787,16 +789,22 @@ export interface IOCMFPayload {
 
     MV?:        string,                 // Meter Vendor:                  Optional manufacturer identification of the meter, name of the manufacturer.
     MM?:        string,                 // Meter Model:                   Optional model identification of the meter.
-    MS:         string,                 // Meter Serial:                  Serial number of the meter.
+    MS?:        string,                 // Meter Serial:                  Serial number of the meter.
+                                        //                                The field table marks MS as mandatory, but the OCMF relation-of-serial-numbers section makes the
+                                        //                                gateway and meter serial numbers conditionally mandatory depending on the hardware design.
+                                        //                                KEBA KCP30 OCMF 1.0 data can contain GS without MS. Keep GS/MS semantically separate and use
+                                        //                                GS only as the CTR meter identifier fallback when MS is absent.
     MF?:        string,                 // Meter Firmware:                Optional firmware version of the meter.
 
     //#endregion
 
     //#region User Assignment
 
-    IS:         boolean,                // Identification Status:         General status for user assignment:
+    IS:         boolean|string,         // Identification Status:         General status for user assignment:
                                         //                                    true:                User successfully assigned
                                         //                                    false:               User not assigned
+                                        //                                OCMF 0.1 SAFE samples use status strings such as "VERIFIED". Keep this accepted for
+                                        //                                legacy verification while preserving boolean OCMF 1.x values.
 
     IL?:        string,                 // Identification Level:          Optional encoded overall status of the user assignment, represented by an identifier:
                                         //
@@ -844,7 +852,10 @@ export interface IOCMFPayload {
                                         //                                    PLMN_RING        call
                                         //                                    PLMN_SMS         short message
 
-    IT:         string,                 // Identification Type:           Describes the possible types of user mappings, which can be used in the Type field as unsigned integer in the Type field.
+    IT?:        string,                 // Identification Type:           Describes the possible types of user mappings, which can be used in the Type field as unsigned integer in the Type field.
+                                        //                                The OCMF table lists IT as 1..1 for transaction-related user assignment. Some OCMF 1.0
+                                        //                                implementations, including KEBA KCP30 samples, omit IT when IS is false and ID is empty.
+                                        //                                We accept this as a compatibility case and map it to an explicit unknown contract type in the CTR.
                                         //                                These mappings are based on the specifications from OCPP. OCPP currently (version 1.5) only provides 20 characters for the
                                         //                                identification feature. In accordance with the maximum length of an IBAN (34 characters) allocations of up to 40 bytes
                                         //                                have been provided for the data area.
@@ -985,7 +996,7 @@ export interface IOCMFMeasurement extends chargyInterfaces.IMeasurement
 
 export interface IOCMFAuthorization extends chargyInterfaces.IAuthorization
 {
-    identificationStatus?:      boolean;
+    identificationStatus?:      boolean|string;
     identificationLevel?:       string;
     identificationFlags?:       Array<string>;
 }
@@ -1040,9 +1051,9 @@ export class OCMF {
                 //#region General Information
 
                 const formatVersion                 = firstOCMDJSONDocument.payload?.FV;
-                const gatewayInformation            = firstOCMDJSONDocument.payload?.GI;
+                const gatewayInformation            = firstOCMDJSONDocument.payload?.GI ?? firstOCMDJSONDocument.payload?.VI;
                 const gatewaySerial                 = firstOCMDJSONDocument.payload?.GS;
-                const gatewayVersion                = firstOCMDJSONDocument.payload?.GV;
+                const gatewayVersion                = firstOCMDJSONDocument.payload?.GV ?? firstOCMDJSONDocument.payload?.VV;
 
                 //#endregion
 
@@ -1057,6 +1068,7 @@ export class OCMF {
                 const meterVendor                   = firstOCMDJSONDocument.payload?.MV;
                 const meterModel                    = firstOCMDJSONDocument.payload?.MM;
                 const meterSerial                   = firstOCMDJSONDocument.payload?.MS;
+                const effectiveMeterSerial          = meterSerial ?? gatewaySerial;
                 const meterFirmware                 = firstOCMDJSONDocument.payload?.MF;
 
                 //#endregion
@@ -1095,14 +1107,25 @@ export class OCMF {
 
                     chargyLib.isOptionalString          (meterVendor)              &&
                     chargyLib.isOptionalString          (meterModel)               &&
-                    chargyLib.isMandatoryString         (meterSerial)              &&
+                    // OCMF 1.0 table 3 lists MS as 1..1, but the later "Relation of Serial Numbers,
+                    // Charge Point and Public Key" section makes the serial-number fields conditionally
+                    // mandatory. KEBA KCP30 records identify the signing gateway via GS and omit MS.
+                    // Therefore we keep meterSerial and gatewaySerial separate, but require at least one
+                    // usable serial number for the CTR meter identity.
+                    chargyLib.isMandatoryString         (effectiveMeterSerial)     &&
                     chargyLib.isOptionalString          (meterFirmware)            &&
 
-                    chargyLib.isMandatoryBoolean        (identificationStatus)     &&
+                    // OCMF 1.x uses boolean IS values. OCMF 0.1 SAFE reference data used status strings
+                    // such as "VERIFIED", so accept both forms and preserve the original value in the CTR.
+                    (chargyLib.isMandatoryBoolean       (identificationStatus) ||
+                     chargyLib.isMandatoryString        (identificationStatus))    &&
                     chargyLib.isOptionalString          (identificationLevel)      &&
                     //chargyLib.isMandatoryArrayOfStrings (identificationFlags)      &&
                     chargyLib.isOptionalArrayOfStrings  (identificationFlags)      &&  // Note: Some vendors do not use this MANDATORY field!
-                    chargyLib.isMandatoryString         (identificationType)       &&
+                    // IT is 1..1 in the user-assignment table for transaction records. Some OCMF 1.0
+                    // implementations omit it when no user is assigned (IS=false, ID empty). We tolerate
+                    // this vendor compatibility case instead of rejecting otherwise valid signatures.
+                    chargyLib.isOptionalString          (identificationType)       &&
                     chargyLib.isOptionalString          (identificationData)       &&
                     chargyLib.isOptionalString          (tariffText)               &&
 
@@ -1160,7 +1183,7 @@ export class OCMF {
 
                         "contract": {
                             "@id":          identificationData ?? "?",
-                            "type":         identificationType
+                            "type":         identificationType ?? "?"
                         },
 
                         "ocmf": {
@@ -1184,7 +1207,7 @@ export class OCMF {
                                     "@id":                      "DE*GEF*EVSE*CHARGY*1",
                                     "description":              { "en": "GraphDefined CHARGY Virtual EVSE 1" },
                                     "meters": [{
-                                        "@id":                          meterSerial,
+                                        "@id":                          effectiveMeterSerial,
                                         "manufacturer":                 meterVendor,
                                         "model":                        meterModel,
                                         //"hardwareVersion":              "1.0",
@@ -1214,7 +1237,7 @@ export class OCMF {
 
                             "authorizationStart": {
                                 "@id":                     identificationData ?? "?",
-                                "type":                    identificationType,
+                                "type":                    identificationType ?? "?",
                                 "identificationStatus":    identificationStatus,
                                 "identificationLevel":     identificationLevel,
                                 "identificationFlags":     identificationFlags ?? []   // Note: The OCMF documentation expects an empty array!
@@ -1228,25 +1251,38 @@ export class OCMF {
 
                     };
 
+                    const measurementsByKey = new Map<string, IOCMFMeasurement>();
+
                     for (const ocmfJSONDocument of OCMFJSONDocuments)
                     {
 
                         // ToDo: Validate the pagination!
+
+                        let inheritedReading: Partial<IOCMFReading> = {};
 
                         for (const reading of ocmfJSONDocument.payload.RD)
                         {
 
                             //#region Data
 
-                            const time                   = reading.TM;
-                            const transaction            = reading.TX;
-                            const readingValue           = reading.RV;
-                            const readingIdentification  = reading.RI;
-                            const readingUnit            = reading.RU;
-                            const readingCurrentType     = reading.RT;
-                            const cumulatedLoss          = reading.CL;
-                            const errorFlags             = reading.EF;
-                            const status                 = reading.ST;
+                            // OCMF allows fields with the same value as the previous reading to be omitted,
+                            // but only within the same signed OCMF record. KEBA KCP30 OCMF 1.0 data uses this
+                            // for the third reading in a record: it contains a different OBIS value, but omits
+                            // TM/TX/EF/ST. Treating such readings as invalid or skipping them would lose a
+                            // signed value even though the standard describes this carry-forward rule.
+                            const effectiveReading       = { ...inheritedReading, ...reading };
+
+                            const time                   = effectiveReading.TM;
+                            const transaction            = effectiveReading.TX;
+                            const readingValue           = effectiveReading.RV;
+                            const readingIdentification  = effectiveReading.RI;
+                            const readingUnit            = effectiveReading.RU;
+                            const readingCurrentType     = effectiveReading.RT;
+                            const cumulatedLoss          = effectiveReading.CL;
+                            const errorFlags             = effectiveReading.EF;
+                            const status                 = effectiveReading.ST;
+
+                            inheritedReading = effectiveReading;
 
                             //#endregion
 
@@ -1258,7 +1294,7 @@ export class OCMF {
                                 chargyLib.isOptionalString   (readingCurrentType)    &&
                                 chargyLib.isOptionalDecimal  (cumulatedLoss)         &&
                                 chargyLib.isOptionalString   (errorFlags)            &&
-                                chargyLib.isOptionalString   (status))
+                                chargyLib.isMandatoryString  (status))
                             {
 
                                 //#region Meter Reading Validation
@@ -1342,20 +1378,34 @@ export class OCMF {
 
                                 CTR!.chargingSessions![0]!.end = timeStampISO8601;
 
-                                // ToDo: There might be multiple OBIS meter readings per timestamp!
-                                if (CTR!.chargingSessions![0]!.measurements.length == 0)
-                                    CTR!.chargingSessions![0]!.measurements.push({
+                                const measurementKey = [
+                                    readingIdentification ?? "?",
+                                    readingUnit,
+                                    readingCurrentType ?? ""
+                                ].join("|");
+
+                                let measurement = measurementsByKey.get(measurementKey);
+
+                                if (measurement == null)
+                                {
+
+                                    measurement = {
                                         "name":            chargyLib.OBIS2MeasurementName(readingIdentification ?? ""),
                                         "scale":           0,
-                                        "energyMeterId":   meterSerial,
+                                        "energyMeterId":   effectiveMeterSerial,
                                         "@context":        "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/OCMFv1.0+json",
                                         "obis":            readingIdentification ?? "?",   // OBIS: "1-b:1.8.0"
                                         "unit":            readingUnit,                    // "kWh"
                                         "currentType":     readingCurrentType,             // "AC"
                                         "values":          []
-                                    });
+                                    };
 
-                                CTR!.chargingSessions![0]!.measurements[0]!.values.push({
+                                    measurementsByKey.set(measurementKey, measurement);
+                                    CTR!.chargingSessions![0]!.measurements.push(measurement);
+
+                                }
+
+                                measurement.values.push({
                                     "timestamp":           timeStampISO8601,            // "2019-06-26T08:57:44,337+0000"
                                     "timeSync":            timeSync,                    // "U"|"I"|"S"|"R"
                                     "transaction":         transaction,                 // "B"|"C"|"X"|"E"|"L"|"R"|"A"|"P"|"S"|"T"|null
@@ -1673,7 +1723,7 @@ export class OCMF {
 
                 OCMFJSONDocument.publicKey ??= PublicKey;
 
-                let publicKeyBytes:ArrayBuffer|Uint8Array|null = null;
+                let publicKeyBytes:Buffer|null = null;
 
                 if (typeof OCMFJSONDocument.publicKey === 'string')
                 {
@@ -1709,7 +1759,7 @@ export class OCMF {
                                 break;
 
                             case "base32":
-                                publicKeyBytes = Buffer.from(this.chargy.base32Decode(publicKeyBytes, 'RFC4648'));
+                                publicKeyBytes = Buffer.from(this.chargy.base32Decode(OCMFJSONDocument.publicKey, 'RFC4648'));
                                 break;
 
                             case 'base64':
@@ -1736,7 +1786,7 @@ export class OCMF {
                         else if (base32Regex.test(OCMFJSONDocument.publicKey))
                         {
                             PublicKeyEncoding  = 'base32';
-                            publicKeyBytes     = Buffer.from(this.chargy.base32Decode(publicKeyBytes, 'RFC4648'));
+                            publicKeyBytes     = Buffer.from(this.chargy.base32Decode(OCMFJSONDocument.publicKey, 'RFC4648'));
                         }
 
                         else if (base64Regex.test(OCMFJSONDocument.publicKey))
@@ -2288,12 +2338,16 @@ export class OCMF {
                     switch (ocmfJSONDocumentGroup[0].payload.FV)
                     {
 
+                        case "0.1":
+                            // OCMF 0.1 SAFE reference data uses a few legacy field names/forms (VI/VV,
+                            // string based IS values), but the compact signed document structure is close
+                            // enough to the 1.x parser once those compatibility aliases are normalized.
                         case "1.0":
                         case "1.1":
                         case "1.2":
                         case "1.3":
                         case "1.4":
-                            ocmfCTRs.push(await this.tryToParseOCMFv1_0(ocmfJSONDocumentGroup, PublicKey, ContainerInfos));
+                            ocmfCTRs.push(await this.tryToParseOCMFv1_0(ocmfJSONDocumentGroup, PublicKey, PublicKeyEncoding, ContainerInfos));
                             break;
 
                         default:

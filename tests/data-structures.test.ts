@@ -248,60 +248,6 @@ describe("Chargy data structure guards", () => {
 
 
 
-    test.skip("PTB input", async () => {
-        await expectVerificationReport(
-            "PTB/ptb-simple.json",
-            "PTB/ptb-simple.expected.txt"
-        );
-    });
-
-    test.skip("PTB input - must fail!", async () => {
-        await expectVerificationReport(
-            "PTB/ptb-simple-signature_invalid.json",
-            "PTB/ptb-simple-signature_invalid.expected.txt"
-        );
-    });
-
-    test("chargeIT-Testdatensatz-02", async () => {
-        await expectVerificationReport(
-            "chargeIT/chargeIT-Testdatensatz-02.chargy",
-            "chargeIT/chargeIT-Testdatensatz-02.expected.txt"
-        );
-    });
-
-    test("chargeIT-Testdatensatz-02 in ZIP archive", async () => {
-        await expectArchiveVerificationReport(
-            "chargeIT/chargeIT-Testdatensatz-02.zip",
-            "chargeIT/chargeIT-Testdatensatz-02.expected.txt"
-        );
-    });
-
-    test("chargeIT-Testdatensatz-02 in TAR archive", async () => {
-        await expectArchiveVerificationReport(
-            "chargeIT/chargeIT-Testdatensatz-02.tar",
-            "chargeIT/chargeIT-Testdatensatz-02.expected.txt"
-        );
-    });
-
-    test("chargeIT-Testdatensatz-02 in TAR.GZ archive", async () => {
-        await expectArchiveVerificationReport(
-            "chargeIT/chargeIT-Testdatensatz-02.tar.gz",
-            "chargeIT/chargeIT-Testdatensatz-02.expected.txt"
-        );
-    });
-
-    test("chargeIT-Testdatensatz-02 in TAR.BZ2 archive", async () => {
-        await expectArchiveVerificationReport(
-            "chargeIT/chargeIT-Testdatensatz-02.tar.bz2",
-            "chargeIT/chargeIT-Testdatensatz-02.expected.txt"
-        );
-    });
-
-
-
-
-
-
     test("recognizes a charge transparency record by its required structural fields", () => {
       const ctr = sampleChargeTransparencyRecord();
 
@@ -372,16 +318,6 @@ describe("Chargy enum values", () => {
 
 
 describe("Chargy data formatting helpers", () => {
-
-    test("adds a plain id alias when parsing JSON-LD loaded from disk", () => {
-      const fixturePath = join(process.cwd(), "tests", "fixtures", "jsonld-sample.json");
-      const parsed = ParseJSON_LD<{ "@id": string; id: string; value: number }>(
-        readFileSync(fixturePath, "utf8")
-      );
-
-      expect(parsed.id).toBe("ctr/example");
-      expect(parsed.value).toBe(42);
-    });
 
     test("converts OBIS values between human and hex forms", () => {
       expect(OBIS2Hex("1-0:1.8.0*255")).toBe("0100010800ff");

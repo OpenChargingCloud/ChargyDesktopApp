@@ -19,6 +19,39 @@ import * as chargyInterfaces  from './chargyInterfaces'
 import Decimal                from 'decimal.js';
 
 
+export function getElementsByLocalName(parent: Document | Element, localName: string): Element[] {
+
+    const elements = new Set<Element>();
+
+    try
+    {
+        for (const element of Array.from(parent.getElementsByTagName(localName)))
+            elements.add(element);
+    }
+    catch
+    { }
+
+    try
+    {
+        for (const element of Array.from(parent.getElementsByTagNameNS("*", localName)))
+            elements.add(element);
+    }
+    catch
+    { }
+
+    try
+    {
+        for (const element of Array.from(parent.getElementsByTagName("*")))
+            if (element.localName === localName)
+                elements.add(element);
+    }
+    catch
+    { }
+
+    return Array.from(elements);
+
+}
+
 export function ParseJSON_LD<T>(Text:     string,
                                 Context:  string = ""): T {
 

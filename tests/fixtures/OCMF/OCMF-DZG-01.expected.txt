@@ -1,0 +1,27 @@
+format: ctr
+sessions: 1
+session 1: 1554181214441:-1965658344385548683:2
+session 1 evseId: DE*GEF*EVSE*CHARGY*1
+session 1 meterId: 1DZG0022222222
+session 1 status: PublicKeyNotFound
+session 1 measurements: 1
+measurement 1.1 name: ENERGY_TOTAL
+measurement 1.1 obis: 01-00:98.08.00.FF
+measurement 1.1 status: unknown
+measurement 1.1 values: 4
+value 1.1.1 timestamp: 2022-01-28T15:33:09.000+01:00
+value 1.1.1 value: 0
+value 1.1.1 signatures: 0
+value 1.1.1 status: PublicKeyNotFound
+value 1.1.2 timestamp: 2022-01-28T15:38:56.000+01:00
+value 1.1.2 value: 0
+value 1.1.2 signatures: 0
+value 1.1.2 status: PublicKeyNotFound
+value 1.1.3 timestamp: 2022-01-28T15:33:09.000+01:00
+value 1.1.3 value: 0
+value 1.1.3 signatures: 0
+value 1.1.3 status: PublicKeyNotFound
+value 1.1.4 timestamp: 2022-01-28T15:38:56.000+01:00
+value 1.1.4 value: 0
+value 1.1.4 signatures: 0
+value 1.1.4 status: PublicKeyNotFound

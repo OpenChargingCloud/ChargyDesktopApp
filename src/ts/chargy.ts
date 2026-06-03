@@ -78,6 +78,146 @@ export class Chargy {
 
     }
 
+
+    private PublicKeyIdFromFileName(fileName: string): string {
+
+        return (fileName.indexOf('.') > -1
+                    ? fileName.substring(0, fileName.indexOf('.'))
+                    : fileName).replace(/[-_]?public[-_]?key/i, "");
+
+    }
+
+
+    private TryToParseDERPublicKey(keyId: string,
+                                   publicKeyBuffer: Buffer): chargyInterfaces.IPublicKeyLookup & { "@id": string, "@context": string } {
+
+        // https://lapo.it/asn1js/ for a visual check...
+        // https://github.com/indutny/asn1.js
+        const ASN1_OIDs      = this.asn1.define('OIDs', function() {
+            //@ts-ignore
+            this.key('oid').objid()
+        });
+
+        const ASN1_PublicKey = this.asn1.define('PublicKey', function() {
+            //@ts-ignore
+            this.seq().obj(
+                //@ts-ignore
+                this.key('oids').seqof(ASN1_OIDs),
+                //@ts-ignore
+                this.key('publicKey').bitstr()
+            );
+        });
+
+        const publicKeyDER   = ASN1_PublicKey.decode(publicKeyBuffer, 'der');
+
+        const KeyType_OID    = publicKeyDER.oids[0].join(".") as string;
+        let   KeyType        = "unknown";
+        switch (KeyType_OID)
+        {
+            case "1.2.840.10045.2.1":
+                KeyType      = "ecPublicKey";   // ANSI X9.62 public key type
+                break;
+        }
+
+        const Curve_OID      = publicKeyDER.oids[1].join(".") as string;
+        let   Curve          = "unknown";
+        switch (Curve_OID)
+        {
+
+            // Koblitz 224-bit curve
+            case "1.3.132.0.32":
+                Curve        = "secp224k1";
+                break;
+
+            // NIST/ANSI X9.62 named 256-bit elliptic curve used with SHA256
+            case "1.2.840.10045.3.1.7":
+                Curve        = "secp256r1";    // also: ANSI prime256v1, NIST P-256
+                break;
+
+            // NIST/ANSI X9.62 named 384-bit elliptic curve used with SHA384
+            case "1.3.132.0.34":
+                Curve        = "secp384r1";    // also: ANSI prime384v1, NIST P-384
+                break;
+
+            // NIST/ANSI X9.62 named 521-bit elliptic curve used with SHA512
+            case "1.3.132.0.35":
+                Curve        = "secp521r1";    // also: ANSI prime521v1, NIST P-521
+                break;
+
+        }
+
+        return {
+            "@id":       keyId,
+            "@context":  "https://open.charging.cloud/contexts/CTR+json",
+            publicKeys: [
+                {
+                    "@id":            keyId,
+                    "@context":       "https://open.charging.cloud/contexts/publicKey+json",
+                    "subject":        keyId,
+                    type: {
+                        oid:          KeyType_OID,
+                        name:         KeyType
+                    },
+                    algorithm: {
+                        oid:          Curve_OID,
+                        name:         Curve
+                    },
+                    value:      chargyLib.buf2hex(publicKeyDER.publicKey.data),
+                    certainty:  0
+                }
+            ]
+        };
+
+    }
+
+
+    private IsHexEncodedPublicKeyFile(fileName:     string,
+                                      textContent?: string): boolean {
+
+        if (textContent == null)
+            return false;
+
+        const fileNameLower = fileName.toLowerCase();
+        const publicKeyFile = fileNameLower.includes("publickey") ||
+                              fileNameLower.includes("public-key") ||
+                              fileNameLower.includes("public_key");
+        const publicKeyHEX  = textContent.replace(/\s+/g, "");
+
+        return publicKeyFile                    &&
+               publicKeyHEX.length >= 80       &&
+               publicKeyHEX.length % 2 === 0   &&
+               publicKeyHEX.startsWith("30")   &&
+               /^[0-9a-fA-F]+$/.test(publicKeyHEX);
+
+    }
+
+
+    private TryToGetDERPublicKeyHEX(fileName:     string,
+                                    textContent?: string): string|undefined {
+
+        if (textContent == null)
+            return undefined;
+
+        if (textContent.startsWith("-----BEGIN PUBLIC KEY-----") &&
+            textContent.endsWith  ("-----END PUBLIC KEY-----"))
+        {
+            const publicKeyPEM = textContent.replace("-----BEGIN PUBLIC KEY-----", "").
+                                             replace("-----END PUBLIC KEY-----",   "").
+                                             split  ('\n').
+                                             map    ((line) => line.trim()).
+                                             filter ((line) => line !== '' && !line.startsWith('#')).
+                                             join   ("");
+
+            return chargyLib.buf2hex(Buffer.from(publicKeyPEM, 'base64'));
+        }
+
+        if (this.IsHexEncodedPublicKeyFile(fileName, textContent))
+            return textContent.replace(/\s+/g, "");
+
+        return undefined;
+
+    }
+
     //#region GetLocalizedMessages...
 
     public GetLocalizedMessage(Text: string): string
@@ -125,7 +265,7 @@ export class Chargy {
 
     }
 
-    //#endre
+    //#endregion
 
     //#region GetDevices...
 
@@ -269,17 +409,6 @@ export class Chargy {
         if (FileInfos == null || FileInfos.length == 0)
             return FileInfos;
 
-        //const require = createRequire(import.meta.url);
-
-        const decompress       = require('decompress');
-        const decompressTar    = require('decompress-tar');
-        const decompressTargz  = require('decompress-targz');
-        const decompressTarbz2 = require('decompress-tarbz2');
-       // const decompressTarxz  = require('decompress-tarxz'); // Does not compile!
-        const decompressUnzip  = require('decompress-unzip');
-        const decompressGz     = require('decompress-gz');
-        const decompressBzip2  = require('decompress-bzip2');
-
         //#endregion
 
         let archiveFound      = false;
@@ -356,21 +485,9 @@ export class Chargy {
                             try
                             {
 
-                                let compressedFiles:Array<chargyInterfaces.TarInfo> = await decompress(Buffer.from(FileInfo.data instanceof ArrayBuffer
-                                                                                                                       ? new Uint8Array(FileInfo.data)
-                                                                                                                       : FileInfo.data),
-                                                                                                       {
-                                                                                                           inputFile: FileInfo.name,
-                                                                                                           plugins: [
-                                                                                                               decompressTar(),
-                                                                                                               decompressTargz(),
-                                                                                                               decompressTarbz2(),
-                                                                                                               //decompressTarxz(),
-                                                                                                               decompressUnzip(),
-                                                                                                               decompressGz(),
-                                                                                                               decompressBzip2()
-                                                                                                           ]
-                                                                                                       });
+                                let compressedFiles = await this.extractArchive(FileInfo.name,
+                                                                                FileInfo.data,
+                                                                                filetype.mime.toString());
 
                                 if (compressedFiles.length == 0)
                                     continue;
@@ -521,6 +638,222 @@ export class Chargy {
 
     //#endregion
 
+    private async extractArchive(fileName: string,
+                                 data: ArrayBuffer | Uint8Array,
+                                 mimeType: string): Promise<Array<chargyInterfaces.TarInfo>> {
+
+        const archiveData = this.toUint8Array(data);
+
+        if (mimeType === "application/zip")
+            return await this.extractZipArchive(archiveData);
+
+        if (mimeType === "application/x-tar")
+            return this.extractTarArchive(archiveData);
+
+        if (mimeType === "application/gzip") {
+            const decompressed = await this.decompressStream(archiveData, "gzip");
+            const tarFiles     = this.extractTarArchive(decompressed);
+
+            return tarFiles.length > 0
+                       ? tarFiles
+                       : [{
+                             data:  Buffer.from(decompressed),
+                             mode:  0,
+                             mtime: "",
+                             path:  fileName.substring(0, fileName.lastIndexOf('.')),
+                             type:  "file"
+                         }];
+        }
+
+        if (mimeType === "application/x-bzip2") {
+            const seekBzip     = require('seek-bzip');
+            const decompressed = this.toUint8Array(seekBzip.decode(Buffer.from(archiveData)));
+            const tarFiles     = this.extractTarArchive(decompressed);
+
+            return tarFiles.length > 0
+                       ? tarFiles
+                       : [{
+                             data:  Buffer.from(decompressed),
+                             mode:  0,
+                             mtime: "",
+                             path:  fileName.substring(0, fileName.lastIndexOf('.')),
+                             type:  "file"
+                         }];
+        }
+
+        return [];
+
+    }
+
+    private extractTarArchive(data: Uint8Array): Array<chargyInterfaces.TarInfo> {
+
+        const files = new Array<chargyInterfaces.TarInfo>();
+
+        for (let offset = 0; offset + 512 <= data.byteLength;) {
+
+            const header = data.subarray(offset, offset + 512);
+
+            if (header.every(byte => byte === 0))
+                break;
+
+            const name = this.readTarString(header, 0,   100);
+            const size = this.readTarOctal (header, 124, 12);
+
+            if (name.length === 0 || size < 0)
+                break;
+
+            const prefix    = this.readTarString(header, 345, 155);
+            const path      = prefix.length > 0 ? prefix + "/" + name : name;
+            const typeFlag  = String.fromCharCode(header[156] ?? 0);
+            const dataStart = offset + 512;
+            const dataEnd   = dataStart + size;
+
+            if (dataEnd > data.byteLength)
+                break;
+
+            if (typeFlag !== "5")
+                files.push({
+                    data:  Buffer.from(data.subarray(dataStart, dataEnd)),
+                    mode:  this.readTarOctal(header, 100, 8),
+                    mtime: this.readTarOctal(header, 136, 12).toString(),
+                    path,
+                    type:  "file"
+                });
+
+            offset += 512 + Math.ceil(size / 512) * 512;
+
+        }
+
+        return files;
+
+    }
+
+    private async extractZipArchive(data: Uint8Array): Promise<Array<chargyInterfaces.TarInfo>> {
+
+        const files = new Array<chargyInterfaces.TarInfo>();
+        const view  = new DataView(data.buffer, data.byteOffset, data.byteLength);
+
+        const endOfCentralDirectory = this.findZipEndOfCentralDirectory(data);
+
+        if (endOfCentralDirectory < 0)
+            return files;
+
+        const entryCount             = view.getUint16(endOfCentralDirectory + 10, true);
+        let centralDirectoryOffset   = view.getUint32(endOfCentralDirectory + 16, true);
+
+        for (let index = 0; index < entryCount && centralDirectoryOffset + 46 <= data.byteLength; index++) {
+
+            if (view.getUint32(centralDirectoryOffset, true) !== 0x02014b50)
+                break;
+
+            const compression        = view.getUint16(centralDirectoryOffset + 10, true);
+            const compressedSize     = view.getUint32(centralDirectoryOffset + 20, true);
+            const uncompressedSize   = view.getUint32(centralDirectoryOffset + 24, true);
+            const fileNameLength     = view.getUint16(centralDirectoryOffset + 28, true);
+            const extraLength        = view.getUint16(centralDirectoryOffset + 30, true);
+            const commentLength      = view.getUint16(centralDirectoryOffset + 32, true);
+            const localHeaderOffset  = view.getUint32(centralDirectoryOffset + 42, true);
+            const pathStart          = centralDirectoryOffset + 46;
+            const pathEnd            = pathStart + fileNameLength;
+
+            if (pathEnd > data.byteLength ||
+                localHeaderOffset + 30 > data.byteLength ||
+                view.getUint32(localHeaderOffset, true) !== 0x04034b50)
+                break;
+
+            const localNameLength    = view.getUint16(localHeaderOffset + 26, true);
+            const localExtraLength   = view.getUint16(localHeaderOffset + 28, true);
+            const dataStart          = localHeaderOffset + 30 + localNameLength + localExtraLength;
+            const dataEnd          = dataStart + compressedSize;
+
+            if (dataEnd > data.byteLength)
+                break;
+
+            const path           = new TextDecoder("utf-8").decode(data.subarray(pathStart, pathEnd));
+            const compressedData = data.subarray(dataStart, dataEnd);
+
+            if (!path.endsWith("/")) {
+
+                let fileData: Uint8Array;
+
+                if (compression === 0)
+                    fileData = compressedData;
+
+                else if (compression === 8)
+                    fileData = await this.decompressStream(compressedData, "deflate-raw");
+
+                else
+                    fileData = new Uint8Array(0);
+
+                if (compression === 0 || compression === 8)
+                    files.push({
+                        data:  Buffer.from(fileData),
+                        mode:  0,
+                        mtime: "",
+                        path,
+                        type:  "file"
+                    });
+
+                if (uncompressedSize > 0 && fileData.byteLength !== uncompressedSize)
+                    console.debug("Unexpected ZIP entry size for '" + path + "'!");
+
+            }
+
+            centralDirectoryOffset = pathEnd + extraLength + commentLength;
+
+        }
+
+        return files;
+
+    }
+
+    private async decompressStream(data: Uint8Array, format: CompressionFormat): Promise<Uint8Array> {
+
+        const buffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+        const stream = new Blob([ buffer ]).stream().pipeThrough(new DecompressionStream(format));
+        return new Uint8Array(await new Response(stream).arrayBuffer());
+
+    }
+
+    private findZipEndOfCentralDirectory(data: Uint8Array): number {
+
+        const view      = new DataView(data.buffer, data.byteOffset, data.byteLength);
+        const maxOffset = Math.max(0, data.byteLength - 65557);
+
+        for (let offset = data.byteLength - 22; offset >= maxOffset; offset--)
+            if (view.getUint32(offset, true) === 0x06054b50)
+                return offset;
+
+        return -1;
+
+    }
+
+    private toUint8Array(data: ArrayBuffer | Uint8Array): Uint8Array {
+
+        return data instanceof Uint8Array
+                   ? data
+                   : new Uint8Array(data);
+
+    }
+
+    private readTarString(data: Uint8Array, offset: number, length: number): string {
+
+        let end = offset;
+
+        while (end < offset + length && data[end] !== 0)
+            end++;
+
+        return new TextDecoder("utf-8").decode(data.subarray(offset, end)).trim();
+
+    }
+
+    private readTarOctal(data: Uint8Array, offset: number, length: number): number {
+
+        const value = this.readTarString(data, offset, length).replace(/\0/g, "").trim();
+        return value.length > 0 ? parseInt(value, 8) : 0;
+
+    }
+
 
     //#region DetectAndConvertContentFormat(FileInfos)
 
@@ -618,35 +951,6 @@ export class Chargy {
 
                 //#endregion
 
-                //#region Process compressed files
-
-                else if (fileInfo.type === "application/x-zip-compressed" ||
-                         fileInfo.type === "application/x-compressed"     ||
-                         fileInfo.type === "application/zip"              ||
-                         fileInfo.type === "application/x-bzip2"          ||
-                         fileInfo.type === "application/gzip"             ||
-                         fileInfo.type === "application/x-gzip"           ||
-                         fileInfo.type === "application/x-tar")
-                {
-
-                    try
-                    {
-
-                        const decompressedFiles = await this.decompressFiles([fileInfo]);
-
-                        for (var decompressedFile of decompressedFiles)
-                            expandedFiles.push(decompressedFile);
-
-                    }
-                    catch (exception)
-                    {
-                        console.log("Error decompressing files: " + exception);
-                    }
-
-                }
-
-                //#endregion
-
                 else
                     expandedFiles.push(fileInfo);
 
@@ -654,6 +958,26 @@ export class Chargy {
         }
 
         //#endregion
+
+        expandedFiles = await this.decompressFiles(expandedFiles);
+
+        const publicKeyHEXLookup = new Map<string, string>();
+
+        for (let expandedFile of expandedFiles)
+        {
+            let textContent = new TextDecoder('utf-8').decode(expandedFile.data)?.trim();
+
+            // Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
+            // conversion translates it to FEFF (UTF-16 BOM)
+            if (textContent?.charCodeAt(0) === 0xFEFF)
+                textContent = textContent.substring(1);
+
+            const publicKeyHEX = this.TryToGetDERPublicKeyHEX(expandedFile.name, textContent);
+
+            if (publicKeyHEX != null)
+                publicKeyHEXLookup.set(this.PublicKeyIdFromFileName(expandedFile.name), publicKeyHEX);
+
+        }
 
         //#region Process JSON/XML/text files
 
@@ -691,12 +1015,37 @@ export class Chargy {
                                 break;
 
                             case "http://transparenz.software/schema/2018/07":
-                                processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
+                                // try
+                                // {
+                                    processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
+                                // }
+                                // catch (exception)
+                                // {
+                                //     processedFile.result = {
+                                //         status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                //         exception:  exception,
+                                //         certainty:  0
+                                //     };
+                                // }
+
+                                // if (processedFile.result.status !== undefined &&
+                                //     processedFile.result.status !== chargyInterfaces.SessionVerificationResult.Unvalidated)
+                                // {
+                                //     processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
+                                // }
+
                                 break;
 
                             // The SAFE transparency software v1.0 does not understand its own
                             // XML namespace. Therefore we have to guess the format.
                             case "":
+                                // if (XMLDocument.documentElement?.nodeName  === "values" ||
+                                //     XMLDocument.documentElement?.localName === "values")
+                                // {
+                                //     processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
+                                //     break;
+                                // }
+
                                 processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
                                 if (processedFile.result.status && processedFile.result.status !== chargyInterfaces.SessionVerificationResult.Unvalidated)
@@ -719,12 +1068,9 @@ export class Chargy {
                         // XML namespace. Therefore we have to guess the format.
                         processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
-                        if (processedFile.result.status &&
-                           (//processedFile.result.status === chargyInterfaces.SessionVerificationResult.Unvalidated ||
-                            processedFile.result.status === chargyInterfaces.SessionVerificationResult.InvalidSignature))
-                        {
+                        // Maybe another XML format, e.g. the XML container format?
+                        if (processedFile.result.status === chargyInterfaces.SessionVerificationResult.InvalidSessionFormat)
                             processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
-                        }
 
                     }
 
@@ -736,7 +1082,7 @@ export class Chargy {
                         status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:    this.GetLocalizedMessage("UnknownOrInvalidXMLChargeTransparencyFormat"),
                         exception:  exception,
-                        certainty: 0
+                        certainty:  0
                     }
                 }
             }
@@ -746,10 +1092,28 @@ export class Chargy {
             //#region OCMF processing
 
             else if (textContent?.startsWith("OCMF"))
-                processedFile.result = await new OCMF(this).TryToParseOCMFDocument(textContent);
+            {
+                const publicKeyHEX = publicKeyHEXLookup.get(this.PublicKeyIdFromFileName(processedFile.name)) ??
+                                     (publicKeyHEXLookup.size === 1 ? publicKeyHEXLookup.values().next().value : undefined);
+
+                processedFile.result = await new OCMF(this).TryToParseOCMFDocument(
+                    textContent,
+                    publicKeyHEX,
+                    publicKeyHEX != null ? "hex" : undefined
+                );
+            }
 
             else if (textContent?.startsWith("\"OCMF") && textContent?.endsWith("\""))
-                processedFile.result = await new OCMF(this).TryToParseOCMFDocument(textContent.substring(1, textContent.length - 1));
+            {
+                const publicKeyHEX = publicKeyHEXLookup.get(this.PublicKeyIdFromFileName(processedFile.name)) ??
+                                     (publicKeyHEXLookup.size === 1 ? publicKeyHEXLookup.values().next().value : undefined);
+
+                processedFile.result = await new OCMF(this).TryToParseOCMFDocument(
+                    textContent.substring(1, textContent.length - 1),
+                    publicKeyHEX,
+                    publicKeyHEX != null ? "hex" : undefined
+                );
+            }
 
             //#endregion
 
@@ -772,9 +1136,7 @@ export class Chargy {
                 try
                 {
 
-                    const keyId          = (processedFile.name.indexOf('.') > -1
-                                                ? processedFile.name.substring(0, processedFile.name.indexOf('.'))
-                                                : processedFile.name).replace("-publicKey", "");
+                    const keyId          = this.PublicKeyIdFromFileName(processedFile.name);
 
                     const publicKeyPEM   = textContent.replace("-----BEGIN PUBLIC KEY-----", "").
                                                     replace("-----END PUBLIC KEY-----",   "").
@@ -783,82 +1145,38 @@ export class Chargy {
                                                     filter ((line) => line !== '' && !line.startsWith('#')).
                                                     join   ("");
 
-                    // https://lapo.it/asn1js/ for a visual check...
-                    // https://github.com/indutny/asn1.js
-                    const ASN1_OIDs      = this.asn1.define('OIDs', function() {
-                        //@ts-ignore
-                        this.key('oid').objid()
-                    });
+                    processedFile.result = this.TryToParseDERPublicKey(
+                        keyId,
+                        Buffer.from(publicKeyPEM, 'base64')
+                    );
 
-                    const ASN1_PublicKey = this.asn1.define('PublicKey', function() {
-                        //@ts-ignore
-                        this.seq().obj(
-                            //@ts-ignore
-                            this.key('oids').seqof(ASN1_OIDs),
-                            //@ts-ignore
-                            this.key('publicKey').bitstr()
-                        );
-                    });
-
-                    const publicKeyDER   = ASN1_PublicKey.decode(Buffer.from(publicKeyPEM, 'base64'), 'der');
-
-                    const KeyType_OID    = publicKeyDER.oids[0].join(".") as string;
-                    let   KeyType        = "unknown";
-                    switch (KeyType_OID)
-                    {
-                        case "1.2.840.10045.2.1":
-                            KeyType      = "ecPublicKey";   // ANSI X9.62 public key type
-                            break;
-                    }
-
-                    const Curve_OID      = publicKeyDER.oids[1].join(".") as string;
-                    let   Curve          = "unknown";
-                    switch (Curve_OID)
-                    {
-
-                        // Koblitz 224-bit curve
-                        case "1.3.132.0.32":
-                            Curve        = "secp224k1";
-                            break;
-
-                        // NIST/ANSI X9.62 named 256-bit elliptic curve used with SHA256
-                        case "1.2.840.10045.3.1.7":
-                            Curve        = "secp256r1";    // also: ANSI prime256v1, NIST P-256
-                            break;
-
-                        // NIST/ANSI X9.62 named 384-bit elliptic curve used with SHA384
-                        case "1.3.132.0.34":
-                            Curve        = "secp384r1";    // also: ANSI prime384v1, NIST P-384
-                            break;
-
-                        // NIST/ANSI X9.62 named 521-bit elliptic curve used with SHA512
-                        case "1.3.132.0.35":
-                            Curve        = "secp521r1";    // also: ANSI prime521v1, NIST P-521
-                            break;
-
-                    }
-
+                }
+                catch (exception)
+                {
                     processedFile.result = {
-                        "@id":       keyId,
-                        "@context":  "https://open.charging.cloud/contexts/CTR+json",
-                        publicKeys: [
-                            {
-                                "@id":            keyId,
-                                "@context":       "https://open.charging.cloud/contexts/publicKey+json",
-                                "subject":        keyId,
-                                type: {
-                                    oid:          KeyType_OID,
-                                    name:         KeyType
-                                },
-                                algorithm: {
-                                    oid:          Curve_OID,
-                                    name:         Curve
-                                },
-                                value:  chargyLib.buf2hex(publicKeyDER.publicKey.data),
-                                certainty: 0
-                            }
-                        ]
-                    };
+                        status:     chargyInterfaces.SessionVerificationResult.InvalidPublicKey,
+                        message:    this.GetLocalizedMessage("UnknownOrInvalidPublicKeyFormat"),
+                        exception:  exception,
+                        certainty: 0
+                    }
+                }
+
+            }
+
+            //#endregion
+
+            //#region Public key processing (HEX encoded DER format)
+
+            else if (this.IsHexEncodedPublicKeyFile(processedFile.name, textContent))
+            {
+
+                try
+                {
+
+                    processedFile.result = this.TryToParseDERPublicKey(
+                        this.PublicKeyIdFromFileName(processedFile.name),
+                        Buffer.from(textContent.replace(/\s+/g, ""), 'hex')
+                    );
 
                 }
                 catch (exception)
@@ -903,9 +1221,9 @@ export class Chargy {
                     {
 
                         const results = [
-                            await new ChargeIT(this).   TryToParseChargeITContainerFormat(JSONContent),
+                            await new ChargeIT(this).     TryToParseChargeITContainerFormat(JSONContent),
                             await new ChargePoint(this).TryToParseChargepointFormat      (JSONContent),
-                            await new OCPI(this).       tryToParseOCPIFormat             (JSONContent)
+                            await new OCPI(this).         tryToParseOCPIFormat             (JSONContent)
                         ];
 
                         //#region Filter and sort results
@@ -1605,7 +1923,5 @@ export class Chargy {
         return mergedCTR;
 
     }
-
-
 
 }

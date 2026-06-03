@@ -40,223 +40,166 @@ export class SAFEXML  {
         try
         {
 
-            let commonFormat             = "";
-            let commonPublicKey          = "";
-            let commonPublicKeyEncoding  = "";
-            let signedValues:string[]    = [];
 
-            let values = XMLDocument.querySelectorAll("values");
-            if (values.length == 1)
+            // <values>
+            //     <value transactionId="..." context="Transaction.Begin">
+            //         <signedData format="..." encoding="...">...</signedData>
+            //         <publicKey encoding="...">...</publicKey>
+            //     </value>
+            //     <value transactionId="..." context="Transaction.End">
+            //         <signedData format="..." encoding="...">...</signedData>
+            //         <publicKey encoding="...">...</publicKey>
+            //     </value>
+            // </values>
+            if (XMLDocument.documentElement?.nodeName  === "values" ||
+                XMLDocument.documentElement?.localName === "values")
             {
-                const valueList = values[0]?.querySelectorAll("value");
 
-                if (valueList        != null &&
-                    valueList.length >= 1)
+                const signedDataValues          = new Array<string>();
+
+                let   commonSignedDataFormat    = "";
+                let   commonSignedDataEncoding  = "";
+                let   commonPublicKeyEncoding   = "";
+                let   commonPublicKey           = "";
+
+                for (const value of chargyLib.getElementsByLocalName(XMLDocument, "value"))
                 {
-                    for (let i=0; i<valueList.length; i++)
+
+                    const signedData  = chargyLib.getElementsByLocalName(value, "signedData")[0];
+                    const publicKey   = chargyLib.getElementsByLocalName(value, "publicKey")[0];
+
+                    if (signedData != null &&
+                        publicKey  != null)
                     {
 
-                        let signedDataEncoding  = "";
-                        let signedDataFormat    = "";
-                        let signedDataValue     = "";
-                        let publicKeyEncoding   = "";
-                        let publicKeyValue      = "";
+                        const signedDataFormat = signedData.attributes.getNamedItem("format")?.  value?.trim()?.toLowerCase() ?? "";
 
-                        //#region <signedData>...</signedData>
-
-                        const signedData = valueList[i]?.querySelector("signedData");
-                        if (signedData != null)
-                        {
-
-                            signedDataEncoding = signedData.attributes.getNamedItem("encoding") !== null ? signedData.attributes.getNamedItem("encoding")!.value.trim().toLowerCase() : "";
-                            signedDataFormat   = signedData.attributes.getNamedItem("format")   !== null ? signedData.attributes.getNamedItem("format")!.value.trim().toLowerCase()   : "";
-                            signedDataValue    = signedData.textContent                         !== null ? signedData.textContent.trim()                                              : "";
-
-                            switch (signedDataEncoding)
-                            {
-
-                                case "":
-                                case "plain":
-                                    signedDataValue = Buffer.from(signedDataValue, 'utf8').toString().trim();
-                                    break;
-
-                                case "base32":
-                                    signedDataValue = Buffer.from(this.chargy.base32Decode(signedDataValue, 'RFC4648')).toString().trim();
-                                    break;
-
-                                case "base64":
-                                    signedDataValue = Buffer.from(signedDataValue, 'base64').toString().trim();
-                                    break;
-
-                                case "hex": // Some people put whitespaces, '-' or ':' into the hex format!
-                                    signedDataValue = Buffer.from(signedDataValue.replace(/[^a-fA-F0-9]/g, ''), 'hex').toString().trim();
-                                    break;
-
-                                default:
-                                    return {
-                                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                        message:   "Unkown signed data encoding within the given SAFE XML!",
-                                        certainty: 0
-                                    }
-
-                            }
-
-                            switch (signedDataFormat)
-                            {
-
-                                case "alfen":
-                                    if (commonFormat == "")
-                                        commonFormat = "alfen";
-                                    else if (commonFormat != "alfen")
-                                        return {
-                                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                            message:   "Invalid mixture of different signed data formats within the given SAFE XML!",
-                                            certainty: 0
-                                        }
-                                    break;
-
-                                case "edl":
-                                    if (commonFormat == "")
-                                        commonFormat = "edl";
-                                    else if (commonFormat != "edl")
-                                        return {
-                                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                            message:   "Invalid mixture of different signed data formats within the given SAFE XML!",
-                                            certainty: 0
-                                        }
-                                    break;
-
-                                case "ocmf":
-                                    if (commonFormat == "")
-                                        commonFormat = "ocmf";
-                                    else if (commonFormat != "ocmf")
-                                        return {
-                                            status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                            message:   "Invalid mixture of different signed data formats within the given SAFE XML!",
-                                            certainty: 0
-                                        }
-                                    break;
-
-                                default:
-                                    return {
-                                        status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                        message:   "Unkown signed data formats within the given SAFE XML!",
-                                        certainty: 0
-                                    }
-
-                            }
-
-                            if (chargyLib.IsNullOrEmpty(signedDataValue))
-                                return {
-                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                    message:   "The signed data value within the given SAFE XML must not be empty!",
-                                    certainty: 0
-                                }
-
-                            signedValues.push(signedDataValue);
-
-                        }
-                        else
+                        if (commonSignedDataFormat === "")
+                            commonSignedDataFormat = signedDataFormat;
+                        else if (signedDataFormat !== commonSignedDataFormat)
                             return {
                                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:   "The signed data tag within the given SAFE XML must not be empty!",
-                                certainty: 0
+                                message:   "Invalid mixture of different signed data formats within the given XML container!",
+                                certainty:  0
                             }
 
-                        //#endregion
 
-                        //#region <publicKey>...</publicKey>
+                        const signedDataEncoding = signedData.attributes.getNamedItem("encoding")?.value?.trim()?.toLowerCase() ?? "";
 
-                        // Note: The public key is optional!
-                        const publicKey  = valueList[i]?.querySelector("publicKey");
-                        if (publicKey)
+                        if (commonSignedDataEncoding === "")
+                            commonSignedDataEncoding = signedDataEncoding;
+                        else if (signedDataEncoding !== commonSignedDataEncoding)
+                            return {
+                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                message:   "Invalid mixture of different signed data encodings within the given XML container!",
+                                certainty:  0
+                            }
+
+
+                        const signedDataValue = signedData.textContent?.trim() ?? "";
+
+                        if (chargyLib.IsNullOrEmpty(signedDataValue))
+                            return {
+                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                message:   "The signed data value within the given XML container must not be empty!",
+                                certainty:  0
+                            }
+
+
+                        const publicKeyEncoding  = publicKey.attributes.getNamedItem("encoding")?.value?.trim()?.toLowerCase() ?? "";
+
+                        if (commonPublicKeyEncoding === "")
+                            commonPublicKeyEncoding = publicKeyEncoding;
+                        else if (publicKeyEncoding !== commonPublicKeyEncoding)
+                            return {
+                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                message:   "Invalid mixture of different public key encodings within the given XML container!",
+                                certainty:  0
+                            }
+
+                        if (commonPublicKeyEncoding !== ""    &&
+                            commonPublicKeyEncoding !== "hex" &&
+                            commonPublicKeyEncoding !== "plain" )
+                            return {
+                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                message:   "Unkown public key encoding within the given XML container!",
+                                certainty:  0
+                            }
+
+
+                        const publicKeyValue  = publicKey.textContent?.trim()?.replace(/\s+/g, "") ?? "";
+
+                        if (commonPublicKey === "")
+                            commonPublicKey = publicKeyValue;
+                        else if (publicKeyValue !== commonPublicKey)
+                            return {
+                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                message:   "Invalid mixture of different public keys within the given XML container!",
+                                certainty:  0
+                            }
+
+                        switch (commonSignedDataEncoding)
                         {
 
-                            publicKeyEncoding = publicKey.attributes.getNamedItem("encoding")?.value.trim().toLowerCase() ?? "";
-                            publicKeyValue    = publicKey.textContent?.trim()                                             ?? "";
+                            case "":
+                            case "plain":
+                                signedDataValues.push(Buffer.from(signedDataValue, 'utf8').toString().trim());
+                                break;
 
-                            // switch (publicKeyEncoding)
-                            // {
+                            case "base32":
+                                signedDataValues.push(Buffer.from(this.chargy.base32Decode(signedDataValue, 'RFC4648')).toString().trim());
+                                break;
 
-                            //     case "":
-                            //     case "plain":
-                            //         //publicKeyValue = Buffer.from(publicKeyValue, 'utf8').toString('hex').trim();
-                            //         break;
+                            case "base64":
+                                signedDataValues.push(Buffer.from(signedDataValue, 'base64').toString().trim());
+                                break;
 
-                            //     case "base32":
-                            //         publicKeyValue = Buffer.from(this.chargy.base32Decode(publicKeyValue, 'RFC4648')).toString('hex').trim();
-                            //         break;
+                            case "hex": // Some people put whitespaces, '-' or ':' into the hex format!
+                                signedDataValues.push(Buffer.from(signedDataValue.replace(/[^a-fA-F0-9]/g, ''), 'hex').toString().trim());
+                                break;
 
-                            //     case "base64":
-                            //         publicKeyValue = Buffer.from(publicKeyValue, 'base64').toString('hex').trim();
-                            //         break;
-
-                            //     case "hex":
-                            //         //publicKeyValue = Buffer.from(publicKeyValue, 'hex').toString('hex').trim();
-                            //         break;
-
-                            //     default:
-                            //         return {
-                            //             status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                            //             message:   "Unkown public key encoding within the given SAFE XML!",
-                            //             certainty: 0
-                            //         }
-
-                            // }
-
-                            if (chargyLib.IsNullOrEmpty(publicKeyValue)) return {
-                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:   "The public key within the given SAFE XML must not be empty!",
-                                certainty: 0
-                            }
-
-                            else if (commonPublicKey == "")
-                                commonPublicKey          = publicKeyValue;
-
-                            else if (commonPublicKeyEncoding == "")
-                                commonPublicKeyEncoding  = publicKeyEncoding;
-
-                            else if (publicKeyValue != commonPublicKey) return {
-                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:   "Invalid mixture of different public keys within the given SAFE XML!",
-                                certainty: 0
-                            }
-
-                            else if (publicKeyEncoding != commonPublicKeyEncoding) return {
-                                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                message:   "Invalid mixture of different public key encodings within the given SAFE XML!",
-                                certainty: 0
-                            }
+                            default:
+                                return {
+                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                    message:   "Unkown signed data encoding within the given SAFE XML!",
+                                    certainty:  0
+                                }
 
                         }
 
-                        //#endregion
+                    }
+
+                }
+
+                if (signedDataValues.length > 0)
+                {
+
+                    switch (commonSignedDataFormat)
+                    {
+
+                        case "alfen":
+                            return await new Alfen(this.chargy).TryToParseALFENFormat(
+                                signedDataValues,
+                                {}
+                            );
+
+                        case "ocmf":
+                            return await new OCMF(this.chargy).TryToParseOCMFDocuments(
+                                signedDataValues,
+                                commonPublicKey || undefined,
+                                commonPublicKeyEncoding === "hex" ? "hex" : undefined
+                            );
+
+                        default:
+                            return {
+                                status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                message:    this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
+                                certainty:  0
+                            }
 
                     }
                 }
-            }
 
-            switch (commonFormat)
-            {
-
-                case "alfen":
-                    return await new Alfen(this.chargy).
-                                     TryToParseALFENFormat(signedValues,
-                                                           {});
-
-                case "ocmf":
-                    return await new OCMF(this.chargy).
-                                     TryToParseOCMFDocuments(signedValues,
-                                                             commonPublicKey,
-                                                             commonPublicKeyEncoding,
-                                                             {});
-
-            }
-
-            return {
-                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:   this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
-                certainty: 0
             }
 
         }
@@ -267,6 +210,12 @@ export class SAFEXML  {
                 message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
                 certainty: 0
             }
+        }
+
+        return {
+            status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+            message:    this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
+            certainty:  0
         }
 
     }

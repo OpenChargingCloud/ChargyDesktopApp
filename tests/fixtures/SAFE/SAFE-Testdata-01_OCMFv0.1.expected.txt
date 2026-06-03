@@ -1,0 +1,15 @@
+format: ctr
+sessions: 1
+session 1: 1554181214441:-1965658344385548683:2
+session 1 evseId: DE*GEF*EVSE*CHARGY*1
+session 1 meterId: BQ27400330016
+session 1 status: AtLeastTwoMeasurementsRequired
+session 1 measurements: 1
+measurement 1.1 name: 1-b:1.8.e
+measurement 1.1 obis: 1-b:1.8.e
+measurement 1.1 status: unknown
+measurement 1.1 values: 1
+value 1.1.1 timestamp: 2018-07-24T13:22:04.000+02:00
+value 1.1.1 value: 2935.6
+value 1.1.1 signatures: 0
+value 1.1.1 status: ValidSignature
