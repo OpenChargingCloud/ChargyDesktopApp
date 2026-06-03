@@ -900,9 +900,9 @@ export class Chargy {
                     {
 
                         const results = [
-                            await new ChargeIT(this).     TryToParseChargeITContainerFormat(JSONContent),
+                            await new ChargeIT(this).   TryToParseChargeITContainerFormat(JSONContent),
                             await new ChargePoint(this).TryToParseChargepointFormat      (JSONContent),
-                            await new OCPI(this).         tryToParseOCPIFormat             (JSONContent)
+                            await new OCPI(this).       tryToParseOCPIFormat             (JSONContent)
                         ];
 
                         //#region Filter and sort results

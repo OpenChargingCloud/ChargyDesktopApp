@@ -1,0 +1,19 @@
+format: ctr
+sessions: 1
+session 1: 1546961267168:463645022654661183:1
+session 1 evseId: DE*BDO*74778874*1
+session 1 meterId: 0901454D4800007F9F3E
+session 1 status: ValidSignature
+session 1 measurements: 1
+measurement 1.1 name: ENERGY_TOTAL
+measurement 1.1 obis: 1-0:1.17.0*255
+measurement 1.1 status: unknown
+measurement 1.1 values: 2
+value 1.1.1 timestamp: 2019-01-08T16:27:50+01:00
+value 1.1.1 value: 110281
+value 1.1.1 signatures: 1
+value 1.1.1 status: ValidSignature
+value 1.1.2 timestamp: 2019-01-08T16:50:02+01:00
+value 1.1.2 value: 116765
+value 1.1.2 signatures: 1
+value 1.1.2 status: ValidSignature

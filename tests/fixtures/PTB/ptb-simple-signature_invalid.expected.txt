@@ -1,0 +1,13 @@
+format: ptb
+evseId: DE*ABC*E1234567
+meterId: METER12345671
+values: 2
+energyDifferenceWh: 2500
+consistency: valid
+signatures: invalid (1/2)
+overall: invalid
+issues:
+- Digital signature 1 is invalid (measurement 1, meterId=METER12345671, measurementId=00000001, timestamp=1776331009).
+details:
+- signature 1: invalid (measurement 1, meterId=METER12345671, measurementId=00000001, timestamp=1776331009)
+- signature 2: valid (measurement 2, meterId=METER12345678, measurementId=00000001, timestamp=1776334609)

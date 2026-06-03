@@ -1,0 +1,11 @@
+format: ptb
+evseId: DE*ABC*E1234567
+meterId: METER12345678
+values: 2
+energyDifferenceWh: 2500
+consistency: valid
+signatures: valid (2/2)
+overall: valid
+details:
+- signature 1: valid (measurement 1, meterId=METER12345678, measurementId=00000001, timestamp=1776331009)
+- signature 2: valid (measurement 2, meterId=METER12345678, measurementId=00000001, timestamp=1776334609)
