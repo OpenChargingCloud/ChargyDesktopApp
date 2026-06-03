@@ -359,14 +359,18 @@ export class Chargy {
                                 let compressedFiles:Array<chargyInterfaces.TarInfo> = await decompress(Buffer.from(FileInfo.data instanceof ArrayBuffer
                                                                                                                        ? new Uint8Array(FileInfo.data)
                                                                                                                        : FileInfo.data),
-                                                                                                       { plugins: [ decompressTar(),
-                                                                                                                    decompressTargz(),
-                                                                                                                    decompressTarbz2(),
-                                                                                                                    //decompressTarxz(),
-                                                                                                                    decompressUnzip(),
-                                                                                                                    decompressGz(),
-                                                                                                                    decompressBzip2()
-                                                                                                                ] });
+                                                                                                       {
+                                                                                                           inputFile: FileInfo.name,
+                                                                                                           plugins: [
+                                                                                                               decompressTar(),
+                                                                                                               decompressTargz(),
+                                                                                                               decompressTarbz2(),
+                                                                                                               //decompressTarxz(),
+                                                                                                               decompressUnzip(),
+                                                                                                               decompressGz(),
+                                                                                                               decompressBzip2()
+                                                                                                           ]
+                                                                                                       });
 
                                 if (compressedFiles.length == 0)
                                     continue;

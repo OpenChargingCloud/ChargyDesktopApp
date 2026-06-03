@@ -77,6 +77,26 @@ function readFixture(fileName: string): string {
     return readFileSync(join(currentDirectory, "fixtures", fileName), "utf8").trim();
 }
 
+function readBinaryFixture(fileName: string): Uint8Array {
+    return new Uint8Array(readFileSync(join(currentDirectory, "fixtures", fileName)));
+}
+
+function archiveMimeType(fileName: string): string {
+    if (fileName.endsWith(".zip"))
+        return "application/zip";
+
+    if (fileName.endsWith(".tar.gz"))
+        return "application/gzip";
+
+    if (fileName.endsWith(".tar.bz2"))
+        return "application/x-bzip2";
+
+    if (fileName.endsWith(".tar"))
+        return "application/x-tar";
+
+    return fileName.endsWith(".chargy") ? "application/chargy" : "application/json";
+}
+
 type ChargyConstructor = typeof import("../src/ts/chargy").Chargy;
 
 let Chargy: ChargyConstructor;
@@ -130,12 +150,30 @@ describe("Chargy data structure guards", () => {
 
     }
 
-    async function verifyChargeData(fileName: string, input: string): Promise<IChargeTransparencyRecord | ISessionCryptoResult> {
+    async function expectArchiveVerificationReport(archiveFixture: string, expectedFixture: string) {
+
+        const archive  = readBinaryFixture(archiveFixture);
+        const expected = readFixture(expectedFixture);
+
+        const report   = await verifyChargeData(
+            archiveFixture,
+            archive,
+            archiveMimeType(archiveFixture)
+        );
+        const summary  = formatChargeDataVerificationReport(report);
+
+        expectReportLines(summary, expected);
+
+    }
+
+    async function verifyChargeData(fileName: string, input: string | Uint8Array, type?: string): Promise<IChargeTransparencyRecord | ISessionCryptoResult> {
 
         const fileInfo: IFileInfo = {
             name: fileName,
-            type: fileName.endsWith(".chargy") ? "application/chargy" : "application/json",
-            data: new TextEncoder().encode(input)
+            type: type ?? (fileName.endsWith(".chargy") ? "application/chargy" : "application/json"),
+            data: typeof input === "string"
+                ? new TextEncoder().encode(input)
+                : input
         };
 
         return await createChargy().DetectAndConvertContentFormat([ fileInfo ]);
@@ -230,6 +268,39 @@ describe("Chargy data structure guards", () => {
             "chargeIT/chargeIT-Testdatensatz-02.expected.txt"
         );
     });
+
+    test("chargeIT-Testdatensatz-02 in ZIP archive", async () => {
+        await expectArchiveVerificationReport(
+            "chargeIT/chargeIT-Testdatensatz-02.zip",
+            "chargeIT/chargeIT-Testdatensatz-02.expected.txt"
+        );
+    });
+
+    test("chargeIT-Testdatensatz-02 in TAR archive", async () => {
+        await expectArchiveVerificationReport(
+            "chargeIT/chargeIT-Testdatensatz-02.tar",
+            "chargeIT/chargeIT-Testdatensatz-02.expected.txt"
+        );
+    });
+
+    test("chargeIT-Testdatensatz-02 in TAR.GZ archive", async () => {
+        await expectArchiveVerificationReport(
+            "chargeIT/chargeIT-Testdatensatz-02.tar.gz",
+            "chargeIT/chargeIT-Testdatensatz-02.expected.txt"
+        );
+    });
+
+    test("chargeIT-Testdatensatz-02 in TAR.BZ2 archive", async () => {
+        await expectArchiveVerificationReport(
+            "chargeIT/chargeIT-Testdatensatz-02.tar.bz2",
+            "chargeIT/chargeIT-Testdatensatz-02.expected.txt"
+        );
+    });
+
+
+
+
+
 
     test("recognizes a charge transparency record by its required structural fields", () => {
       const ctr = sampleChargeTransparencyRecord();
