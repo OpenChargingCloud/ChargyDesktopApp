@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2024 GraphDefined GmbH <achim.friedland@graphdefined.com>
+ * Copyright (c) 2018-2026 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy WebApp <https://github.com/OpenChargingCloud/ChargyWebApp>
  *
  * Licensed under the Affero GPL license, Version 3.0 (the "License");

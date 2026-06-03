@@ -9,7 +9,7 @@ const crypto                                  = require('crypto');
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 let applicationEdition    = "LichtBlick Edition";
-let copyright             = "&copy; 2018-2024 GraphDefined GmbH";
+let copyright             = "&copy; 2018-2026 GraphDefined GmbH";
 let applicationFileName   = "";
 let appAsarFileName       = "";
 let commandLineArguments  = [];
