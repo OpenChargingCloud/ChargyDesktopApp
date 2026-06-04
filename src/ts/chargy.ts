@@ -885,7 +885,11 @@ export class Chargy {
                 {
 
                     const pdfWorkerSrc = require('pdfjs-dist/build/pdf.worker.mjs');
-                    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
+
+                    if (typeof pdfWorkerSrc === "string")
+                        pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
+                    else if (typeof pdfWorkerSrc?.default === "string")
+                        pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc.default;
 
                     const pdfDocument  = fileInfo.data
                                             ? await pdfjsLib.getDocument({ data: fileInfo.data }).promise

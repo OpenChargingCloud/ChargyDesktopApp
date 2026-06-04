@@ -33,13 +33,20 @@ describe('SAFE Tests', () => {
         );
     });
 
+    test("SAFE Testdata 02 with XML namespace via PDF/A-3", async () => {
+        await expectArchiveVerificationReport(
+            "SAFE/SAFE-Testdata-02_withXMLNamespace.pdf",
+            "SAFE/SAFE-Testdata-02.expected.txt"
+        );
+    });
+
 
     test("SAFE Testdata 03 single measurement - should fail", async () => {
         await expectArchiveVerificationReport(
             "SAFE/SAFE-Testdata-03_singleMeasurement_ShouldFail.xml",
             "SAFE/SAFE-Testdata-03.expected.txt"
         );
-    });    
+    });
 
 
     test("SAFE Testdata 04", async () => {

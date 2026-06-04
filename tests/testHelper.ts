@@ -24,12 +24,11 @@ export {
 const require = createRequire(import.meta.url);
 const { DOMParser } = require("@oozcitak/dom");
 
-vi.mock('pdfjs-dist', () => ({
-    GlobalWorkerOptions: {},
-    getDocument: () => {
-        throw new Error("PDF fixtures are not supported by this test setup.");
-    }
-}));
+vi.mock('pdfjs-dist', async () => {
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    pdfjs.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/legacy/build/pdf.worker.mjs';
+    return pdfjs;
+});
 
 vi.stubGlobal('window', {
     navigator: {
