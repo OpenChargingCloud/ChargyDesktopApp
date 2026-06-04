@@ -16,6 +16,8 @@ contextBridge.exposeInMainWorld('chargyElectron', {
 
     readFile: fileName => ipcRenderer.invoke('readFile', fileName),
 
+    readClipboardText: () => ipcRenderer.invoke('readClipboardText'),
+
     calculateApplicationHash: () => ipcRenderer.invoke('calculateApplicationHash'),
 
     sha256Hex: content => ipcRenderer.invoke('sha256Hex', content),

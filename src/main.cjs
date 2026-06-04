@@ -1,6 +1,6 @@
 // Modules to control application life and create native browser window
 
-const { app, BrowserWindow, dialog, ipcMain, shell } = require('electron')
+const { app, BrowserWindow, clipboard, dialog, ipcMain, shell } = require('electron')
 const path                                    = require('path');
 const fs                                      = require('fs');
 const crypto                                  = require('crypto');
@@ -390,6 +390,10 @@ ipcMain.handle('readFile', async (_event, fileName) => {
 
     const data = await fs.promises.readFile(normalizedPath);
     return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+});
+
+ipcMain.handle('readClipboardText', async () => {
+    return clipboard.readText();
 });
 
 ipcMain.handle('calculateApplicationHash', async () => {

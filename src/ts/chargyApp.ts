@@ -52,6 +52,7 @@ interface ChargyElectronAPI {
     showSaveDialog(): Promise<string | undefined>;
     writeTextFile(fileName: string, content: string): Promise<boolean>;
     readFile(fileName: string): Promise<ArrayBuffer>;
+    readClipboardText(): Promise<string>;
     calculateApplicationHash(): Promise<string>;
     sha256Hex(content: string): Promise<string>;
     openExternal(url: string): Promise<boolean>;
@@ -1169,8 +1170,8 @@ export class ChargyApp {
     {
         try
         {
-            let text = await navigator.clipboard.readText();
-            this.detectAndConvertContentFormat(text);
+            const text = await this.electron.readClipboardText();
+            await this.detectAndConvertContentFormat(this.getClipboardFileInfo(text));
         }
         catch (exception)
         {
@@ -1188,6 +1189,37 @@ export class ChargyApp {
                 });
             }
         }
+    }
+
+    //#endregion
+
+    //#region getClipboardFileInfo(...)
+
+    private getClipboardFileInfo(text: string): chargyInterfaces.IFileInfo
+    {
+
+        const trimmedText = text.trimStart();
+        let name          = "clipboard.txt";
+        let type          = "text/plain";
+
+        if (trimmedText.startsWith("<?xml"))
+        {
+            name = "clipboard.xml";
+            type = "application/xml";
+        }
+
+        else if (trimmedText.startsWith("{") || trimmedText.startsWith("["))
+        {
+            name = "clipboard.json";
+            type = "application/json";
+        }
+
+        return {
+            name,
+            type,
+            data: new TextEncoder().encode(text)
+        };
+
     }
 
     //#endregion
@@ -1351,10 +1383,9 @@ export class ChargyApp {
         let result:IChargeTransparencyRecord|ISessionCryptoResult = null;
 
         if (typeof FileInfos === 'string')
-            result = await this.chargy.DetectAndConvertContentFormat([{
-                                                                         name: "clipboard",
-                                                                         data: new TextEncoder().encode(FileInfos)
-                                                                      }]);
+            result = await this.chargy.DetectAndConvertContentFormat([
+                this.getClipboardFileInfo(FileInfos)
+            ]);
 
         else if (chargyInterfaces.isIFileInfo(FileInfos))
             result = await this.chargy.DetectAndConvertContentFormat([ FileInfos ]);

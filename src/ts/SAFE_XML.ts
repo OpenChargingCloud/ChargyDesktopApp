@@ -65,11 +65,11 @@ export class SAFEXML  {
                 for (const value of chargyLib.getElementsByLocalName(XMLDocument, "value"))
                 {
 
-                    const signedData  = chargyLib.getElementsByLocalName(value, "signedData")[0];
+                    // The public key might be null or empty for some formats!
                     const publicKey   = chargyLib.getElementsByLocalName(value, "publicKey")[0];
+                    const signedData  = chargyLib.getElementsByLocalName(value, "signedData")[0];
 
-                    if (signedData != null &&
-                        publicKey  != null)
+                    if (signedData != null)
                     {
 
                         const signedDataFormat = signedData.attributes.getNamedItem("format")?.  value?.trim()?.toLowerCase() ?? "";
@@ -106,7 +106,7 @@ export class SAFEXML  {
                             }
 
 
-                        const publicKeyEncoding  = publicKey.attributes.getNamedItem("encoding")?.value?.trim()?.toLowerCase() ?? "";
+                        const publicKeyEncoding  = publicKey?.attributes.getNamedItem("encoding")?.value?.trim()?.toLowerCase() ?? "";
 
                         if (commonPublicKeyEncoding === "")
                             commonPublicKeyEncoding = publicKeyEncoding;
@@ -127,7 +127,7 @@ export class SAFEXML  {
                             }
 
 
-                        const publicKeyValue  = publicKey.textContent?.trim()?.replace(/\s+/g, "") ?? "";
+                        const publicKeyValue  = publicKey?.textContent?.trim()?.replace(/\s+/g, "") ?? "";
 
                         if (commonPublicKey === "")
                             commonPublicKey = publicKeyValue;
@@ -178,17 +178,19 @@ export class SAFEXML  {
                     {
 
                         case "alfen":
-                            return await new Alfen(this.chargy).TryToParseALFENFormat(
-                                signedDataValues,
-                                {}
-                            );
+                            return await new Alfen(this.chargy).
+                                             TryToParseALFENFormat(
+                                                 signedDataValues,
+                                                 {}
+                                             );
 
                         case "ocmf":
-                            return await new OCMF(this.chargy).TryToParseOCMFDocuments(
-                                signedDataValues,
-                                commonPublicKey || undefined,
-                                commonPublicKeyEncoding === "hex" ? "hex" : undefined
-                            );
+                            return await new OCMF(this.chargy).
+                                             TryToParseOCMFDocuments(
+                                                 signedDataValues,
+                                                 commonPublicKey,
+                                                 commonPublicKeyEncoding
+                                             );
 
                         default:
                             return {
