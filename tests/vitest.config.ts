@@ -5,9 +5,12 @@ export default defineConfig({
     extensions: ['.ts', '.tsx', '.mts', '.cts', '.mjs', '.js', '.jsx', '.json'],
   },
   test: {
+    environment: 'node',
+    globals: false,
     include: [
       ...configDefaults.include,
       '**/*.{test,tests,specs}.?(c|m)[jt]s?(x)',
     ],
+    restoreMocks: true,
   },
 })

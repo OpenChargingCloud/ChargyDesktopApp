@@ -12,7 +12,7 @@
     "**/*.test.ts",
     "**/*.tests.ts",
     "./**/*.ts",
-    "../vitest.config.ts",
+    "./vitest.config.ts",
     "../src/ts/declarations.d.ts"
   ],
   "exclude": [

@@ -11,9 +11,9 @@
   "scripts": {
     "start": "electron .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --config tests/vitest.config.ts",
     "test:typecheck": "tsc -p tests/tsconfig.json --noEmit",
-    "test:watch": "vitest",
+    "test:watch": "vitest --config tests/vitest.config.ts",
     "sbom": "cyclonedx-npm --output-format json --output-file sbom.json",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
