@@ -19,6 +19,42 @@ import * as chargyInterfaces  from './chargyInterfaces'
 import Decimal                from 'decimal.js';
 
 
+export function getDirectChildrenByLocalName(parent: Document | Element, localName: string): Element[] {
+    return Array.from(parent.childNodes).
+                    filter((child): child is Element => child.nodeType === 1).
+                    filter(child => child.localName === localName || child.nodeName === localName);
+}
+
+export function getDirectChildByLocalName(parent: Document | Element, localName: string): Element | undefined {
+    return getDirectChildrenByLocalName(parent, localName)[0];
+}
+
+export function getTrimmedTextContent(element?: Element): string | undefined {
+    const text = element?.textContent?.trim();
+    return text && text.length > 0 ? text : undefined;
+}
+
+export function parseDescription(parent: Element): chargyInterfaces.IMultilanguageText | undefined {
+
+    const descriptions = getDirectChildrenByLocalName(parent, "description");
+
+    const textMap: chargyInterfaces.IMultilanguageText = {};
+
+    for (const description of descriptions)
+    {
+        const language = description.getAttribute("language")?.trim() || "und";
+        const text     = description.textContent?.trim();
+
+        if (text)
+            textMap[language] = text;
+    }
+
+    return Object.keys(textMap).length > 0
+                ? textMap
+                : undefined;
+
+}
+
 export function getElementsByLocalName(parent: Document | Element, localName: string): Element[] {
 
     const elements = new Set<Element>();
