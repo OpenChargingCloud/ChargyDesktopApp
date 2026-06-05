@@ -17,6 +17,7 @@ import type {
 
 export {
     expectVerificationReport,
+    expectVerificationReportInline,
     expectArchiveVerificationReport,
     expectVerificationReportWithPublicKey
 }
@@ -111,6 +112,15 @@ async function expectVerificationReport(inputFixture: string, expectedFixture: s
     const summary  = formatChargeDataVerificationReport(report);
 
     expectReportLines(summary, expected);
+
+}
+
+async function expectVerificationReportInline(inputFixture: string, expected: any) {
+
+    const input  = readFixture(inputFixture);
+    const report = await verifyChargeData(inputFixture, input);
+
+    expect(report).toMatchObject(expected);
 
 }
 

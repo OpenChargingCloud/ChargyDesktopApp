@@ -21,19 +21,24 @@
   },
   "keywords": [
     "Chargy",
-    "Transparenzsoftware",
+    "Transparency",
+    "Transparency Software",
     "Transparenz",
+    "Transparenzsoftware",
     "Eichrecht",
     "Calibration Law",
     "Elektromobilität",
+    "electromobility",
     "E-Mobilität",
     "E-Mobility",
+    "Ladestationen",
+    "charging stations",
+    "EU MID",
+    "EU AFIR",
     "Digital Certificate of Conformity",
     "DCoC",
     "Digital Calibration Certificate",
-    "DCC",
-    "Ladestationen",
-    "charging stations"
+    "DCC"
   ],
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^4.2.1",
@@ -70,8 +75,8 @@
     "seek-bzip": "^1.0.5"
   },
   "build": {
-    "appId": "cloud.charging.c.lichtblick.chargy.desktop",
-    "productName": "Chargy Transparenzsoftware LichtBlick Edition",
+    "appId": "cloud.charging.open.chargy.desktop",
+    "productName": "Chargy Transparenzsoftware Community Edition",
     "copyright": "Copyright © 2018-2026 GraphDefined GmbH",
     "extraFiles": [
       "build",

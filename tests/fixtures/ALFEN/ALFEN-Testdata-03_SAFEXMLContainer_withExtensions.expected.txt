@@ -1,7 +1,7 @@
 format: ctr
 sessions: 1
 session 1: 19
-session 1 evseId: DE*GEF*EVSE*CHARGY*1
+session 1 evseId: DE*GEF*EVSE*CI*TESTS*1*A*1
 session 1 meterId: 0a01445a470033008506
 session 1 status: ValidSignature
 session 1 measurements: 1

@@ -8,7 +8,7 @@ const crypto                                  = require('crypto');
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
-let applicationEdition    = "LichtBlick Edition";
+let applicationEdition    = "Community Edition";
 let copyright             = "&copy; 2018-2026 GraphDefined GmbH";
 let applicationFileName   = "";
 let appAsarFileName       = "";
@@ -16,6 +16,7 @@ let commandLineArguments  = [];
 let fileToOpen            = "";
 let httpHost              = "";
 let httpPort              = 0;
+const mapboxAccessToken   = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
 const allowedReadPaths    = new Set();
 const allowedSavePaths    = new Set();
 
@@ -349,6 +350,9 @@ ipcMain.on('getAppContext', (event) => {
         packageJson: require('../package.json'),
         i18n: require('../i18n.json'),
         httpConfig: [ httpHost, httpPort ],
+        mapbox: {
+            accessToken: mapboxAccessToken
+        },
         fileToOpen,
         isDebug: app.commandLine.hasSwitch('inspect'),
         noGUI: app.commandLine.hasSwitch('nogui'),

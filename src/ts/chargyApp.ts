@@ -38,6 +38,9 @@ interface ChargyElectronAPI {
         packageJson: any;
         i18n: any;
         httpConfig: [string, number];
+        mapbox: {
+            accessToken: string;
+        };
         fileToOpen: string;
         isDebug: boolean;
         noGUI: boolean;
@@ -1042,7 +1045,7 @@ export class ChargyApp {
 
         this.leaflet = L;
         this.map   = L.map(document.getElementById('map') as HTMLElement);
-        this.map.setView([49.7325504, 10.1424442], 10);
+        this.map.setView([50.9279287, 11.5731785], 12);
 
         L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
             attribution:  '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
@@ -1050,7 +1053,7 @@ export class ChargyApp {
             maxZoom:        18,
             zoomOffset:     -1,
             id:           'mapbox/light-v10',
-            accessToken:  'pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w'
+            accessToken:  this.appContext.mapbox.accessToken
         } as L.TileLayerOptions & { accessToken: string }).addTo(this.map);
 
     }

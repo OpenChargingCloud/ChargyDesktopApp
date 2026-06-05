@@ -1019,6 +1019,7 @@ export class Chargy {
                                 break;
 
                             case "http://transparenz.software/schema/2018/07":
+                            case "https://open.charging.cloud/CTR/2020/01":
                                 // try
                                 // {
                                     processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
@@ -1052,8 +1053,12 @@ export class Chargy {
 
                                 processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
-                                if (processedFile.result.status && processedFile.result.status !== chargyInterfaces.SessionVerificationResult.Unvalidated)
+                                if (processedFile.result.status &&
+                                    processedFile.result.status !== chargyInterfaces.SessionVerificationResult.Unvalidated &&
+                                    chargyLib.getElementsByLocalName(XMLDocument, "chargingStation").length === 0)
+                                {
                                     processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
+                                }
 
                                 break;
 
@@ -1073,8 +1078,11 @@ export class Chargy {
                         processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
                         // Maybe another XML format, e.g. the XML container format?
-                        if (processedFile.result.status === chargyInterfaces.SessionVerificationResult.InvalidSessionFormat)
+                        if (processedFile.result.status === chargyInterfaces.SessionVerificationResult.InvalidSessionFormat &&
+                            chargyLib.getElementsByLocalName(XMLDocument, "chargingStation").length === 0)
+                        {
                             processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
+                        }
 
                     }
 

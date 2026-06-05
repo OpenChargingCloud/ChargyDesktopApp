@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <values>
 
-   <chargingStation xmlns="http://open.charging.cloud/CTR/2020/01">
+   <chargingStation id="DE*GEF*STATION*CI*TESTS*1*A" xmlns="https://open.charging.cloud/CTR/2020/01">
 
-      <id>DE*GEF*STATION*CI*TESTS*1*A</id>
       <description language="en">
          GraphDefined Charging Station - CI-Tests Pool 1 / Station A
       </description>
@@ -14,15 +13,14 @@
          <longitude>10.4304</longitude>
       </geoLocation>
 
-      <EVSEs>
-         <EVSE>
-             <id>DE*GEF*EVSE*CI*TESTS*1*A*1</id>
-             <description language="en">
-                GraphDefined EVSE - CI-Tests Pool 1 / Station A / EVSE 1
-             </description>
-             <socket>Type-2</socket>
-         </EVSE>
-      </EVSEs>
+      <EVSE id="DE*GEF*EVSE*CI*TESTS*1*A*1">
+         <description language="en">
+            GraphDefined EVSE - CI-Tests Pool 1 / Station A / EVSE 1
+         </description>
+         <connector id="1">
+            <type>Type-2</type>
+         </connector>
+      </EVSE>
 
    </chargingStation>
 
