@@ -660,6 +660,15 @@ ipcMain.handle('readClipboardText', async () => {
     return clipboard.readText();
 });
 
+ipcMain.handle('readClipboardImage', async () => {
+    const image = clipboard.readImage();
+    if (image == null || image.isEmpty())
+        return null;
+
+    const data = image.toPNG();
+    return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+});
+
 ipcMain.handle('calculateApplicationHash', async () => {
     if (applicationFileName === "" || appAsarFileName === "")
         return "";

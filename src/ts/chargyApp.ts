@@ -55,6 +55,7 @@ interface ChargyElectronAPI {
     writeTextFile(fileName: string, content: string):     Promise<boolean>;
     readFile(fileName: string):                           Promise<ArrayBuffer>;
     readClipboardText():                                  Promise<string>;
+    readClipboardImage():                                 Promise<ArrayBuffer | null>;
     calculateApplicationHash():                           Promise<string>;
     sha256Hex(content: string):                           Promise<string>;
     openExternal(url: string):                            Promise<boolean>;
@@ -349,6 +350,7 @@ export class ChargyApp {
             (this.openSourceLibsDiv.querySelector("#pdfjsdist")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["pdfjs-dist"]?.             replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#seekBzip")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["seek-bzip"]?.              replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#fileType")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["file-type"]?.              replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#jsQR")                   as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["jsqr"]?.                   replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#buffer")                 as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["buffer"]?.                 replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#fontAwesome")            as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["@fortawesome/fontawesome-free"]?.replace(/[^0-9\.]/g, "");
             (this.openSourceLibsDiv.querySelector("#asn1JS")                 as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["asn1.js"]?.                replace(/[^0-9\.]/g, "");
@@ -1197,8 +1199,19 @@ export class ChargyApp {
     {
         try
         {
-            const text = await this.electron.readClipboardText();
-            await this.detectAndConvertContentFormat(this.getClipboardFileInfo(text));
+            const imageData = await this.electron.readClipboardImage();
+            const text      = await this.electron.readClipboardText();
+
+            if (imageData != null && imageData.byteLength > 0 && text.trim() === "")
+            {
+                await this.detectAndConvertContentFormat({
+                    name: "clipboard.png",
+                    type: "image/png",
+                    data: imageData
+                });
+            }
+            else
+                await this.detectAndConvertContentFormat(this.getClipboardFileInfo(text));
         }
         catch (exception)
         {

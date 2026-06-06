@@ -67,6 +67,7 @@
     "decimal.js": "^10.6.0",
     "elliptic": "^6.6.1",
     "file-type": "^22.0.1",
+    "jsqr": "^1.4.0",
     "leaflet": "^1.9.4",
     "leaflet.awesome-markers": "^2.0.5",
     "moment": "^2.30.1",

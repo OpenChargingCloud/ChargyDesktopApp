@@ -1,10 +1,9 @@
-import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
-import { describe, expect, test, vi } from 'vitest';
-import { Chargy } from '../src/ts/chargy';
+import { expect, vi }     from 'vitest';
+import { Chargy }         from '../src/ts/chargy';
+import { readFileSync }   from "node:fs";
+import { createRequire }  from "node:module";
 import {
-    IsAChargeTransparencyRecord,
-    isIFileInfo
+    IsAChargeTransparencyRecord
 } from '../src/ts/chargyInterfaces';
 import type {
     IChargeTransparencyRecord,
@@ -17,6 +16,7 @@ import type {
 
 export {
     expectVerificationReport,
+    expectBinaryVerificationReport,
     expectVerificationReportInline,
     expectArchiveVerificationReport,
     expectVerificationReportWithPublicKey
@@ -73,6 +73,15 @@ function archiveMimeType(fileName: string): string {
     if (fileName.endsWith(".pdf"))
         return "application/pdf";
 
+    if (fileName.endsWith(".png"))
+        return "image/png";
+
+    if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg"))
+        return "image/jpeg";
+
+    if (fileName.endsWith(".svg"))
+        return "image/svg+xml";
+
     return "binary/octet-stream";
 
 }
@@ -109,6 +118,23 @@ async function expectVerificationReport(inputFixture: string, expectedFixture: s
     const expected = readFixture(expectedFixture);
 
     const report   = await verifyChargeData(inputFixture, input);
+    const summary  = formatChargeDataVerificationReport(report);
+
+    expectReportLines(summary, expected);
+
+}
+
+async function expectBinaryVerificationReport(inputFixture: string, expectedFixture: string) {
+
+    const input    = readBinaryFixture(inputFixture);
+    const expected = readFixture(expectedFixture);
+
+    const report   = await verifyChargeData(
+                               inputFixture,
+                               input,
+                               archiveMimeType(inputFixture)
+                           );
+
     const summary  = formatChargeDataVerificationReport(report);
 
     expectReportLines(summary, expected);

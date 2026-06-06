@@ -19,6 +19,8 @@ contextBridge.exposeInMainWorld('chargyElectron', {
 
     readClipboardText: () => ipcRenderer.invoke('readClipboardText'),
 
+    readClipboardImage: () => ipcRenderer.invoke('readClipboardImage'),
+
     calculateApplicationHash: () => ipcRenderer.invoke('calculateApplicationHash'),
 
     sha256Hex: content => ipcRenderer.invoke('sha256Hex', content),
