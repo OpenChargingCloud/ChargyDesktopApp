@@ -19,6 +19,16 @@ import * as chargyInterfaces  from './chargyInterfaces'
 import Decimal                from 'decimal.js';
 
 
+export function normalizeXMLText(xmlText: string | undefined): string {
+
+    return (xmlText ?? "").
+               replace(/^\uFEFF/, "").
+               replace(/\r\n?/g, "\n").
+               replace(/>\s+</g, "><").
+               trim();
+
+}
+
 export function getDirectChildrenByLocalName(parent: Document | Element, localName: string): Element[] {
     return Array.from(parent.childNodes).
                     filter((child): child is Element => child.nodeType === 1).

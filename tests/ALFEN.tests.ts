@@ -2,6 +2,7 @@ import { describe, expect, test }                                    from 'vites
 import { expectVerificationReport, expectBinaryVerificationReport }  from './testHelper';
 import { readFileSync }                                              from "node:fs";
 import { readQRCodeTextFromImage }                                   from '../src/ts/qrReader';
+import { normalizeXMLText }                                          from '../src/ts/chargyLib';
 
 
 describe('ALFEN Tests', () => {
@@ -27,6 +28,13 @@ describe('ALFEN Tests', () => {
         );
     });
 
+    test("ALFEN Testdata 03 - SAFE XML-Container as QR Code SVG", async () => {
+        await expectBinaryVerificationReport(
+            "ALFEN/ALFEN-Testdata-03_SAFEXMLContainer_asQRCode.svg",
+            "ALFEN/ALFEN-Testdata-03_SAFEXMLContainer_asQRCode.expected.txt"
+        );
+    });
+
 
     // with Chargy Extensions...
     test("ALFEN Testdata 03 - SAFE XML-Container with Extensions", async () => {
@@ -44,10 +52,15 @@ describe('ALFEN Tests', () => {
         const qrCodeImage  = new Uint8Array(
             readFileSync(new URL("fixtures/ALFEN/ALFEN-Testdata-03_SAFEXMLContainer_asQRCode.png", import.meta.url))
         );
+
+        const expectedXML  = readFileSync(
+            new URL("fixtures/ALFEN/ALFEN-Testdata-03_SAFEXMLContainer.xml", import.meta.url),
+            "utf8"
+        );
+
         const qrText       = await readQRCodeTextFromImage(qrCodeImage, "image/png");
 
-        expect(qrText?.startsWith("<?xml")).toBe(true);
-        expect(qrText).toContain("signedData format=\"ALFEN\"");
+        expect(normalizeXMLText(qrText)).toBe(normalizeXMLText(expectedXML));
 
     });
 

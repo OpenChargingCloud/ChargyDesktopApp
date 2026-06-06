@@ -45,7 +45,8 @@ export interface ISAFEXMLChargingStationContext {
     connector?:         chargyInterfaces.IConnector & { "@id"?: string };
 }
 
-export class SAFEXML  {
+// https://github.com/SAFE-eV/transparenzsoftware/blob/archive/XML_Format.md
+export class SAFEXML {
 
     private readonly chargy: Chargy;
 
@@ -61,17 +62,17 @@ export class SAFEXML  {
         if (!chargingStationElement)
             return {};
 
-        const chargingStationId  = chargingStationElement.getAttribute("id")?.trim() ||
-                                   chargyLib.getTrimmedTextContent(chargyLib.getDirectChildByLocalName(chargingStationElement, "id"));
-        const softwareVersion    = chargyLib.getTrimmedTextContent(chargyLib.getDirectChildByLocalName(chargingStationElement, "softwareVersion"));
-        const geoLocationElement = chargyLib.getDirectChildByLocalName(chargingStationElement, "geoLocation");
+        const chargingStationId   = chargingStationElement.getAttribute("id")?.trim() ||
+                                    chargyLib.getTrimmedTextContent(chargyLib.getDirectChildByLocalName(chargingStationElement, "id"));
+        const softwareVersion     = chargyLib.getTrimmedTextContent(chargyLib.getDirectChildByLocalName(chargingStationElement, "softwareVersion"));
+        const geoLocationElement  = chargyLib.getDirectChildByLocalName(chargingStationElement, "geoLocation");
 
-        const latitude  = Number.parseFloat(chargyLib.getTrimmedTextContent(chargyLib.getDirectChildByLocalName(geoLocationElement ?? chargingStationElement, "latitude"))  ?? "");
-        const longitude = Number.parseFloat(chargyLib.getTrimmedTextContent(chargyLib.getDirectChildByLocalName(geoLocationElement ?? chargingStationElement, "longitude")) ?? "");
+        const latitude            = Number.parseFloat(chargyLib.getTrimmedTextContent(chargyLib.getDirectChildByLocalName(geoLocationElement ?? chargingStationElement, "latitude"))  ?? "");
+        const longitude           = Number.parseFloat(chargyLib.getTrimmedTextContent(chargyLib.getDirectChildByLocalName(geoLocationElement ?? chargingStationElement, "longitude")) ?? "");
 
-        const geoLocation = Number.isFinite(latitude) && Number.isFinite(longitude)
-                                ? { lat: latitude, lng: longitude }
-                                : undefined;
+        const geoLocation         = Number.isFinite(latitude) && Number.isFinite(longitude)
+                                        ? { lat: latitude, lng: longitude }
+                                        : undefined;
 
         if (chargyLib.getDirectChildByLocalName(chargingStationElement, "EVSEs"))
             throw new Error("The SAFE chargingStation XML element must contain EVSE directly and no EVSEs container element!");
@@ -105,20 +106,20 @@ export class SAFEXML  {
                                                                 : undefined;
 
         const chargingStation: ISAFEXMLChargingStationInfo = {
-            "@id":             chargingStationId ?? "",
-            "description":     chargyLib.parseDescription(chargingStationElement),
-            "firmwareVersion": softwareVersion,
-            "softwareVersion": softwareVersion,
-            "geoLocation":     geoLocation,
-            "EVSE":            parsedEVSE
+            "@id":              chargingStationId ?? "",
+            "description":      chargyLib.parseDescription(chargingStationElement),
+            "firmwareVersion":  softwareVersion,
+            "softwareVersion":  softwareVersion,
+            "geoLocation":      geoLocation,
+            "EVSE":             parsedEVSE
         };
 
         return {
-            "ChargingStationId": chargingStationId,
-            "EVSEId":            parsedEVSE?.["@id"],
-            "chargingStation":   chargingStation,
-            "EVSE":              parsedEVSE,
-            "connector":         parsedEVSE?.connector
+            "ChargingStationId":  chargingStationId,
+            "EVSEId":             parsedEVSE?.["@id"],
+            "chargingStation":    chargingStation,
+            "EVSE":               parsedEVSE,
+            "connector":          parsedEVSE?.connector
         };
 
     }
