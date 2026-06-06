@@ -1,14 +1,13 @@
 # Chargy Transparency HTTP API
 
-> The embedded HTTP API is currently disabled in the hardened Electron renderer.
-> Re-enable it only after moving the server into the main process or a dedicated
-> CLI service with an explicit local binding and request-size limits.
+> The embedded HTTP API runs in the hardened Electron main process and forwards
+> transparency records to the renderer for Chargy parsing and verification.
 
 Since version 1.3.1 the Chargy transparency software comes with an optional HTTP API. The intention of the HTTP API is to simplify the interaction betweem Chargy and other third-party software on your own computer or within your (local) computer network.
 
 ## Starting the HTTP API
 
-The HTTP API can be started by adding the "--http" command line parameter when starting chargy. As the HTTP API is part of the Electron render process you will currently need to run the application in its normal mode. The CLI mode is currently not supported.
+The HTTP API can be started by adding the "--http" command line parameter when starting chargy. You will currently need to run the application in its normal mode. The CLI mode is currently not supported.
 ```
 ./run.sh --http
 ```

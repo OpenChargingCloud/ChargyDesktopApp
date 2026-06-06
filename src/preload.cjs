@@ -3,7 +3,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 const validChannels = new Set([
     'receiveReadClipboard',
     'receiveFileToOpen',
-    'receiveFilesToOpen'
+    'receiveFilesToOpen',
+    'receiveHttpRequest'
 ]);
 
 contextBridge.exposeInMainWorld('chargyElectron', {
@@ -23,6 +24,8 @@ contextBridge.exposeInMainWorld('chargyElectron', {
     sha256Hex: content => ipcRenderer.invoke('sha256Hex', content),
 
     openExternal: url => ipcRenderer.invoke('openExternal', url),
+
+    completeHttpRequest: (requestId, result) => ipcRenderer.send('completeHttpRequest', requestId, result),
 
     setVerificationResult: result => ipcRenderer.sendSync('setVerificationResult', result),
 

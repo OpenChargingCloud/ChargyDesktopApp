@@ -19,50 +19,61 @@ import { Chargy }             from './chargy'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
 
+import stringify              from 'safe-stable-stringify';
 import Decimal                from 'decimal.js';
 import * as L                 from 'leaflet';
 import 'leaflet.awesome-markers';
-
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
-// import { debug } from "util";
-// import * as crypto from "crypto";
-// import { readSync } from "fs";
-// import { version } from "punycode";
-
 interface ChargyElectronAPI {
+
     getAppContext(): {
-        appEdition: string;
-        copyright: string;
-        commandLineArguments: string[];
-        packageJson: any;
-        i18n: any;
-        httpConfig: [string, number];
+        appEdition:             string;
+        copyright:              string;
+        commandLineArguments:   string[];
+        packageJson:            any;
+        i18n:                   any;
+        httpConfig:             [string, number];
         mapbox: {
-            accessToken: string;
+            accessToken:            string;
+            startGeoCoordinates:    [number, number];
+            startMapZoom:           number;
         };
-        fileToOpen: string;
-        isDebug: boolean;
-        noGUI: boolean;
-        platform: string;
+        fileToOpen:             string;
+        isDebug:                boolean;
+        noGUI:                  boolean;
+        platform:               string;
         versions: {
-            chrome?: string;
-            electron?: string;
-            node?: string;
-            openssl?: string;
+            chrome?:                string;
+            electron?:              string;
+            node?:                  string;
+            openssl?:               string;
         };
     };
-    showSaveDialog(): Promise<string | undefined>;
-    writeTextFile(fileName: string, content: string): Promise<boolean>;
-    readFile(fileName: string): Promise<ArrayBuffer>;
-    readClipboardText(): Promise<string>;
-    calculateApplicationHash(): Promise<string>;
-    sha256Hex(content: string): Promise<string>;
-    openExternal(url: string): Promise<boolean>;
-    setVerificationResult(result: any): boolean;
-    on(channel: 'receiveReadClipboard', listener: () => void): () => void;
-    on(channel: 'receiveFileToOpen', listener: (filename: string) => void): () => void;
-    on(channel: 'receiveFilesToOpen', listener: (filenames: string[]) => void): () => void;
+
+    showSaveDialog():                                     Promise<string | undefined>;
+    writeTextFile(fileName: string, content: string):     Promise<boolean>;
+    readFile(fileName: string):                           Promise<ArrayBuffer>;
+    readClipboardText():                                  Promise<string>;
+    calculateApplicationHash():                           Promise<string>;
+    sha256Hex(content: string):                           Promise<string>;
+    openExternal(url: string):                            Promise<boolean>;
+    completeHttpRequest(requestId: string, result: any):  void;
+    setVerificationResult(result: any):                   boolean;
+
+    on(channel: 'receiveReadClipboard', listener: ()                              => void): () => void;
+    on(channel: 'receiveFileToOpen',    listener: (filename:  string)             => void): () => void;
+    on(channel: 'receiveFilesToOpen',   listener: (filenames: string[])           => void): () => void;
+    on(channel: 'receiveHttpRequest',   listener: (request:   ChargyHttpRequest)  => void): () => void;
+
+}
+
+interface ChargyHttpRequest {
+    id:             string;
+    operation:      'verify' | 'convert';
+    pretty:         boolean;
+    contentType?:   string;
+    data:           ArrayBuffer;
 }
 
 declare global {
@@ -178,21 +189,21 @@ export class ChargyApp {
 
         //#region Set parameters
 
-        this.appContext                = this.electron.getAppContext();
-        this.versionsURL               = versionsURL         ?? "https://chargy.charging.cloud/apps/desktop/versions";
-        this.showFeedbackSection       = showFeedbackSection ?? false;
-        this.defaultFeedbackEMail      = feedbackEMail       ?? [];
-        this.defaultFeedbackHotline    = feedbackHotline     ?? [];
-        this.defaultIssueURL           = issueURL            ?? "";
+        this.appContext                               = this.electron.getAppContext();
+        this.versionsURL                              = versionsURL         ?? "https://chargy.charging.cloud/apps/desktop/versions";
+        this.showFeedbackSection                      = showFeedbackSection ?? false;
+        this.defaultFeedbackEMail                     = feedbackEMail       ?? [];
+        this.defaultFeedbackHotline                   = feedbackHotline     ?? [];
+        this.defaultIssueURL                          = issueURL            ?? "";
 
         //#endregion
 
         //#region Load JavaScript libraries
 
-        this.elliptic                  = require('elliptic');
-        this.moment                    = require('moment');
-        this.asn1                      = require('asn1.js');
-        this.base32Decode              = require('base32-decode')
+        this.elliptic                                 = require('elliptic');
+        this.moment                                   = require('moment');
+        this.asn1                                     = require('asn1.js');
+        this.base32Decode                             = require('base32-decode')
 
         //#endregion
 
@@ -276,15 +287,15 @@ export class ChargyApp {
 
         //#region IPC
 
-        this.appEdition                = this.appContext.appEdition                     ?? "";
-        this.copyright                 = this.appContext.copyright                      ?? "&copy; 2018-2026 GraphDefined GmbH";
-        
-        this.commandLineArguments      = this.appContext.commandLineArguments;
-        this.packageJson               = this.appContext.packageJson;
-        this.i18n                      = this.appContext.i18n;
-        this.httpHost                  = this.appContext.httpConfig[0];
-        this.httpPort                  = this.appContext.httpConfig[1];
-        this.platform                  = this.appContext.platform;
+        this.appEdition                               = this.appContext.appEdition ?? "";
+        this.copyright                                = this.appContext.copyright  ?? "&copy; 2018-2026 GraphDefined GmbH";
+
+        this.commandLineArguments                     = this.appContext.commandLineArguments;
+        this.packageJson                              = this.appContext.packageJson;
+        this.i18n                                     = this.appContext.i18n;
+        this.httpHost                                 = this.appContext.httpConfig[0];
+        this.httpPort                                 = this.appContext.httpConfig[1];
+        this.platform                                 = this.appContext.platform;
 
         //#endregion
 
@@ -933,6 +944,22 @@ export class ChargyApp {
 
         }
 
+        const protocolLinks = document.querySelectorAll('a[href^="mailto:"], a[href^="tel:"]') as NodeListOf<HTMLAnchorElement>;
+
+        for (let i = 0; i < protocolLinks.length; i++) {
+
+            const protocolLink = protocolLinks[i];
+
+            if (protocolLink != null)
+            {
+                protocolLink.onclick = (ev: MouseEvent) => {
+                    ev.preventDefault();
+                    this.electron.openExternal(protocolLink.href);
+                }
+            }
+
+        }
+
         //#endregion
 
 
@@ -1011,6 +1038,10 @@ export class ChargyApp {
             this.readFilesFromDisk(filenames);
         });
 
+        this.electron.on('receiveHttpRequest', async (request: ChargyHttpRequest) => {
+            await this.handleHttpRequest(request);
+        });
+
         //#endregion
 
         //#region Check command line parameters and 'Open this file with...'-events...
@@ -1032,20 +1063,13 @@ export class ChargyApp {
 
         //#endregion
 
-        //#region Start HTTP API
-
-        if (this.httpPort !== 0)
-        {
-            console.warn("The embedded HTTP API is disabled in the hardened renderer. Move it to the main process or a dedicated CLI service before re-enabling --http.");
-
-        }
-
-        //#endregion
-
-
         this.leaflet = L;
         this.map   = L.map(document.getElementById('map') as HTMLElement);
-        this.map.setView([50.9279287, 11.5731785], 12);
+
+        const mapBoxStartGeoCoordinates = this.appContext.mapbox.startGeoCoordinates;
+        const mapBoxStartMapZoom        = this.appContext.mapbox.startMapZoom;
+
+        this.map.setView(mapBoxStartGeoCoordinates, mapBoxStartMapZoom);
 
         L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
             attribution:  '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
@@ -1369,6 +1393,46 @@ export class ChargyApp {
         { }
 
         return "<i class=\"fas fa-times-circle\"></i>" + signature.signer;
+
+    }
+
+    //#endregion
+
+
+    //#region handleHttpRequest(...)
+
+    private async handleHttpRequest(request: ChargyHttpRequest): Promise<void>
+    {
+
+        try
+        {
+
+            const result = await this.chargy.DetectAndConvertContentFormat([{
+                name:  "http request",
+                type:  request.contentType,
+                data:  request.data
+            }]);
+
+            const serializedResult = stringify(result);
+
+            if (serializedResult == null)
+                throw new Error("Invalid transparency format!");
+
+            this.electron.completeHttpRequest(request.id, {
+                ok:      true,
+                result:  JSON.parse(serializedResult)
+            });
+
+        }
+        catch (exception)
+        {
+            this.electron.completeHttpRequest(request.id, {
+                ok:       false,
+                message:  exception instanceof Error
+                              ? exception.message
+                              : "Invalid transparency format!"
+            });
+        }
 
     }
 
@@ -3338,13 +3402,8 @@ export class ChargyApp {
 
 const app = new ChargyApp(
                 "https://chargy.charging.cloud/apps/desktop/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
-                false, // Show Feedback Section
-                ["support.emobility@lichtblick.de", "?subject=Chargy%20Support"],
-                ["+4993219319101",                  "+49 9321 9319 101"],
-                "https://lichtblick.c.charging.cloud/chargy/desktop/issues"
+                true, // Show Feedback Section
+                ["support@open.charging.cloud", "?subject=Chargy%20WebApp%20Support"],
+                undefined, //["+4993219319101",                  "+49 9321 9319 101"],
+                "https://chargy.charging.cloud/desktop/issues"
             );
-
-// const app = new ChargyApp("https://chargepoint.charging.cloud/chargy/versions", //"https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/versions/versions.json",
-//                           ["support.eu@chargepoint.com", "?subject=Chargy%20Supportanfrage"],
-//                           ["+496995307383",              "+49 69 95307383"],
-//                           "https://chargepoint.charging.cloud/chargy/issues");

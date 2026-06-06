@@ -1,30 +1,42 @@
 // Modules to control application life and create native browser window
-
-const { app, BrowserWindow, clipboard, dialog, ipcMain, shell } = require('electron')
-const path                                    = require('path');
-const fs                                      = require('fs');
-const crypto                                  = require('crypto');
+const { app, BrowserWindow, clipboard, dialog, ipcMain, shell }  = require('electron')
+const path                                                       = require('path');
+const fs                                                         = require('fs');
+const crypto                                                     = require('crypto');
+const http                                                       = require('http');
+const stringify                                                  = require('safe-stable-stringify');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow;
-let applicationEdition    = "Community Edition";
-let copyright             = "&copy; 2018-2026 GraphDefined GmbH";
-let applicationFileName   = "";
-let appAsarFileName       = "";
-let commandLineArguments  = [];
-let fileToOpen            = "";
-let httpHost              = "";
-let httpPort              = 0;
-const mapboxAccessToken   = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
-const allowedReadPaths    = new Set();
-const allowedSavePaths    = new Set();
+let   mainWindow;
+const applicationEdition         = "Community Edition";
+const copyright                  = "&copy; 2018-2026 GraphDefined GmbH";
+let   applicationFileName        = "";
+let   appAsarFileName            = "";
+let   fileToOpen                 = "";
+let   httpHost                   = "";
+let   httpPort                   = 0;
+let   httpServer                 = null;
+let   nextHttpRequestId          = 0;
+
+const mapboxAccessToken          = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
+const mapboxStartGeoCoordinates  = [50.9279287, 11.5731785];
+const mapboxStartMapZoom         = 12;
+
+const httpApiMaxContentSize      = 20*1024*1024;
+const httpApiRequestTimeoutMs    = 30000;
+
+const allowedReadPaths           = new Set();
+const allowedSavePaths           = new Set();
+const pendingHttpRequests        = new Map();
 
 function normalizePath(fileName) {
+
     if (typeof fileName !== "string" || fileName.trim() === "")
         return "";
 
     return path.resolve(fileName.replace(/^file:\/\//i, ""));
+
 }
 
 function allowReadPath(fileName) {
@@ -37,7 +49,9 @@ function allowReadPath(fileName) {
 function isAllowedWebUrl(url) {
     try {
         const parsedUrl = new URL(url);
-        return parsedUrl.protocol === "https:";
+        return parsedUrl.protocol === "https:" ||
+               parsedUrl.protocol === "mailto:" ||
+               parsedUrl.protocol === "tel:";
     }
     catch {
         return false;
@@ -46,31 +60,270 @@ function isAllowedWebUrl(url) {
 
 function sha512File(fileName) {
     return new Promise((resolve, reject) => {
-        const hash = crypto.createHash('sha512');
-        const stream = fs.createReadStream(fileName);
-        stream.on('data', data => hash.update(data));
+        const hash    = crypto.createHash('sha512');
+        const stream  = fs.createReadStream(fileName);
+        stream.on('data',  data => hash.update(data));
         stream.on('error', reject);
-        stream.on('end', () => resolve(hash.digest('hex')));
+        stream.on('end',   () => resolve(hash.digest('hex')));
     });
 }
 
+function normalizeListenHost(host) {
 
-// Run in development mode via run.sh
-// [
-//   'D:\\Coding\\OpenChargingCloud\\ChargyDesktopApp\\node_modules\\electron\\dist\\electron.exe',
-//   '.',
-//   '--inspect'
-// ]
-if (process.argv.length >= 2 && process.argv[0].endsWith("electron.exe") && process.argv[1] === ".")
-    commandLineArguments = process.argv.slice(2);
+    if (host.startsWith("[") && host.endsWith("]"))
+        return host.substring(1, host.length - 1);
 
-// Run the installed executable (via command line)
-// [
-//   'C:\\Program Files\\Chargy Transparenzsoftware\\Chargy Transparenzsoftware.exe',
-//   '--inspect'
-// ]
-else
-    commandLineArguments = process.argv.slice(1);
+    return host;
+
+}
+
+function sessionVerificationResultToText(status) {
+
+    switch (status)
+    {
+
+        case "NoChargeTransparencyRecordsFound":
+            return "No charge transparency records found";
+
+        case "UnknownSessionFormat":
+            return "Unknown session format";
+
+        case "InvalidSessionFormat":
+            return "Invalid session format";
+
+        case "PublicKeyNotFound":
+            return "Public key not found";
+
+        case "InvalidPublicKey":
+            return "Invalid public key";
+
+        case "InvalidSignature":
+            return "Invalid signature";
+
+        case "Unvalidated":
+            return "Unvalidated";
+
+        case "ValidSignature":
+            return "Valid signature";
+
+        case "InconsistentTimestamps":
+            return "Inconsistent timestamps";
+
+        case "AtLeastTwoMeasurementsRequired":
+            return "At least two measurements required";
+
+        default:
+            return status || "Unknown session format";
+
+    }
+
+}
+
+function isChargeTransparencyRecord(result) {
+    return result != null &&
+           Array.isArray(result.chargingSessions);
+}
+
+function sendPlainText(response, statusCode, text) {
+    response.writeHead(statusCode, { "Content-Type": "text/plain; charset=utf-8" });
+    response.end(text);
+}
+
+function sendJson(response, statusCode, value, pretty = false) {
+    response.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8" });
+    response.end(stringify(value, null, pretty ? 2 : 0));
+}
+
+function dispatchHttpRequestToRenderer(httpRequest) {
+
+    if (mainWindow == null || mainWindow.webContents == null || mainWindow.webContents.isDestroyed())
+        return Promise.reject(new Error("Chargy renderer is not ready."));
+
+    const requestId = (++nextHttpRequestId).toString();
+
+    return new Promise((resolve, reject) => {
+
+        const timeout = setTimeout(() => {
+            pendingHttpRequests.delete(requestId);
+            reject(new Error("Chargy HTTP request timed out."));
+        }, httpApiRequestTimeoutMs);
+
+        pendingHttpRequests.set(requestId, {
+            resolve,
+            reject,
+            timeout
+        });
+
+        mainWindow.webContents.send("receiveHttpRequest", {
+            id:           requestId,
+            operation:    httpRequest.operation,
+            pretty:       httpRequest.pretty,
+            contentType:  httpRequest.contentType,
+            data:         httpRequest.data.buffer.slice(httpRequest.data.byteOffset, httpRequest.data.byteOffset + httpRequest.data.byteLength)
+        });
+
+    });
+
+}
+
+async function handleChargyHttpRequest(request, response) {
+
+    const requestUrl = new URL(request.url || "/", "http://localhost");
+
+    if (request.method !== "POST" ||
+        (requestUrl.pathname !== "/verify" && requestUrl.pathname !== "/convert"))
+    {
+        sendPlainText(response, 400, "Please use POST /verify for the verification of transparency records or POST /convert for conversion.");
+        return;
+    }
+
+    const contentLengthHeader = Array.isArray(request.headers["content-length"])
+                                    ? request.headers["content-length"][0]
+                                    : request.headers["content-length"];
+
+    if (contentLengthHeader != null)
+    {
+        const contentLength = parseInt(contentLengthHeader, 10);
+
+        if (isNaN(contentLength))
+        {
+            sendPlainText(response, 400, "The size of the transmitted transparency record is invalid!");
+            return;
+        }
+
+        if (contentLength > httpApiMaxContentSize)
+        {
+            sendPlainText(response, 413, "The size of the transmitted transparency record is too large!");
+            return;
+        }
+    }
+
+    const binaryData = [];
+    let contentSize  = 0;
+    let rejected     = false;
+
+    request.on("data", binaryDataChunk => {
+
+        if (rejected)
+            return;
+
+        contentSize += binaryDataChunk.length;
+
+        if (contentSize > httpApiMaxContentSize)
+        {
+            rejected = true;
+            sendPlainText(response, 413, "The size of the transmitted transparency record is too large!");
+            request.destroy();
+            return;
+        }
+
+        binaryData.push(binaryDataChunk);
+
+    });
+
+    request.on("error", exception => {
+        if (!response.headersSent)
+            sendPlainText(response, 400, "Could not read the transmitted transparency record: " + exception.message);
+    });
+
+    request.on("end", async () => {
+
+        if (rejected)
+            return;
+
+        if (contentSize === 0)
+        {
+            sendPlainText(response, 400, "Please upload any kind of transparency record(s) for verification.");
+            return;
+        }
+
+        try
+        {
+            const rendererResponse = await dispatchHttpRequestToRenderer({
+                operation:    requestUrl.pathname.substring(1),
+                pretty:       requestUrl.searchParams.has("pretty"),
+                contentType:  Array.isArray(request.headers["content-type"])
+                                  ? request.headers["content-type"][0]
+                                  : request.headers["content-type"],
+                data:         Buffer.concat(binaryData)
+            });
+
+            if (!rendererResponse.ok)
+            {
+                sendJson(response, 400, { message: rendererResponse.message ?? "Invalid transparency format!" });
+                return;
+            }
+
+            const result = rendererResponse.result;
+
+            if (!isChargeTransparencyRecord(result))
+            {
+                sendJson(response, 400, { message: result?.message ?? "Invalid transparency format!" });
+                return;
+            }
+
+            if (requestUrl.pathname === "/verify")
+            {
+                const results = result.chargingSessions
+                                      .map(session => session.verificationResult)
+                                      .filter(singleResult => singleResult != null)
+                                      .map(singleResult => sessionVerificationResultToText(singleResult.status));
+
+                sendJson(response, 200, results.length > 1 ? results : results[0]);
+                return;
+            }
+
+            sendJson(response, 200, result, requestUrl.searchParams.has("pretty"));
+
+        }
+        catch (exception)
+        {
+            sendJson(response, 500, { message: exception.message ?? "Could not process transparency record!" });
+        }
+
+    });
+
+}
+
+function startHttpAPI() {
+
+    if (httpPort === 0 || httpServer != null)
+        return;
+
+    const listenHost = httpHost !== ""
+                           ? normalizeListenHost(httpHost)
+                           : undefined;
+
+    httpServer = http.createServer(handleChargyHttpRequest);
+
+    httpServer.on("error", exception => {
+        console.log("Could not start HTTP API: " + exception);
+        httpServer = null;
+    });
+
+    httpServer.listen(httpPort, listenHost, () => {
+        console.log("Chargy HTTP API listening on " + (httpHost !== "" ? httpHost : "*") + ":" + httpPort);
+    });
+
+}
+
+
+const commandLineArguments = process.argv.length >= 2 &&
+                             process.argv[0].endsWith("electron.exe") &&
+                             process.argv[1] === "."
+                                 // Run in development mode via run.sh
+                                 // [
+                                 //   'D:\\Coding\\OpenChargingCloud\\ChargyDesktopApp\\node_modules\\electron\\dist\\electron.exe',
+                                 //   '.',
+                                 //   '--inspect'
+                                 // ]
+                                 ? process.argv.slice(2)
+                                 // Run the installed executable (via command line)
+                                 // [
+                                 //   'C:\\Program Files\\Chargy Transparenzsoftware\\Chargy Transparenzsoftware.exe',
+                                 //   '--inspect'
+                                 // ]
+                                 : process.argv.slice(1);
 
 for (const commandLineArgument of commandLineArguments) {
     if (typeof commandLineArgument === "string" && !commandLineArgument.startsWith("-"))
@@ -107,6 +360,10 @@ function createWindow () {
 
     mainWindow.removeMenu();
     mainWindow.loadFile(path.join(app.getAppPath(), 'src', 'index.html'));
+
+    mainWindow.webContents.once('did-finish-load', () => {
+        startHttpAPI();
+    });
 
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
         if (isAllowedWebUrl(url))
@@ -290,12 +547,6 @@ app.whenReady().then(() => {
             httpPort = 8080;
         }
 
-        if (!isNaN(httpPort))
-            console.log("Chargy HTTP API is disabled in the hardened renderer. Requested endpoint was " + httpHost + ":" + httpPort);
-
-        httpHost = "";
-        httpPort = 0;
-
     }
 
     createWindow();
@@ -321,6 +572,13 @@ app.on('activate', function () {
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
+
+    if (httpServer != null)
+    {
+        httpServer.close();
+        httpServer = null;
+    }
+
     // On macOS it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== 'darwin')
@@ -344,24 +602,26 @@ app.on('open-file', (event, path) => {
 
 ipcMain.on('getAppContext', (event) => {
     event.returnValue = {
-        appEdition: applicationEdition,
+        appEdition:  applicationEdition,
         copyright,
         commandLineArguments,
-        packageJson: require('../package.json'),
-        i18n: require('../i18n.json'),
-        httpConfig: [ httpHost, httpPort ],
+        packageJson:  require('../package.json'),
+        i18n:         require('../i18n.json'),
+        httpConfig:   [ httpHost, httpPort ],
         mapbox: {
-            accessToken: mapboxAccessToken
+            accessToken:          mapboxAccessToken,
+            startGeoCoordinates:  mapboxStartGeoCoordinates,
+            startMapZoom:         mapboxStartMapZoom
         },
         fileToOpen,
-        isDebug: app.commandLine.hasSwitch('inspect'),
-        noGUI: app.commandLine.hasSwitch('nogui'),
-        platform: process.platform,
+        isDebug:   app.commandLine.hasSwitch('inspect'),
+        noGUI:     app.commandLine.hasSwitch('nogui'),
+        platform:  process.platform,
         versions: {
-            chrome: process.versions.chrome,
-            electron: process.versions.electron,
-            node: process.versions.node,
-            openssl: process.versions.openssl
+            chrome:    process.versions.chrome,
+            electron:  process.versions.electron,
+            node:      process.versions.node,
+            openssl:   process.versions.openssl
         }
     };
 });
@@ -420,6 +680,25 @@ ipcMain.handle('openExternal', async (_event, url) => {
     await shell.openExternal(url);
     return true;
 })
+
+ipcMain.on('completeHttpRequest', (event, requestId, result) => {
+
+    if (mainWindow == null ||
+        event.sender !== mainWindow.webContents)
+    {
+        return;
+    }
+
+    const pendingHttpRequest = pendingHttpRequests.get(requestId);
+
+    if (pendingHttpRequest == null)
+        return;
+
+    pendingHttpRequests.delete(requestId);
+    clearTimeout(pendingHttpRequest.timeout);
+    pendingHttpRequest.resolve(result);
+
+});
 
 ipcMain.on('setVerificationResult', (event, result) => {
 
