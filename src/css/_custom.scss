@@ -63,6 +63,14 @@ body {
                                 background:         radial-gradient(farthest-corner at 39px 40px, #f9e8c2 0%, #ebad5c 40%, #ed4f54 80%);
                             }
 
+                            button:disabled,
+                            button:disabled:hover {
+                                color:              #777777;
+                                background:         #d8d8d8;
+                                cursor:             not-allowed;
+                                opacity:            0.65;
+                            }
+
                         }
                     }
 

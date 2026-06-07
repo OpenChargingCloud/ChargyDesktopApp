@@ -80,6 +80,7 @@
                         <div id="buttonsDiv">
                             <button id="fileInputButton"><i class="far fa-folder-open"></i><br />Datensätze<br />laden</button>
                             <input id="fileInput" type="file" multiple accept=".chargy,.xml,.json,.txt,.pdf,.zip,.tar,.gz,.bz2,.png,.jpg,.jpeg,.gif,.webp,.bmp,.svg,application/xml,application/json,text/plain,application/pdf,application/zip,application/gzip,application/x-bzip2,application/x-tar,image/*" />
+                            <button id="qrScanButton" disabled><i class="fas fa-qrcode"></i><br />QR-Code<br />scannen</button>
                             <button id="pasteButton"><i class="fas fa-paste"></i><br />Datensätze<br />einfügen</button>
                         </div>
 
@@ -543,6 +544,42 @@
                     </div>
 
                 </form>
+
+                <div class="footer">
+                    <button class="overlayLeftButton"><i class="fas fa-arrow-alt-circle-left"></i></button>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="qrCodeScanner" class="overlay">
+            <div class="overlayText">
+
+                <div class="headline">
+                    <div class="error"></div>
+                    <div class="intro">QR-Code scannen</div>
+                </div>
+
+                <div class="data">
+                    <div id="scannerViewport">
+                        <video id="qrCodeScannerVideo" autoplay muted playsinline></video>
+                        <canvas id="qrCodeScannerCanvas"></canvas>
+                        <div id="scannerFrame"></div>
+                    </div>
+
+                    <div id="qrCodeScannerStatus">Kamera wird gestartet...</div>
+
+                    <div id="qrCodeScannerResult">
+                        <div id="qrCodeScannerResultLabel">Erkannter Inhalt</div>
+                        <pre id="qrCodeScannerResultText"></pre>
+                        <div id="qrCodeScannerURLActions">
+                            <button id="qrCodeScannerOpenURLButton"><i class="fas fa-external-link-alt"></i> URL öffnen</button>
+                        </div>
+                        <button id="qrCodeScannerRescanButton"><i class="fas fa-rotate-right"></i> Erneut scannen</button>
+                    </div>
+                </div>
+
+                <div class="spacer"></div>
 
                 <div class="footer">
                     <button class="overlayLeftButton"><i class="fas fa-arrow-alt-circle-left"></i></button>

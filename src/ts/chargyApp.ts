@@ -16,6 +16,7 @@
  */
 
 import { Chargy }             from './chargy'
+import { readQRCodeTextFromImageData } from './qrReader'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
 
@@ -24,6 +25,13 @@ import Decimal                from 'decimal.js';
 import * as L                 from 'leaflet';
 import 'leaflet.awesome-markers';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+
+type DetectionResult = chargyInterfaces.IChargeTransparencyRecord | chargyInterfaces.ISessionCryptoResult;
+
+type DetectionOptions = {
+    prepareUI?: boolean;
+    onError?:   (result: chargyInterfaces.ISessionCryptoResult) => void;
+};
 
 interface ChargyElectronAPI {
 
@@ -149,6 +157,7 @@ export class ChargyApp {
     private exportButton:                       HTMLButtonElement;
     private fileInputButton:                    HTMLButtonElement;
     private fileInput:                          HTMLInputElement;
+    private qrScanButton:                       HTMLButtonElement;
     private pasteButton:                        HTMLButtonElement;
     private detailedInfosDiv:                   HTMLDivElement;
     private errorTextDiv:                       HTMLDivElement;
@@ -179,6 +188,23 @@ export class ChargyApp {
 
     private pkiDetailsDiv:                      HTMLDivElement;
     private pkiDetailsLeftButton:               HTMLButtonElement;
+
+    private qrCodeScannerDiv:                   HTMLDivElement;
+    private qrCodeScannerVideo:                 HTMLVideoElement;
+    private qrCodeScannerCanvas:                HTMLCanvasElement;
+    private qrCodeScannerStatusDiv:             HTMLDivElement;
+    private qrCodeScannerErrorDiv:              HTMLDivElement;
+    private qrCodeScannerResultDiv:             HTMLDivElement;
+    private qrCodeScannerResultText:            HTMLPreElement;
+    private qrCodeScannerURLActionsDiv:         HTMLDivElement;
+    private qrCodeScannerOpenURLButton:         HTMLButtonElement;
+    private qrCodeScannerRescanButton:          HTMLButtonElement;
+    private qrCodeScannerCancelButton:          HTMLButtonElement;
+    private qrCodeScannerStream:                MediaStream|null     = null;
+    private qrCodeScannerAnimationFrame:        number|null          = null;
+    private qrCodeScannerIsProcessing:          boolean              = false;
+    private qrCodeScannerLastText:              string|null          = null;
+    private qrCodeScannerLastURL:               URL|null             = null;
 
     //#endregion
 
@@ -276,7 +302,20 @@ export class ChargyApp {
                                                         }
 
         this.fileInputButton                          = document.getElementById('fileInputButton')                          as HTMLButtonElement;
+        this.qrScanButton                             = document.getElementById('qrScanButton')                             as HTMLButtonElement;
         this.pasteButton                              = document.getElementById('pasteButton')                              as HTMLButtonElement;
+
+        this.qrCodeScannerDiv                         = document.getElementById('qrCodeScanner')                            as HTMLDivElement;
+        this.qrCodeScannerVideo                       = this.qrCodeScannerDiv.querySelector("#qrCodeScannerVideo")          as HTMLVideoElement;
+        this.qrCodeScannerCanvas                      = this.qrCodeScannerDiv.querySelector("#qrCodeScannerCanvas")         as HTMLCanvasElement;
+        this.qrCodeScannerStatusDiv                   = this.qrCodeScannerDiv.querySelector("#qrCodeScannerStatus")         as HTMLDivElement;
+        this.qrCodeScannerErrorDiv                    = this.qrCodeScannerDiv.querySelector(".headline .error")             as HTMLDivElement;
+        this.qrCodeScannerResultDiv                   = this.qrCodeScannerDiv.querySelector("#qrCodeScannerResult")         as HTMLDivElement;
+        this.qrCodeScannerResultText                  = this.qrCodeScannerDiv.querySelector("#qrCodeScannerResultText")     as HTMLPreElement;
+        this.qrCodeScannerURLActionsDiv               = this.qrCodeScannerDiv.querySelector("#qrCodeScannerURLActions")     as HTMLDivElement;
+        this.qrCodeScannerOpenURLButton               = this.qrCodeScannerDiv.querySelector("#qrCodeScannerOpenURLButton")  as HTMLButtonElement;
+        this.qrCodeScannerRescanButton                = this.qrCodeScannerDiv.querySelector("#qrCodeScannerRescanButton")   as HTMLButtonElement;
+        this.qrCodeScannerCancelButton                = this.qrCodeScannerDiv.querySelector(".overlayLeftButton")           as HTMLButtonElement;
 
         this.inputButtonsDiv                          = document.getElementById('inputButtons')                             as HTMLDivElement;
         this.backButton                               = this.inputButtonsDiv.   querySelector("#backButton")                as HTMLButtonElement;
@@ -1065,6 +1104,38 @@ export class ChargyApp {
 
         //#endregion
 
+        //#region Handle the 'qrScan'-button
+
+        this.qrScanButton.onclick = async (ev: MouseEvent) => {
+            ev.preventDefault();
+            await this.openQRCodeScanner();
+        }
+
+        this.qrCodeScannerCancelButton.onclick = (ev: MouseEvent) => {
+            ev.preventDefault();
+            this.closeQRCodeScanner();
+        }
+
+        this.qrCodeScannerRescanButton.onclick = (ev: MouseEvent) => {
+            ev.preventDefault();
+            this.resumeQRCodeScanner();
+        }
+
+        this.qrCodeScannerOpenURLButton.onclick = (ev: MouseEvent) => {
+            ev.preventDefault();
+
+            if (this.qrCodeScannerLastURL != null)
+            {
+                window.open(this.qrCodeScannerLastURL.href, "_blank", "noopener");
+                this.setQRCodeScannerStatus("URL wurde geöffnet.");
+            }
+        }
+
+        this.updateQRCodeScannerAvailability();
+        navigator.mediaDevices?.addEventListener?.("devicechange", () => this.updateQRCodeScannerAvailability());
+
+        //#endregion
+
         this.leaflet = L;
         this.map   = L.map(document.getElementById('map') as HTMLElement);
 
@@ -1149,6 +1220,31 @@ export class ChargyApp {
     }
 
     //#endregion
+
+    private getSessionCryptoResultText(result?: chargyInterfaces.ISessionCryptoResult|null): string {
+
+        let text = "Unbekannter Transparenzdatensatz!";
+
+        if (result?.message !== null &&
+            result?.message !== undefined)
+        {
+            text = result.message.trim();
+        }
+
+        if (result !== null                    &&
+            result !== undefined               &&
+            result.errors                      &&
+            result.errors        !== undefined &&
+            result.errors        !== null      &&
+            result.errors.length   > 0         &&
+            result.errors[0]     !== undefined)
+        {
+            text = result.errors[0].trim();
+        }
+
+        return text;
+
+    }
 
     //#region doGlobalError(...)
 
@@ -1259,6 +1355,245 @@ export class ChargyApp {
             type,
             data: new TextEncoder().encode(text)
         };
+
+    }
+
+    //#endregion
+
+    //#region QR code scanner
+
+    private async updateQRCodeScannerAvailability(): Promise<void> {
+
+        const mediaDevices = navigator.mediaDevices;
+
+        if (mediaDevices?.getUserMedia == null)
+        {
+            this.setQRCodeScannerButtonAvailability(false, "Dieser Browser unterstützt keinen Kamerazugriff.");
+            return;
+        }
+
+        if (mediaDevices.enumerateDevices == null)
+        {
+            this.setQRCodeScannerButtonAvailability(true, "QR-Code mit der Kamera scannen.");
+            return;
+        }
+
+        try
+        {
+            const devices   = await mediaDevices.enumerateDevices();
+            const hasCamera = devices.some(device => device.kind === "videoinput");
+
+            this.setQRCodeScannerButtonAvailability(
+                hasCamera,
+                hasCamera
+                    ? "QR-Code mit der Kamera scannen."
+                    : "Keine Kamera verfügbar."
+            );
+        }
+        catch
+        {
+            this.setQRCodeScannerButtonAvailability(true, "QR-Code mit der Kamera scannen.");
+        }
+
+    }
+
+    private setQRCodeScannerButtonAvailability(isAvailable: boolean,
+                                               title:       string): void {
+
+        this.qrScanButton.disabled = !isAvailable;
+        this.qrScanButton.title    = title;
+
+    }
+
+    private async openQRCodeScanner(): Promise<void> {
+
+        if (this.qrScanButton.disabled)
+            return;
+
+        this.resetQRCodeScannerDialog("Kamera wird gestartet...");
+
+        try
+        {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: false,
+                video: {
+                    facingMode: { ideal: "environment" }
+                }
+            });
+
+            this.qrCodeScannerStream             = stream;
+            this.qrCodeScannerVideo.srcObject    = stream;
+            this.qrCodeScannerDiv.style.display  = "block";
+
+            await this.qrCodeScannerVideo.play();
+
+            this.resumeQRCodeScanner();
+        }
+        catch (exception)
+        {
+            this.closeQRCodeScanner();
+            this.doGlobalError({
+                status:     chargyInterfaces.SessionVerificationResult.UnknownSessionFormat,
+                message:    "Kamera konnte nicht gestartet werden.",
+                exception:  exception,
+                certainty:  0
+            });
+        }
+
+    }
+
+    private closeQRCodeScanner(): void {
+
+        if (this.qrCodeScannerAnimationFrame != null)
+        {
+            cancelAnimationFrame(this.qrCodeScannerAnimationFrame);
+            this.qrCodeScannerAnimationFrame = null;
+        }
+
+        this.qrCodeScannerVideo.pause();
+        this.qrCodeScannerVideo.srcObject = null;
+
+        if (this.qrCodeScannerStream != null)
+        {
+            for (const track of this.qrCodeScannerStream.getTracks())
+                track.stop();
+
+            this.qrCodeScannerStream = null;
+        }
+
+        this.qrCodeScannerDiv.style.display = "none";
+        this.qrCodeScannerIsProcessing      = false;
+        this.qrCodeScannerLastText          = null;
+        this.qrCodeScannerLastURL           = null;
+
+    }
+
+    private resumeQRCodeScanner(): void {
+
+        this.qrCodeScannerIsProcessing = false;
+        this.qrCodeScannerLastText     = null;
+        this.qrCodeScannerLastURL      = null;
+        this.resetQRCodeScannerDialog("Kamera bereit. QR-Code in den Rahmen halten.");
+
+        if (this.qrCodeScannerAnimationFrame == null)
+            this.scanQRCodeFrame();
+
+    }
+
+    private resetQRCodeScannerDialog(statusText: string): void {
+
+        this.qrCodeScannerErrorDiv.textContent             = "";
+        this.qrCodeScannerStatusDiv.textContent            = statusText;
+        this.qrCodeScannerResultDiv.style.display          = "none";
+        this.qrCodeScannerURLActionsDiv.style.display      = "none";
+        this.qrCodeScannerResultText.textContent           = "";
+
+    }
+
+    private setQRCodeScannerStatus(statusText: string): void {
+        this.qrCodeScannerStatusDiv.textContent = statusText;
+    }
+
+    private scanQRCodeFrame(): void {
+
+        if (this.qrCodeScannerDiv.style.display !== "block")
+        {
+            this.qrCodeScannerAnimationFrame = null;
+            return;
+        }
+
+        if (!this.qrCodeScannerIsProcessing &&
+            this.qrCodeScannerVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
+            this.qrCodeScannerVideo.videoWidth  > 0 &&
+            this.qrCodeScannerVideo.videoHeight > 0)
+        {
+            const canvas  = this.qrCodeScannerCanvas;
+            const context = canvas.getContext("2d", { willReadFrequently: true });
+
+            if (context != null)
+            {
+                canvas.width  = this.qrCodeScannerVideo.videoWidth;
+                canvas.height = this.qrCodeScannerVideo.videoHeight;
+
+                context.drawImage(this.qrCodeScannerVideo, 0, 0, canvas.width, canvas.height);
+
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const qrText    = readQRCodeTextFromImageData({
+                                      data:   imageData.data,
+                                      width:  imageData.width,
+                                      height: imageData.height
+                                  });
+
+                if (qrText != null &&
+                    qrText !== this.qrCodeScannerLastText)
+                {
+                    this.qrCodeScannerLastText = qrText;
+                    this.handleScannedQRCodeText(qrText);
+                }
+            }
+        }
+
+        this.qrCodeScannerAnimationFrame = requestAnimationFrame(() => this.scanQRCodeFrame());
+
+    }
+
+    private async handleScannedQRCodeText(qrText: string): Promise<void> {
+
+        this.qrCodeScannerIsProcessing = true;
+        this.setQRCodeScannerStatus("QR-Code erkannt. Transparenzdatensatz wird geprüft...");
+
+        const detected = await this.detectAndConvertContentFormat(
+            {
+                name: "qr-code.txt",
+                type: "text/plain",
+                data: new TextEncoder().encode(qrText)
+            },
+            {
+                prepareUI: false,
+                onError:   result => this.showQRCodeScannerRejectedText(qrText, result)
+            }
+        );
+
+        if (detected)
+            this.closeQRCodeScanner();
+
+    }
+
+    private showQRCodeScannerRejectedText(qrText: string,
+                                          result: chargyInterfaces.ISessionCryptoResult): void {
+
+        const url = this.tryParseQRCodeURL(qrText);
+
+        this.qrCodeScannerErrorDiv.textContent        = this.getSessionCryptoResultText(result);
+        this.qrCodeScannerResultDiv.style.display     = "flex";
+        this.qrCodeScannerResultText.textContent      = qrText;
+        this.qrCodeScannerURLActionsDiv.style.display = url != null
+                                                            ? "block"
+                                                            : "none";
+        this.qrCodeScannerLastURL                     = url;
+
+        this.setQRCodeScannerStatus(
+            url != null
+                ? "Der QR-Code enthält eine URL. Bitte bestätigen, bevor sie geöffnet wird."
+                : "Der QR-Code enthält keinen erkannten Transparenzdatensatz."
+        );
+
+    }
+
+    private tryParseQRCodeURL(qrText: string): URL|null {
+
+        try
+        {
+            const url = new URL(qrText.trim());
+
+            return url.protocol === "https:" || url.protocol === "http:"
+                       ? url
+                       : null;
+        }
+        catch
+        {
+            return null;
+        }
 
     }
 
@@ -1454,42 +1789,72 @@ export class ChargyApp {
 
     //#region detectAndConvertContentFormat (FileInfos)
 
-    private async detectAndConvertContentFormat(FileInfos: Array<chargyInterfaces.IFileInfo>|chargyInterfaces.IFileInfo|string) {
+    private async detectAndConvertContentFormat(FileInfos:  Array<chargyInterfaces.IFileInfo>|chargyInterfaces.IFileInfo|string,
+                                                options?:   DetectionOptions): Promise<boolean> {
 
-        this.inputInfosDiv.style.display  = 'none';
-        this.errorTextDiv.style.display   = 'none';
+        if (options?.prepareUI !== false)
+        {
+            this.inputInfosDiv.style.display = 'none';
+            this.errorTextDiv.style.display  = 'none';
+        }
 
-        //@ts-ignore
-        let result:IChargeTransparencyRecord|ISessionCryptoResult = null;
+        let result:DetectionResult|null = null;
 
-        if (typeof FileInfos === 'string')
-            result = await this.chargy.DetectAndConvertContentFormat([
-                this.getClipboardFileInfo(FileInfos)
-            ]);
+        try
+        {
+            if (typeof FileInfos === 'string')
+                result = await this.chargy.DetectAndConvertContentFormat([{
+                                                                             name: "clipboard",
+                                                                             data: new TextEncoder().encode(FileInfos)
+                                                                          }]);
 
-        else if (chargyInterfaces.isIFileInfo(FileInfos))
-            result = await this.chargy.DetectAndConvertContentFormat([ FileInfos ]);
+            else if (chargyInterfaces.isIFileInfo(FileInfos))
+                result = await this.chargy.DetectAndConvertContentFormat([ FileInfos ]);
 
-        else
-            result = await this.chargy.DetectAndConvertContentFormat(FileInfos);
+            else
+                result = await this.chargy.DetectAndConvertContentFormat(FileInfos);
+        }
+        catch (exception)
+        {
+            result = {
+                status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:    "Unbekannter Transparenzdatensatz!",
+                exception:  exception,
+                certainty:  0
+            };
+        }
 
 
         if (chargyInterfaces.IsAChargeTransparencyRecord(result))
         {
+            if (options?.prepareUI === false)
+            {
+                this.inputInfosDiv.style.display = 'none';
+                this.errorTextDiv.style.display  = 'none';
+            }
 
-            if (!this.appContext.noGUI)
-                await this.showChargeTransparencyRecord(result);
+            // if (!this.ipcRenderer.sendSync('noGUI'))
+                 await this.showChargeTransparencyRecord(result);
 
-            this.electron.setVerificationResult(result.chargingSessions?.map(session => session.verificationResult));
+            // this.ipcRenderer.sendSync('setVerificationResult', result.chargingSessions?.map(session => session.verificationResult));
+
+            return true;
 
         }
 
+        const sessionResult = result ??
+                              {
+                                  status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                                  message:    "Unbekannter Transparenzdatensatz!",
+                                  certainty:  0
+                              };
+
+        if (options?.onError != null)
+            options.onError(sessionResult);
         else
-            this.doGlobalError(result ??
-                               {
-                                   status:   chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                   message:  "Unbekannter Transparenzdatensatz!"
-                               });
+            this.doGlobalError(sessionResult);
+
+        return false;
 
     }
 

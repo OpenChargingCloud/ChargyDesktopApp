@@ -58,6 +58,32 @@ function isAllowedWebUrl(url) {
     }
 }
 
+function isAllowedCameraPermissionRequest(webContents, permission, details) {
+
+    if (permission !== "media")
+        return false;
+
+    if (mainWindow == null ||
+        mainWindow.webContents == null ||
+        webContents !== mainWindow.webContents)
+    {
+        return false;
+    }
+
+    if (details?.isMainFrame === false)
+        return false;
+
+    const mediaTypes = Array.isArray(details?.mediaTypes)
+                           ? details.mediaTypes
+                           : typeof details?.mediaType === "string"
+                                 ? [ details.mediaType ]
+                                 : [];
+
+    return mediaTypes.includes("video") &&
+          !mediaTypes.includes("audio");
+
+}
+
 function sha512File(fileName) {
     return new Promise((resolve, reject) => {
         const hash    = crypto.createHash('sha512');
@@ -558,8 +584,12 @@ app.on('web-contents-created', (_event, contents) => {
         event.preventDefault();
     });
 
-    contents.session.setPermissionRequestHandler((_webContents, _permission, callback) => {
-        callback(false);
+    contents.session.setPermissionCheckHandler((webContents, permission, _requestingOrigin, details) => {
+        return isAllowedCameraPermissionRequest(webContents, permission, details);
+    });
+
+    contents.session.setPermissionRequestHandler((webContents, permission, callback, details) => {
+        callback(isAllowedCameraPermissionRequest(webContents, permission, details));
     });
 });
 

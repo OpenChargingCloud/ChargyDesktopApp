@@ -166,6 +166,14 @@
                                 background-color:   #519ad0;
                             }
 
+                            button:disabled,
+                            button:disabled:hover {
+                                color:              #777777;
+                                background-color:   #d8d8d8;
+                                cursor:             not-allowed;
+                                opacity:            0.65;
+                            }
+
                             #fileInput {
                                 display:            none;
                             }
@@ -1636,6 +1644,107 @@
 
             .overlayText::-webkit-scrollbar {
                 display:            none;
+            }
+
+        }
+
+        #qrCodeScanner {
+
+            display:                none;
+
+            .overlayText {
+
+                max-width:              650px;
+                height:                 auto;
+                min-height:             0;
+                overflow-y:             auto;
+
+                .data {
+
+                    display:                flex;
+                    flex-direction:         column;
+                    gap:                    14px;
+
+                    #scannerViewport {
+
+                        position:               relative;
+                        width:                  100%;
+                        aspect-ratio:           4 / 3;
+                        background-color:       #111111;
+                        border-radius:          6px;
+                        overflow:               hidden;
+
+                        #qrCodeScannerVideo {
+                            width:                  100%;
+                            height:                 100%;
+                            object-fit:             cover;
+                            display:                block;
+                        }
+
+                        #qrCodeScannerCanvas {
+                            display:                none;
+                        }
+
+                        #scannerFrame {
+                            position:               absolute;
+                            left:                   18%;
+                            top:                    14%;
+                            width:                  64%;
+                            height:                 72%;
+                            border:                 3px solid rgba(255, 255, 255, 0.85);
+                            border-radius:          6px;
+                            box-shadow:             0 0 0 999px rgba(0, 0, 0, 0.22);
+                            pointer-events:         none;
+                        }
+
+                    }
+
+                    #qrCodeScannerStatus {
+                        min-height:             24px;
+                        color:                  #333333;
+                        line-height:            140%;
+                    }
+
+                    #qrCodeScannerResult {
+
+                        display:                none;
+                        flex-direction:         column;
+                        gap:                    10px;
+
+                        #qrCodeScannerResultLabel {
+                            font-weight:            bold;
+                        }
+
+                        #qrCodeScannerResultText {
+                            box-sizing:             border-box;
+                            width:                  100%;
+                            max-height:             150px;
+                            overflow:               auto;
+                            margin:                 0;
+                            padding:                10px;
+                            border-radius:          4px;
+                            background-color:       #ffffff;
+                            white-space:            pre-wrap;
+                            word-break:             break-word;
+                            font-size:              85%;
+                        }
+
+                        #qrCodeScannerURLActions {
+                            display:                none;
+                        }
+
+                        button {
+                            border:                 0;
+                            border-radius:          4px;
+                            padding:                8px 12px;
+                            margin-right:           8px;
+                            cursor:                 pointer;
+                        }
+
+                    }
+
+                }
+
             }
 
         }
