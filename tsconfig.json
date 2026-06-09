@@ -44,10 +44,7 @@
 
     "exclude": [ "node_modules" ],
 
-    "files": [
-        "src/ts/declarations.d.ts",
-        "src/ts/chargyApp.ts"
-    ],
+    "include": [ "src/ts/**/*.ts" ],
 
     "awesomeTypescriptLoaderOptions": {
       "useWebpackText": true

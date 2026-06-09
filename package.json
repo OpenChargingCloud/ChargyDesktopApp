@@ -11,6 +11,7 @@
   "scripts": {
     "start": "electron .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src/ts tests",
     "test": "vitest run --config tests/vitest.config.ts",
     "test:typecheck": "tsc -p tests/tsconfig.json --noEmit",
     "test:watch": "vitest --config tests/vitest.config.ts",
@@ -49,11 +50,13 @@
     "electron": "^42.3.0",
     "electron-builder": "^26.8.1",
     "electron-localshortcut": "^3.2.1",
+    "eslint": "^10.4.1",
     "file-loader": "^6.2.0",
     "sass": "^1.100.0",
     "style-loader": "^4.0.0",
     "ts-loader": "^9.6.0",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.0",
     "vitest": "^4.1.8",
     "webpack": "^5.107.2",
     "webpack-cli": "^7.0.3"
