@@ -25,6 +25,7 @@ import Decimal                from 'decimal.js';
 import * as L                 from 'leaflet';
 import 'leaflet.awesome-markers';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import '../css/chargy.scss';
 
 type DetectionResult = chargyInterfaces.IChargeTransparencyRecord | chargyInterfaces.ISessionCryptoResult;
 

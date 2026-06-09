@@ -16,8 +16,10 @@
     "test:typecheck": "tsc -p tests/tsconfig.json --noEmit",
     "test:watch": "vitest --config tests/vitest.config.ts",
     "sbom": "cyclonedx-npm --output-format json --output-file sbom.json",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder",
+    "bundle": "webpack -c webpack.config.cjs",
+    "build": "npm run sbom && npm run bundle && electron-builder",
+    "pack": "npm run sbom && npm run bundle && electron-builder --dir",
+    "dist": "npm run build",
     "postinstall": "install-app-deps"
   },
   "keywords": [
@@ -52,8 +54,9 @@
     "electron-localshortcut": "^3.2.1",
     "eslint": "^10.4.1",
     "file-loader": "^6.2.0",
+    "mini-css-extract-plugin": "^2.10.2",
     "sass": "^1.100.0",
-    "style-loader": "^4.0.0",
+    "sass-loader": "^17.0.0",
     "ts-loader": "^9.6.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.61.0",

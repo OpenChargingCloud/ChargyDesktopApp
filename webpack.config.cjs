@@ -1,5 +1,6 @@
 const isDevelopment = process.env.NODE_ENV === 'development';
 const webpack       = require('webpack');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = [
     {
@@ -34,13 +35,24 @@ module.exports = [
           },
           {
             test: /\.css$/,
-            use: ['style-loader', 'css-loader']
+            use: [MiniCssExtractPlugin.loader, 'css-loader']
+          },
+          {
+            test: /\.scss$/,
+            use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader']
           },
           {
             test: /\.(woff|woff2|eot|ttf|otf|svg)$/,
             type: 'asset/resource',
             generator: {
               filename: 'assets/fonts/[name][ext][query]' // Path and naming of your fonts
+            }
+          },
+          {
+            test: /\.(png|jpe?g|gif)$/,
+            type: 'asset/resource',
+            generator: {
+              filename: 'assets/images/[name][ext][query]'
             }
           }
         ]
@@ -53,6 +65,9 @@ module.exports = [
         new webpack.NormalModuleReplacementPlugin(/^node:buffer$/, 'buffer'),
         new webpack.ProvidePlugin({
           Buffer: ['buffer', 'Buffer']
+        }),
+        new MiniCssExtractPlugin({
+          filename: '../css/chargy.css'
         })
       ],
       output: {

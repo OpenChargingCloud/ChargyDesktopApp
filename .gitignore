@@ -3,9 +3,11 @@
 !.vscode/launch.json
 !.vscode/tasks.json
 node_modules
+.claude/
 build/*.js
 dist
-src/build/*.js
+src/build/*
+!src/build/.gitkeep
 src/css/*.css
 src/css/*.css.map
 !src/css/fontawesome-all.min.css
