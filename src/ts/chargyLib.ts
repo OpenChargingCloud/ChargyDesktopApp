@@ -19,6 +19,23 @@ import * as chargyInterfaces  from './chargyInterfaces'
 import Decimal                from 'decimal.js';
 
 
+export function toArrayBuffer(data: ArrayBuffer | Uint8Array): ArrayBuffer {
+
+    if (data instanceof ArrayBuffer)
+        return data;
+
+    return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+
+}
+
+export function toUint8Array(data: ArrayBuffer | Uint8Array): Uint8Array {
+
+    return data instanceof Uint8Array
+               ? data
+               : new Uint8Array(data);
+
+}
+
 export function normalizeXMLText(xmlText: string | undefined): string {
 
     return (xmlText ?? "").

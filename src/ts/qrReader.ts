@@ -15,31 +15,15 @@
  * limitations under the License.
  */
 
-import { Buffer } from 'buffer';
-import jsQR       from 'jsqr';
+import { Buffer }      from 'buffer';
+import jsQR            from 'jsqr';
+import * as chargyLib  from './chargyLib'
 
 type QRImageData = {
     data:   Uint8ClampedArray;
     width:  number;
     height: number;
 };
-
-function toArrayBuffer(data: ArrayBuffer | Uint8Array): ArrayBuffer {
-
-    if (data instanceof ArrayBuffer)
-        return data;
-
-    return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
-
-}
-
-function toUint8Array(data: ArrayBuffer | Uint8Array): Uint8Array {
-
-    return data instanceof Uint8Array
-               ? data
-               : new Uint8Array(data);
-
-}
 
 async function imageDataFromBrowserCanvas(data:       ArrayBuffer | Uint8Array,
                                           mimeType?:  string): Promise<QRImageData | undefined> {
@@ -50,7 +34,7 @@ async function imageDataFromBrowserCanvas(data:       ArrayBuffer | Uint8Array,
         return undefined;
     }
 
-    const imageBlob = new Blob([ toArrayBuffer(data) ], { type: mimeType ?? "application/octet-stream" });
+    const imageBlob = new Blob([ chargyLib.toArrayBuffer(data) ], { type: mimeType ?? "application/octet-stream" });
 
     try
     {
@@ -107,7 +91,7 @@ async function imageDataFromBrowserImageElement(data:       ArrayBuffer | Uint8A
         return undefined;
     }
 
-    const imageBlob = new Blob([ toArrayBuffer(data) ], { type: mimeType ?? "application/octet-stream" });
+    const imageBlob = new Blob([ chargyLib.toArrayBuffer(data) ], { type: mimeType ?? "application/octet-stream" });
     const imageUrl  = URL.createObjectURL(imageBlob);
 
     try
@@ -159,7 +143,7 @@ async function imageDataFromNodeCanvas(data: ArrayBuffer | Uint8Array): Promise<
         if (canvasLib == null)
             return undefined;
 
-        const image  = await canvasLib.loadImage(Buffer.from(toUint8Array(data)));
+        const image  = await canvasLib.loadImage(Buffer.from(chargyLib.toUint8Array(data)));
         const width  = image.naturalWidth  || image.width;
         const height = image.naturalHeight || image.height;
 
@@ -191,7 +175,8 @@ async function imageDataFromPNGOrJPEG(data:       ArrayBuffer | Uint8Array,
 
     try
     {
-        const imageBytes = Buffer.from(toUint8Array(data));
+
+        const imageBytes = Buffer.from(chargyLib.toUint8Array(data));
 
         if (mimeType === "image/png")
         {
