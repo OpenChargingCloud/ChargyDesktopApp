@@ -22,19 +22,15 @@ import * as chargyLib         from './chargyLib'
 
 import stringify              from 'safe-stable-stringify';
 import Decimal                from 'decimal.js';
+import * as elliptic          from 'elliptic';
+import moment                 from 'moment';
+import base32Decode           from 'base32-decode';
+import * as asn1              from 'asn1.js';
 import * as L                 from 'leaflet';
 import 'leaflet.awesome-markers';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../css/chargy.scss';
 
-
-function OpenExternal(URL: string)
-{
-
-    if (URL.startsWith("https://"))
-        (window as any).chargyElectron?.openExternal(URL);
-
-}
 
 type DetectionResult = chargyInterfaces.IChargeTransparencyRecord | chargyInterfaces.ISessionCryptoResult;
 
@@ -107,11 +103,11 @@ export class ChargyApp {
     private readonly leaflet:                   any;
     private readonly map:                       L.Map;
 
-    private readonly elliptic:                  any;
-    private readonly moment:                    any;
+    private readonly elliptic:                  typeof elliptic;
+    private readonly moment:                    typeof moment;
     private readonly chargy:                    Chargy;
-    private readonly asn1:                      any;
-    private readonly base32Decode:              any;
+    private readonly asn1:                      typeof asn1;
+    private readonly base32Decode:              typeof base32Decode;
 
     public  appEdition:                         string              = "";
     public  copyright:                          string              = "";
@@ -136,9 +132,9 @@ export class ChargyApp {
     private applicationHash:                    string              = "";
 
     private markers:                            any                 = [];
-    private minlat:                             number              = +1000;
+    private minlat:                             number              =  1000;
     private maxlat:                             number              = -1000;
-    private minlng:                             number              = +1000;
+    private minlng:                             number              =  1000;
     private maxlng:                             number              = -1000;
 
     private appDiv:                             HTMLDivElement;
@@ -172,7 +168,7 @@ export class ChargyApp {
     private errorTextDiv:                       HTMLDivElement;
     private feedbackDiv:                        HTMLDivElement;
 
-    private showFeedbackSection:                Boolean;
+    private showFeedbackSection:                boolean;
     private feedbackMethodsDiv:                 HTMLDivElement;
     private feedbackEMailAnchor:                HTMLAnchorElement;
     private feedbackHotlineAnchor:              HTMLAnchorElement;
@@ -218,7 +214,7 @@ export class ChargyApp {
     //#endregion
 
     constructor(versionsURL?:          string,
-                showFeedbackSection?:  Boolean,
+                showFeedbackSection?:  boolean,
                 feedbackEMail?:        string[],
                 feedbackHotline?:      string[],
                 issueURL?:             string) {
@@ -236,10 +232,10 @@ export class ChargyApp {
 
         //#region Load JavaScript libraries
 
-        this.elliptic                                 = require('elliptic');
-        this.moment                                   = require('moment');
-        this.asn1                                     = require('asn1.js');
-        this.base32Decode                             = require('base32-decode')
+        this.elliptic                                 = elliptic;
+        this.moment                                   = moment;
+        this.asn1                                     = asn1;
+        this.base32Decode                             = base32Decode;
 
         //#endregion
 
@@ -440,7 +436,7 @@ export class ChargyApp {
                 //#region Collect issue data...
 
                 const newIssueForm  = document.getElementById('newIssueForm') as HTMLFormElement;
-                let   data:any      = {};
+                const   data:any      = {};
 
                 data["timestamp"]                  = new Date().toISOString();
                 data["chargyVersion"]              = this.packageJson.version;
@@ -480,7 +476,7 @@ export class ChargyApp {
 
                 //#region Send issue to API
 
-                let sendIssue = new XMLHttpRequest();
+                const sendIssue = new XMLHttpRequest();
 
                 sendIssue.open("SUBMIT",
                                this.defaultIssueURL,
@@ -542,7 +538,7 @@ export class ChargyApp {
 
         //#region Get list of Chargy versions
 
-        let GetListOfVersions = new XMLHttpRequest();
+        const GetListOfVersions = new XMLHttpRequest();
         GetListOfVersions.open("GET",
                                this.versionsURL,
                                true);
@@ -569,7 +565,7 @@ export class ChargyApp {
 
                                 this.currentAppInfos = JSON.parse(GetListOfVersions.responseText) as chargyInterfaces.IVersions;
 
-                                for (let version of this.currentAppInfos.versions)
+                                for (const version of this.currentAppInfos.versions)
                                 {
 
                                     const thisVersion    = this.packageJson.version.split('.');
@@ -586,7 +582,7 @@ export class ChargyApp {
 
                                         if (this.currentVersionInfos.packages && this.currentVersionInfos.packages.length > 0)
                                         {
-                                            for (let _package of this.currentVersionInfos.packages)
+                                            for (const _package of this.currentVersionInfos.packages)
                                             {
                                                 if (_package.isInstaller == null &&
                                                     (_package.platform === this.platform ||
@@ -631,7 +627,7 @@ export class ChargyApp {
                                         const tagsDiv = versionDiv.appendChild(document.createElement('div'));
                                         tagsDiv.className = "tags";
 
-                                        for (let tag of version.tags)
+                                        for (const tag of version.tags)
                                         {
                                             const tagDiv = tagsDiv.appendChild(document.createElement('div'));
                                             tagDiv.className = "tag";
@@ -641,7 +637,7 @@ export class ChargyApp {
                                         const packagesDiv = versionDiv.appendChild(document.createElement('div'));
                                         packagesDiv.className = "packages";
 
-                                        for (let versionpackage of version.packages)
+                                        for (const versionpackage of version.packages)
                                         {
 
                                             const packageDiv = packagesDiv.appendChild(document.createElement('div'));
@@ -671,7 +667,7 @@ export class ChargyApp {
                                             const cryptoHashesDiv = packageDiv.appendChild(document.createElement('div'));
                                             cryptoHashesDiv.className = "cryptoHashes";
 
-                                            for (let cryptoHash in versionpackage.cryptoHashes)
+                                            for (const cryptoHash in versionpackage.cryptoHashes)
                                             {
 
                                                 const cryptoHashDiv = cryptoHashesDiv.appendChild(document.createElement('div'));
@@ -700,7 +696,7 @@ export class ChargyApp {
                                             const signaturesDiv = packageDiv.appendChild(document.createElement('div'));
                                             signaturesDiv.className = "signatures";
 
-                                            for (let signature of versionpackage.signatures)
+                                            for (const signature of versionpackage.signatures)
                                             {
 
                                                 const signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
@@ -727,7 +723,7 @@ export class ChargyApp {
                                                 const downloadURLsDiv = packageDiv.appendChild(document.createElement('div'));
                                                 downloadURLsDiv.className = "downloadURLs";
 
-                                                for (let downloadURLName in versionpackage.downloadURLs)
+                                                for (const downloadURLName in versionpackage.downloadURLs)
                                                 {
                                                     const downloadURLDiv = downloadURLsDiv.appendChild(document.createElement('div'));
                                                     downloadURLDiv.className = "downloadURL";
@@ -1024,7 +1020,7 @@ export class ChargyApp {
         this.fileInput.onchange = (ev: Event) => {
 
             //@ts-ignore
-            var files = ev?.target?.files;
+            const files = ev?.target?.files;
 
             if (files != null)
                 this.readFilesFromDisk(files);
@@ -1167,8 +1163,8 @@ export class ChargyApp {
 
     //#region UpdateFeedbackSection()
 
-    public UpdateFeedbackSection(FeedbackEMail?:   String[],
-                                 FeedbackHotline?: String[]) {
+    public UpdateFeedbackSection(FeedbackEMail?:   string[],
+                                 FeedbackHotline?: string[]) {
 
         if (!this.showFeedbackSection)
         {
@@ -1542,7 +1538,7 @@ export class ChargyApp {
             }
         }
 
-        this.qrCodeScannerAnimationFrame = requestAnimationFrame(() => this.scanQRCodeFrame());
+        this.qrCodeScannerAnimationFrame = requestAnimationFrame(() => { this.scanQRCodeFrame(); });
 
     }
 
@@ -1559,7 +1555,7 @@ export class ChargyApp {
             },
             {
                 prepareUI: false,
-                onError:   result => this.showQRCodeScannerRejectedText(qrText, result)
+                onError:   result => { this.showQRCodeScannerRejectedText(qrText, result); }
             }
         );
 
@@ -1630,7 +1626,7 @@ export class ChargyApp {
             for (let i = 0; i < files.length; i++)
             {
 
-                let file = files[i];
+                const file = files[i];
 
                 if (file != undefined)
                 {
@@ -1644,7 +1640,7 @@ export class ChargyApp {
 
             //#endregion
 
-            let loadedFiles = new Array<chargyInterfaces.IFileInfo>();
+            const loadedFiles = new Array<chargyInterfaces.IFileInfo>();
 
             for (const filename of filesToLoad)
             {
@@ -1699,7 +1695,7 @@ export class ChargyApp {
 
         try {
 
-            var toCheck = {
+            const toCheck = {
                 "name":                 app.name,
                 "description":          app.description,
 
@@ -1733,9 +1729,9 @@ export class ChargyApp {
 
             //ToDo: Checking the timestamp might be usefull!
 
-            var Input        = JSON.stringify(toCheck);
-            var sha256value  = await chargyLib.sha256(Input);
-            var result       = new this.elliptic.ec('secp256k1').
+            const Input        = JSON.stringify(toCheck);
+            const sha256value  = await chargyLib.sha256(Input);
+            const result       = new this.elliptic.ec('secp256k1').
                                         keyFromPublic(signature.publicKey, 'hex').
                                         verify       (sha256value,
                                                       signature.signature);
@@ -1891,7 +1887,7 @@ export class ChargyApp {
 
         //#region Show CTR infos
 
-        let descriptionDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
+        const descriptionDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
         descriptionDiv.id  = "description";
         descriptionDiv.innerText = chargyLib.firstValue(CTR.description) ?? this.chargy.GetLocalizedMessage("All charging sessions");
 
@@ -1899,14 +1895,14 @@ export class ChargyApp {
         const ctrEndText    = CTR.end   ? chargyLib.parseUTC(CTR.end).  format('dddd, D. MMMM YYYY') : null;
 
         if (ctrBeginText) {
-            let beginDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
+            const beginDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
             beginDiv.id        = "begin";
             beginDiv.className = "dates";
             beginDiv.innerHTML = (ctrBeginText == ctrEndText ? this.chargy.GetLocalizedMessage("on") : this.chargy.GetLocalizedMessage("from")) + " " + ctrBeginText;
         }
 
         if (ctrEndText && ctrEndText != ctrBeginText) {
-            let endDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
+            const endDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
             endDiv.id          = "end";
             endDiv.className   = "dates";
             endDiv.innerHTML   = this.chargy.GetLocalizedMessage("till") + " " + ctrEndText;
@@ -1942,7 +1938,7 @@ export class ChargyApp {
                     const AllChargingSessionsDivs = document.getElementsByClassName("chargingSession");
 
                     if (AllChargingSessionsDivs != null)
-                        for(var i=0; i<AllChargingSessionsDivs.length; i++)
+                        for(let i=0; i<AllChargingSessionsDivs.length; i++)
                             AllChargingSessionsDivs[i]?.classList.remove("activated");
 
                     //(this as HTMLDivElement)?.classList.add("activated");
@@ -1962,7 +1958,7 @@ export class ChargyApp {
                     if (chargingSession.begin)
                     {
 
-                        let dateDiv  = chargingSessionDiv.appendChild(document.createElement('div'));
+                        const dateDiv  = chargingSessionDiv.appendChild(document.createElement('div'));
                         dateDiv.className = "date";
                         //dateDiv.innerHTML = UTC2human(chargingSession.begin);
                         dateDiv.innerHTML = chargyLib.time2human(chargingSession.begin);
@@ -1998,21 +1994,21 @@ export class ChargyApp {
                 try
                 {
 
-                    let productInfoDiv                   = tableDiv.appendChild(document.createElement('div'));
+                    const productInfoDiv                   = tableDiv.appendChild(document.createElement('div'));
                     productInfoDiv.className             = "productInfos";
 
-                    let productIconDiv                   = productInfoDiv.appendChild(document.createElement('div'));
+                    const productIconDiv                   = productInfoDiv.appendChild(document.createElement('div'));
                     productIconDiv.className             = "icon";
                     productIconDiv.innerHTML             = '<i class="fas fa-chart-pie"></i>';
 
-                    let productDiv                       = productInfoDiv.appendChild(document.createElement('div'));
+                    const productDiv                       = productInfoDiv.appendChild(document.createElement('div'));
                     productDiv.className                 = "text";
                     productDiv.innerHTML = chargingSession.product != null ? chargingSession.product["@id"] + "<br />" : "";
 
                     if (chargingSession.begin && chargingSession.end)
                     {
 
-                        let duration = this.moment.duration(chargyLib.parseUTC(chargingSession.end).valueOf() - chargyLib.parseUTC(chargingSession.begin).valueOf());
+                        const duration = this.moment.duration(chargyLib.parseUTC(chargingSession.end).valueOf() - chargyLib.parseUTC(chargingSession.begin).valueOf());
 
                         productDiv.innerHTML += "Ladedauer ";
                         if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days()    + " Tage "    + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
@@ -2047,7 +2043,7 @@ export class ChargyApp {
 
                     if (chargingSession.measurements)
                     {
-                        for (let measurement of chargingSession.measurements)
+                        for (const measurement of chargingSession.measurements)
                         {
                             //<i class="far fa-chart-bar"></i>
                             if (measurement.values && measurement.values.length > 0)
@@ -2131,14 +2127,14 @@ export class ChargyApp {
                     if (chargingSession.parking && chargingSession.parking.length > 0)
                     {
 
-                        var parkingInfoDiv                   = tableDiv.appendChild(document.createElement('div'));
+                        const parkingInfoDiv                   = tableDiv.appendChild(document.createElement('div'));
                         parkingInfoDiv.className             = "parkingInfos";
 
-                        var parkingIconDiv                   = parkingInfoDiv.appendChild(document.createElement('div'));
+                        const parkingIconDiv                   = parkingInfoDiv.appendChild(document.createElement('div'));
                         parkingIconDiv.className             = "icon";
                         parkingIconDiv.innerHTML             = '<i class="fas fa-parking"></i>';
 
-                        var parkingDiv                       = parkingInfoDiv.appendChild(document.createElement('div'));
+                        const parkingDiv                       = parkingInfoDiv.appendChild(document.createElement('div'));
                         parkingDiv.className                 = "text";
                        // parkingDiv.innerHTML = chargingSession.parking != null ? chargingSession.product["@id"] + "<br />" : "";
 
@@ -2147,9 +2143,9 @@ export class ChargyApp {
                         if (lastParking?.end != null)
                         {
 
-                            let parkingBegin = chargyLib.parseUTC(chargingSession.parking[0]?.begin ?? "-");
-                            let parkingEnd   = chargyLib.parseUTC(lastParking.end);
-                            let duration     = this.moment.duration(parkingEnd.valueOf() - parkingBegin.valueOf());
+                            const parkingBegin = chargyLib.parseUTC(chargingSession.parking[0]?.begin ?? "-");
+                            const parkingEnd   = chargyLib.parseUTC(lastParking.end);
+                            const duration     = this.moment.duration(parkingEnd.valueOf() - parkingBegin.valueOf());
 
                             parkingDiv.innerHTML += "Parkdauer ";
                             if      (Math.floor(duration.asDays())    > 1) parkingDiv.innerHTML += duration.days()    + " Tage " + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
@@ -2199,10 +2195,10 @@ export class ChargyApp {
                     if (chargingSession.authorizationStart != null)
                     {
 
-                        var authorizationStartDiv            = tableDiv.appendChild(document.createElement('div'));
+                        const authorizationStartDiv            = tableDiv.appendChild(document.createElement('div'));
                             authorizationStartDiv.className  = "authorizationStart";
 
-                        var authorizationStartIconDiv                   = authorizationStartDiv.appendChild(document.createElement('div'));
+                        const authorizationStartIconDiv                   = authorizationStartDiv.appendChild(document.createElement('div'));
                         authorizationStartIconDiv.className             = "icon";
                         switch (chargingSession.authorizationStart.type)
                         {
@@ -2222,7 +2218,7 @@ export class ChargyApp {
 
                         }
 
-                        var authorizationStartIdDiv                     = authorizationStartDiv.appendChild(document.createElement('div'));
+                        const authorizationStartIdDiv                     = authorizationStartDiv.appendChild(document.createElement('div'));
                         authorizationStartIdDiv.className               = "id";
                         authorizationStartIdDiv.innerHTML = chargingSession.authorizationStart["@id"];
 
@@ -2231,10 +2227,10 @@ export class ChargyApp {
                     if (chargingSession.authorizationStop != null)
                     {
 
-                        var authorizationStopDiv            = tableDiv.appendChild(document.createElement('div'));
+                        const authorizationStopDiv            = tableDiv.appendChild(document.createElement('div'));
                             authorizationStopDiv.className  = "authorizationStop";
 
-                        var authorizationStopIconDiv                   = authorizationStopDiv.appendChild(document.createElement('div'));
+                        const authorizationStopIconDiv                   = authorizationStopDiv.appendChild(document.createElement('div'));
                         authorizationStopIconDiv.className             = "icon";
                         switch (chargingSession.authorizationStop.type)
                         {
@@ -2254,7 +2250,7 @@ export class ChargyApp {
 
                         }
 
-                        var authorizationStopIdDiv                     = authorizationStopDiv.appendChild(document.createElement('div'));
+                        const authorizationStopIdDiv                     = authorizationStopDiv.appendChild(document.createElement('div'));
                         authorizationStopIdDiv.className               = "id";
                         authorizationStopIdDiv.innerHTML = chargingSession.authorizationStop["@id"];
 
@@ -2281,14 +2277,14 @@ export class ChargyApp {
 
                     {
 
-                        var chargingStationInfoDiv            = tableDiv.appendChild(document.createElement('div'));
+                        const chargingStationInfoDiv            = tableDiv.appendChild(document.createElement('div'));
                         chargingStationInfoDiv.className      = "chargingStationInfos";
 
-                        var chargingStationIconDiv            = chargingStationInfoDiv.appendChild(document.createElement('div'));
+                        const chargingStationIconDiv            = chargingStationInfoDiv.appendChild(document.createElement('div'));
                         chargingStationIconDiv.className      = "icon";
                         chargingStationIconDiv.innerHTML      = '<i class="fas fa-charging-station"></i>';
 
-                        var chargingStationDiv                = chargingStationInfoDiv.appendChild(document.createElement('div'));
+                        const chargingStationDiv                = chargingStationInfoDiv.appendChild(document.createElement('div'));
                         chargingStationDiv.classList.add("text");
 
                         if (chargingSession.EVSEId || chargingSession.EVSE) {
@@ -2411,14 +2407,14 @@ export class ChargyApp {
                     if (address != null)
                     {
 
-                        var locationInfoDiv        = tableDiv.appendChild(document.createElement('div'));
+                        const locationInfoDiv        = tableDiv.appendChild(document.createElement('div'));
                         locationInfoDiv.className  = "locationInfos";
 
-                        var locationIconDiv        = locationInfoDiv.appendChild(document.createElement('div'));
+                        const locationIconDiv        = locationInfoDiv.appendChild(document.createElement('div'));
                         locationIconDiv.className  = "icon";
                         locationIconDiv.innerHTML  = '<i class="fas fa-map-marker-alt"></i>';
 
-                        var locationDiv            = locationInfoDiv.appendChild(document.createElement('div'));
+                        const locationDiv            = locationInfoDiv.appendChild(document.createElement('div'));
                         locationDiv.classList.add("text");
                         locationDiv.innerHTML      =   (address.street      != null ? " " + address.street        : "") +
                                                        (address.houseNumber != null ? " " + address.houseNumber   : "") +
@@ -2444,30 +2440,30 @@ export class ChargyApp {
                     if (chargingSession.totalCosts != null)
                     {
 
-                        var costsInfoDiv        = tableDiv.appendChild(document.createElement('div'));
+                        const costsInfoDiv        = tableDiv.appendChild(document.createElement('div'));
                         costsInfoDiv.className  = "costsInfos";
 
-                        var costsIconDiv        = costsInfoDiv.appendChild(document.createElement('div'));
+                        const costsIconDiv        = costsInfoDiv.appendChild(document.createElement('div'));
                         costsIconDiv.className  = "icon";
                         costsIconDiv.innerHTML  = '<i class="fa-solid fa-euro-sign"></i>';
 
-                        var textDiv             = costsInfoDiv.appendChild(document.createElement('div'));
+                        const textDiv             = costsInfoDiv.appendChild(document.createElement('div'));
                         textDiv.classList.add("text");
 
-                        var costsDiv            = textDiv.appendChild(document.createElement('div'));
+                        const costsDiv            = textDiv.appendChild(document.createElement('div'));
                         costsDiv.classList.add("costs");
 
                         if (chargingSession.totalCosts.total != 0)
                         {
 
-                            var totalCostsDiv      = costsDiv.appendChild(document.createElement('div'));
+                            const totalCostsDiv      = costsDiv.appendChild(document.createElement('div'));
                             totalCostsDiv.classList.add("totalCosts");
 
-                            var totalCostsCost     = totalCostsDiv.appendChild(document.createElement('div'));
+                            const totalCostsCost     = totalCostsDiv.appendChild(document.createElement('div'));
                             totalCostsCost.classList.add("totalCost");
                             totalCostsCost.innerHTML     = chargingSession.totalCosts.total.toString();
 
-                            var totalCostsCurrency = totalCostsDiv.appendChild(document.createElement('div'));
+                            const totalCostsCurrency = totalCostsDiv.appendChild(document.createElement('div'));
                             totalCostsCurrency.classList.add("totalCostCurrency");
                             totalCostsCurrency.innerHTML = chargingSession.totalCosts.currency;
 
@@ -2694,7 +2690,7 @@ export class ChargyApp {
             headlineDiv.id          = "description";
             headlineDiv.innerHTML   = "Ungültige Datensätze";
 
-            let invalidDataSetsDiv  = this.invalidDataSetsScreenDiv.appendChild(document.createElement('div'));
+            const invalidDataSetsDiv  = this.invalidDataSetsScreenDiv.appendChild(document.createElement('div'));
             invalidDataSetsDiv.id   = "invalidDataSets";
 
             for (const invalidDataSet of CTR.invalidDataSets)
@@ -2755,7 +2751,7 @@ export class ChargyApp {
 
             if (chargingSession.measurements)
             {
-                for (var measurement of chargingSession.measurements)
+                for (const measurement of chargingSession.measurements)
                 {
 
                     measurement.chargingSession         = chargingSession;
@@ -2929,7 +2925,7 @@ export class ChargyApp {
                                                chargyLib.CreateDiv(tariffInfosDiv,  "headline2",
                                                                    this.chargy.GetLocalizedMessage("Charging Tariffs"));
 
-                        var tariffTableDiv       = tariffInfosDiv.appendChild(document.createElement('div'));
+                        const tariffTableDiv       = tariffInfosDiv.appendChild(document.createElement('div'));
                         tariffTableDiv.classList.add("tariffsTable");
 
                         for (const tariff of chargingSession.chargingTariffs)
@@ -2941,7 +2937,7 @@ export class ChargyApp {
                                 this.showChargingTariffDetails(tariff);
                             };
 
-                            var tariffShortName        = chargingPeriodRow.appendChild(document.createElement('div'));
+                            const tariffShortName        = chargingPeriodRow.appendChild(document.createElement('div'));
                             tariffShortName.classList.add("shortName");
                             tariffShortName.innerHTML  = tariff.shortName && Object.keys(tariff.shortName).length > 0
                                                                 ? tariff.shortName[this.UILanguage] ?? tariff["@id"] ?? ""
@@ -2949,7 +2945,7 @@ export class ChargyApp {
 
                             if (tariff.summary && Object.keys(tariff.summary).length > 0)
                             {
-                                var tariffSummary        = chargingPeriodRow.appendChild(document.createElement('div'));
+                                const tariffSummary        = chargingPeriodRow.appendChild(document.createElement('div'));
                                 tariffSummary.classList.add("summary");
                                 tariffSummary.innerText  = tariff.summary[this.UILanguage] ?? "";
                             }
@@ -2969,7 +2965,7 @@ export class ChargyApp {
                                                        chargyLib.CreateDiv(totalCostsDiv,  "headline2",
                                                                            this.chargy.GetLocalizedMessage("Charging Periods"));
 
-                        var chargingPeriodsTableDiv  = totalCostsDiv.appendChild(document.createElement('div'));
+                        const chargingPeriodsTableDiv  = totalCostsDiv.appendChild(document.createElement('div'));
                         chargingPeriodsTableDiv.classList.add("chargingPeriodsTable");
 
                         for (let i=0; i<chargingSession.chargingPeriods.length; i++)
@@ -3020,32 +3016,32 @@ export class ChargyApp {
                                                   chargyLib.CreateDiv(totalCostsDiv,  "headline2",
                                                                       this.chargy.GetLocalizedMessage("Total Costs"));
 
-                        var costsTableDiv       = totalCostsDiv.appendChild(document.createElement('div'));
+                        const costsTableDiv       = totalCostsDiv.appendChild(document.createElement('div'));
                         costsTableDiv.classList.add("costsTable");
 
                         if (chargingSession.totalCosts.reservation?.cost != null)
                         {
 
-                            var reservationCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
+                            const reservationCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
                             reservationCostsRow.classList.add("costsRow");
 
-                            var reservationCostsType     = reservationCostsRow.appendChild(document.createElement('div'));
+                            const reservationCostsType     = reservationCostsRow.appendChild(document.createElement('div'));
                             reservationCostsType.classList.add("type");
                             reservationCostsType.innerHTML    = this.chargy.GetLocalizedMessage("Reservation");
 
-                            var reservationCostsAmount   = reservationCostsRow.appendChild(document.createElement('div'));
+                            const reservationCostsAmount   = reservationCostsRow.appendChild(document.createElement('div'));
                             reservationCostsAmount.classList.add("amount");
                             reservationCostsAmount.innerHTML  = chargingSession.totalCosts.reservation.amount.toString();
 
-                            var reservationCostsUnit     = reservationCostsRow.appendChild(document.createElement('div'));
+                            const reservationCostsUnit     = reservationCostsRow.appendChild(document.createElement('div'));
                             reservationCostsUnit.classList.add("unit");
                             reservationCostsUnit.innerHTML    = chargingSession.totalCosts.reservation.unit;
 
-                            var reservationCostsCost     = reservationCostsRow.appendChild(document.createElement('div'));
+                            const reservationCostsCost     = reservationCostsRow.appendChild(document.createElement('div'));
                             reservationCostsCost.classList.add("cost");
                             reservationCostsCost.innerHTML   = chargingSession.totalCosts.reservation.cost.toString();
 
-                            var reservationCostsCurrency = reservationCostsRow.appendChild(document.createElement('div'));
+                            const reservationCostsCurrency = reservationCostsRow.appendChild(document.createElement('div'));
                             reservationCostsCurrency.classList.add("currency");
                             reservationCostsCurrency.innerHTML   = chargingSession.totalCosts.currency;
 
@@ -3054,26 +3050,26 @@ export class ChargyApp {
                         if (chargingSession.totalCosts.energy?.cost != null)
                         {
 
-                            var energyCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
+                            const energyCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
                             energyCostsRow.classList.add("costsRow");
 
-                            var energyCostsType     = energyCostsRow.appendChild(document.createElement('div'));
+                            const energyCostsType     = energyCostsRow.appendChild(document.createElement('div'));
                             energyCostsType.classList.add("type");
                             energyCostsType.innerHTML    = this.chargy.GetLocalizedMessage("Energy");
 
-                            var energyCostsAmount   = energyCostsRow.appendChild(document.createElement('div'));
+                            const energyCostsAmount   = energyCostsRow.appendChild(document.createElement('div'));
                             energyCostsAmount.classList.add("amount");
                             energyCostsAmount.innerHTML  = chargingSession.totalCosts.energy.amount.toString();
 
-                            var energyCostsUnit     = energyCostsRow.appendChild(document.createElement('div'));
+                            const energyCostsUnit     = energyCostsRow.appendChild(document.createElement('div'));
                             energyCostsUnit.classList.add("unit");
                             energyCostsUnit.innerHTML    = chargingSession.totalCosts.energy.unit;
 
-                            var energyCostsCost     = energyCostsRow.appendChild(document.createElement('div'));
+                            const energyCostsCost     = energyCostsRow.appendChild(document.createElement('div'));
                             energyCostsCost.classList.add("cost");
                             energyCostsCost.innerHTML   = chargingSession.totalCosts.energy.cost.toString();
 
-                            var energyCostsCurrency = energyCostsRow.appendChild(document.createElement('div'));
+                            const energyCostsCurrency = energyCostsRow.appendChild(document.createElement('div'));
                             energyCostsCurrency.classList.add("currency");
                             energyCostsCurrency.innerHTML   = chargingSession.totalCosts.currency;
 
@@ -3082,26 +3078,26 @@ export class ChargyApp {
                         if (chargingSession.totalCosts.time?.cost != null)
                         {
 
-                            var timeCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
+                            const timeCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
                             timeCostsRow.classList.add("costsRow");
 
-                            var timeCostsType     = timeCostsRow.appendChild(document.createElement('div'));
+                            const timeCostsType     = timeCostsRow.appendChild(document.createElement('div'));
                             timeCostsType.classList.add("type");
                             timeCostsType.innerHTML    = this.chargy.GetLocalizedMessage("Time");
 
-                            var timeCostsAmount   = timeCostsRow.appendChild(document.createElement('div'));
+                            const timeCostsAmount   = timeCostsRow.appendChild(document.createElement('div'));
                             timeCostsAmount.classList.add("amount");
                             timeCostsAmount.innerHTML  = chargingSession.totalCosts.time.amount.toString();
 
-                            var timeCostsUnit     = timeCostsRow.appendChild(document.createElement('div'));
+                            const timeCostsUnit     = timeCostsRow.appendChild(document.createElement('div'));
                             timeCostsUnit.classList.add("unit");
                             timeCostsUnit.innerHTML    = chargingSession.totalCosts.time.unit;
 
-                            var timeCostsCost     = timeCostsRow.appendChild(document.createElement('div'));
+                            const timeCostsCost     = timeCostsRow.appendChild(document.createElement('div'));
                             timeCostsCost.classList.add("cost");
                             timeCostsCost.innerHTML   = chargingSession.totalCosts.time.cost.toString();
 
-                            var timeCostsCurrency = timeCostsRow.appendChild(document.createElement('div'));
+                            const timeCostsCurrency = timeCostsRow.appendChild(document.createElement('div'));
                             timeCostsCurrency.classList.add("currency");
                             timeCostsCurrency.innerHTML   = chargingSession.totalCosts.currency;
 
@@ -3110,26 +3106,26 @@ export class ChargyApp {
                         if (chargingSession.totalCosts.idle?.cost != null)
                         {
 
-                            var idleCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
+                            const idleCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
                             idleCostsRow.classList.add("costsRow");
 
-                            var idleCostsType     = idleCostsRow.appendChild(document.createElement('div'));
+                            const idleCostsType     = idleCostsRow.appendChild(document.createElement('div'));
                             idleCostsType.classList.add("type");
                             idleCostsType.innerHTML    = this.chargy.GetLocalizedMessage("Idle");
 
-                            var idleCostsAmount   = idleCostsRow.appendChild(document.createElement('div'));
+                            const idleCostsAmount   = idleCostsRow.appendChild(document.createElement('div'));
                             idleCostsAmount.classList.add("amount");
                             idleCostsAmount.innerHTML  = chargingSession.totalCosts.idle.amount.toString();
 
-                            var idleCostsUnit     = idleCostsRow.appendChild(document.createElement('div'));
+                            const idleCostsUnit     = idleCostsRow.appendChild(document.createElement('div'));
                             idleCostsUnit.classList.add("unit");
                             idleCostsUnit.innerHTML    = chargingSession.totalCosts.idle.unit;
 
-                            var idleCostsCost     = idleCostsRow.appendChild(document.createElement('div'));
+                            const idleCostsCost     = idleCostsRow.appendChild(document.createElement('div'));
                             idleCostsCost.classList.add("cost");
                             idleCostsCost.innerHTML   = chargingSession.totalCosts.idle.cost.toString();
 
-                            var idleCostsCurrency = idleCostsRow.appendChild(document.createElement('div'));
+                            const idleCostsCurrency = idleCostsRow.appendChild(document.createElement('div'));
                             idleCostsCurrency.classList.add("currency");
                             idleCostsCurrency.innerHTML   = chargingSession.totalCosts.currency;
 
@@ -3138,24 +3134,24 @@ export class ChargyApp {
                         if (chargingSession.totalCosts.flat?.cost != null)
                         {
 
-                            var flatCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
+                            const flatCostsRow      = costsTableDiv.appendChild(document.createElement('div'));
                             flatCostsRow.classList.add("costsRow");
 
-                            var flatCostsType     = flatCostsRow.appendChild(document.createElement('div'));
+                            const flatCostsType     = flatCostsRow.appendChild(document.createElement('div'));
                             flatCostsType.classList.add("type");
                             flatCostsType.innerHTML    = this.chargy.GetLocalizedMessage("Flat");
 
-                            var flatCostsAmount   = flatCostsRow.appendChild(document.createElement('div'));
+                            const flatCostsAmount   = flatCostsRow.appendChild(document.createElement('div'));
                             flatCostsAmount.classList.add("amount");
 
-                            var flatCostsUnit     = flatCostsRow.appendChild(document.createElement('div'));
+                            const flatCostsUnit     = flatCostsRow.appendChild(document.createElement('div'));
                             flatCostsUnit.classList.add("unit");
 
-                            var flatCostsCost     = flatCostsRow.appendChild(document.createElement('div'));
+                            const flatCostsCost     = flatCostsRow.appendChild(document.createElement('div'));
                             flatCostsCost.classList.add("cost");
                             flatCostsCost.innerHTML   = chargingSession.totalCosts.flat.cost.toString();
 
-                            var flatCostsCurrency = flatCostsRow.appendChild(document.createElement('div'));
+                            const flatCostsCurrency = flatCostsRow.appendChild(document.createElement('div'));
                             flatCostsCurrency.classList.add("currency");
                             flatCostsCurrency.innerHTML   = chargingSession.totalCosts.currency;
 
@@ -3177,7 +3173,7 @@ export class ChargyApp {
                                                       chargyLib.CreateDiv(measurementValuesDiv, "headline2",
                                                                           this.chargy.GetLocalizedMessage("Meter Values"));
 
-                        for (let measurementValue of measurement.values)
+                        for (const measurementValue of measurement.values)
                         {
 
                             measurementCounter++;
@@ -3494,7 +3490,7 @@ export class ChargyApp {
     private showChargingTariffDetails(measurementValue:  chargyInterfaces.IChargingTariff) : void
     {
 
-        function doError(text: String)
+        function doError(text: string)
         {
             errorDiv.innerHTML          = '<i class="fas fa-times-circle"></i> ' + text;
             introDiv.style.display      = "none";
@@ -3566,7 +3562,7 @@ export class ChargyApp {
     private showChargingPeriodDetails(chargingPeriod:  chargyInterfaces.IChargingPeriod) : void
     {
 
-        function doError(text: String)
+        function doError(text: string)
         {
             errorDiv.innerHTML          = '<i class="fas fa-times-circle"></i> ' + text;
             introDiv.style.display      = "none";
@@ -3638,7 +3634,7 @@ export class ChargyApp {
     private showMeasurementCryptoDetails(measurementValue:  chargyInterfaces.IMeasurementValue) : void
     {
 
-        function doError(text: String)
+        function doError(text: string)
         {
             errorDiv.innerHTML          = '<i class="fas fa-times-circle"></i> ' + text;
             introDiv.style.display      = "none";
@@ -3710,7 +3706,7 @@ export class ChargyApp {
     private showPKIDetails(pkiData:  any) : void
     {
 
-        function doError(text: String)
+        function doError(text: string)
         {
             errorDiv.innerHTML          = '<i class="fas fa-times-circle"></i> ' + text;
             introDiv.style.display      = "none";
