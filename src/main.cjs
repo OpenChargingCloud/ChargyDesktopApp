@@ -708,9 +708,9 @@ ipcMain.handle('calculateApplicationHash', async () => {
     return crypto.createHash('sha512').update(sha512a).update(sha512b).digest('hex');
 });
 
-ipcMain.handle('sha256Hex', async (_event, content) => {
-    return crypto.createHash('sha256').update(String(content), 'utf8').digest('hex');
-});
+// ipcMain.handle('sha256Hex', async (_event, content) => {
+//     return crypto.createHash('sha256').update(String(content), 'utf8').digest('hex');
+// });
 
 ipcMain.handle('openExternal', async (_event, url) => {
     if (!isAllowedWebUrl(url))

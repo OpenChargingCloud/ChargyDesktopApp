@@ -75,7 +75,7 @@ interface ChargyElectronAPI {
     readClipboardText():                                  Promise<string>;
     readClipboardImage():                                 Promise<ArrayBuffer | null>;
     calculateApplicationHash():                           Promise<string>;
-    sha256Hex(content: string):                           Promise<string>;
+    //sha256Hex(content: string):                           Promise<string>;
     openExternal(url: string):                            Promise<boolean>;
     completeHttpRequest(requestId: string, result: any):  void;
     setVerificationResult(result: any):                   boolean;
@@ -1734,13 +1734,12 @@ export class ChargyApp {
 
             //ToDo: Checking the timestamp might be usefull!
 
-            var Input       = JSON.stringify(toCheck);
-            var sha256value = await this.electron.sha256Hex(Input);
-
-            var result = new this.elliptic.ec('secp256k1').
-                                  keyFromPublic(signature.publicKey, 'hex').
-                                  verify       (sha256value,
-                                                signature.signature);
+            var Input        = JSON.stringify(toCheck);
+            var sha256value  = await chargyLib.sha256(Input);
+            var result       = new this.elliptic.ec('secp256k1').
+                                        keyFromPublic(signature.publicKey, 'hex').
+                                        verify       (sha256value,
+                                                      signature.signature);
 
             if (result)
                 return "<i class=\"fas fa-check-circle\"></i>" + signature.signer;
