@@ -116,23 +116,28 @@ export function getElementsByLocalName(parent: Document | Element, localName: st
 
 }
 
-export function ParseJSON_LD<T>(Text:     string,
-                                Context:  string = ""): T {
+export function ParseJSON_LD(Text:      string,
+                             _Context:  string = ""): Record<string, unknown> {
 
-    const JObject = JSON.parse(Text);
+    void _Context;
+
+    const JObject = JSON.parse(Text) as Record<string, unknown>;
 
     JObject["id"] = JObject["@id"];
 
-    return JObject as T;
+    return JObject;
 
 }
 
-export function firstKey(obj: any) {
+export function firstKey<T extends Record<string, unknown>>(obj: T): keyof T | undefined {
     for (const a in obj)
         return a;
 }
 
-export function firstValue(obj: any) {
+export function firstValue<T>(obj: Record<string, T> | undefined): T | undefined {
+    if (obj == undefined)
+        return undefined;
+
     for (const a in obj)
         return obj[a];
 }
@@ -491,8 +496,11 @@ export function SetHex(dv: DataView, hex: string, offset: number, reverse?: bool
 
 }
 
-export function SetTimestamp(dv: DataView, timestamp: any, offset: number, addLocalOffset: boolean = true): string
+export function SetTimestamp(dv: DataView, timestamp: string | moment.Moment | undefined, offset: number, addLocalOffset: boolean = true): string
 {
+
+    if (timestamp == undefined)
+        throw new Error("Timestamp is missing!");
 
     if (typeof timestamp === 'string')
         timestamp = parseUTC(timestamp);
@@ -511,8 +519,11 @@ export function SetTimestamp(dv: DataView, timestamp: any, offset: number, addLo
 
 }
 
-export function SetTimestamp32(dv: DataView, timestamp: any, offset: number, addLocalOffset: boolean = true): string
+export function SetTimestamp32(dv: DataView, timestamp: string | moment.Moment | undefined, offset: number, addLocalOffset: boolean = true): string
 {
+
+    if (timestamp == undefined)
+        throw new Error("Timestamp is missing!");
 
     if (typeof timestamp === 'string')
         timestamp = parseUTC(timestamp);
@@ -661,56 +672,33 @@ export function SetText_withLength(dv: DataView, text: string, offset: number): 
 }
 
 
-export function Clone(obj: any) {
+export function Clone<T>(obj: T): T {
 
     if (obj == null || typeof(obj) != 'object')
         return obj;
 
-    const temp = new obj.constructor();
+    const source = obj as Record<string, unknown>;
+    const temp   = new ((obj as { constructor: new () => Record<string, unknown> }).constructor)();
 
-    for(const key in obj)
-        temp[key] = Clone(obj[key]);
+    for(const key in source)
+        temp[key] = Clone(source[key]);
 
-    return temp;
+    return temp as T;
 
 }
 
 
 export function openFullscreen() {
 
-    const elem = document.documentElement as any;
-
-    if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-
-    } else if (elem.mozRequestFullScreen) {     /* Firefox */
-        elem.mozRequestFullScreen();
-
-    } else if (elem.webkitRequestFullscreen) {  /* Chrome, Safari and Opera */
-        elem.webkitRequestFullscreen();
-
-    } else if (elem.msRequestFullscreen) {      /* IE/Edge */
-        elem.msRequestFullscreen();
-    }
+    if (document.fullscreenEnabled && !document.fullscreenElement)
+        void document.documentElement.requestFullscreen();
 
 }
 
 export function closeFullscreen() {
 
-    const d = document as any;
-
-    if (d.exitFullscreen) {
-        d.exitFullscreen();
-
-    } else if (d.mozCancelFullScreen) {         /* Firefox */
-        d.mozCancelFullScreen();
-
-    } else if (d.webkitExitFullscreen) {        /* Chrome, Safari and Opera */
-        d.webkitExitFullscreen();
-
-    } else if (d.msExitFullscreen) {            /* IE/Edge */
-        d.msExitFullscreen();
-    }
+    if (document.fullscreenElement)
+        void document.exitFullscreen();
 
 }
 
@@ -773,7 +761,7 @@ export interface String {
 
 export function pad(text: string|undefined, paddingValue: number) {
 
-    if (text == null || text == undefined)
+    if (text == undefined)
         text = "";
 
     return (text + Array(2*paddingValue).join('0')).substring(0, 2*paddingValue);
@@ -1085,10 +1073,10 @@ export function isMandatoryDecimal(value: unknown): value is Decimal {
     if (typeof value === "string") {
         try
         {
-            const decimalValue = new Decimal(value);
+            new Decimal(value);
             return true;
         }
-        catch (e) {
+        catch {
         }
     }
 
@@ -1114,10 +1102,10 @@ export function isOptionalDecimal(value: unknown): value is Decimal | undefined 
     if (typeof value === "string") {
         try
         {
-            const decimalValue = new Decimal(value);
+            new Decimal(value);
             return true;
         }
-        catch (e) {
+        catch {
         }
     }
 
@@ -1184,7 +1172,7 @@ export function CloneCTR(CTR: chargyInterfaces.IChargeTransparencyRecord): charg
 
 //#region jsonPrettyPrinter(value, KeyLookup?)
 
-export function jsonPrettyPrinter(value:       any,
+export function jsonPrettyPrinter(value:       unknown,
                                   KeyLookup?: (path: string, key: string) => string): string
 {
 
@@ -1197,7 +1185,7 @@ export function jsonPrettyPrinter(value:       any,
 
 }
 
-function _jsonPrettyPrinter(value:        any,
+function _jsonPrettyPrinter(value:        unknown,
                             indentLevel:  number,
                             path:         string,
                             keyLookup:   (path: string, key: string) => string): string
@@ -1234,8 +1222,10 @@ function _jsonPrettyPrinter(value:        any,
     else if (typeof value === 'object' && value !== null)
     {
 
+        const objectValue = value as Record<string, unknown>;
+
         html += '{<br />';
-        const keys = Object.keys(value);
+        const keys = Object.keys(objectValue);
 
         let maxKeyLength = 0;
 
@@ -1248,7 +1238,7 @@ function _jsonPrettyPrinter(value:        any,
             const newPath         = path ? `${path}.${key}` : key;
             const keyName         = keyLookup(path, key);
             const requiredSpaces  = '&nbsp;'.repeat(maxKeyLength - keyName.length);
-            html += `${indent}&nbsp;&nbsp;&nbsp;&nbsp;${'<span class="jsonKeyName">' + keyName + '</span>' + requiredSpaces + '(<span class="jsonKey">' + key + '</span>)'}: ${_jsonPrettyPrinter(value[key], indentLevel + 1, newPath, keyLookup)}`;
+            html += `${indent}&nbsp;&nbsp;&nbsp;&nbsp;${'<span class="jsonKeyName">' + keyName + '</span>' + requiredSpaces + '(<span class="jsonKey">' + key + '</span>)'}: ${_jsonPrettyPrinter(objectValue[key], indentLevel + 1, newPath, keyLookup)}`;
 
             if (index < keys.length - 1)
                 html += ',';
@@ -1269,15 +1259,15 @@ function _jsonPrettyPrinter(value:        any,
         html += `<span class="jsonString">"${value}"</span>`;
 
     else if (typeof value === 'number')
-        html += `<span class="jsonNumber">${value}</span>`;
+        html += `<span class="jsonNumber">${String(value)}</span>`;
 
     else if (typeof value === 'boolean')
-        html += `<span class="jsonBoolean">${value}</span>`;
+        html += `<span class="jsonBoolean">${String(value)}</span>`;
 
     //#endregion
 
     else
-        html += value;
+        html += String(value);
 
     return html;
 
