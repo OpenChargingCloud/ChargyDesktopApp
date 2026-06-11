@@ -23,8 +23,6 @@ contextBridge.exposeInMainWorld('chargyElectron', {
 
     calculateApplicationHash: () => ipcRenderer.invoke('calculateApplicationHash'),
 
-    //sha256Hex: content => ipcRenderer.invoke('sha256Hex', content),
-
     openExternal: url => ipcRenderer.invoke('openExternal', url),
 
     completeHttpRequest: (requestId, result) => ipcRenderer.send('completeHttpRequest', requestId, result),

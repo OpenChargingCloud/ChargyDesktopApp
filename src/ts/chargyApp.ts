@@ -75,7 +75,6 @@ interface ChargyElectronAPI {
     readClipboardText():                                  Promise<string>;
     readClipboardImage():                                 Promise<ArrayBuffer | null>;
     calculateApplicationHash():                           Promise<string>;
-    //sha256Hex(content: string):                           Promise<string>;
     openExternal(url: string):                            Promise<boolean>;
     completeHttpRequest(requestId: string, result: any):  void;
     setVerificationResult(result: any):                   boolean;
