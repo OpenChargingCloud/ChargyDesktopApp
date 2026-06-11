@@ -17,6 +17,7 @@
 
 import * as chargyInterfaces  from './chargyInterfaces'
 import Decimal                from 'decimal.js';
+import moment                 from 'moment';
 
 
 export function toArrayBuffer(data: ArrayBuffer | Uint8Array): ArrayBuffer {
@@ -118,7 +119,7 @@ export function getElementsByLocalName(parent: Document | Element, localName: st
 export function ParseJSON_LD<T>(Text:     string,
                                 Context:  string = ""): T {
 
-    let JObject = JSON.parse(Text);
+    const JObject = JSON.parse(Text);
 
     JObject["id"] = JObject["@id"];
 
@@ -127,18 +128,16 @@ export function ParseJSON_LD<T>(Text:     string,
 }
 
 export function firstKey(obj: any) {
-    for (let a in obj)
+    for (const a in obj)
         return a;
 }
 
 export function firstValue(obj: any) {
-    for (let a in obj)
+    for (const a in obj)
         return obj[a];
 }
 
-export function parseUTC(UTCTime: string|number): any {
-
-    const moment = require('moment');
+export function parseUTC(UTCTime: string|number): moment.Moment {
 
     moment.locale(window.navigator.language);
 
@@ -148,9 +147,7 @@ export function parseUTC(UTCTime: string|number): any {
 
 }
 
-export function time2human(Time: string|number): any {
-
-    const moment = require('moment');
+export function time2human(Time: string|number): string {
 
     moment.locale(window.navigator.language);
 
@@ -164,9 +161,7 @@ export function time2human(Time: string|number): any {
 
 }
 
-export function UTC2human(UTCTime: string|number): any {
-
-    const moment = require('moment');
+export function UTC2human(UTCTime: string|number): string {
 
     moment.locale(window.navigator.language);
 
@@ -184,7 +179,7 @@ export function parseOBIS(OBIS: string): string
 {
 
     if (OBIS.length != 12)
-        throw "Invalid OBIS number '" + OBIS + "'!";
+        throw new Error(`Invalid OBIS number '${OBIS}'!`);
 
     // DIN EN 62056-61:2002
     // https://wiki.volkszaehler.org/software/obis
@@ -205,7 +200,7 @@ export function parseOBIS(OBIS: string): string
     const quantities  = parseInt(OBIS.substring( 8, 10), 16); // E =>  0: Total
     const storage     = parseInt(OBIS.substring(10, 12), 16); // F
 
-    return media + "-" + channel + ":" + indicator + "." + mode + "." + quantities + "*" + storage;
+    return `${String(media)}-${String(channel)}:${String(indicator)}.${String(mode)}.${String(quantities)}*${String(storage)}`;
 
 }
 
@@ -216,7 +211,7 @@ export function OBIS2Hex(OBIS: string): string
 
     //  1-0:1.8.0*255 => 0100010800ff
 
-    let OBISElements = OBIS.match(OBIS_RegExpr);
+    const OBISElements = OBIS.match(OBIS_RegExpr);
 
     return OBISElements == null
                ? "000000000000"
@@ -287,45 +282,45 @@ export function measurementName2human(In: string) : string
 }
 
 export function IsNullOrEmpty(value: string|undefined): boolean {
-    return (!value || value === null || value == undefined || value == "" || value.length == 0);
+    return !value;
 }
 
 export function WhenNullOrEmpty(value: string|undefined, replacement: string): string {
 
-    if (!value || value === null || value == undefined || value == "" || value.length == 0)
+    if (!value)
         return replacement;
 
     return value;
 
 }
 
-export function hex2bin(hex: string, Reverse?: Boolean) : string {
+export function hex2bin(hex: string, Reverse?: boolean) : string {
 
     if (Reverse)
     {
 
-        let reversed: string[] = [];
+        const reversed: string[] = [];
 
         for (let i = 0; i < hex.length; i += 2)
             reversed.push(hex.substring(i, i + 2));
 
-        return ("00000000" + (parseInt(reversed.reverse().join(""), 16)).toString(2)).substr(-8);
+        return ("00000000" + (parseInt(reversed.reverse().join(""), 16)).toString(2)).slice(-8);
 
     }
 
-    return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
+    return ("00000000" + (parseInt(hex, 16)).toString(2)).slice(-8);
 
 }
 
 export function hex32(val: number) {
     val &= 0xFFFFFFFF;
-    let hex = val.toString(16).toUpperCase();
+    const hex = val.toString(16).toUpperCase();
     return ("00000000" + hex).slice(-8);
 }
 
 export function parseHexString(str: string): number[] {
 
-    let result:number[] = [];
+    const result:number[] = [];
 
     while (str.length >= 2) {
         result.push(parseInt(str.substring(0, 2), 16));
@@ -340,7 +335,7 @@ export function createHexString(arr: Iterable<number>) {
 
     let result = "";
 
-    for (let value of arr) {
+    for (const value of arr) {
         let str = value.toString(16);
         str = str.length == 0 ? "00" :
               str.length == 1 ? "0" + str : 
@@ -363,7 +358,7 @@ export function hexToArrayBuffer(hex: string): ArrayBuffer {
         throw new RangeError('Expected string to be an even number of characters')
     }
 
-    let view = new Uint8Array(hex.length / 2)
+    const view = new Uint8Array(hex.length / 2)
 
     for (let i = 0; i < hex.length; i += 2) {
         view[i / 2] = parseInt(hex.substring(i, i + 2), 16)
@@ -386,7 +381,7 @@ export async function hashFile(url: string): Promise<ArrayBuffer>
         return await crypto.subtle.digest('SHA-512', await response.arrayBuffer());
 
     } catch (error) {
-        console.error(`Error fetching or hashing ${url}: ${error}`);
+        console.error(`Error fetching or hashing ${url}: ${String(error)}`);
         return new ArrayBuffer(0);
     }
 }
@@ -423,8 +418,8 @@ export function intFromBytes(x: number[]){
 
 export function getInt8Bytes(x: number) : number[] {
 
-    let bytes:number[] = [];
-    let i              = 1;
+    const bytes:number[] = [];
+    let i                = 1;
 
     do {
         bytes[--i] = x & (255);
@@ -437,8 +432,8 @@ export function getInt8Bytes(x: number) : number[] {
 
 export function getInt16Bytes(x: number) : number[] {
 
-    let bytes:number[] = [];
-    let i              = 2;
+    const bytes:number[] = [];
+    let i                = 2;
 
     do {
         bytes[--i] = x & (255);
@@ -451,8 +446,8 @@ export function getInt16Bytes(x: number) : number[] {
 
 export function getInt32Bytes(x: number) : number[] {
 
-    let bytes:number[]  = [];
-    let i               = 4;
+    const bytes:number[]  = [];
+    let i                 = 4;
 
     do {
         bytes[--i] = x & (255);
@@ -465,8 +460,8 @@ export function getInt32Bytes(x: number) : number[] {
 
 export function getInt64Bytes(x: number) : number[] {
 
-    let bytes:number[]  = [];
-    let i               = 8;
+    const bytes:number[]  = [];
+    let i                 = 8;
 
     do {
         bytes[--i] = x & (255);
@@ -637,7 +632,7 @@ export function SetUInt32_withCode(dv: DataView, value: number, scale: number, o
 
     const result = buf2hex(buffer);
 
-    return result.substr(0, 8) + "·" + result.substr(8, 2) + "·" + result.substr(10, 2);
+    return result.slice(0, 8) + "·" + result.slice(8, 10) + "·" + result.slice(10, 12);
 
 }
 
@@ -660,7 +655,7 @@ export function SetText_withLength(dv: DataView, text: string, offset: number): 
     const result = buf2hex(buffer);
 
     return bytes.length > 0
-               ? result.substr(0, 8) + "·" + result.substr(8)
+               ? result.slice(0, 8) + "·" + result.slice(8)
                : result;
 
 }
@@ -671,9 +666,9 @@ export function Clone(obj: any) {
     if (obj == null || typeof(obj) != 'object')
         return obj;
 
-    var temp = new obj.constructor();
+    const temp = new obj.constructor();
 
-    for(var key in obj)
+    for(const key in obj)
         temp[key] = Clone(obj[key]);
 
     return temp;
@@ -683,7 +678,7 @@ export function Clone(obj: any) {
 
 export function openFullscreen() {
 
-    var elem = document.documentElement as any;
+    const elem = document.documentElement as any;
 
     if (elem.requestFullscreen) {
         elem.requestFullscreen();
@@ -702,7 +697,7 @@ export function openFullscreen() {
 
 export function closeFullscreen() {
 
-    var d = document as any;
+    const d = document as any;
 
     if (d.exitFullscreen) {
         d.exitFullscreen();
@@ -725,7 +720,7 @@ export function CreateDiv(ParentDiv:   HTMLDivElement,
                           InnerHTML?:  string) : HTMLDivElement
 {
 
-    let childDiv            = ParentDiv.appendChild(document.createElement('div'));
+    const childDiv            = ParentDiv.appendChild(document.createElement('div'));
 
     if (ClassName != null)
         childDiv.className  = ClassName;
@@ -745,14 +740,14 @@ export function CreateDiv2(ParentDiv:        HTMLDivElement,
                            ChildBInnerHTML:  string) : HTMLDivElement
 {
 
-    let childDiv            = ParentDiv.appendChild(document.createElement('div'));
+    const childDiv            = ParentDiv.appendChild(document.createElement('div'));
         childDiv.className  = ChildClassName;
 
-    let childADiv           = childDiv.appendChild(document.createElement('div'));
+    const childADiv           = childDiv.appendChild(document.createElement('div'));
     childADiv.className     = ChildClassName + "Id";
     childADiv.innerHTML     = ChildAInnerHTML;
 
-    let childBDiv           = childDiv.appendChild(document.createElement('div'));
+    const childBDiv           = childDiv.appendChild(document.createElement('div'));
     childBDiv.className     = ChildClassName + "Value";
     childBDiv.innerHTML     = ChildBInnerHTML;
 
@@ -1168,7 +1163,7 @@ export function CloneCTR(CTR: chargyInterfaces.IChargeTransparencyRecord): charg
     //     return value instanceof Decimal ? value.toNumber() : value;
     // };
 
-    var clonedCTR = JSON.parse(JSON.stringify(CTR)) as chargyInterfaces.IChargeTransparencyRecord;   //, jsonSerializer));
+    const clonedCTR = JSON.parse(JSON.stringify(CTR)) as chargyInterfaces.IChargeTransparencyRecord;   //, jsonSerializer));
 
     if (clonedCTR.chargingSessions)
     {

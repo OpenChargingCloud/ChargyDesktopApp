@@ -1971,7 +1971,7 @@ export class ChargyApp {
                         {
 
                             const endUTC   = chargyLib.parseUTC(chargingSession.end);
-                            const duration = this.moment.duration(endUTC - chargyLib.parseUTC(chargingSession.begin));
+                            const duration = this.moment.duration(endUTC.valueOf() - chargyLib.parseUTC(chargingSession.begin).valueOf());
 
                             dateDiv.innerHTML += " - " +
                                                 (Math.floor(duration.asDays()) > 0 ? endUTC.format("dddd") + " " : "") +
@@ -2012,7 +2012,7 @@ export class ChargyApp {
                     if (chargingSession.begin && chargingSession.end)
                     {
 
-                        let duration = this.moment.duration(chargyLib.parseUTC(chargingSession.end) - chargyLib.parseUTC(chargingSession.begin));
+                        let duration = this.moment.duration(chargyLib.parseUTC(chargingSession.end).valueOf() - chargyLib.parseUTC(chargingSession.begin).valueOf());
 
                         productDiv.innerHTML += "Ladedauer ";
                         if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days()    + " Tage "    + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
@@ -2149,7 +2149,7 @@ export class ChargyApp {
 
                             let parkingBegin = chargyLib.parseUTC(chargingSession.parking[0]?.begin ?? "-");
                             let parkingEnd   = chargyLib.parseUTC(lastParking.end);
-                            let duration     = this.moment.duration(parkingEnd - parkingBegin);
+                            let duration     = this.moment.duration(parkingEnd.valueOf() - parkingBegin.valueOf());
 
                             parkingDiv.innerHTML += "Parkdauer ";
                             if      (Math.floor(duration.asDays())    > 1) parkingDiv.innerHTML += duration.days()    + " Tage " + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
@@ -2991,13 +2991,13 @@ export class ChargyApp {
                                 startTimestmapDiv.innerHTML  = chargyLib.parseUTC(chargingPeriod.startTimestamp).format('DD.MM.YYYY HH:mm:ss');
 
                                 const duration = this.moment.duration(
-                                                     chargyLib.parseUTC(chargingPeriod.endTimestamp  ??
-                                                     chargingPeriod.stopTimestamp ??
-                                                     chargingSession.chargingPeriods[i+1]?.startTimestamp ??
-                                                     "")
-                                                      -
-                                                     chargyLib.parseUTC(chargingPeriod.startTimestamp)
-                                                 );
+                                                      chargyLib.parseUTC(chargingPeriod.endTimestamp  ??
+                                                      chargingPeriod.stopTimestamp ??
+                                                      chargingSession.chargingPeriods[i+1]?.startTimestamp ??
+                                                      "").valueOf()
+                                                       -
+                                                      chargyLib.parseUTC(chargingPeriod.startTimestamp).valueOf()
+                                                  );
 
                                 const durationDiv            = chargingPeriodRow.appendChild(document.createElement('div'));
                                 durationDiv.classList.add("duration");
