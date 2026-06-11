@@ -57,7 +57,7 @@ export function getDirectChildByLocalName(parent: Document | Element, localName:
 }
 
 export function getTrimmedTextContent(element?: Element): string | undefined {
-    const text = element?.textContent?.trim();
+    const text = element?.textContent.trim();
     return text && text.length > 0 ? text : undefined;
 }
 
@@ -70,7 +70,7 @@ export function parseDescription(parent: Element): chargyInterfaces.IMultilangua
     for (const description of descriptions)
     {
         const language = description.getAttribute("language")?.trim() || "und";
-        const text     = description.textContent?.trim();
+        const text     = description.textContent.trim();
 
         if (text)
             textMap[language] = text;
