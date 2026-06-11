@@ -161,7 +161,7 @@ export class BSMCrypt01 extends ACrypt {
                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_JSONContextP",               1));
 
 
-            const meterInfo = firstMeasurement.meterInfo;
+            const meterInfo = firstMeasurement["meterInfo"];
             if (!chargyLib.isMandatoryJSONObject(meterInfo))
             {
                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfoP", 1));
@@ -170,24 +170,24 @@ export class BSMCrypt01 extends ACrypt {
             else
             {
 
-                if (!chargyLib.isMandatoryString(meterInfo.firmwareVersion))
+                if (!chargyLib.isMandatoryString(meterInfo["firmwareVersion"]))
                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_FirmwareVersionP", 1));
 
-                if (!chargyLib.isMandatoryString(meterInfo.publicKey))
+                if (!chargyLib.isMandatoryString(meterInfo["publicKey"]))
                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_PublicKeyP",       1));
 
-                if (!chargyLib.isMandatoryString(meterInfo.meterId))
+                if (!chargyLib.isMandatoryString(meterInfo["meterId"]))
                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_MeterIdP",         1));
 
-                if (!chargyLib.isMandatoryString(meterInfo.manufacturer))
+                if (!chargyLib.isMandatoryString(meterInfo["manufacturer"]))
                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_ManufacturerP",    1));
 
-                if (!chargyLib.isMandatoryString(meterInfo.type))
+                if (!chargyLib.isMandatoryString(meterInfo["type"]))
                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_TypeP",            1));
 
             }
 
-            const contract = firstMeasurement.contract;
+            const contract = firstMeasurement["contract"];
             if (!chargyLib.isMandatoryJSONObject(contract))
             {
                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_ContractP", 1));
@@ -196,15 +196,15 @@ export class BSMCrypt01 extends ACrypt {
             else
             {
 
-                if (!chargyLib.isMandatoryString(contract.id))
+                if (!chargyLib.isMandatoryString(contract["id"]))
                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_IdP",               1));
 
-                if (!chargyLib.isOptionalString(contract.type))
+                if (!chargyLib.isOptionalString(contract["type"]))
                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TypeP",             1));
 
             }
 
-            const value = firstMeasurement.value;
+            const value = firstMeasurement["value"];
             if (!chargyLib.isMandatoryJSONObject(value))
             {
                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_ValueP",                         1));
@@ -213,7 +213,7 @@ export class BSMCrypt01 extends ACrypt {
             else
             {
 
-                const measurand = value.measurand;
+                const measurand = value["measurand"];
                 if (!chargyLib.isMandatoryJSONObject(measurand))
                 {
                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasurandP",                 1));
@@ -222,15 +222,15 @@ export class BSMCrypt01 extends ACrypt {
                 else
                 {
 
-                    if (!chargyLib.isMandatoryString(measurand.id))
+                    if (!chargyLib.isMandatoryString(measurand["id"]))
                         errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_Measurand_IdentificationP",               1));
 
-                    if (!chargyLib.isMandatoryString(measurand.name))
+                    if (!chargyLib.isMandatoryString(measurand["name"]))
                         errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_Measurand_NameP",                         1));
 
                 }
 
-                const measuredValue = value.measuredValue;
+                const measuredValue = value["measuredValue"];
                 if (!chargyLib.isMandatoryJSONObject(measuredValue))
                 {
                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasuredValueP",             1));
@@ -280,31 +280,42 @@ export class BSMCrypt01 extends ACrypt {
             }
 
 
+            // The early return above guarantees, that all mandatory values
+            // have been validated. The optional values stay undefined when
+            // they are missing or have an unexpected type.
+            const meterInfoObj        = chargyLib.asJSONObject(firstMeasurement["meterInfo"]);
+            const contractObj         = chargyLib.asJSONObject(firstMeasurement["contract"]);
+            const valueObj            = chargyLib.asJSONObject(firstMeasurement["value"]);
+            const measurandObj        = chargyLib.asJSONObject(valueObj?.["measurand"]);
+            const measuredValueObj    = chargyLib.asJSONObject(valueObj?.["measuredValue"]);
+            const displayedFormatObj  = chargyLib.asJSONObject(valueObj?.["displayedFormat"]);
+            const chargePointObj      = chargyLib.asJSONObject(firstMeasurement["chargePoint"]);
+
             let common = {
 
-                context:                           firstMeasurement["@context"],
+                context:                           chargyLib.asString(firstMeasurement["@context"])         ?? "",
 
-                meterInfo_firmwareVersion:         firstMeasurement.meterInfo?.firmwareVersion,
-                meterInfo_publicKey:               firstMeasurement.meterInfo?.publicKey,
-                meterInfo_meterId:                 firstMeasurement.meterInfo?.meterId,
-                meterInfo_manufacturer:            firstMeasurement.meterInfo?.manufacturer,
-                meterInfo_type:                    firstMeasurement.meterInfo?.type,
+                meterInfo_firmwareVersion:         chargyLib.asString(meterInfoObj?.["firmwareVersion"])    ?? "",
+                meterInfo_publicKey:               chargyLib.asString(meterInfoObj?.["publicKey"])          ?? "",
+                meterInfo_meterId:                 chargyLib.asString(meterInfoObj?.["meterId"])            ?? "",
+                meterInfo_manufacturer:            chargyLib.asString(meterInfoObj?.["manufacturer"])       ?? "",
+                meterInfo_type:                    chargyLib.asString(meterInfoObj?.["type"])               ?? "",
 
-                contract_id:                       firstMeasurement.contract?.id,
-                contract_type:                     firstMeasurement.contract?.type,
+                contract_id:                       chargyLib.asString(contractObj?.["id"])                  ?? "",
+                contract_type:                     chargyLib.asString(contractObj?.["type"]),
 
-                value_measurand_id:                firstMeasurement.value?.measurand?.id,               // OBIS Id
-                value_measurand_name:              firstMeasurement.value?.measurand?.name,
+                value_measurand_id:                chargyLib.asString(measurandObj?.["id"])                 ?? "",  // OBIS Id
+                value_measurand_name:              chargyLib.asString(measurandObj?.["name"])               ?? "",
 
-                value_measuredValue_scale:         firstMeasurement.value?.measuredValue?.scale,
-                value_measuredValue_unit:          firstMeasurement.value?.measuredValue?.unit,
-                value_measuredValue_unitEncoded:   firstMeasurement.value?.measuredValue?.unitEncoded,
-                value_measuredValue_valueType:     firstMeasurement.value?.measuredValue?.valueType,
+                value_measuredValue_scale:         chargyLib.asNumber(measuredValueObj?.["scale"]),
+                value_measuredValue_unit:          chargyLib.asString(measuredValueObj?.["unit"])           ?? "",
+                value_measuredValue_unitEncoded:   chargyLib.asNumber(measuredValueObj?.["unitEncoded"]),
+                value_measuredValue_valueType:     chargyLib.asString(measuredValueObj?.["valueType"]),
 
-                value_displayedFormat_prefix:      firstMeasurement.value?.displayedFormat?.prefix,     // "kilo"
-                value_displayedFormat_precision:   firstMeasurement.value?.displayedFormat?.precision,  // 2
+                value_displayedFormat_prefix:      chargyLib.asString(displayedFormatObj?.["prefix"])       ?? "",  // "kilo"
+                value_displayedFormat_precision:   chargyLib.asNumber(displayedFormatObj?.["precision"]),           // 2
 
-                chargePoint_softwareVersion:       firstMeasurement.chargePoint?.softwareVersion,
+                chargePoint_softwareVersion:       chargyLib.asString(chargePointObj?.["softwareVersion"]),
                 MA1:                               null as string|null,
                 epochSetCnt:                       -1,
                 epochSetOS:                        -1,

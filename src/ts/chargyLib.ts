@@ -356,6 +356,39 @@ export function hexToArrayBuffer(hex: string): ArrayBuffer {
 
 }
 
+export async function hashFile(url: string): Promise<ArrayBuffer>
+{
+    try
+    {
+
+        const response = await fetch(url);
+
+        if (!response.ok)
+            throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
+
+        return await crypto.subtle.digest('SHA-512', await response.arrayBuffer());
+
+    } catch (error) {
+        console.error(`Error fetching or hashing ${url}: ${error}`);
+        return new ArrayBuffer(0);
+    }
+}
+
+export function ConcatenateBuffers(buffers: ArrayBuffer[]): ArrayBuffer {
+
+    const totalLength  = buffers.reduce((acc, value) => acc + value.byteLength, 0);
+    const result       = new Uint8Array(totalLength);
+    let   length       = 0;
+
+    for (const buffer of buffers) {
+        result.set(new Uint8Array(buffer), length);
+        length += buffer.byteLength;
+    }
+
+    return result.buffer;
+
+}
+
 export function intFromBytes(x: number[]){
 
     let val = 0;
@@ -711,13 +744,6 @@ export function CreateDiv2(ParentDiv:        HTMLDivElement,
 }
 
 
-export function OpenExternal(URL: string)
-{
-
-    if (URL.startsWith("https://"))
-        (window as any).chargyElectron?.openExternal(URL);
-
-}
 
 
 export interface String {
@@ -825,12 +851,46 @@ export async function sha512(message: string|DataView): Promise<string> {
 
 
 /**
+ * A JSON object after runtime validation. Property values stay `unknown`
+ * and have to be narrowed individually (e.g. via isMandatoryString).
+ */
+export type JSONObject = Record<string, unknown>;
+
+/**
+ * Returns the given value as a json object, or undefined when it is not a json object.
+ */
+export function asJSONObject(value: unknown): JSONObject | undefined {
+    return isMandatoryJSONObject(value) ? value : undefined;
+}
+
+/**
+ * Returns the given value as a json array, or undefined when it is not a json array.
+ */
+export function asJSONArray(value: unknown): unknown[] | undefined {
+    return Array.isArray(value) ? value : undefined;
+}
+
+/**
+ * Returns the given value as a string, or undefined when it is not a string.
+ */
+export function asString(value: unknown): string | undefined {
+    return typeof value === "string" ? value : undefined;
+}
+
+/**
+ * Returns the given value as a number, or undefined when it is not a number.
+ */
+export function asNumber(value: unknown): number | undefined {
+    return typeof value === "number" ? value : undefined;
+}
+
+/**
  * Ensures, that the given json object exists and is a valid json object
  * @param value a json object
  * @returns true, when the given json object exists and is a valid json object
  */
-export function isMandatoryJSONObject(value: any): value is any {
-    return typeof value === "object" && !Array.isArray(value);
+export function isMandatoryJSONObject(value: unknown): value is JSONObject {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 /**
@@ -838,7 +898,7 @@ export function isMandatoryJSONObject(value: any): value is any {
  * @param jsonObject a json object
  * @returns true, when the given json object does not exist or when it exists, that it is a valid json object
  */
-export function isOptionalJSONObject(value: any): value is any | undefined | null {
+export function isOptionalJSONObject(value: unknown): value is JSONObject | undefined | null {
 
     return value === null      ||
            value === undefined ||
@@ -851,7 +911,7 @@ export function isOptionalJSONObject(value: any): value is any | undefined | nul
  * @param value a json array
  * @returns true, when the given json array exists and is a valid json array
  */
-export function isMandatoryJSONArray(value: any): value is any[] {
+export function isMandatoryJSONArray(value: unknown): value is unknown[] {
     return Array.isArray(value);
 }
 
@@ -860,7 +920,7 @@ export function isMandatoryJSONArray(value: any): value is any[] {
  * @param value a json array of strings
  * @returns true, when the given json array exists of strings and is a valid json array of strings
  */
-export function isMandatoryArrayOfStrings(value: any): value is string[] {
+export function isMandatoryArrayOfStrings(value: unknown): value is string[] {
     return Array.isArray(value) && value.every(element => typeof element === "string");
 }
 
@@ -869,7 +929,7 @@ export function isMandatoryArrayOfStrings(value: any): value is string[] {
  * @param value a json array
  * @returns true, when the given json array does not exist or when it exists and is a valid json array
  */
-export function isOptionalJSONArray(value: any): value is any[] {
+export function isOptionalJSONArray(value: unknown): value is unknown[] | undefined | null {
 
     return value === undefined ||
            value === null      ||
@@ -882,7 +942,7 @@ export function isOptionalJSONArray(value: any): value is any[] {
  * @param value a json array of strings
  * @returns true, when the given json array of strings does not exist or when it exists and is a valid json array of strings
  */
-export function isOptionalArrayOfStrings(value: any): value is string[] | undefined | null {
+export function isOptionalArrayOfStrings(value: unknown): value is string[] | undefined | null {
 
     return value === undefined ||
            value === null      ||
@@ -900,7 +960,7 @@ export function isOptionalArrayOfStrings(value: any): value is string[] | undefi
  * @param jsonArray a json object
  * @returns true, when the given json array does not exist or when it exists, that it is a valid json array
  */
-export function isOptionalJSONArrayError(jsonArray: any) {
+export function isOptionalJSONArrayError(jsonArray: unknown) {
 
     if (jsonArray !== undefined && jsonArray !== null)
         return typeof jsonArray !== "object" || !Array.isArray(jsonArray);
@@ -914,7 +974,7 @@ export function isOptionalJSONArrayError(jsonArray: any) {
  * @param jsonArray a json object
  * @returns true, when the given json array does not exist or when it exists, that it is a valid json array
  */
- export function isOptionalJSONArrayOk(jsonArray: any) {
+ export function isOptionalJSONArrayOk(jsonArray: unknown) {
 
     if (jsonArray !== undefined && jsonArray !== null)
         return typeof jsonArray === "object" && Array.isArray(jsonArray);
@@ -929,7 +989,7 @@ export function isOptionalJSONArrayError(jsonArray: any) {
  * @param value a boolean
  * @returns true, when the given boolean exists and is a valid boolean
  */
-export function isMandatoryBoolean(value: any): value is boolean {
+export function isMandatoryBoolean(value: unknown): value is boolean {
     return typeof value === "boolean";
 }
 
@@ -938,7 +998,7 @@ export function isMandatoryBoolean(value: any): value is boolean {
  * @param value a string
  * @returns true, when the given text exists and is a valid string
  */
-export function isMandatoryString(value: any): value is string {
+export function isMandatoryString(value: unknown): value is string {
     return typeof value === "string";
 }
 
@@ -947,7 +1007,7 @@ export function isMandatoryString(value: any): value is string {
  * @param value a string
  * @returns true, when the given text is a valid string, if it exists
  */
-export function isOptionalString(value: any): value is string | undefined | null {
+export function isOptionalString(value: unknown): value is string | undefined | null {
 
     return typeof value === "string"  ||
                   value === undefined ||
@@ -960,7 +1020,7 @@ export function isOptionalString(value: any): value is string | undefined | null
  * @param value an URL
  * @returns true, when the given text exists and is a valid URL
  */
-export function isMandatoryURL(value: any): value is string | undefined | null {
+export function isMandatoryURL(value: unknown): value is string {
     return typeof value === "string" && value.startsWith("https://");
 }
 
@@ -969,7 +1029,7 @@ export function isMandatoryURL(value: any): value is string | undefined | null {
  * @param value an URL
  * @returns true, when the given text is a valid URL, if it exists
  */
-export function isOptionalURL(value: any): value is string | undefined | null {
+export function isOptionalURL(value: unknown): value is string | undefined | null {
 
     return (typeof value === "string" && value.startsWith("https://") ||
                    value === undefined ||
@@ -983,7 +1043,7 @@ export function isOptionalURL(value: any): value is string | undefined | null {
  * @param value a number
  * @returns true, when the given number exists and is a valid number
  */
-export function isMandatoryNumber(value: any): value is number {
+export function isMandatoryNumber(value: unknown): value is number {
     return typeof value === "number";
 }
 
@@ -992,7 +1052,7 @@ export function isMandatoryNumber(value: any): value is number {
  * @param value a number
  * @returns true, when the given number is a valid number, if it exists
  */
-export function isOptionalNumber(value: any): value is number | undefined | null {
+export function isOptionalNumber(value: unknown): value is number | undefined | null {
 
     return typeof value === "number"  ||
                   value === undefined ||
@@ -1005,7 +1065,7 @@ export function isOptionalNumber(value: any): value is number | undefined | null
  * @param value a decimal number
  * @returns true, when the given decimal number exists and is a valid decimal number
  */
-export function isMandatoryDecimal(value: any): value is Decimal {
+export function isMandatoryDecimal(value: unknown): value is Decimal {
 
     if (value instanceof Decimal || typeof value === "number")
         return true;
@@ -1029,7 +1089,7 @@ export function isMandatoryDecimal(value: any): value is Decimal {
  * @param value a decimal number
  * @returns true, when the given decimal number is a valid decimal number, if it exists
  */
-export function isOptionalDecimal(value: any): value is Decimal | undefined | null {
+export function isOptionalDecimal(value: unknown): value is Decimal | undefined | null {
 
     if (value instanceof Decimal ||
         typeof value === "number"||

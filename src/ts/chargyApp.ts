@@ -27,6 +27,15 @@ import 'leaflet.awesome-markers';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../css/chargy.scss';
 
+
+function OpenExternal(URL: string)
+{
+
+    if (URL.startsWith("https://"))
+        (window as any).chargyElectron?.openExternal(URL);
+
+}
+
 type DetectionResult = chargyInterfaces.IChargeTransparencyRecord | chargyInterfaces.ISessionCryptoResult;
 
 type DetectionOptions = {

@@ -410,15 +410,13 @@ export class ChargeIT {
     //#region TryToParseChargeITContainerFormat(SomeJSON)
 
     // The chargeIT mobility data format does not always provide context information or format identifiers!
-    public async TryToParseChargeITContainerFormat(SomeJSON: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async TryToParseChargeITContainerFormat(SomeJSON: unknown) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         const errors    = new Array<String>();
         const warnings  = new Array<String>();
 
-        if (SomeJSON === undefined ||
-            SomeJSON === null      ||
-            Array.isArray(SomeJSON))
+        if (!chargyLib.isMandatoryJSONObject(SomeJSON))
         {
             return {
                 status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
@@ -431,9 +429,8 @@ export class ChargeIT {
         const oldChargeITContainerFormat   = "oldChargeITContainerFormat";
         const oldChargeITMeterValueFormat  = "oldChargeITMeterValueFormat";
 
-        const containerFormat              = chargyLib.isMandatoryString(SomeJSON["@context"])
-                                                 ? SomeJSON["@context"]?.trim()
-                                                 : oldChargeITContainerFormat;
+        const containerFormat              = chargyLib.asString(SomeJSON["@context"])?.trim()
+                                                 ?? oldChargeITContainerFormat;
 
 
         //#region Old chargeIT container format
@@ -453,8 +450,8 @@ export class ChargeIT {
 
                     //#region Validate 'placeInfo'
 
-                    const placeInfo = SomeJSON.placeInfo;
-                    if (!chargyLib.isMandatoryJSONObject(placeInfo))
+                    const placeInfo = chargyLib.asJSONObject(SomeJSON["placeInfo"]);
+                    if (placeInfo === undefined)
                     {
                         errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidPlaceInfo"));
                         secondaryErrors += 13;
@@ -462,14 +459,14 @@ export class ChargeIT {
                     else
                     {
 
-                        const evseId = placeInfo.evseId;
+                        const evseId = placeInfo["evseId"];
                         if (!chargyLib.isMandatoryString(evseId))
                             errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidEVSEId"));
 
                         //#region placeInfo.address
 
-                        const address = placeInfo.address;
-                        if (!chargyLib.isMandatoryJSONObject(address))
+                        const address = chargyLib.asJSONObject(placeInfo["address"]);
+                        if (address === undefined)
                         {
                             errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidAddress"));
                             secondaryErrors += 3;
@@ -477,16 +474,16 @@ export class ChargeIT {
                         else
                         {
 
-                            if (!chargyLib.isMandatoryString(address.street))
+                            if (!chargyLib.isMandatoryString(address["street"]))
                                 errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidAddressStreetName"));
 
-                            if (!chargyLib.isMandatoryString(address.zipCode))
+                            if (!chargyLib.isMandatoryString(address["zipCode"]))
                                 errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidAddressZIPCode"));
 
-                            if (!chargyLib.isMandatoryString(address.town))
+                            if (!chargyLib.isMandatoryString(address["town"]))
                                 errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidAddressCityName"));
 
-                            //if (!chargyLib.isMandatoryString(address.country))
+                            //if (!chargyLib.isMandatoryString(address["country"]))
                             //    errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidAddressCountryName"));
 
                         }
@@ -495,8 +492,8 @@ export class ChargeIT {
 
                         //#region placeInfo.geoLocation
 
-                        const geoLocation = placeInfo.geoLocation;
-                        if (!chargyLib.isMandatoryJSONObject(geoLocation))
+                        const geoLocation = chargyLib.asJSONObject(placeInfo["geoLocation"]);
+                        if (geoLocation === undefined)
                         {
                             errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidGeoLocation"));
                             secondaryErrors += 2;
@@ -504,10 +501,10 @@ export class ChargeIT {
                         else
                         {
 
-                            if (!chargyLib.isMandatoryNumber(geoLocation.lat))
+                            if (!chargyLib.isMandatoryNumber(geoLocation["lat"]))
                                 errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidGeoLocationLatitude"));
 
-                            if (!chargyLib.isMandatoryNumber(geoLocation.lon))
+                            if (!chargyLib.isMandatoryNumber(geoLocation["lon"]))
                                 errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidGeoLocationLongitude"));
 
                         }
@@ -520,7 +517,7 @@ export class ChargeIT {
 
                     //#region Validate 'signedMeterValues'
 
-                    const signedMeterValues = SomeJSON.signedMeterValues;
+                    const signedMeterValues = SomeJSON["signedMeterValues"];
                     if (!chargyLib.isMandatoryJSONArray(signedMeterValues) || signedMeterValues.length < 2) {
                         errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidSignedMeterValues"));
                         secondaryErrors += 2*39;
@@ -534,15 +531,14 @@ export class ChargeIT {
 
                         //#region Get and validate consistency of the signedMeterValue context
 
-                        const signedMeterValueContext  = chargyLib.isMandatoryString(signedMeterValues[0]["@context"])
-                                                            ? signedMeterValues[0]["@context"]?.trim()
-                                                            : oldChargeITMeterValueFormat;
+                        const signedMeterValueContext  = chargyLib.asString(chargyLib.asJSONObject(signedMeterValues[0])?.["@context"])?.trim()
+                                                             ?? oldChargeITMeterValueFormat;
 
 
                         let consistent = true;
 
-                        for (const signedMeterValue of signedMeterValues) {
-                            if ((signedMeterValue["@context"] ?? oldChargeITMeterValueFormat) !== signedMeterValueContext) {
+                        for (const signedMeterValue of signedMeterValues.map(smv => chargyLib.asJSONObject(smv))) {
+                            if ((signedMeterValue?.["@context"] ?? oldChargeITMeterValueFormat) !== signedMeterValueContext) {
 
                                 if (consistent)
                                     errors.push(this.chargy.GetLocalizedMessage("InconsistentJSONContextInformation"));
@@ -600,21 +596,21 @@ export class ChargeIT {
                                     else
                                     {
 
-                                        if (!chargyLib.isMandatoryString(signedMeterValue.measurementId))
+                                        if (!chargyLib.isMandatoryString(signedMeterValue["measurementId"]))
                                             errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasurementIdP",  measurementCounter));
 
-                                        if (!chargyLib.isMandatoryNumber(signedMeterValue.timestamp))
+                                        if (!chargyLib.isMandatoryNumber(signedMeterValue["timestamp"]))
                                             errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_TimestampP",      measurementCounter));
 
-                                        if (!chargyLib.isMandatoryString(signedMeterValue.transactionId))
+                                        if (!chargyLib.isMandatoryString(signedMeterValue["transactionId"]))
                                             errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_TransactionIdP",  measurementCounter));
 
-                                        if (!chargyLib.isMandatoryString(signedMeterValue.signature))
+                                        if (!chargyLib.isMandatoryString(signedMeterValue["signature"]))
                                             errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_SignatureP",      measurementCounter));
 
                                         //#region Meter information
 
-                                        const meterInfo = signedMeterValue.meterInfo;
+                                        const meterInfo = signedMeterValue["meterInfo"];
                                         if (!chargyLib.isMandatoryJSONObject(meterInfo))
                                         {
                                             errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfoP",                 measurementCounter));
@@ -623,24 +619,24 @@ export class ChargeIT {
                                         else
                                         {
 
-                                            if (!chargyLib.isMandatoryString(meterInfo.meterId))
+                                            if (!chargyLib.isMandatoryString(meterInfo["meterId"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_MeterIdP",         measurementCounter));
 
-                                            if (!chargyLib.isMandatoryString(meterInfo.type))
+                                            if (!chargyLib.isMandatoryString(meterInfo["type"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_TypeP",            measurementCounter));
 
-                                            if (!chargyLib.isMandatoryString(meterInfo.firmwareVersion))
+                                            if (!chargyLib.isMandatoryString(meterInfo["firmwareVersion"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_FirmwareVersionP", measurementCounter));
 
-                                            if (!chargyLib.isMandatoryString(meterInfo.publicKey))
+                                            if (!chargyLib.isMandatoryString(meterInfo["publicKey"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_PublicKeyP",       measurementCounter));
 
-                                            if (!chargyLib.isMandatoryString(meterInfo.manufacturer))
+                                            if (!chargyLib.isMandatoryString(meterInfo["manufacturer"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeterInfo_ManufacturerP",    measurementCounter));
 
                                             //#region Meter information - PublicKey signatures (optional)
 
-                                            if (chargyLib.isOptionalJSONArrayError(meterInfo.publicKeySignatures))
+                                            if (chargyLib.isOptionalJSONArrayError(meterInfo["publicKeySignatures"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("Invalid_SignedMeterValue_MeterInfo_PublicKeySignaturesP", measurementCounter));
 
                                             //#endregion
@@ -651,7 +647,7 @@ export class ChargeIT {
 
                                         //#region Contract information
 
-                                        const contract = signedMeterValue.contract;
+                                        const contract = signedMeterValue["contract"];
                                         if (!chargyLib.isMandatoryJSONObject(contract))
                                         {
                                             errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_ContractP",           measurementCounter));
@@ -660,18 +656,18 @@ export class ChargeIT {
                                         else
                                         {
 
-                                            if (!chargyLib.isMandatoryString(contract.id))
+                                            if (!chargyLib.isMandatoryString(contract["id"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_IdP",        measurementCounter));
 
-                                            if (!chargyLib.isMandatoryString(contract.type))
+                                            if (!chargyLib.isMandatoryString(contract["type"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TypeP",      measurementCounter));
 
-                                            if (!chargyLib.isMandatoryNumber(contract.timestamp))
+                                            if (!chargyLib.isMandatoryNumber(contract["timestamp"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TimestampP", measurementCounter));
 
                                             //#region Contract information - Timestamp local
 
-                                            const timestampLocal = contract.timestampLocal;
+                                            const timestampLocal = contract["timestampLocal"];
                                             if (!chargyLib.isMandatoryJSONObject(timestampLocal))
                                             {
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TimestampLocalP",              measurementCounter));
@@ -680,13 +676,13 @@ export class ChargeIT {
                                             else
                                             {
 
-                                                if (!chargyLib.isMandatoryNumber(timestampLocal.timestamp))
+                                                if (!chargyLib.isMandatoryNumber(timestampLocal["timestamp"]))
                                                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TimestampLocal_TimestampP",    measurementCounter));
 
-                                                if (!chargyLib.isMandatoryNumber(timestampLocal.localOffset))
+                                                if (!chargyLib.isMandatoryNumber(timestampLocal["localOffset"]))
                                                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TimestampLocal_LocalOffsetP",  measurementCounter));
 
-                                                if (!chargyLib.isMandatoryNumber(timestampLocal.seasonOffset))
+                                                if (!chargyLib.isMandatoryNumber(timestampLocal["seasonOffset"]))
                                                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Contract_TimestampLocal_SeasonOffsetP", measurementCounter));
 
                                             }
@@ -699,7 +695,7 @@ export class ChargeIT {
 
                                         //#region Measured value
 
-                                        const measuredValue = signedMeterValue.measuredValue;
+                                        const measuredValue = signedMeterValue["measuredValue"];
                                         if (!chargyLib.isMandatoryJSONObject(measuredValue))
                                         {
                                             errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasuredValueP",                  measurementCounter));
@@ -708,24 +704,24 @@ export class ChargeIT {
                                         else
                                         {
 
-                                            if (!chargyLib.isMandatoryString(measuredValue.value))
+                                            if (!chargyLib.isMandatoryString(measuredValue["value"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasuredValue_ValueP",        measurementCounter));
 
-                                            if (!chargyLib.isMandatoryString(measuredValue.unit))
+                                            if (!chargyLib.isMandatoryString(measuredValue["unit"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasuredValue_UnitP",         measurementCounter));
 
-                                            if (!chargyLib.isMandatoryNumber(measuredValue.scale))
+                                            if (!chargyLib.isMandatoryNumber(measuredValue["scale"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasuredValue_ScaleP",        measurementCounter));
 
-                                            if (!chargyLib.isMandatoryString(measuredValue.valueType))
+                                            if (!chargyLib.isMandatoryString(measuredValue["valueType"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasuredValue_ValueTypeP",    measurementCounter));
 
-                                            if (!chargyLib.isMandatoryNumber(measuredValue.unitEncoded))
+                                            if (!chargyLib.isMandatoryNumber(measuredValue["unitEncoded"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasuredValue_UnitEncodedP",  measurementCounter));
 
                                             //#region Measured Value - Local timestamp
 
-                                            const timestampLocal = measuredValue.timestampLocal;
+                                            const timestampLocal = measuredValue["timestampLocal"];
                                             if (!chargyLib.isMandatoryJSONObject(timestampLocal))
                                             {
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalidMeasuredValueTimestampLocalP",                  measurementCounter));
@@ -734,13 +730,13 @@ export class ChargeIT {
                                             else
                                             {
 
-                                                if (!chargyLib.isMandatoryNumber(timestampLocal.timestamp))
+                                                if (!chargyLib.isMandatoryNumber(timestampLocal["timestamp"]))
                                                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalidMeasuredValueTimestampLocalTimestampP",     measurementCounter));
 
-                                                if (!chargyLib.isMandatoryNumber(timestampLocal.localOffset))
+                                                if (!chargyLib.isMandatoryNumber(timestampLocal["localOffset"]))
                                                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalidMeasuredValueTimestampLocalOffsetP",        measurementCounter));
 
-                                                if (!chargyLib.isMandatoryNumber(timestampLocal.seasonOffset))
+                                                if (!chargyLib.isMandatoryNumber(timestampLocal["seasonOffset"]))
                                                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalidMeasuredValueTimestampSeasonOffsetP",       measurementCounter));
 
                                             }
@@ -753,7 +749,7 @@ export class ChargeIT {
 
                                         //#region Measurand
 
-                                        const measurand = signedMeterValue.measurand;
+                                        const measurand = signedMeterValue["measurand"];
                                         if (!chargyLib.isMandatoryJSONObject(measurand))
                                         {
                                             errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_MeasurandP",           measurementCounter));
@@ -762,10 +758,10 @@ export class ChargeIT {
                                         else
                                         {
 
-                                            if (!chargyLib.isMandatoryString(measurand.id))
+                                            if (!chargyLib.isMandatoryString(measurand["id"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Measurand_IdP",    measurementCounter));
 
-                                            if (!chargyLib.isMandatoryString(measurand.name))
+                                            if (!chargyLib.isMandatoryString(measurand["name"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_Measurand_NameP",  measurementCounter));
 
                                         }
@@ -774,7 +770,7 @@ export class ChargeIT {
 
                                         //#region Additional info
 
-                                        const additionalInfo = signedMeterValue.additionalInfo;
+                                        const additionalInfo = signedMeterValue["additionalInfo"];
                                         if (!chargyLib.isMandatoryJSONObject(additionalInfo))
                                         {
                                             errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_AdditionalInformationP",         measurementCounter));
@@ -783,12 +779,12 @@ export class ChargeIT {
                                         else
                                         {
 
-                                            if (!chargyLib.isMandatoryString(additionalInfo.status))
+                                            if (!chargyLib.isMandatoryString(additionalInfo["status"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_AdditionalInformation_StatusP",  measurementCounter));
 
                                             //#region Additional info - Indexes
 
-                                            const indexes = additionalInfo.indexes;
+                                            const indexes = additionalInfo["indexes"];
                                             if (!chargyLib.isMandatoryJSONObject(indexes))
                                             {
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_AdditionalInformation_IndexesP",         measurementCounter));
@@ -797,10 +793,10 @@ export class ChargeIT {
                                             else
                                             {
 
-                                                if (!chargyLib.isMandatoryNumber(signedMeterValue?.additionalInfo?.indexes?.timer))
+                                                if (!chargyLib.isMandatoryNumber(indexes["timer"]))
                                                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_AdditionalInformation_Indexes_TimerP",   measurementCounter));
 
-                                                if (!chargyLib.isMandatoryString(signedMeterValue?.additionalInfo?.indexes?.logBook))
+                                                if (!chargyLib.isMandatoryString(indexes["logBook"]))
                                                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_AdditionalInformation_Indexes_LogBookP", measurementCounter));
 
                                             }
@@ -813,7 +809,7 @@ export class ChargeIT {
 
                                         //#region ChargePoint information
 
-                                        const chargePoint = signedMeterValue.chargePoint;
+                                        const chargePoint = signedMeterValue["chargePoint"];
                                         if (!chargyLib.isMandatoryJSONObject(chargePoint))
                                         {
                                             errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_ChargePointInformationP",                 measurementCounter));
@@ -822,7 +818,7 @@ export class ChargeIT {
                                         else
                                         {
 
-                                            if (!chargyLib.isMandatoryString(signedMeterValue?.chargePoint?.softwareVersion))
+                                            if (!chargyLib.isMandatoryString(chargePoint["softwareVersion"]))
                                                 errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_ChargePointInformation_SoftwareVersionP", measurementCounter));
 
                                         }
@@ -854,17 +850,17 @@ export class ChargeIT {
                 //#region Parse the container format
                 {
 
-                    const signedMeterValues  = SomeJSON.signedMeterValues;
-                    const placeInfo          = SomeJSON.placeInfo;
-                    const evseId             = SomeJSON.placeInfo.evseId;
-                    const address            = SomeJSON.placeInfo.address;
-                    const address_street     = SomeJSON.placeInfo.address.street;
-                    const address_zipCode    = SomeJSON.placeInfo.address.zipCode;
-                    const address_town       = SomeJSON.placeInfo.address.town;
-                    const address_country    = SomeJSON.placeInfo.address.country ?? "Deutschland"; //ToDo: i18n!
-                    const geoLocation        = SomeJSON.placeInfo.geoLocation;
-                    const geoLocation_lat    = SomeJSON.placeInfo.geoLocation.lat;
-                    const geoLocation_lon    = SomeJSON.placeInfo.geoLocation.lon;
+                    const signedMeterValues  = SomeJSON["signedMeterValues"];
+                    const placeInfo          = chargyLib.asJSONObject(SomeJSON["placeInfo"]);
+                    const evseId             = placeInfo?.["evseId"];
+                    const address            = chargyLib.asJSONObject(placeInfo?.["address"]);
+                    const address_street     = address?.["street"];
+                    const address_zipCode    = address?.["zipCode"];
+                    const address_town       = address?.["town"];
+                    const address_country    = address?.["country"] ?? "Deutschland"; //ToDo: i18n!
+                    const geoLocation        = chargyLib.asJSONObject(placeInfo?.["geoLocation"]);
+                    const geoLocation_lat    = geoLocation?.["lat"];
+                    const geoLocation_lon    = geoLocation?.["lon"];
 
 
                     if (chargyLib.isMandatoryJSONArray (signedMeterValues) &&
@@ -884,7 +880,7 @@ export class ChargeIT {
                         chargyLib.isMandatoryNumber    (geoLocation_lon))
                     {
 
-                        SomeJSON.placeInfo.address.country = address_country;
+                        address["country"] = address_country;
 
                         //#region Generate default charge transparency record
 
@@ -1001,9 +997,8 @@ export class ChargeIT {
 
                         //#region Parse the signedMeterValues
 
-                        const signedMeterValueContext = chargyLib.isMandatoryString(signedMeterValues[0]["@context"])
-                                                            ? signedMeterValues[0]["@context"]?.trim()
-                                                            : oldChargeITMeterValueFormat;
+                        const signedMeterValueContext = chargyLib.asString(chargyLib.asJSONObject(signedMeterValues[0])?.["@context"])?.trim()
+                                                            ?? oldChargeITMeterValueFormat;
 
                         if (signedMeterValueContext === "https://www.lichtblick.de/contexts/bsm-ws36a-json-v0"         ||
                             signedMeterValueContext === "https://www.lichtblick.de/contexts/bsm-ws36a-json-v1"         ||
@@ -1017,7 +1012,7 @@ export class ChargeIT {
                         }
 
                         if (signedMeterValueContext.startsWith("ALFEN")) {
-                            return await new Alfen(this.chargy).TryToParseALFENFormat(signedMeterValues.map(value => value.payload),
+                            return await new Alfen(this.chargy).TryToParseALFENFormat(signedMeterValues.map(value => chargyLib.asString(chargyLib.asJSONObject(value)?.["payload"]) ?? ""),
                                          {
                                             EVSEId: evseId,
                                             chargingStation: {
@@ -1029,8 +1024,8 @@ export class ChargeIT {
 
                         if (containerFormat === oldChargeITContainerFormat) {
 
-                            if (signedMeterValues[0].format == "ALFEN")
-                                return await new Alfen(this.chargy).TryToParseALFENFormat(signedMeterValues.map(value => value.payload),
+                            if (chargyLib.asJSONObject(signedMeterValues[0])?.["format"] == "ALFEN")
+                                return await new Alfen(this.chargy).TryToParseALFENFormat(signedMeterValues.map(value => chargyLib.asString(chargyLib.asJSONObject(value)?.["payload"]) ?? ""),
                                          {
                                             EVSEId: evseId,
                                             chargingStation: {
@@ -1097,76 +1092,76 @@ export class ChargeIT {
 
                 const chargingSessionId                          = SomeJSON["@id"];
 
-                const chargePointInfo                            = SomeJSON.chargePointInfo;
-                const evseId                                     = SomeJSON.chargePointInfo?.evseId;
+                const chargePointInfo                            = chargyLib.asJSONObject(SomeJSON["chargePointInfo"]);
+                const evseId                                     = chargePointInfo?.["evseId"];
 
-                const placeInfo                                  = SomeJSON.chargePointInfo?.placeInfo;
-                const geoLocation                                = SomeJSON.chargePointInfo?.placeInfo?.geoLocation;
-                const geoLocation_lat                            = SomeJSON.chargePointInfo?.placeInfo?.geoLocation?.lat;
-                const geoLocation_lon                            = SomeJSON.chargePointInfo?.placeInfo?.geoLocation?.lon;
+                const placeInfo                                  = chargyLib.asJSONObject(chargePointInfo?.["placeInfo"]);
+                const geoLocation                                = chargyLib.asJSONObject(placeInfo?.["geoLocation"]);
+                const geoLocation_lat                            = geoLocation?.["lat"];
+                const geoLocation_lon                            = geoLocation?.["lon"];
 
-                const address                                    = SomeJSON.chargePointInfo?.placeInfo?.address;
-                const address_street                             = SomeJSON.chargePointInfo?.placeInfo?.address?.street;
-                const address_zipCode                            = SomeJSON.chargePointInfo?.placeInfo?.address?.zipCode;
-                const address_town                               = SomeJSON.chargePointInfo?.placeInfo?.address?.town;
-                const address_country                            = SomeJSON.chargePointInfo?.placeInfo?.address?.country ?? "";
+                const address                                    = chargyLib.asJSONObject(placeInfo?.["address"]);
+                const address_street                             = address?.["street"];
+                const address_zipCode                            = address?.["zipCode"];
+                const address_town                               = address?.["town"];
+                const address_country                            = address?.["country"] ?? "";
 
-                const chargingStationInfo                        = SomeJSON.chargingStationInfo;
-                const chargingStation_manufacturer               = SomeJSON.chargingStationInfo?.manufacturer;
-                const chargingStation_type                       = SomeJSON.chargingStationInfo?.type;
-                const chargingStation_serialNumber               = SomeJSON.chargingStationInfo?.serialNumber;
-                const chargingStation_controllerSoftwareVersion  = SomeJSON.chargingStationInfo?.controllerSoftwareVersion;
-                const chargingStation_compliance                 = SomeJSON.chargingStationInfo?.compliance;
-                const chargingStation_complianceURL              = SomeJSON.chargingStationInfo?.complianceURL;
-                const chargingStation_conformity                 = SomeJSON.chargingStationInfo?.conformity;
-                const chargingStation_conformity_URL             = SomeJSON.chargingStationInfo?.conformityURL;
-                const chargingStation_conformity_certificateId   = SomeJSON.chargingStationInfo?.conformityCertificateId;
-                const chargingStation_calibration                = SomeJSON.chargingStationInfo?.calibration;
-                const chargingStation_calibration_URL            = SomeJSON.chargingStationInfo?.calibrationURL;
-                const chargingStation_calibration_certificateId  = SomeJSON.chargingStationInfo?.calibrationCertificateId;
+                const chargingStationInfo                        = chargyLib.asJSONObject(SomeJSON["chargingStationInfo"]);
+                const chargingStation_manufacturer               = chargingStationInfo?.["manufacturer"];
+                const chargingStation_type                       = chargingStationInfo?.["type"];
+                const chargingStation_serialNumber               = chargingStationInfo?.["serialNumber"];
+                const chargingStation_controllerSoftwareVersion  = chargingStationInfo?.["controllerSoftwareVersion"];
+                const chargingStation_compliance                 = chargingStationInfo?.["compliance"];
+                const chargingStation_complianceURL              = chargingStationInfo?.["complianceURL"];
+                const chargingStation_conformity                 = chargingStationInfo?.["conformity"];
+                const chargingStation_conformity_URL             = chargingStationInfo?.["conformityURL"];
+                const chargingStation_conformity_certificateId   = chargingStationInfo?.["conformityCertificateId"];
+                const chargingStation_calibration                = chargingStationInfo?.["calibration"];
+                const chargingStation_calibration_URL            = chargingStationInfo?.["calibrationURL"];
+                const chargingStation_calibration_certificateId  = chargingStationInfo?.["calibrationCertificateId"];
 
                 // meterInfo can also be under the signedMeterValues!
-                const meterInfo                                  = SomeJSON.meterInfo;
-                const meterInfo_meterId                          = SomeJSON.meterInfo?.meterId;
-                const meterInfo_manufacturer                     = SomeJSON.meterInfo?.manufacturer;
-                const meterInfo_manufacturerURL                  = SomeJSON.meterInfo?.manufacturerURL;
-                const meterInfo_model                            = SomeJSON.meterInfo?.model;
-                const meterInfo_modelURL                         = SomeJSON.meterInfo?.modelURL;
-                const meterInfo_hardwareVersion                  = SomeJSON.meterInfo?.hardwareVersion;
-                const meterInfo_firmwareVersion                  = SomeJSON.meterInfo?.firmwareVersion;
-                const meterInfo_publicKey                        = SomeJSON.meterInfo?.publicKey;
-                const meterInfo_publicKeyFormat                  = SomeJSON.meterInfo?.publicKeyFormat;
-                const meterInfo_publicKeyEncoding                = SomeJSON.meterInfo?.publicKeyEncoding;
-                const meterInfo_signatureFormat                  = SomeJSON.meterInfo?.signatureFormat;
-                const meterInfo_signatureEncoding                = SomeJSON.meterInfo?.signatureEncoding;
+                const meterInfo                                  = chargyLib.asJSONObject(SomeJSON["meterInfo"]);
+                const meterInfo_meterId                          = meterInfo?.["meterId"];
+                const meterInfo_manufacturer                     = meterInfo?.["manufacturer"];
+                const meterInfo_manufacturerURL                  = meterInfo?.["manufacturerURL"];
+                const meterInfo_model                            = meterInfo?.["model"];
+                const meterInfo_modelURL                         = meterInfo?.["modelURL"];
+                const meterInfo_hardwareVersion                  = meterInfo?.["hardwareVersion"];
+                const meterInfo_firmwareVersion                  = meterInfo?.["firmwareVersion"];
+                const meterInfo_publicKey                        = meterInfo?.["publicKey"];
+                const meterInfo_publicKeyFormat                  = meterInfo?.["publicKeyFormat"];
+                const meterInfo_publicKeyEncoding                = meterInfo?.["publicKeyEncoding"];
+                const meterInfo_signatureFormat                  = meterInfo?.["signatureFormat"];
+                const meterInfo_signatureEncoding                = meterInfo?.["signatureEncoding"];
 
-                const connectorInfo                              = SomeJSON.connectorInfo;
-                const connectorInfo_type                         = SomeJSON.connectorInfo?.type;
-                const connectorInfo_losses                       = SomeJSON.connectorInfo?.losses;
+                const connectorInfo                              = chargyLib.asJSONObject(SomeJSON["connectorInfo"]);
+                const connectorInfo_type                         = connectorInfo?.["type"];
+                const connectorInfo_losses                       = connectorInfo?.["losses"];
 
-                const chargingTariffs                            = SomeJSON.chargingTariffs;
+                const chargingTariffs                            = SomeJSON["chargingTariffs"];
 
-                const chargingPeriods                            = SomeJSON.chargingPeriods;
+                const chargingPeriods                            = SomeJSON["chargingPeriods"];
 
-                const totalCosts                                 = SomeJSON.totalCosts;
-                const totalCosts_total                           = SomeJSON.totalCosts?.total;
-                const totalCosts_currency                        = SomeJSON.totalCosts?.currency;
-                const totalCosts_reservation                     = SomeJSON.totalCosts?.reservation;
-                const totalCosts_reservation_cost                = SomeJSON.totalCosts?.reservation?.cost;
-                const totalCosts_reservation_unit                = SomeJSON.totalCosts?.reservation?.unit;
-                const totalCosts_energy                          = SomeJSON.totalCosts?.energy;
-                const totalCosts_energy_cost                     = SomeJSON.totalCosts?.energy?.cost;
-                const totalCosts_energy_unit                     = SomeJSON.totalCosts?.energy?.unit;
-                const totalCosts_time                            = SomeJSON.totalCosts?.time;
-                const totalCosts_time_cost                       = SomeJSON.totalCosts?.time?.cost;
-                const totalCosts_time_unit                       = SomeJSON.totalCosts?.time?.unit;
-                const totalCosts_idle                            = SomeJSON.totalCosts?.idle;
-                const totalCosts_idle_cost                       = SomeJSON.totalCosts?.idle?.cost;
-                const totalCosts_idle_unit                       = SomeJSON.totalCosts?.idle?.unit;
-                const totalCosts_flat                            = SomeJSON.totalCosts?.flat;
-                const totalCosts_flat_cost                       = SomeJSON.totalCosts?.flat?.cost;
+                const totalCosts                                 = chargyLib.asJSONObject(SomeJSON["totalCosts"]);
+                const totalCosts_total                           = totalCosts?.["total"];
+                const totalCosts_currency                        = totalCosts?.["currency"];
+                const totalCosts_reservation                     = chargyLib.asJSONObject(totalCosts?.["reservation"]);
+                const totalCosts_reservation_cost                = totalCosts_reservation?.["cost"];
+                const totalCosts_reservation_unit                = totalCosts_reservation?.["unit"];
+                const totalCosts_energy                          = chargyLib.asJSONObject(totalCosts?.["energy"]);
+                const totalCosts_energy_cost                     = totalCosts_energy?.["cost"];
+                const totalCosts_energy_unit                     = totalCosts_energy?.["unit"];
+                const totalCosts_time                            = chargyLib.asJSONObject(totalCosts?.["time"]);
+                const totalCosts_time_cost                       = totalCosts_time?.["cost"];
+                const totalCosts_time_unit                       = totalCosts_time?.["unit"];
+                const totalCosts_idle                            = chargyLib.asJSONObject(totalCosts?.["idle"]);
+                const totalCosts_idle_cost                       = totalCosts_idle?.["cost"];
+                const totalCosts_idle_unit                       = totalCosts_idle?.["unit"];
+                const totalCosts_flat                            = chargyLib.asJSONObject(totalCosts?.["flat"]);
+                const totalCosts_flat_cost                       = totalCosts_flat?.["cost"];
 
-                const signedMeterValues                          = SomeJSON.signedMeterValues;
+                const signedMeterValues                          = SomeJSON["signedMeterValues"];
 
 
                 if (!chargyLib.isMandatoryString(chargingSessionId))
@@ -1364,7 +1359,7 @@ export class ChargeIT {
 
                 //#region chargingTariffs
 
-                if (chargingTariffs)
+                if (chargyLib.isMandatoryJSONArray(chargingTariffs))
                 {
 
                     for (let i = 0; i < chargingTariffs.length; i++)
@@ -1456,20 +1451,18 @@ export class ChargeIT {
                 else
                 {
 
-                    const smvContext = chargyLib.isMandatoryString(signedMeterValues[0]["@context"])
-                                        ? signedMeterValues[0]["@context"]?.trim()
-                                        : chargyLib.isMandatoryString(signedMeterValues[0]?.format)
-                                                ? signedMeterValues[0]?.format?.trim()
-                                                : null;
+                    const firstSMV   = chargyLib.asJSONObject(signedMeterValues[0]);
+                    const smvContext = chargyLib.asString(firstSMV?.["@context"])?.trim()
+                                           ?? chargyLib.asString(firstSMV?.["format"])?.trim()
+                                           ?? null;
 
                     for (let i = 1; i < signedMeterValues.length; i++)
                     {
 
-                        let context = chargyLib.isMandatoryString(signedMeterValues[i]["@context"])
-                                        ? signedMeterValues[i]["@context"]?.trim()
-                                        : chargyLib.isMandatoryString(signedMeterValues[i]?.format)
-                                                ? signedMeterValues[i]?.format?.trim()
-                                                : null;
+                        const currentSMV = chargyLib.asJSONObject(signedMeterValues[i]);
+                        let   context    = chargyLib.asString(currentSMV?.["@context"])?.trim()
+                                               ?? chargyLib.asString(currentSMV?.["format"])?.trim()
+                                               ?? null;
 
                         if (smvContext !== context) return {
                             status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
@@ -1481,6 +1474,8 @@ export class ChargeIT {
 
 
                     //#region Generate default-transparency record
+
+                    const evseIdStr = chargyLib.asString(evseId) ?? "";
 
                     let CTR: chargyInterfaces.IChargeTransparencyRecord = {
 
@@ -1560,21 +1555,21 @@ export class ChargeIT {
 
                                 "chargingStations": [
                                     {
-                                        "@id":                      evseId.substring(0, evseId.lastIndexOf("*")),
+                                        "@id":                      evseIdStr.substring(0, evseIdStr.lastIndexOf("*")),
                                         //"@context":                 "",
                                         //"description":              { },
                                         //"firmwareVersion":          "", //CTRArray[0]["chargePoint"]["softwareVersion"],
-                                        "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
+                                        "geoLocation":              { "lat": chargyLib.asNumber(geoLocation_lat) ?? 0, "lng": chargyLib.asNumber(geoLocation_lon) ?? 0 },
                                         "address": {
                                             //"@context":             "",
-                                            "street":               address_street,
-                                            "postalCode":           address_zipCode,
+                                            "street":               chargyLib.asString(address_street),
+                                            "postalCode":           chargyLib.asString(address_zipCode) ?? "",
                                             "city":                 address_town,
-                                            "country":              address_country
+                                            "country":              chargyLib.asString(address_country) ?? ""
                                         },
                                         "EVSEs": [
                                             {
-                                                "@id":                      evseId,
+                                                "@id":                      evseIdStr,
                                                 //"@context":                 "",
                                                 // "description": {
                                                 //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
@@ -1586,7 +1581,8 @@ export class ChargeIT {
                                     }
                                 ],
 
-                                "chargingTariffs":          chargingTariffs
+                                // ToDo: The charging tariffs are not validated yet!
+                                "chargingTariffs":          chargyLib.asJSONArray(chargingTariffs) as chargyInterfaces.IChargingTariff[] | undefined
 
                             }
                         ],
@@ -1598,11 +1594,11 @@ export class ChargeIT {
                     //#endregion
 
                     if      (smvContext?.startsWith("https://www.chargeit-mobility.com/contexts/bsm-ws36a-json"))
-                        return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, chargingStation_controllerSoftwareVersion, signedMeterValues);
+                        return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseIdStr, chargyLib.asString(chargingStation_controllerSoftwareVersion) ?? null, signedMeterValues);
 
                     if (smvContext?.startsWith("ALFEN"))
                         return await new Alfen(this.chargy).TryToParseALFENFormat(
-                                         signedMeterValues.map(value => value.payload),
+                                         signedMeterValues.map(value => chargyLib.asString(chargyLib.asJSONObject(value)?.["payload"]) ?? ""),
                                          {
                                              chargingSession: {
                                                 "@id":            chargingSessionId

@@ -49,15 +49,13 @@ export class OCPI {
     //#region tryToParseChargeITContainerFormat(SomeJSON)
 
     // The chargeIT mobility data format does not always provide context information or format identifiers!
-    public async tryToParseOCPIFormat(SomeJSON: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async tryToParseOCPIFormat(SomeJSON: unknown) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         const errors    = new Array<String>();
         const warnings  = new Array<String>();
 
-        if (SomeJSON === undefined ||
-            SomeJSON === null      ||
-            Array.isArray(SomeJSON))
+        if (!chargyLib.isMandatoryJSONObject(SomeJSON))
         {
             return {
                 status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
@@ -67,9 +65,7 @@ export class OCPI {
             }
         }
 
-        const jsonContextInformation = chargyLib.isMandatoryString(SomeJSON["@context"])
-                                           ? SomeJSON["@context"]?.trim()
-                                           : "";
+        const jsonContextInformation = chargyLib.asString(SomeJSON["@context"])?.trim() ?? "";
 
 
         //#region Old chargeIT container format
@@ -77,9 +73,9 @@ export class OCPI {
         if (jsonContextInformation === "")
         {
 
-            const encoding_method = SomeJSON.encoding_method;
-            const public_key      = SomeJSON.public_key;
-            const signed_values   = SomeJSON.signed_values;
+            const encoding_method = SomeJSON["encoding_method"];
+            const public_key      = SomeJSON["public_key"];
+            const signed_values   = SomeJSON["signed_values"];
 
             if (!chargyLib.isMandatoryString(encoding_method))
                 errors.push(this.chargy.GetLocalizedMessage("MissingOrInvalidEncodingMethod"));
@@ -98,14 +94,17 @@ export class OCPI {
                     certainty:  0
                 }
 
-            if (encoding_method === "OCMF" &&
-                signed_values.length > 0   &&
-                signed_values[0].signed_data)
+            if (encoding_method === "OCMF"                    &&
+                chargyLib.isMandatoryJSONArray(signed_values) &&
+                signed_values.length > 0)
             {
 
-                return await new OCMF(this.chargy).TryToParseOCMFDocument(signed_values[0].signed_data,
-                                                                          public_key,
-                                                                          encoding_method);
+                const firstSignedData = chargyLib.asString(chargyLib.asJSONObject(signed_values[0])?.["signed_data"]);
+
+                if (firstSignedData)
+                    return await new OCMF(this.chargy).TryToParseOCMFDocument(firstSignedData,
+                                                                              chargyLib.asString(public_key),
+                                                                              encoding_method);
 
             }
 
@@ -126,72 +125,72 @@ export class OCPI {
 
                 const chargingSessionId                          = SomeJSON["@id"];
 
-                const chargePointInfo                            = SomeJSON.chargePointInfo;
-                const evseId                                     = SomeJSON.chargePointInfo?.evseId;
+                const chargePointInfo                            = chargyLib.asJSONObject(SomeJSON["chargePointInfo"]);
+                const evseId                                     = chargePointInfo?.["evseId"];
 
-                const placeInfo                                  = SomeJSON.chargePointInfo?.placeInfo;
-                const geoLocation                                = SomeJSON.chargePointInfo?.placeInfo?.geoLocation;
-                const geoLocation_lat                            = SomeJSON.chargePointInfo?.placeInfo?.geoLocation?.lat;
-                const geoLocation_lon                            = SomeJSON.chargePointInfo?.placeInfo?.geoLocation?.lon;
+                const placeInfo                                  = chargyLib.asJSONObject(chargePointInfo?.["placeInfo"]);
+                const geoLocation                                = chargyLib.asJSONObject(placeInfo?.["geoLocation"]);
+                const geoLocation_lat                            = geoLocation?.["lat"];
+                const geoLocation_lon                            = geoLocation?.["lon"];
 
-                const address                                    = SomeJSON.chargePointInfo?.placeInfo?.address;
-                const address_street                             = SomeJSON.chargePointInfo?.placeInfo?.address?.street;
-                const address_zipCode                            = SomeJSON.chargePointInfo?.placeInfo?.address?.zipCode;
-                const address_town                               = SomeJSON.chargePointInfo?.placeInfo?.address?.town;
-                const address_country                            = SomeJSON.chargePointInfo?.placeInfo?.address?.country ?? "";
+                const address                                    = chargyLib.asJSONObject(placeInfo?.["address"]);
+                const address_street                             = address?.["street"];
+                const address_zipCode                            = address?.["zipCode"];
+                const address_town                               = address?.["town"];
+                const address_country                            = address?.["country"] ?? "";
 
-                const chargingStationInfo                        = SomeJSON.chargingStationInfo;
-                const chargingStation_manufacturer               = SomeJSON.chargingStationInfo?.manufacturer;
-                const chargingStation_type                       = SomeJSON.chargingStationInfo?.type;
-                const chargingStation_serialNumber               = SomeJSON.chargingStationInfo?.serialNumber;
-                const chargingStation_controllerSoftwareVersion  = SomeJSON.chargingStationInfo?.controllerSoftwareVersion;
-                const chargingStation_compliance                 = SomeJSON.chargingStationInfo?.compliance;
-                const chargingStation_complianceURL              = SomeJSON.chargingStationInfo?.complianceURL;
-                const chargingStation_conformity                 = SomeJSON.chargingStationInfo?.conformity;
-                const chargingStation_conformity_URL             = SomeJSON.chargingStationInfo?.conformityURL;
-                const chargingStation_conformity_certificateId   = SomeJSON.chargingStationInfo?.conformityCertificateId;
-                const chargingStation_calibration                = SomeJSON.chargingStationInfo?.calibration;
-                const chargingStation_calibration_URL            = SomeJSON.chargingStationInfo?.calibrationURL;
-                const chargingStation_calibration_certificateId  = SomeJSON.chargingStationInfo?.calibrationCertificateId;
+                const chargingStationInfo                        = chargyLib.asJSONObject(SomeJSON["chargingStationInfo"]);
+                const chargingStation_manufacturer               = chargingStationInfo?.["manufacturer"];
+                const chargingStation_type                       = chargingStationInfo?.["type"];
+                const chargingStation_serialNumber               = chargingStationInfo?.["serialNumber"];
+                const chargingStation_controllerSoftwareVersion  = chargingStationInfo?.["controllerSoftwareVersion"];
+                const chargingStation_compliance                 = chargingStationInfo?.["compliance"];
+                const chargingStation_complianceURL              = chargingStationInfo?.["complianceURL"];
+                const chargingStation_conformity                 = chargingStationInfo?.["conformity"];
+                const chargingStation_conformity_URL             = chargingStationInfo?.["conformityURL"];
+                const chargingStation_conformity_certificateId   = chargingStationInfo?.["conformityCertificateId"];
+                const chargingStation_calibration                = chargingStationInfo?.["calibration"];
+                const chargingStation_calibration_URL            = chargingStationInfo?.["calibrationURL"];
+                const chargingStation_calibration_certificateId  = chargingStationInfo?.["calibrationCertificateId"];
 
                 // meterInfo can also be under the signedMeterValues!
-                const meterInfo                                  = SomeJSON.meterInfo;
-                const meterInfo_meterId                          = SomeJSON.meterInfo?.meterId;
-                const meterInfo_manufacturer                     = SomeJSON.meterInfo?.manufacturer;
-                const meterInfo_manufacturerURL                  = SomeJSON.meterInfo?.manufacturerURL;
-                const meterInfo_model                            = SomeJSON.meterInfo?.model;
-                const meterInfo_modelURL                         = SomeJSON.meterInfo?.modelURL;
-                const meterInfo_hardwareVersion                  = SomeJSON.meterInfo?.hardwareVersion;
-                const meterInfo_firmwareVersion                  = SomeJSON.meterInfo?.firmwareVersion;
-                const meterInfo_publicKey                        = SomeJSON.meterInfo?.publicKey;
-                const meterInfo_publicKeyFormat                  = SomeJSON.meterInfo?.publicKeyFormat;
-                const meterInfo_publicKeyEncoding                = SomeJSON.meterInfo?.publicKeyEncoding;
-                const meterInfo_signatureFormat                  = SomeJSON.meterInfo?.signatureFormat;
-                const meterInfo_signatureEncoding                = SomeJSON.meterInfo?.signatureEncoding;
+                const meterInfo                                  = chargyLib.asJSONObject(SomeJSON["meterInfo"]);
+                const meterInfo_meterId                          = meterInfo?.["meterId"];
+                const meterInfo_manufacturer                     = meterInfo?.["manufacturer"];
+                const meterInfo_manufacturerURL                  = meterInfo?.["manufacturerURL"];
+                const meterInfo_model                            = meterInfo?.["model"];
+                const meterInfo_modelURL                         = meterInfo?.["modelURL"];
+                const meterInfo_hardwareVersion                  = meterInfo?.["hardwareVersion"];
+                const meterInfo_firmwareVersion                  = meterInfo?.["firmwareVersion"];
+                const meterInfo_publicKey                        = meterInfo?.["publicKey"];
+                const meterInfo_publicKeyFormat                  = meterInfo?.["publicKeyFormat"];
+                const meterInfo_publicKeyEncoding                = meterInfo?.["publicKeyEncoding"];
+                const meterInfo_signatureFormat                  = meterInfo?.["signatureFormat"];
+                const meterInfo_signatureEncoding                = meterInfo?.["signatureEncoding"];
 
-                const connectorInfo                              = SomeJSON.connectorInfo;
-                const connectorInfo_type                         = SomeJSON.connectorInfo?.type;
-                const connectorInfo_losses                       = SomeJSON.connectorInfo?.losses;
+                const connectorInfo                              = chargyLib.asJSONObject(SomeJSON["connectorInfo"]);
+                const connectorInfo_type                         = connectorInfo?.["type"];
+                const connectorInfo_losses                       = connectorInfo?.["losses"];
 
-                const chargingCostsInfo                          = SomeJSON.chargingCostsInfo;
-                const chargingCostsInfo_total                    = SomeJSON.chargingCostsInfo?.total;
-                const chargingCostsInfo_currency                 = SomeJSON.chargingCostsInfo?.currency;
-                const chargingCostsInfo_reservation              = SomeJSON.chargingCostsInfo?.reservation;
-                const chargingCostsInfo_reservation_cost         = SomeJSON.chargingCostsInfo?.reservation?.cost;
-                const chargingCostsInfo_reservation_unit         = SomeJSON.chargingCostsInfo?.reservation?.unit;
-                const chargingCostsInfo_energy                   = SomeJSON.chargingCostsInfo?.energy;
-                const chargingCostsInfo_energy_cost              = SomeJSON.chargingCostsInfo?.energy?.cost;
-                const chargingCostsInfo_energy_unit              = SomeJSON.chargingCostsInfo?.energy?.unit;
-                const chargingCostsInfo_time                     = SomeJSON.chargingCostsInfo?.time;
-                const chargingCostsInfo_time_cost                = SomeJSON.chargingCostsInfo?.time?.cost;
-                const chargingCostsInfo_time_unit                = SomeJSON.chargingCostsInfo?.time?.unit;
-                const chargingCostsInfo_idle                     = SomeJSON.chargingCostsInfo?.idle;
-                const chargingCostsInfo_idle_cost                = SomeJSON.chargingCostsInfo?.idle?.cost;
-                const chargingCostsInfo_idle_unit                = SomeJSON.chargingCostsInfo?.idle?.unit;
-                const chargingCostsInfo_flat                     = SomeJSON.chargingCostsInfo?.flat;
-                const chargingCostsInfo_flat_cost                = SomeJSON.chargingCostsInfo?.flat?.cost;
+                const chargingCostsInfo                          = chargyLib.asJSONObject(SomeJSON["chargingCostsInfo"]);
+                const chargingCostsInfo_total                    = chargingCostsInfo?.["total"];
+                const chargingCostsInfo_currency                 = chargingCostsInfo?.["currency"];
+                const chargingCostsInfo_reservation              = chargyLib.asJSONObject(chargingCostsInfo?.["reservation"]);
+                const chargingCostsInfo_reservation_cost         = chargingCostsInfo_reservation?.["cost"];
+                const chargingCostsInfo_reservation_unit         = chargingCostsInfo_reservation?.["unit"];
+                const chargingCostsInfo_energy                   = chargyLib.asJSONObject(chargingCostsInfo?.["energy"]);
+                const chargingCostsInfo_energy_cost              = chargingCostsInfo_energy?.["cost"];
+                const chargingCostsInfo_energy_unit              = chargingCostsInfo_energy?.["unit"];
+                const chargingCostsInfo_time                     = chargyLib.asJSONObject(chargingCostsInfo?.["time"]);
+                const chargingCostsInfo_time_cost                = chargingCostsInfo_time?.["cost"];
+                const chargingCostsInfo_time_unit                = chargingCostsInfo_time?.["unit"];
+                const chargingCostsInfo_idle                     = chargyLib.asJSONObject(chargingCostsInfo?.["idle"]);
+                const chargingCostsInfo_idle_cost                = chargingCostsInfo_idle?.["cost"];
+                const chargingCostsInfo_idle_unit                = chargingCostsInfo_idle?.["unit"];
+                const chargingCostsInfo_flat                     = chargyLib.asJSONObject(chargingCostsInfo?.["flat"]);
+                const chargingCostsInfo_flat_cost                = chargingCostsInfo_flat?.["cost"];
 
-                const signedMeterValues                          = SomeJSON.signedMeterValues;
+                const signedMeterValues                          = SomeJSON["signedMeterValues"];
 
 
                 if (!chargyLib.isMandatoryString(chargingSessionId))
@@ -465,20 +464,18 @@ export class OCPI {
                 else
                 {
 
-                    const smvContext = chargyLib.isMandatoryString(signedMeterValues[0]["@context"])
-                                        ? signedMeterValues[0]["@context"]?.trim()
-                                        : chargyLib.isMandatoryString(signedMeterValues[0]?.format)
-                                                ? signedMeterValues[0]?.format?.trim()
-                                                : null;
+                    const firstSMV   = chargyLib.asJSONObject(signedMeterValues[0]);
+                    const smvContext = chargyLib.asString(firstSMV?.["@context"])?.trim()
+                                           ?? chargyLib.asString(firstSMV?.["format"])?.trim()
+                                           ?? null;
 
                     for (let i = 1; i < signedMeterValues.length; i++)
                     {
 
-                        let context = chargyLib.isMandatoryString(signedMeterValues[i]["@context"])
-                                        ? signedMeterValues[i]["@context"]?.trim()
-                                        : chargyLib.isMandatoryString(signedMeterValues[i]?.format)
-                                                ? signedMeterValues[i]?.format?.trim()
-                                                : null;
+                        const currentSMV = chargyLib.asJSONObject(signedMeterValues[i]);
+                        let   context    = chargyLib.asString(currentSMV?.["@context"])?.trim()
+                                               ?? chargyLib.asString(currentSMV?.["format"])?.trim()
+                                               ?? null;
 
                         if (smvContext !== context) return {
                             status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
@@ -490,6 +487,8 @@ export class OCPI {
 
 
                     //#region Generate default-transparency record
+
+                    const evseIdStr = chargyLib.asString(evseId) ?? "";
 
                     let CTR: chargyInterfaces.IChargeTransparencyRecord = {
 
@@ -569,21 +568,21 @@ export class OCPI {
 
                                 "chargingStations": [
                                     {
-                                        "@id":                      evseId.substring(0, evseId.lastIndexOf("*")),
+                                        "@id":                      evseIdStr.substring(0, evseIdStr.lastIndexOf("*")),
                                         //"@context":                 "",
                                         //"description":              { },
                                         //"firmwareVersion":          "", //CTRArray[0]["chargePoint"]["softwareVersion"],
-                                        "geoLocation":              { "lat": geoLocation_lat, "lng": geoLocation_lon },
+                                        "geoLocation":              { "lat": chargyLib.asNumber(geoLocation_lat) ?? 0, "lng": chargyLib.asNumber(geoLocation_lon) ?? 0 },
                                         "address": {
                                             //"@context":             "",
-                                            "street":               address_street,
-                                            "postalCode":           address_zipCode,
+                                            "street":               chargyLib.asString(address_street),
+                                            "postalCode":           chargyLib.asString(address_zipCode) ?? "",
                                             "city":                 address_town,
-                                            "country":              address_country
+                                            "country":              chargyLib.asString(address_country) ?? ""
                                         },
                                         "EVSEs": [
                                             {
-                                                "@id":                      evseId,
+                                                "@id":                      evseIdStr,
                                                 //"@context":                 "",
                                                 // "description": {
                                                 //     "de":                   "GraphDefined EVSE - CI-Tests Pool 3 / Station A / EVSE 1"
@@ -605,11 +604,11 @@ export class OCPI {
                     //#endregion
 
                     if      (smvContext?.startsWith("https://www.chargeit-mobility.com/contexts/bsm-ws36a-json"))
-                        return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, chargingStation_controllerSoftwareVersion, signedMeterValues);
+                        return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseIdStr, chargyLib.asString(chargingStation_controllerSoftwareVersion) ?? null, signedMeterValues);
 
                     if (smvContext?.startsWith("ALFEN"))
                         return await new Alfen(this.chargy).TryToParseALFENFormat(
-                                         signedMeterValues.map(value => value.payload),
+                                         signedMeterValues.map(value => chargyLib.asString(chargyLib.asJSONObject(value)?.["payload"]) ?? ""),
                                          {
                                              chargingSession: {
                                                 "@id":            chargingSessionId
