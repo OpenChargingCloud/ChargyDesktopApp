@@ -17,6 +17,9 @@
 
 import { Buffer }                           from 'buffer';
 import { fileTypeFromBuffer }               from 'file-type';
+import type * as Asn1                       from 'asn1.js';
+import type Base32Decode                    from 'base32-decode';
+import type Moment                          from 'moment';
 
 import { Alfen, AlfenCrypt01 }              from './Alfen'
 import { BSMCrypt01 }                       from './BSMCrypt01'
@@ -34,16 +37,40 @@ import * as chargyLib                       from './chargyLib'
 import * as pdfjsLib                        from 'pdfjs-dist';
 import { readQRCodeTextFromImage }          from './qrReader'
 
+type DERPublicKey = {
+    oids:      [number[], number[]];
+    publicKey: {
+        data:  ArrayBuffer | Uint8Array;
+    };
+};
+
+type Asn1Builder = {
+    bitstr(): Asn1Builder;
+    key(name: string): Asn1Builder;
+    obj(...items: unknown[]): Asn1Builder;
+    objid(): Asn1Builder;
+    seq(): Asn1Builder;
+    seqof(schema: unknown): Asn1Builder;
+};
+
+type EllipticModule = {
+    ec: new (curve: string) => {
+        keyFromPublic(publicKey: string, encoding: string): {
+            verify(hash: string, signature: unknown): boolean;
+        };
+    };
+};
+
 export class Chargy {
 
     //#region Data
 
     public  readonly i18n:            any;
     public  readonly UILanguage:      string;
-    public  readonly elliptic:        any;
-    public  readonly moment:          any;
-    public  readonly asn1:            any;
-    public  readonly base32Decode:    any;
+    public  readonly elliptic:        EllipticModule;
+    public  readonly moment:          typeof Moment;
+    public  readonly asn1:            typeof Asn1;
+    public  readonly base32Decode:    typeof Base32Decode;
     public  readonly showPKIDetails:  chargyInterfaces.ShowPKIDetailsFunction;
 
     private chargingStationOperators  = new Array<chargyInterfaces.IChargingStationOperator>();
@@ -63,10 +90,10 @@ export class Chargy {
 
     constructor(i18n:            any,
                 UILanguage:      string,
-                elliptic:        any,
-                moment:          any,
-                asn1:            any,
-                base32Decode:    any,
+                elliptic:        EllipticModule,
+                moment:          typeof Moment,
+                asn1:            typeof Asn1,
+                base32Decode:    typeof Base32Decode,
                 ShowPKIDetails:  chargyInterfaces.ShowPKIDetailsFunction) {
 
         this.i18n            = i18n;
@@ -94,22 +121,18 @@ export class Chargy {
 
         // https://lapo.it/asn1js/ for a visual check...
         // https://github.com/indutny/asn1.js
-        const ASN1_OIDs      = this.asn1.define('OIDs', function() {
-            //@ts-ignore
+        const ASN1_OIDs      = this.asn1.define('OIDs', function(this: Asn1Builder) {
             this.key('oid').objid()
         });
 
-        const ASN1_PublicKey = this.asn1.define('PublicKey', function() {
-            //@ts-ignore
+        const ASN1_PublicKey = this.asn1.define('PublicKey', function(this: Asn1Builder) {
             this.seq().obj(
-                //@ts-ignore
                 this.key('oids').seqof(ASN1_OIDs),
-                //@ts-ignore
                 this.key('publicKey').bitstr()
             );
         });
 
-        const publicKeyDER   = ASN1_PublicKey.decode(publicKeyBuffer, 'der');
+        const publicKeyDER   = ASN1_PublicKey.decode(publicKeyBuffer, 'der') as DERPublicKey;
 
         const KeyType_OID    = publicKeyDER.oids[0].join(".") as string;
         let   KeyType        = "unknown";
@@ -544,9 +567,9 @@ export class Chargy {
 
             //ToDo: Checking the timestamp might be usefull!
 
-            var sha256value  = await chargyLib.sha256(JSON.stringify(toCheck));
+            const sha256value = await chargyLib.sha256(JSON.stringify(toCheck));
 
-            var result       = new this.elliptic.ec('secp256r1').
+            const result      = new this.elliptic.ec('secp256r1').
                                         keyFromPublic(signature.publicKey, 'hex').
                                         verify       (sha256value,
                                                       signature.signature);

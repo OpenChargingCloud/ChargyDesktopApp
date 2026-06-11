@@ -215,8 +215,8 @@ export class ChargePoint {
                                                          SomeJSON.additional_info.session_id,
                     "@context":         "https://open.charging.cloud/contexts/CTR+json",
 
-                    "begin":            this.chargy.moment.unix(sessionStart).utc().format(),
-                    "end":              this.chargy.moment.unix(sessionEnd).utc().format(),
+                    "begin":            this.chargy.moment.unix(Number(sessionStart)).utc().format(),
+                    "end":              this.chargy.moment.unix(Number(sessionEnd)).utc().format(),
 
                     // "description": {
                     //     "de":           "Alle Ladevorgänge"
@@ -305,8 +305,8 @@ export class ChargePoint {
                                                         SomeJSON.additional_info.outlet      + "-" +
                                                         SomeJSON.additional_info.session_id,
                         "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json",
-                        "begin":                        this.chargy.moment.unix(sessionStart).utc().format(),
-                        "end":                          this.chargy.moment.unix(sessionEnd).utc().format(),
+                        "begin":                        this.chargy.moment.unix(Number(sessionStart)).utc().format(),
+                        "end":                          this.chargy.moment.unix(Number(sessionEnd)).utc().format(),
                         "EVSEId":                       SomeJSON.EVSEId ?? SomeJSON.additional_info.station_mac + "-" + SomeJSON.additional_info.outlet,
 
                         "authorizationStart": {
@@ -350,12 +350,12 @@ export class ChargePoint {
 
                             "values": [
                                 {
-                                    "timestamp":        this.chargy.moment.unix(chargingStart).utc().format(),
+                                    "timestamp":        this.chargy.moment.unix(Number(chargingStart)).utc().format(),
                                     "value":            SomeJSON.additional_info.meter_startreading,
                                     signatures:         []
                                 },
                                 {
-                                    "timestamp":        this.chargy.moment.unix(chargingEnd).utc().format(),
+                                    "timestamp":        this.chargy.moment.unix(Number(chargingEnd)).utc().format(),
                                     "value":            SomeJSON.additional_info.meter_endreading,
                                     signatures:         []
                                 }

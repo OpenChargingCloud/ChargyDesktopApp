@@ -1128,7 +1128,7 @@ export class BSMCrypt01 extends ACrypt {
                             cryptoResult.publicKey            = meter?.publicKeys[0]?.value;
                             cryptoResult.publicKeyFormat      = meter?.publicKeys[0]?.format;
                             cryptoResult.publicKeySignatures  = meter?.publicKeys[0]?.signatures;
-                            let publicKey                     = cryptoResult.publicKey;
+                            let publicKey                     = cryptoResult.publicKey ?? "";
 
                             if (cryptoResult.publicKeyFormat == "DER")
                             {

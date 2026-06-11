@@ -174,7 +174,7 @@ export class GDFCrypt01 extends ACrypt {
                             try
                             {
 
-                                if (this.curve.keyFromPublic(cryptoResult.publicKey, 'hex').
+                                if (this.curve.keyFromPublic(cryptoResult.publicKey ?? "", 'hex').
                                                verify       (cryptoResult.sha256value,
                                                              cryptoResult.signature))
                                 {

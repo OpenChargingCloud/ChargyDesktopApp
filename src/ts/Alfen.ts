@@ -103,12 +103,12 @@ export class Alfen  {
                         certainty: 0
                     };
 
-                const FormatId               = elements[0];                                       //  2 bytes
-                const Type                   = elements[1];                                       //  1 byte; "0": start meter value | "1": stop meter value | "2": intermediate value
-                const BlobVersion            = elements[2];                                       //  1 byte; "3" (current version)
-                const PublicKey:ArrayBuffer  = this.chargy.base32Decode(elements[3], 'RFC4648');  // 25 bytes; base32 encoded; secp192r1
-                const DataSet:  ArrayBuffer  = this.chargy.base32Decode(elements[4], 'RFC4648');  // 82 bytes; base32 encoded
-                const Signature:ArrayBuffer  = this.chargy.base32Decode(elements[5], 'RFC4648');  // 48 bytes; base32 encoded; secp192r1
+                const FormatId               = elements[0];                                             //  2 bytes
+                const Type                   = elements[1];                                             //  1 byte; "0": start meter value | "1": stop meter value | "2": intermediate value
+                const BlobVersion            = elements[2];                                             //  1 byte; "3" (current version)
+                const PublicKey:ArrayBuffer  = this.chargy.base32Decode(elements[3] ?? "", 'RFC4648');  // 25 bytes; base32 encoded; secp192r1
+                const DataSet:  ArrayBuffer  = this.chargy.base32Decode(elements[4] ?? "", 'RFC4648');  // 82 bytes; base32 encoded
+                const Signature:ArrayBuffer  = this.chargy.base32Decode(elements[5] ?? "", 'RFC4648');  // 48 bytes; base32 encoded; secp192r1
 
                 // Verify common public key
                 if (common.PublicKey === "")
@@ -629,7 +629,7 @@ export class AlfenCrypt01 extends ACrypt {
                             try
                             {
 
-                                const publicKey  = chargyLib.buf2hex(this.chargy.base32Decode(cryptoResult.publicKey, 'RFC4648'));
+                                const publicKey  = chargyLib.buf2hex(this.chargy.base32Decode(cryptoResult.publicKey ?? "", 'RFC4648'));
                                 let   result     = false;
 
                                 switch (meter?.publicKeys[0]?.algorithm ?? "")
