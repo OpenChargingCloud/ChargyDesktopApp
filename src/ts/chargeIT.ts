@@ -31,7 +31,7 @@ export class ChargeIT {
     }
 
 
-    private bufferToHex(buffer: ArrayBuffer, Reverse?: Boolean) : string {
+    private bufferToHex(buffer: ArrayBuffer, Reverse?: boolean) : string {
         return (Reverse
                     ? Array.from(new Uint8Array(buffer)).reverse()
                     : Array.from(new Uint8Array(buffer))
@@ -413,8 +413,8 @@ export class ChargeIT {
     public async TryToParseChargeITContainerFormat(SomeJSON: unknown) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
-        const errors    = new Array<String>();
-        const warnings  = new Array<String>();
+        const errors    = new Array<string>();
+        const warnings  = new Array<string>();
 
         if (!chargyLib.isMandatoryJSONObject(SomeJSON))
         {
@@ -1663,6 +1663,5 @@ export class ChargeIT {
     }
 
     //#endregion
-
 
 }

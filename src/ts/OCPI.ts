@@ -31,7 +31,7 @@ export class OCPI {
     }
 
 
-    private bufferToHex(buffer: ArrayBuffer, Reverse?: Boolean) : string {
+    private bufferToHex(buffer: ArrayBuffer, Reverse?: boolean) : string {
         return (Reverse
                     ? Array.from(new Uint8Array(buffer)).reverse()
                     : Array.from(new Uint8Array(buffer))
@@ -52,8 +52,8 @@ export class OCPI {
     public async tryToParseOCPIFormat(SomeJSON: unknown) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
-        const errors    = new Array<String>();
-        const warnings  = new Array<String>();
+        const errors    = new Array<string>();
+        const warnings  = new Array<string>();
 
         if (!chargyLib.isMandatoryJSONObject(SomeJSON))
         {
@@ -117,8 +117,8 @@ export class OCPI {
         if (jsonContextInformation == "https://open.charging.cloud/contexts/ocpi-2.1")
         {
 
-            let numberOfFormatChecks  = 81;
-            let secondaryErrors       = 0;
+            const numberOfFormatChecks  = 81;
+            let   secondaryErrors       = 0;
 
             try
             {
@@ -473,7 +473,7 @@ export class OCPI {
                     {
 
                         const currentSMV = chargyLib.asJSONObject(signedMeterValues[i]);
-                        let   context    = chargyLib.asString(currentSMV?.["@context"])?.trim()
+                        const context    = chargyLib.asString(currentSMV?.["@context"])?.trim()
                                                ?? chargyLib.asString(currentSMV?.["format"])?.trim()
                                                ?? null;
 
@@ -490,7 +490,7 @@ export class OCPI {
 
                     const evseIdStr = chargyLib.asString(evseId) ?? "";
 
-                    let CTR: chargyInterfaces.IChargeTransparencyRecord = {
+                    const CTR: chargyInterfaces.IChargeTransparencyRecord = {
 
                         "@id":              "",
                         "@context":         "https://open.charging.cloud/contexts/CTR+json",
@@ -650,7 +650,7 @@ export class OCPI {
             {
                 return {
                     status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                    message:    "Exception occured: " + (exception instanceof Error ? exception.message : String(exception)),
                     errors:     errors,
                     warnings:   warnings,
                     certainty: (numberOfFormatChecks - errors.length - secondaryErrors)/numberOfFormatChecks
@@ -672,6 +672,5 @@ export class OCPI {
     }
 
     //#endregion
-
 
 }

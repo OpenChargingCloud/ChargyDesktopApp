@@ -29,6 +29,7 @@ import { EMHCrypt01 }                       from './EMHCrypt01'
 import { GDFCrypt01 }                       from './GDFCrypt01'
 import { Mennekes }                         from './Mennekes'
 import { OCMF, OCMFv1_x }                   from './OCMF'
+import { PCDF, PCDFCrypt01, isPCDFText }    from './PCDF'
 import { SAFEXML }                          from './SAFE_XML'
 import { XMLContainer }                     from './XMLContainer'
 import { OCPI }                             from './OCPI'
@@ -65,7 +66,7 @@ export class Chargy {
 
     //#region Data
 
-    public  readonly i18n:            any;
+    public  readonly i18n:            chargyInterfaces.I18NDictionary;
     public  readonly UILanguage:      string;
     public  readonly elliptic:        EllipticModule;
     public  readonly moment:          typeof Moment;
@@ -88,7 +89,7 @@ export class Chargy {
 
     //#endregion
 
-    constructor(i18n:            any,
+    constructor(i18n:            chargyInterfaces.I18NDictionary,
                 UILanguage:      string,
                 elliptic:        EllipticModule,
                 moment:          typeof Moment,
@@ -431,7 +432,7 @@ export class Chargy {
     }
 
     public GetLocalizedMessageWithParameter(Text:       string,
-                                            Parameter:  any): string
+                                            Parameter:  string | number): string
     {
 
         const multiLanguage = this.i18n[Text];
@@ -441,11 +442,11 @@ export class Chargy {
 
             const localLanguage = multiLanguage[this.UILanguage];
             if (localLanguage !== undefined)
-                return localLanguage.replace("%p", Parameter);
+                return localLanguage.replace("%p", String(Parameter));
 
             const english = multiLanguage["en"];
             if (english !== undefined)
-                return english.replace("%p", Parameter);
+                return english.replace("%p", String(Parameter));
 
         }
 
@@ -1337,6 +1338,21 @@ export class Chargy {
 
             //#endregion
 
+            //#region PCDF processing
+
+            else if (isPCDFText(textContent))
+            {
+                const publicKeyHEX = publicKeyHEXLookup.get(this.PublicKeyIdFromFileName(processedFile.name)) ??
+                                     (publicKeyHEXLookup.size === 1 ? publicKeyHEXLookup.values().next().value : undefined);
+
+                processedFile.result = await new PCDF(this).TryToParsePCDFDocument(
+                    textContent,
+                    publicKeyHEX
+                );
+            }
+
+            //#endregion
+
             //#region ALFEN processing
 
             else if (textContent?.startsWith("AP;"))
@@ -2044,6 +2060,10 @@ export class Chargy {
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/AlfenCrypt01+json":
                 chargingSession.method = new AlfenCrypt01(this);
+                return await chargingSession.method.VerifyChargingSession(chargingSession);
+
+            case "https://open.charging.cloud/contexts/SessionSignatureFormats/PCDF+json":
+                chargingSession.method = new PCDFCrypt01(this);
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/bsm-ws36a-v0+json":

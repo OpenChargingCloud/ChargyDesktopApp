@@ -29,7 +29,7 @@ export class Alfen  {
         this.chargy  = chargy;
     }
 
-    private bufferToHex(buffer: ArrayBuffer, Reverse?: Boolean) : string {
+    private bufferToHex(buffer: ArrayBuffer, Reverse?: boolean) : string {
         return (Reverse
                     ? Array.from(new Uint8Array(buffer)).reverse()
                     : Array.from(new Uint8Array(buffer))
@@ -1056,6 +1056,5 @@ export class AlfenCrypt01 extends ACrypt {
     }
 
     //#endregion
-
 
 }

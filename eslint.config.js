@@ -43,6 +43,15 @@ export default tseslint.config(
                 tsconfigRootDir: import.meta.dirname
             }
         }
+    },
+
+    // Warning-free files are promoted back to the original "error" severity,
+    // so they cannot silently regress:
+    {
+        files: [
+            'src/ts/OCPI.ts'
+        ],
+        rules: Object.assign({}, ...tseslint.configs.strictTypeChecked.map(config => config.rules ?? {}))
     }
 
 );

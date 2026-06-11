@@ -4,6 +4,7 @@ declare module "*.scss";
 declare module "asn1.js" {
     interface Asn1Builder {
         bitstr(): Asn1Builder;
+        int(): Asn1Builder;
         key(name: string): Asn1Builder;
         obj(...items: unknown[]): Asn1Builder;
         objid(): Asn1Builder;

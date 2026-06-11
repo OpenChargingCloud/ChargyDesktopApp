@@ -19,6 +19,7 @@ import { Chargy }             from './chargy'
 import { ACrypt }             from './ACrypt'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
+import Decimal                from 'decimal.js'
 
 
 export interface IBSMMeasurementValue extends chargyInterfaces.IMeasurementValue
@@ -58,6 +59,53 @@ export interface IBSMMeasurementValue extends chargyInterfaces.IMeasurementValue
     Meta3:                      string,
     Evt:                        number
 
+}
+
+// A single entry of the "additionalValues" array of a BSM-WS36A
+// snapshot, flattened and type-checked for easier consumption.
+interface IBSMAdditionalValue
+{
+    measurandId:                string | undefined;
+    measurandName:              string | undefined;
+    scale:                      number | undefined;
+    unit:                       string | undefined;
+    unitEncoded:                number | undefined;
+    value:                      unknown;   // string or number, depending on the measurand
+    valueType:                  string | undefined;
+    prefix:                     string | undefined;
+    precision:                  number | undefined;
+}
+
+// The intermediate per-snapshot data collected while validating
+// the consistency of all signed meter values.
+interface IBSMDataSet
+{
+    Typ:                        number;
+    TypParsed:                  string;
+    RCR:                        IBSMAdditionalValue | undefined;
+    TotWhImp:                   IBSMAdditionalValue | undefined;
+    W:                          IBSMAdditionalValue | undefined;
+    MA1:                        string | null;
+    RCnt:                       number;
+    OS:                         number;
+    Epoch:                      number;
+    TZO:                        number;
+    EpochSetCnt:                number;
+    EpochSetOS:                 number;
+    DI:                         number;
+    DO:                         number;
+    Meta1:                      string | null;
+    Meta2:                      string | null;
+    Meta3:                      string | null;
+    Evt:                        number;
+    time:                       string;
+    value:                      unknown;
+    valuePrefix:                chargyInterfaces.DisplayPrefixes;
+    valuePrecision:             number;
+    measurementId:              unknown;
+    signature:                  string;
+    errors:                     string[];
+    warnings:                   string[];
 }
 
 export interface IBSMCrypt01Result extends chargyInterfaces.ICryptoResult
@@ -118,7 +166,7 @@ export class BSMCrypt01 extends ACrypt {
     public async tryToParseBSM_WS36aMeasurements(CTR:                   chargyInterfaces.IChargeTransparencyRecord,
                                                  ExpectedEVSEId:        string,
                                                  ExpectedCscSwVersion:  string|null,
-                                                 Measurements:          Array<any>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+                                                 Measurements:          Array<unknown>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         //#region Initial checks
@@ -143,8 +191,8 @@ export class BSMCrypt01 extends ACrypt {
             certainty: 0
         }
 
-        const errors    = new Array<String>();
-        const warnings  = new Array<String>();
+        const errors    = new Array<string>();
+        const warnings  = new Array<string>();
 
         // How sure we are, that this is really a BSM meter value format
         let numberOfFormatChecks  = 2*39; // At least two signed meter values!
@@ -319,7 +367,7 @@ export class BSMCrypt01 extends ACrypt {
                 MA1:                               null as string|null,
                 epochSetCnt:                       -1,
                 epochSetOS:                        -1,
-                dataSets:                          [] as any[]
+                dataSets:                          new Array<IBSMDataSet>()
 
             };
 
@@ -328,9 +376,9 @@ export class BSMCrypt01 extends ACrypt {
             //#region Data
 
             let Typ                     = 0;      // Snapshot Type
-            let RCR:          any[]     = [];     // !!! Real energy imported since the last execution of the turn-on sequence
-            let TotWhImp:     any[]     = [];     // !!! Total Real Energy Imported
-            let W:            any[]     = [];     // !!! Total Real Power
+            let RCR:        IBSMAdditionalValue | undefined;   // !!! Real energy imported since the last execution of the turn-on sequence
+            let TotWhImp:   IBSMAdditionalValue | undefined;   // !!! Total Real Energy Imported
+            let W:          IBSMAdditionalValue | undefined;   // !!! Total Real Power
             let MA1:    string|null     = null;   // Meter Address 1
             let RCnt                    = 0;      // A counter incremented with each snapshot
             let OS                      = 0;      // Operation-Seconds Counter
@@ -346,10 +394,10 @@ export class BSMCrypt01 extends ACrypt {
             let Evt                     = 0;      // Meter Event Flags
 
 
-            let previousId              = "";
+            let previousId: unknown     = "";
             let previousTime            = "";
             let previousMeasurementId   = "";
-            let previousValue           = "";
+            let previousValue: number | undefined;
 
             let previousRCR             = -1;
             let previousRCnt            = -1;
@@ -362,13 +410,17 @@ export class BSMCrypt01 extends ACrypt {
 
             //#endregion
 
-            for (const currentMeasurement of Measurements)
+            for (const measurementRaw of Measurements)
             {
 
                 let currentErrors:   Array<string>  = [];
                 let currentWarnings: Array<string>  = [];
 
                 measurementCounter++;
+
+                const currentMeasurement = chargyLib.asJSONObject(measurementRaw);
+                if (currentMeasurement === undefined)
+                    throw new Error(`Invalid signed meter value #${measurementCounter}!`);
 
                 //#region Validate common values
 
@@ -378,6 +430,10 @@ export class BSMCrypt01 extends ACrypt {
                 let currentId = currentMeasurement["@id"];
                 if (previousId !== "" && typeof currentId === 'string')
                 {
+
+                    if (typeof previousId !== 'string')
+                        throw new Error(`Invalid identification of signed meter value #${measurementCounter - 1}!`);
+
                     // IDs from the BSM-WS36A are in the form of "PREFIX-COUNTER". Check that prefixes
                     // match match and the counters are stricly increasing.
 
@@ -401,34 +457,73 @@ export class BSMCrypt01 extends ACrypt {
                 previousId = currentId;
 
 
-                if (previousTime !== "" && currentMeasurement.time <= previousTime)
+                const valueObj            = chargyLib.asJSONObject(currentMeasurement["value"]);
+                const measuredValueObj    = chargyLib.asJSONObject(valueObj?.["measuredValue"]);
+                const displayedFormatObj  = chargyLib.asJSONObject(valueObj?.["displayedFormat"]);
+                const currentTime         = chargyLib.asString    (currentMeasurement["time"]) ?? "";
+
+                if (previousTime !== "" && currentTime <= previousTime)
                     currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_TimestampP", measurementCounter));
-                previousTime = currentMeasurement.time;
+                previousTime = currentTime;
 
-                if (previousValue !== "" && currentMeasurement.value?.measuredValue?.value < previousValue)
+                const currentValue = chargyLib.asNumber(measuredValueObj?.["value"]);
+                if (previousValue !== undefined && currentValue !== undefined && currentValue < previousValue)
                     currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurement_ValueP", measurementCounter));
-                previousValue = currentMeasurement.value?.measuredValue?.value;
+                previousValue = currentValue;
 
+                //#region Flatten and validate the additional values
 
-                if (currentMeasurement.meterInfo)
+                const additionalValuesRaw = currentMeasurement["additionalValues"];
+                if (!chargyLib.isMandatoryJSONArray(additionalValuesRaw))
+                    throw new Error(`Missing or invalid additional values within signed meter value #${measurementCounter}!`);
+
+                const additionalValues = additionalValuesRaw.map((element, index) => {
+
+                    const elementObj       = chargyLib.asJSONObject(element);
+                    const measurand        = chargyLib.asJSONObject(elementObj?.["measurand"]);
+                    const measuredValue    = chargyLib.asJSONObject(elementObj?.["measuredValue"]);
+                    const displayedFormat  = chargyLib.asJSONObject(elementObj?.["displayedFormat"]);
+
+                    if (elementObj === undefined || measurand === undefined)
+                        throw new Error(`Invalid additional value #${index + 1} within signed meter value #${measurementCounter}!`);
+
+                    return {
+                        measurandId:    chargyLib.asString(measurand["id"]),
+                        measurandName:  chargyLib.asString(measurand["name"]),
+                        scale:          chargyLib.asNumber(measuredValue?.["scale"]),
+                        unit:           chargyLib.asString(measuredValue?.["unit"]),
+                        unitEncoded:    chargyLib.asNumber(measuredValue?.["unitEncoded"]),
+                        value:          measuredValue?.["value"],
+                        valueType:      chargyLib.asString(measuredValue?.["valueType"]),
+                        prefix:         chargyLib.asString(displayedFormat?.["prefix"]),
+                        precision:      chargyLib.asNumber(displayedFormat?.["precision"])
+                    } satisfies IBSMAdditionalValue;
+
+                });
+
+                //#endregion
+
+                if (currentMeasurement["meterInfo"])
                 {
 
-                    if (currentMeasurement.meterInfo?.firmwareVersion    !== common.meterInfo_firmwareVersion)
+                    const meterInfoObj = chargyLib.asJSONObject(currentMeasurement["meterInfo"]);
+
+                    if (meterInfoObj?.["firmwareVersion"]    !== common.meterInfo_firmwareVersion)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_FirmwareVersionP", measurementCounter));
 
-                    if (currentMeasurement.meterInfo?.publicKey          !== common.meterInfo_publicKey)
+                    if (meterInfoObj?.["publicKey"]          !== common.meterInfo_publicKey)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_PublicKeyP",       measurementCounter));
 
-                    if (currentMeasurement.meterInfo?.meterId            !== common.meterInfo_meterId)
+                    if (meterInfoObj?.["meterId"]            !== common.meterInfo_meterId)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_MeterIdP",         measurementCounter));
 
-                    if (currentMeasurement.meterInfo?.meterId            !== currentMeasurement.additionalValues?.filter((element: any) => element?.measurand?.name === "MA1")[0]?.measuredValue?.value)
+                    if (meterInfoObj?.["meterId"]            !== additionalValues.filter(element => element.measurandName === "MA1")[0]?.value)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_MeterIdP",         measurementCounter));
 
-                    if (currentMeasurement.meterInfo?.manufacturer       !== common.meterInfo_manufacturer)
+                    if (meterInfoObj?.["manufacturer"]       !== common.meterInfo_manufacturer)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_ManufacturerP",    measurementCounter));
 
-                    if (currentMeasurement.meterInfo?.type               !== common.meterInfo_type)
+                    if (meterInfoObj?.["type"]               !== common.meterInfo_type)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeterInfo_TypeP",            measurementCounter));
 
                 }
@@ -443,26 +538,28 @@ export class BSMCrypt01 extends ACrypt {
                 //         };
                 // }
 
-                if (currentMeasurement.contract)
+                if (currentMeasurement["contract"])
                 {
 
-                    if (currentMeasurement.additionalValues?.filter((element: any) => element?.measurand?.name?.startsWith('Meta') && element?.measuredValue?.value?.startsWith('contract-id:')).length == 0)
+                    const contractObj = chargyLib.asJSONObject(currentMeasurement["contract"]);
+
+                    if (additionalValues.filter(element => element.measurandName?.startsWith('Meta') && chargyLib.asString(element.value)?.startsWith('contract-id:')).length == 0)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP",      measurementCounter));
 
-                    if (currentMeasurement.contract.id   !== common.contract_id)
+                    if (contractObj?.["id"]   !== common.contract_id)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP",      measurementCounter));
 
-                    if (currentMeasurement.contract.type !== common.contract_type)
+                    if (contractObj?.["type"] !== common.contract_type)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_TypeP",    measurementCounter));
 
-                    let contractInfo = currentMeasurement.additionalValues?.filter((element: any) => element?.measurand?.name?.startsWith('Meta') && element?.measuredValue?.value?.startsWith('contract-id:'))[0]?.measuredValue?.value;
+                    const contractInfo = additionalValues.filter(element => element.measurandName?.startsWith('Meta') && chargyLib.asString(element.value)?.startsWith('contract-id:'))[0]?.value;
                     if (contractInfo != null)
                     {
 
-                        if ( currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contract_type + ":" + common.contract_id)
+                        if ( contractObj?.["type"] && contractInfo !== "contract-id: " + common.contract_type + ":" + common.contract_id)
                             currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP",  measurementCounter));
 
-                        if (!currentMeasurement.contract.type && contractInfo !== "contract-id: " + common.contract_id)
+                        if (!contractObj?.["type"] && contractInfo !== "contract-id: " + common.contract_id)
                             currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_Contract_IdP",  measurementCounter));
 
                     }
@@ -474,53 +571,57 @@ export class BSMCrypt01 extends ACrypt {
                 // measuredValue.value) and is identical to the signed RCR from
                 // the additional values array.
 
-                const rcrInAdditional = currentMeasurement.additionalValues?.find((element: any) => element.measurand.name == 'RCR')
+                const rcrInAdditional = additionalValues.find(element => element.measurandName == 'RCR');
 
-                if (currentMeasurement.value.measurand)
+                if (currentMeasurement["value"] == null)
+                    throw new Error(`Missing value within signed meter value #${measurementCounter}!`);
+
+                if ((valueObj?.["measurand"] || valueObj?.["measuredValue"]) && rcrInAdditional === undefined)
+                    throw new Error(`Missing 'RCR' within the additional values of signed meter value #${measurementCounter}!`);
+
+                if (valueObj?.["measurand"])
                 {
 
-                    const measurand = currentMeasurement.value.measurand
+                    const measurandObj = chargyLib.asJSONObject(valueObj["measurand"]);
 
-                    if (measurand.id   !== common.value_measurand_id   || measurand.id   !== rcrInAdditional.measurand.id)
+                    if (measurandObj?.["id"]   !== common.value_measurand_id   || measurandObj?.["id"]   !== rcrInAdditional?.measurandId)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurand_IdentificationP", measurementCounter));
 
-                    if (measurand.name !== common.value_measurand_name || measurand.name !== rcrInAdditional.measurand.name)
+                    if (measurandObj?.["name"] !== common.value_measurand_name || measurandObj?.["name"] !== rcrInAdditional?.measurandName)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurand_NameP",           measurementCounter));
 
                 }
 
-                if (currentMeasurement.value.measuredValue)
+                if (valueObj?.["measuredValue"])
                 {
 
-                    const measuredValue = currentMeasurement.value.measuredValue;
-
-                    if (measuredValue.value       !== rcrInAdditional.measuredValue.value)
+                    if (measuredValueObj?.["value"]       !== rcrInAdditional?.value)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValueP",             measurementCounter));
 
-                    if (measuredValue.scale       !== common.value_measuredValue_scale       || measuredValue.scale       !== rcrInAdditional.measuredValue.scale)
+                    if (measuredValueObj?.["scale"]       !== common.value_measuredValue_scale       || measuredValueObj?.["scale"]       !== rcrInAdditional?.scale)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_ScaleP",       measurementCounter));
 
-                    if (measuredValue.unit        !== common.value_measuredValue_unit        || measuredValue.unit        !== rcrInAdditional.measuredValue.unit)
+                    if (measuredValueObj?.["unit"]        !== common.value_measuredValue_unit        || measuredValueObj?.["unit"]        !== rcrInAdditional?.unit)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_UnitP",        measurementCounter));
 
-                    if (measuredValue.unitEncoded !== common.value_measuredValue_unitEncoded || measuredValue.unitEncoded !== rcrInAdditional.measuredValue.unitEncoded)
+                    if (measuredValueObj?.["unitEncoded"] !== common.value_measuredValue_unitEncoded || measuredValueObj?.["unitEncoded"] !== rcrInAdditional?.unitEncoded)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_UnitEncodedP", measurementCounter));
 
-                    if (measuredValue.valueType   !== common.value_measuredValue_valueType   || measuredValue.valueType   !== rcrInAdditional.measuredValue.valueType)
+                    if (measuredValueObj?.["valueType"]   !== common.value_measuredValue_valueType   || measuredValueObj?.["valueType"]   !== rcrInAdditional?.valueType)
                         currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_TypeP",        measurementCounter));
 
                 }
 
-                if (currentMeasurement.chargePoint && currentMeasurement.chargePoint.softwareVersion !== common.chargePoint_softwareVersion)
+                if (currentMeasurement["chargePoint"] && chargyLib.asJSONObject(currentMeasurement["chargePoint"])?.["softwareVersion"] !== common.chargePoint_softwareVersion)
                     currentErrors.push(this.chargy.GetLocalizedMessage("Inconsistent_ChargingStation_FirmwareVersion"));
 
                 //#region Find "evse-id:"        within the "Meta" data blocks
 
-                let signedEVSEId = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name?.startsWith('Meta') && element.measuredValue.value?.startsWith('evse-id:'));
+                const signedEVSEId = additionalValues.filter(element => element.measurandName?.startsWith('Meta') && chargyLib.asString(element.value)?.startsWith('evse-id:'));
                 if (signedEVSEId.length == 1)
                 {
 
-                    const evse__id = (signedEVSEId[0].measuredValue.value as String).replace('evse-id:', '').trim();
+                    const evse__id = (chargyLib.asString(signedEVSEId[0]?.value) ?? "").replace('evse-id:', '').trim();
 
                     if (evse__id !== 'unknown' && ExpectedEVSEId !== evse__id)
                         currentErrors.push(this.chargy.GetLocalizedMessage("Inconsistent_EVSE_Identification"));
@@ -531,11 +632,11 @@ export class BSMCrypt01 extends ACrypt {
 
                 //#region Find "csc-sw-version:" within the "Meta" data blocks
 
-                let signedCSCSWVersion = currentMeasurement.additionalValues?.filter((element: any) => element.measurand.name?.startsWith('Meta') && element.measuredValue.value?.startsWith('csc-sw-version:'));
+                const signedCSCSWVersion = additionalValues.filter(element => element.measurandName?.startsWith('Meta') && chargyLib.asString(element.value)?.startsWith('csc-sw-version:'));
                 if (signedCSCSWVersion.length == 1)
                 {
 
-                    const csc_sw_version = (signedCSCSWVersion[0]?.measuredValue?.value as String)?.replace('csc-sw-version:', '')?.trim();
+                    const csc_sw_version = chargyLib.asString(signedCSCSWVersion[0]?.value)?.replace('csc-sw-version:', '')?.trim() ?? null;
 
                     // Just check that all measurements are done with the same
                     // charging controller software version.
@@ -561,57 +662,38 @@ export class BSMCrypt01 extends ACrypt {
 
                 //#region Check additional values
 
-                for(const additionalValue of currentMeasurement.additionalValues)
+                for(const additionalValue of additionalValues)
                 {
-                    switch (additionalValue.measurand?.name)
+                    switch (additionalValue.measurandName)
                     {
-                        case "Typ":          Typ          =   additionalValue.measuredValue?.value;         break;
-                        case "RCR":          RCR          = [ additionalValue.measurand?.id,
-                                                              additionalValue.measuredValue?.scale,
-                                                              additionalValue.measuredValue?.unit,
-                                                              additionalValue.measuredValue?.unitEncoded,
-                                                              additionalValue.measuredValue?.value,
-                                                              additionalValue.measuredValue?.valueType,
-                                                              additionalValue.displayedFormat?.prefix,
-                                                              additionalValue.displayedFormat?.precision ];   break;
-                        case "TotWhImp":     TotWhImp     = [ additionalValue.measurand?.id,
-                                                              additionalValue.measuredValue?.scale,
-                                                              additionalValue.measuredValue?.unit,
-                                                              additionalValue.measuredValue?.unitEncoded,
-                                                              additionalValue.measuredValue?.value,
-                                                              additionalValue.measuredValue?.valueType,
-                                                              additionalValue.displayedFormat?.prefix,
-                                                              additionalValue.displayedFormat?.precision ]; break;
-                        case "W":            W            = [ additionalValue.measurand?.id,
-                                                              additionalValue.measuredValue?.scale,
-                                                              additionalValue.measuredValue?.unit,
-                                                              additionalValue.measuredValue?.unitEncoded,
-                                                              additionalValue.measuredValue?.value,
-                                                              additionalValue.measuredValue?.valueType,
-                                                              additionalValue.displayedFormat?.prefix,
-                                                              additionalValue.displayedFormat?.precision ]; break;
-                        case "MA1":          MA1          =   additionalValue.measuredValue?.value;         break;
-                        case "RCnt":         RCnt         =   additionalValue.measuredValue?.value;         break;
-                        case "OS":           OS           =   additionalValue.measuredValue?.value;         break;
-                        case "Epoch":        Epoch        =   additionalValue.measuredValue?.value;         break;
-                        case "TZO":          TZO          =   additionalValue.measuredValue?.value;         break;
-                        case "EpochSetCnt":  EpochSetCnt  =   additionalValue.measuredValue?.value;         break;
-                        case "EpochSetOS":   EpochSetOS   =   additionalValue.measuredValue?.value;         break;
-                        case "DI":           DI           =   additionalValue.measuredValue?.value;         break;
-                        case "DO":           DO           =   additionalValue.measuredValue?.value;         break;
-                        case "Meta1":        Meta1        =   additionalValue.measuredValue?.value ?? "";   break;
-                        case "Meta2":        Meta2        =   additionalValue.measuredValue?.value ?? "";   break;
-                        case "Meta3":        Meta3        =   additionalValue.measuredValue?.value ?? "";   break;
-                        case "Evt":          Evt          =   additionalValue.measuredValue?.value;         break;
+                        case "Typ":          Typ          = chargyLib.asNumber(additionalValue.value) ?? NaN;    break;
+                        case "RCR":          RCR          = additionalValue;                                     break;
+                        case "TotWhImp":     TotWhImp     = additionalValue;                                     break;
+                        case "W":            W            = additionalValue;                                     break;
+                        case "MA1":          MA1          = chargyLib.asString(additionalValue.value) ?? null;   break;
+                        case "RCnt":         RCnt         = chargyLib.asNumber(additionalValue.value) ?? NaN;    break;
+                        case "OS":           OS           = chargyLib.asNumber(additionalValue.value) ?? NaN;    break;
+                        case "Epoch":        Epoch        = chargyLib.asNumber(additionalValue.value) ?? NaN;    break;
+                        case "TZO":          TZO          = chargyLib.asNumber(additionalValue.value) ?? NaN;    break;
+                        case "EpochSetCnt":  EpochSetCnt  = chargyLib.asNumber(additionalValue.value) ?? NaN;    break;
+                        case "EpochSetOS":   EpochSetOS   = chargyLib.asNumber(additionalValue.value) ?? NaN;    break;
+                        case "DI":           DI           = chargyLib.asNumber(additionalValue.value) ?? NaN;    break;
+                        case "DO":           DO           = chargyLib.asNumber(additionalValue.value) ?? NaN;    break;
+                        case "Meta1":        Meta1        = chargyLib.asString(additionalValue.value) ?? "";     break;
+                        case "Meta2":        Meta2        = chargyLib.asString(additionalValue.value) ?? "";     break;
+                        case "Meta3":        Meta3        = chargyLib.asString(additionalValue.value) ?? "";     break;
+                        case "Evt":          Evt          = chargyLib.asNumber(additionalValue.value) ?? NaN;    break;
                     }
                 }
 
 
-                if (previousRCR !== -1 && RCR[4] < previousRCR)
-                    currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurement_ValueP", measurementCounter));
-                previousRCR = RCR[4];
+                const currentRCRValue = chargyLib.asNumber(RCR?.value) ?? NaN;
 
-                if (RCnt !== currentMeasurement.measurementId)
+                if (previousRCR !== -1 && currentRCRValue < previousRCR)
+                    currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_Measurement_ValueP", measurementCounter));
+                previousRCR = currentRCRValue;
+
+                if (RCnt !== currentMeasurement["measurementId"])
                     currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_MeasurementIdP", measurementCounter));
 
                 // Snapshot counter
@@ -633,7 +715,7 @@ export class BSMCrypt01 extends ACrypt {
                 const measurementTimestamp2 = measurementTimestamp1.substring(0, measurementTimestamp1.indexOf('.'));
                 const measurementTimestamp3 = measurementTimestamp2 + (TZO > 0 ? "+" : "-") + (Math.abs(TZO) / 60).toString().padStart(2, '0') + ":" + (Math.abs(TZO) % 60).toString().padStart(2, '0');
 
-                if (currentMeasurement.time !== measurementTimestamp3)
+                if (currentTime !== measurementTimestamp3)
                     currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_TimestampP", measurementCounter));
 
                 // Meter Address 1 == Meter Id
@@ -670,31 +752,35 @@ export class BSMCrypt01 extends ACrypt {
                     Meta2:           Meta2,
                     Meta3:           Meta3,
                     Evt:             Evt,
-                    time:            currentMeasurement.time,
-                    value:           currentMeasurement.value?.measuredValue?.  value,
-                    valuePrefix:     this.PrefixConverter(currentMeasurement.value?.displayedFormat?.prefix ?? "kilo"),
-                    valuePrecision:  currentMeasurement.value?.displayedFormat?.precision                   ?? 2,
-                    measurementId:   currentMeasurement.measurementId,
-                    signature:       currentMeasurement.signature,
+                    time:            currentTime,
+                    value:           measuredValueObj?.["value"],
+                    valuePrefix:     this.PrefixConverter(chargyLib.asString(displayedFormatObj?.["prefix"]) ?? "kilo"),
+                    valuePrecision:  chargyLib.asNumber(displayedFormatObj?.["precision"]) ?? 2,
+                    measurementId:   currentMeasurement["measurementId"],
+                    signature:       chargyLib.asString(currentMeasurement["signature"]) ?? "",
                     errors:          currentErrors,
                     warnings:        currentWarnings
-                }); // as IBSMMeasurementValue);
+                });
 
             }
 
             //#region Validate consistency of snapshot types
 
-            var n = common.dataSets.length-1;
+            const n             = common.dataSets.length-1;
 
-            if (common.dataSets[0].TypParsed !== "START" && common.dataSets[0].TypParsed !== "TURN ON")
+            // At least two signed meter values are validated above!
+            const firstDataSet  = common.dataSets[0]!;
+            const lastDataSet   = common.dataSets[n]!;
+
+            if (firstDataSet.TypParsed !== "START" && firstDataSet.TypParsed !== "TURN ON")
                 errors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_EnergyMeterValueP", 1));
 
             for (let i=1; i<common.dataSets.length-1; i++) {
-                if (common.dataSets[i].TypParsed !== "CURRENT")
+                if (common.dataSets[i]?.TypParsed !== "CURRENT")
                     errors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_EnergyMeterValueP", measurementCounter + 1));
             }
 
-            if (common.dataSets[n].TypParsed !== "END"   && common.dataSets[n].TypParsed !== "TURN OFF")
+            if (lastDataSet.TypParsed !== "END"   && lastDataSet.TypParsed !== "TURN OFF")
                 errors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_EnergyMeterValueP", n+1));
 
             //#endregion
@@ -705,21 +791,18 @@ export class BSMCrypt01 extends ACrypt {
                 CTR.chargingSessions = [];
 
             const ASN1_SignatureSchema = this.chargy.asn1.define('Signature', function() {
-                //@ts-ignore
                 this.seq().obj(
-                    //@ts-ignore
                     this.key('r').int(),
-                    //@ts-ignore
                     this.key('s').int()
                 );
             });
 
             let session = {
 
-                "@id":                          common.meterInfo_meterId + "-" + common.dataSets[0]["Epoch"],
+                "@id":                          common.meterInfo_meterId + "-" + String(firstDataSet.Epoch),
                 "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/bsm-ws36a-v0+json",
-                "begin":                        common.dataSets[0].time,
-                "end":                          common.dataSets[n].time,
+                "begin":                        firstDataSet.time,
+                "end":                          lastDataSet.time,
                 "EVSEId":                       CTR.chargingStationOperators![0]!["chargingStations"]![0]!["EVSEs"]![0]!["@id"],
 
                 "authorizationStart": {
@@ -745,28 +828,28 @@ export class BSMCrypt01 extends ACrypt {
                              },
                              {
                                 "name":              "Total Watt-hours Imported",
-                                "obis":              TotWhImp[0],
-                                "unit":              this.UnitConverter  (TotWhImp[2]),
-                                "unitEncoded":       TotWhImp[3],
-                                "valueType":         TotWhImp[5],
+                                "obis":              TotWhImp?.measurandId,
+                                "unit":              this.UnitConverter  (TotWhImp?.unit   ?? ""),
+                                "unitEncoded":       TotWhImp?.unitEncoded,
+                                "valueType":         TotWhImp?.valueType,
                                 "value":             "TotWhImp",
-                                "scale":             TotWhImp[1],
-                                "formatPrefix":      this.PrefixConverter(TotWhImp[6]),
-                                "formatPrecision":   TotWhImp[7],
+                                "scale":             TotWhImp?.scale,
+                                "formatPrefix":      this.PrefixConverter(TotWhImp?.prefix ?? ""),
+                                "formatPrecision":   TotWhImp?.precision,
                              },
                              {
                                 "name":              "Total Real Power",
-                                "obis":              W[0],
-                                "unit":              this.UnitConverter  (W[2]),
-                                "unitEncoded":       W[3],
-                                "valueType":         W[5],
+                                "obis":              W?.measurandId,
+                                "unit":              this.UnitConverter  (W?.unit   ?? ""),
+                                "unitEncoded":       W?.unitEncoded,
+                                "valueType":         W?.valueType,
                                 "value":             "W",
-                                "scale":             W[1],
-                                "formatPrefix":      this.PrefixConverter(W[6]),
-                                "formatPrecision":   W[7]
+                                "scale":             W?.scale,
+                                "formatPrefix":      this.PrefixConverter(W?.prefix ?? ""),
+                                "formatPrecision":   W?.precision
                              }
                          ],
-                         "values": [ ]
+                         "values": new Array<IBSMMeasurementValue>()
                     }
                 ]
 
@@ -795,29 +878,29 @@ export class BSMCrypt01 extends ACrypt {
 
                     timestamp:                                 dataSet.time,
                     Typ:                                       dataSet.Typ,
-                    value:                                     dataSet.value,
+                    value:                                     new Decimal(chargyLib.asNumber(dataSet.value) ?? NaN),
                     value_displayPrefix:                       dataSet.valuePrefix,
                     value_displayPrecision:                    dataSet.valuePrecision,
 
-                    RCR:                                       dataSet.RCR[4],
-                    RCR_SF:                                    dataSet.RCR[1],
-                    RCR_Unit:             this.UnitConverter  (dataSet.RCR[2]),
-                    RCR_Prefix:           this.PrefixConverter(dataSet.RCR[6]),
-                    RCR_Precision:                             dataSet.RCR[7],
+                    RCR:                  chargyLib.asNumber  (dataSet.RCR?.value) ?? NaN,
+                    RCR_SF:                                    dataSet.RCR?.scale  ?? NaN,
+                    RCR_Unit:             this.UnitConverter  (dataSet.RCR?.unit   ?? ""),
+                    RCR_Prefix:           this.PrefixConverter(dataSet.RCR?.prefix ?? ""),
+                    RCR_Precision:                             dataSet.RCR?.precision ?? NaN,
 
-                    TotWhImp:                                  dataSet.TotWhImp[4],
-                    TotWhImp_SF:                               dataSet.TotWhImp[1],
-                    TotWhImp_Unit:        this.UnitConverter  (dataSet.TotWhImp[2]),
-                    TotWhImp_Prefix:      this.PrefixConverter(dataSet.TotWhImp[6]),
-                    TotWhImp_Precision:                        dataSet.TotWhImp[7],
+                    TotWhImp:             chargyLib.asNumber  (dataSet.TotWhImp?.value) ?? NaN,
+                    TotWhImp_SF:                               dataSet.TotWhImp?.scale  ?? NaN,
+                    TotWhImp_Unit:        this.UnitConverter  (dataSet.TotWhImp?.unit   ?? ""),
+                    TotWhImp_Prefix:      this.PrefixConverter(dataSet.TotWhImp?.prefix ?? ""),
+                    TotWhImp_Precision:                        dataSet.TotWhImp?.precision ?? NaN,
 
-                    W:                                         dataSet.W[4],
-                    W_SF:                                      dataSet.W[1],
-                    W_Unit:               this.UnitConverter  (dataSet.W[2]),
-                    W_Prefix:             this.PrefixConverter(dataSet.W[6]),
-                    W_Precision:                               dataSet.W[7],
+                    W:                    chargyLib.asNumber  (dataSet.W?.value) ?? NaN,
+                    W_SF:                                      dataSet.W?.scale  ?? NaN,
+                    W_Unit:               this.UnitConverter  (dataSet.W?.unit   ?? ""),
+                    W_Prefix:             this.PrefixConverter(dataSet.W?.prefix ?? ""),
+                    W_Precision:                               dataSet.W?.precision ?? NaN,
 
-                    MA1:                                       dataSet.MA1,
+                    MA1:                                       dataSet.MA1   ?? "",
                     RCnt:                                      dataSet.RCnt,
                     OS:                                        dataSet.OS,
                     Epoch:                                     dataSet.Epoch,
@@ -826,9 +909,9 @@ export class BSMCrypt01 extends ACrypt {
                     EpochSetOS:                                dataSet.EpochSetOS,
                     DI:                                        dataSet.DI,
                     DO:                                        dataSet.DO,
-                    Meta1:                                     dataSet.Meta1,
-                    Meta2:                                     dataSet.Meta2,
-                    Meta3:                                     dataSet.Meta3,
+                    Meta1:                                     dataSet.Meta1 ?? "",
+                    Meta2:                                     dataSet.Meta2 ?? "",
+                    Meta3:                                     dataSet.Meta3 ?? "",
                     Evt:                                       dataSet.Evt,
 
                     errors:                                    dataSet.errors,
@@ -841,17 +924,17 @@ export class BSMCrypt01 extends ACrypt {
 
                 };
 
-                (session.measurements[0]!.values as any[])?.push(bsmMeasurementValue);
+                session.measurements[0]!.values.push(bsmMeasurementValue);
 
             }
 
-            CTR.chargingSessions.push(session as any as chargyInterfaces.IChargingSession);
+            CTR.chargingSessions.push(session as unknown as chargyInterfaces.IChargingSession);
 
             //#endregion
 
             //#region Set other CTR information
 
-            CTR["@id"] = common.dataSets[0]
+            CTR["@id"] = common.meterInfo_meterId + "-" + String(firstDataSet.Epoch);
 
             if (CTR.chargingSessions)
             {
@@ -1136,21 +1219,17 @@ export class BSMCrypt01 extends ACrypt {
                                 // https://lapo.it/asn1js/ for a visual check...
                                 // https://github.com/indutny/asn1.js
                                 const ASN1_OIDs      = this.chargy.asn1.define('OIDs', function() {
-                                    //@ts-ignore
                                     this.key('oid').objid()
                                 });
 
                                 const ASN1_PublicKey = this.chargy.asn1.define('PublicKey', function() {
-                                    //@ts-ignore
                                     this.seq().obj(
-                                        //@ts-ignore
                                         this.key('oids').seqof(ASN1_OIDs),
-                                        //@ts-ignore
                                         this.key('publicKey').bitstr()
                                     );
                                 });
 
-                                const publicKeyDER = ASN1_PublicKey.decode(Buffer.from(meter?.publicKeys[0]?.value ?? "", 'hex'), 'der');
+                                const publicKeyDER = ASN1_PublicKey.decode<{ publicKey: { data: ArrayBuffer | Uint8Array } }>(Buffer.from(meter?.publicKeys[0]?.value ?? "", 'hex'), 'der');
                                 publicKey = chargyLib.buf2hex(publicKeyDER.publicKey.data).toLowerCase();
 
                             }
@@ -1347,10 +1426,8 @@ export class BSMCrypt01 extends ACrypt {
                         if (signatureDiv != null)
                             signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement!.chargingSession!.chargingStation,
                                                                                                     measurementValue.measurement!.chargingSession!.EVSE,
-                                                                                                    //@ts-ignore
-                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                                                    //@ts-ignore
-                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                                                                    measurementValue.measurement!.chargingSession!.EVSE?.meters[0],
+                                                                                                    measurementValue.measurement!.chargingSession!.EVSE?.meters[0]?.publicKeys?.[0],
                                                                                                     signature);
 
                     }

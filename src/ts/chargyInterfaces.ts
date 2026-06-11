@@ -125,8 +125,8 @@ export interface IChargeTransparencyRecord
     // hopefully one will be the best matching parser.
     certainty:                  number;
 
-    warnings?:                  Array<String>;
-    errors?:                    Array<String>;
+    warnings?:                  Array<string>;
+    errors?:                    Array<string>;
     status?:                    SessionVerificationResult;
 
 }
@@ -581,8 +581,8 @@ export interface ISessionCryptoResult
     // hopefully one will be the best matching parser.
     certainty:                  number;
 
-    warnings?:                  Array<String>;
-    errors?:                    Array<String>;
+    warnings?:                  Array<string>;
+    errors?:                    Array<string>;
 
 }
 
@@ -786,6 +786,11 @@ export interface IVersionSignature {
 
 export interface IMultilanguageText {
     [key: string]:  string;
+}
+
+// The i18n.json dictionary: message key => language => localized text
+export interface I18NDictionary {
+    [key: string]:  IMultilanguageText;
 }
 
 export interface IResult {
