@@ -671,10 +671,6 @@ export class PCDF {
                     "@id":   data.session.idTag,
                     "type":  data.session.idTagType
                 },
-                "authorizationStop": {
-                    "@id":   data.session.idTag,
-                    "type":  data.session.idTagType
-                },
                 "measurements": [{
                     "energyMeterId":  meterId,
                     "name":           "ENERGY_TOTAL",

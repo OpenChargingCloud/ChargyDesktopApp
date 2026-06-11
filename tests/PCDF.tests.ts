@@ -281,6 +281,8 @@ describe('PCDF Chargy integration', () => {
 
         expect(session?.verificationResult?.status).toBe(SessionVerificationResult.ValidSignature);
         expect(session?.["@context"]).toContain("PCDF");
+        expect(session?.authorizationStart["@id"]).toBe("testuser");
+        expect(session?.authorizationStop).toBeUndefined();
         expect(measurement?.obis).toBe(PCDF_PREFIX);
         expect(value?.value.toString()).toBe("1.234");
         expect(value?.result?.status).toBe(VerificationResult.ValidSignature);
