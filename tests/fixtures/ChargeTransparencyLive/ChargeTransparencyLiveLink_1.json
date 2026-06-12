@@ -1,0 +1,66 @@
+{
+
+    "@context":      "https://open.charging.cloud/contexts/chargeTransparency/live/link/1.0",
+    "timestamp":     "2026-06-12T14:03:12Z",
+    "description":   {
+                         "en": "Charging Station 1234567890 Transparency Live-Link",
+                         "de": "Ladestation 1234567890 Transparenz Live-Link"
+                     },
+    "imageURLs":     [
+                          "https://api1.example.com/images/logo_transparencyLinks.svg"
+                     ],
+    "geoLocation":   {
+                         "lat": 50.387945,
+                         "lng": 10.4304
+                     },
+    "connector":     {
+                         "standard":   "CCS",
+                         "format":     "Type 2",
+                         "powerType":  "DC",
+                         "maxPower":   "150 kW"
+                     },
+
+    "transports":    [
+                         {
+                             "type": "snapshot",
+                             "url":  "https://api1.example.com/chargingSessions/1234567890/transparency/live?token=abcdef"
+                         },
+                         {
+                             "type": "websocket",
+                             "urls": [
+                                 {
+                                     "url":      "wss://api1.example.com/chargingSessions/1234567890/transparency/live",
+                                     "priority":  10,
+                                     "weight":    60
+                                 },
+                                 {
+                                     "url":      "wss://api2.example.com/chargingSessions/1234567890/transparency/live",
+                                     "priority":  10,
+                                     "weight":    40
+                                 },
+                                 {
+                                     "url":      "wss://api3.example.com/chargingSessions/1234567890/transparency/live",
+                                     "priority":  20
+                                 }
+                             ],
+                             "totp": {
+                                 "initialSharedSecret": "abcdefghijklmnopqrstuvwxyz1234567890",
+                                 "timeStep":             10
+                             }
+                         },
+                         {
+                             "type": "httpSSE",
+                             "urls": [
+                                 "https://api1.example.com/chargingSessions/1234567890/transparency/live",
+                                 "https://api2.example.com/chargingSessions/1234567890/transparency/live"
+                             ],
+                             "totp": {
+                                 "initialSharedSecret": "abcdefghijklmnopqrstuvwxyz1234567890",
+                                 "timeStep":             10
+                             }
+                         }
+                     ],
+
+    "signatures":    [ ]
+
+}

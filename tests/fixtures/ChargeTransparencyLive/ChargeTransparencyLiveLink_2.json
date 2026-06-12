@@ -1,0 +1,1 @@
+{"@context":"https://open.charging.cloud/contexts/chargeTransparency/live/link/1.0","transports":[{"type":"snapshot","url":"https://api1.example.com/chargingSessions/1234567890/transparency/live?token=abcdef"}]}
