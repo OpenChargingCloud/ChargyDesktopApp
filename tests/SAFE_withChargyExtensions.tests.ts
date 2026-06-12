@@ -129,6 +129,46 @@ describe('SAFE Tests with Chargy Extensions', () => {
 
 //     });
 
+    test("SAFE OCMF v0.1 with chargingStation extensions is merged into the CTR", async () => {
+
+        await expectVerificationReport(
+            "SAFE/withChargyExtensions/SAFE-Testdata-01_OCMFv0.1_withExtensions.xml",
+            "SAFE/withChargyExtensions/SAFE-Testdata-01_OCMFv0.1_withExtensions.expected.txt"
+        );
+
+    });
+
+    test("SAFE OCMF v0.1 chargingStation extensions are wired into the charging station and EVSE", async () => {
+
+        const xmlText      = (await import("node:fs/promises")).readFile;
+        const xmlDocument  = new DOMParser().parseFromString(
+                                 await xmlText(new URL("./fixtures/SAFE/withChargyExtensions/SAFE-Testdata-01_OCMFv0.1_withExtensions.xml", import.meta.url), "utf8"),
+                                 "text/xml"
+                             );
+
+        const result = await new SAFEXML(createChargy()).tryToParseSAFEXML(xmlDocument);
+
+        expect(result).toMatchObject({
+            chargingPools: [{
+                chargingStations: [{
+                    "@id":             "DE*GEF*STATION*CI*TESTS*1*A",
+                    description:       { en: "GraphDefined Charging Station - CI-Tests Pool 1 / Station A" },
+                    firmwareVersion:   "3.0.25.2089",
+                    geoLocation:       { lat: 50.387945, lng: 10.4304 },
+                    EVSEs: [{
+                        "@id":         "DE*GEF*EVSE*CI*TESTS*1*A*1",
+                        description:   { en: "GraphDefined EVSE - CI-Tests Pool 1 / Station A / EVSE 1" },
+                        connectors:    [{ type: "Type-2", looses: 0 }]
+                    }]
+                }]
+            }],
+            chargingSessions: [{
+                EVSEId: "DE*GEF*EVSE*CI*TESTS*1*A*1"
+            }]
+        });
+
+    });
+
     test("Multiple EVSE elements within the chargingStation XML should fail", async () => {
 
         await expectVerificationReportInline(

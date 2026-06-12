@@ -21,6 +21,18 @@ import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
 import Decimal                from 'decimal.js';
 
+// A single decoded 82-byte Alfen adapter data set.
+interface IAlfenDataSet
+{
+    StatusMeter:    string;
+    StatusAdapter:  string;
+    SecondIndex:    number;
+    Timestamp:      string;
+    Value:          Decimal;
+    Paging:         number;
+    Signature:      string;
+}
+
 export class Alfen  {
 
     private readonly chargy: Chargy;
@@ -45,7 +57,11 @@ export class Alfen  {
 
     //#region TryToParseALFENFormat(Content)
 
-    public async TryToParseALFENFormat(Content: string|string[], ContainerInfos: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async TryToParseALFENFormat(Content:         string|string[],
+                                       ContainerInfos:  any)
+
+        : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+
     {
 
         // AP;
@@ -65,22 +81,28 @@ export class Alfen  {
         try
         {
 
-            if (ContainerInfos == null)
-                ContainerInfos = {};
+            // The container infos are optional and provided by the
+            // surrounding container parsers (OCPI, chargeIT, ...).
+            const containerInfos   = chargyLib.asJSONObject(ContainerInfos) ?? {};
+            const chargingSession  = chargyLib.asJSONObject(containerInfos["chargingSession"]);
+            const chargingStation  = chargyLib.asJSONObject(containerInfos["chargingStation"]);
+            const evse             = chargyLib.asJSONObject(containerInfos["EVSE"]);
+            const connector        = chargyLib.asJSONObject(containerInfos["connector"]);
+            const energyMeter      = chargyLib.asJSONObject(containerInfos["energyMeter"]);
 
             const common = {
-                    PublicKey:          "",
-                    PublicKeyFormat:    "",
-                    AdapterId:          "",
-                    AdapterFWVersion:   "",
-                    AdapterFWChecksum:  "",
-                    MeterId:            "",
-                    ObisId:             "",
-                    UnitEncoded:        0,
-                    Scalar:             "",
-                    UID:                "",
-                    InternalSessionId:          0,
-                    dataSets:           [] as any[]
+                    PublicKey:           "",
+                    PublicKeyFormat:     "",
+                    AdapterId:           "",
+                    AdapterFWVersion:    "",
+                    AdapterFWChecksum:   "",
+                    MeterId:             "",
+                    ObisId:              "",
+                    UnitEncoded:         0,
+                    Scalar:              "",
+                    UID:                 "",
+                    InternalSessionId:   0,
+                    dataSets:            new Array<IAlfenDataSet>()
             };
 
             let signedValues:string[] = [];
@@ -144,7 +166,7 @@ export class Alfen  {
 
                 // Everything is Little Endian
                 const AdapterId            = this.bufferToHex(DataSet.slice( 0, 10));                                                              // 0a 54 65 73 74 44 65 76 00 09
-                const AdapterFWVersion     = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(10, 14)) as any);                        // ASCII: 76 30 31 34 (v014)
+                const AdapterFWVersion     = String.fromCharCode(...new Uint8Array(DataSet.slice(10, 14)));                                        // ASCII: 76 30 31 34 (v014)
                 const AdapterFWChecksum    = this.bufferToHex(DataSet.slice(14, 16));                                                              // B9 79
                 const MeterId              = this.bufferToHex(DataSet.slice(16, 26));                                                              // 0A 01 44 5A 47 00 33 00 25 02
                 const MeterStatus          = this.bufferToHex(DataSet.slice(26, 28), true);                                                        // 00 00
@@ -154,8 +176,8 @@ export class Alfen  {
                 const ObisId               = this.bufferToHex(DataSet.slice(38, 44));                                                              // 01 00 01 08 00 ff
                 const UnitEncoded          = this.bufferToNumber(DataSet.slice(44, 45));                                                           // 1e => 30 => Wh
                 const Scalar               = this.bufferToHex(DataSet.slice(45, 46));                                                              // 00
-                const Value                = new Number(new DataView(DataSet.slice(46, 54), 0).getBigInt64(0, true));                    // 73 29 00 00 00 00 00 00 => 10611 Wh so 10,611 KWh
-                const UID                  = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(54, 74)) as any).replace(/\0.*$/g, '');  // ASCII: 30 35 38 39 38 41 42 42 00 00 00 00 00 00 00 00 00 00 00 00 => UID: 05 89 8A BB
+                const Value                = new DataView(DataSet.slice(46, 54), 0).getBigInt64(0, true);                                          // 73 29 00 00 00 00 00 00 => 10611 Wh so 10,611 KWh
+                const UID                  = String.fromCharCode(...new Uint8Array(DataSet.slice(54, 74))).replace(/\0.*$/g, '');                  // ASCII: 30 35 38 39 38 41 42 42 00 00 00 00 00 00 00 00 00 00 00 00 => UID: 05 89 8A BB
                 const InternalSessionId    = new DataView(DataSet.slice(74, 78), 0).getInt32(0, true)                                              // 81 01 00 00 => 385(dec)
                 const Paging               = new DataView(DataSet.slice(78, 82), 0).getInt32(0, true);                                             // 47 02 00 00 => 583(dec)
 
@@ -252,35 +274,38 @@ export class Alfen  {
 
 
                 common.dataSets.push({
-                    //@ts-ignore
                     "StatusMeter":        MeterStatus,
-                    //@ts-ignore
                     "StatusAdapter":      AdapterStatus,
-                    //@ts-ignore
                     "SecondIndex":        SecondIndex,
-                    //@ts-ignore
                     "Timestamp":          Timestamp,
-                    //@ts-ignore
-                    "Value":              new Decimal(Value.toString()),  // Workaround for Decimal.js
-                    //@ts-ignore
+                    "Value":              new Decimal(Value.toString()),  // Workaround for Decimal.js, as it does not support BigInt!
                     "Paging":             Paging,
-                    //@ts-ignore
                     "Signature":          this.bufferToHex(Signature)
                 });
 
             }
 
-            const evseId             = ContainerInfos.EVSEId            ?? "DE*GEF*EVSE*CHARGY*1";
-            const chargingStationId  = ContainerInfos.ChargingStationId ?? "DE*GEF*STATION*CHARGY*1";
-            const n                  = common.dataSets.length-1;
+            const evseId             = chargyLib.asString(containerInfos["EVSEId"])            ?? "DE*GEF*EVSE*CHARGY*1";
+            const chargingStationId  = chargyLib.asString(containerInfos["ChargingStationId"]) ?? "DE*GEF*STATION*CHARGY*1";
+            const chargingSessionId  = chargyLib.asString(chargingSession?.["@id"]);
+
+            const firstDataSet       = common.dataSets[0];
+            const lastDataSet        = common.dataSets[common.dataSets.length-1];
+
+            if (firstDataSet === undefined || lastDataSet === undefined)
+                return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessage("Invalid number of signed meter values!"),
+                    certainty: 0
+                };
 
             const _CTR: IAlfenChargeTransparencyRecord = {
 
-                 "@id":              ContainerInfos.chargingSession?.["@id"] ?? common.InternalSessionId,
+                 "@id":              chargingSessionId ?? common.InternalSessionId.toString(),
                  "@context":         "https://open.charging.cloud/contexts/CTR+json",
 
-                 "begin":            common.dataSets[0]["Timestamp"],
-                 "end":              common.dataSets[n]["Timestamp"],
+                 "begin":            firstDataSet.Timestamp,
+                 "end":              lastDataSet.Timestamp,
 
                  "description": {
                      "de":           "Alle Ladevorgänge",
@@ -299,32 +324,33 @@ export class Alfen  {
                          "chargingStations": [
                              {
                                  "@id":                      chargingStationId,
-                                 "description":              ContainerInfos.chargingStation?.description,
-                                 "manufacturer":             ContainerInfos.chargingStation?.manufacturer,
-                                 "model":                    ContainerInfos.chargingStation?.type,
-                                 "serialNumber":             ContainerInfos.chargingStation?.serialNumber,
-                                 "firmwareVersion":          ContainerInfos.chargingStation?.softwareVersion,
-                                 "legalCompliance":          ContainerInfos.chargingStation?.legalCompliance,
-                                 "geoLocation":              ContainerInfos.chargingStation?.geoLocation,
-                                 "address":                  ContainerInfos.chargingStation?.address,
+                                 // ToDo: The container infos are not validated yet!
+                                 "description":              chargyLib.asJSONObject(chargingStation?.["description"])     as chargyInterfaces.IMultilanguageText | undefined,
+                                 "manufacturer":             chargyLib.asString    (chargingStation?.["manufacturer"]),
+                                 "model":                    chargyLib.asString    (chargingStation?.["type"]),
+                                 "serialNumber":             chargyLib.asString    (chargingStation?.["serialNumber"]),
+                                 "firmwareVersion":          chargyLib.asString    (chargingStation?.["softwareVersion"]),
+                                 "legalCompliance":          chargyLib.asJSONObject(chargingStation?.["legalCompliance"]) as chargyInterfaces.ILegalCompliance   | undefined,
+                                 "geoLocation":              chargyLib.asJSONObject(chargingStation?.["geoLocation"])     as chargyInterfaces.IGeoLocation       | undefined,
+                                 "address":                  chargyLib.asJSONObject(chargingStation?.["address"])         as chargyInterfaces.IAddress           | undefined,
                                  "EVSEs": [
                                      {
                                          "@id":                      evseId,
-                                         "description":              ContainerInfos.EVSE?.description,
+                                         "description":              chargyLib.asJSONObject(evse?.["description"])        as chargyInterfaces.IMultilanguageText | undefined,
                                          "connectors": [ {
-                                                 "type":                     ContainerInfos.connector?.type,
-                                                 "looses":                   ContainerInfos.connector?.looses
+                                                 "type":                     chargyLib.asString(connector?.["type"])   ?? "",
+                                                 "looses":                   chargyLib.asNumber(connector?.["looses"]) ?? 0
                                           } ],
                                          "meters": [
                                              {
                                                  "@id":                      common.MeterId,
-                                                 "manufacturer":             ContainerInfos.energyMeter?.manufacturer,
-                                                 "manufacturerURL":          ContainerInfos.energyMeter?.manufacturerURL,
-                                                 "model":                    ContainerInfos.energyMeter?.model,
-                                                 "modelURL":                 ContainerInfos.energyMeter?.modelURL,
-                                                 "hardwareVersion":          ContainerInfos.energyMeter?.hardwareVersion,
-                                                 "firmwareVersion":          common.AdapterFWVersion  ?? ContainerInfos.energyMeter?.firmwareVersion,
-                                                 "firmwareChecksum":         common.AdapterFWChecksum ?? ContainerInfos.energyMeter?.firmwareChecksum,
+                                                 "manufacturer":             chargyLib.asString(energyMeter?.["manufacturer"]),
+                                                 "manufacturerURL":          chargyLib.asString(energyMeter?.["manufacturerURL"]),
+                                                 "model":                    chargyLib.asString(energyMeter?.["model"]),
+                                                 "modelURL":                 chargyLib.asString(energyMeter?.["modelURL"]),
+                                                 "hardwareVersion":          chargyLib.asString(energyMeter?.["hardwareVersion"]),
+                                                 "firmwareVersion":          common.AdapterFWVersion,
+                                                 "firmwareChecksum":         common.AdapterFWChecksum,
                                                  "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/AlfenCrypt01",
                                                  "publicKeys": [
                                                      {
@@ -343,16 +369,17 @@ export class Alfen  {
                      }
                  ],
 
-                 "chargingTariffs":  ContainerInfos.chargingTariffs,
+                 // ToDo: The charging tariffs are not validated yet!
+                 "chargingTariffs":  chargyLib.asJSONArray(containerInfos["chargingTariffs"]) as chargyInterfaces.IChargingTariff[] | undefined,
 
                  "chargingSessions": [
 
                      {
 
-                         "@id":                          ContainerInfos.chargingSession?.["@id"] ?? common.InternalSessionId.toString(),
+                         "@id":                          chargingSessionId ?? common.InternalSessionId.toString(),
                          "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/AlfenCrypt01+json",
-                         "begin":                        common.dataSets[0]["Timestamp"],
-                         "end":                          common.dataSets[n]["Timestamp"],
+                         "begin":                        firstDataSet.Timestamp,
+                         "end":                          lastDataSet.Timestamp,
                          "internalSessionId":            common.InternalSessionId.toString(),
                          "EVSEId":                       evseId,
 
@@ -360,9 +387,10 @@ export class Alfen  {
                              "@id":                      common.UID,
                          },
 
-                         "chargingTariffs":              ContainerInfos.chargingTariffs,
-                         "chargingPeriods":              ContainerInfos.chargingPeriods,
-                         "totalCosts":                   ContainerInfos.totalCosts,
+                         // ToDo: The charging tariffs, periods and total costs are not validated yet!
+                         "chargingTariffs":              chargyLib.asJSONArray (containerInfos["chargingTariffs"]) as chargyInterfaces.IChargingTariff[]  | undefined,
+                         "chargingPeriods":              chargyLib.asJSONArray (containerInfos["chargingPeriods"]) as chargyInterfaces.IChargingPeriod[]  | undefined,
+                         "totalCosts":                   chargyLib.asJSONObject(containerInfos["totalCosts"])      as chargyInterfaces.IChargingCosts     | undefined,
 
                          "measurements": [
                              {
@@ -401,23 +429,22 @@ export class Alfen  {
 
             for (const dataSet of common.dataSets)
             {
-                if (_CTR["chargingSessions"]?.[0]?.["measurements"]?.[0]?.["values"] != null)
-                    _CTR["chargingSessions"][0]["measurements"][0]["values"].push(
-                        {
-                            "timestamp":      dataSet["Timestamp"],
-                            "value":          dataSet["Value"],
-                            "statusMeter":    dataSet["StatusMeter"],
-                            "statusAdapter":  dataSet["StatusAdapter"],
-                            "secondsIndex":   dataSet["SecondIndex"],
-                            "paginationId":   dataSet["Paging"],
-                            "signatures": [
-                                {
-                                    "r":  dataSet["Signature"].substring(0, 48),
-                                    "s":  dataSet["Signature"].substring(48)
-                                }
-                            ]
-                        }
-                    );
+                _CTR.chargingSessions?.[0]?.measurements?.[0]?.values.push(
+                    {
+                        "timestamp":      dataSet.Timestamp,
+                        "value":          dataSet.Value,
+                        "statusMeter":    dataSet.StatusMeter,
+                        "statusAdapter":  dataSet.StatusAdapter,
+                        "secondsIndex":   dataSet.SecondIndex,
+                        "paginationId":   dataSet.Paging,
+                        "signatures": [
+                            {
+                                "r":  dataSet.Signature.substring(0, 48),
+                                "s":  dataSet.Signature.substring(48)
+                            }
+                        ]
+                    }
+                );
             }
 
 
@@ -431,7 +458,7 @@ export class Alfen  {
         {
             return {
                 status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:    this.chargy.GetLocalizedMessage("Exception occured: ") + (exception instanceof Error ? exception.message : exception),
+                message:    this.chargy.GetLocalizedMessage("Exception occured: ") + (exception instanceof Error ? exception.message : String(exception)),
                 certainty:  0
             }
         }
@@ -527,7 +554,7 @@ export class AlfenCrypt01 extends ACrypt {
                 {
 
                     // Validate...
-                    for (var measurementValue of measurement.values)
+                    for (const measurementValue of measurement.values)
                     {
                         measurementValue.measurement = measurement;
                         await this.VerifyMeasurement(measurementValue as IAlfenMeasurementValue);
@@ -537,7 +564,7 @@ export class AlfenCrypt01 extends ACrypt {
                     // Find an overall result...
                     sessionResult = chargyInterfaces.SessionVerificationResult.ValidSignature;
 
-                    for (var measurementValue of measurement.values)
+                    for (const measurementValue of measurement.values)
                     {
                         if (sessionResult                   == chargyInterfaces.SessionVerificationResult.ValidSignature &&
                             measurementValue.result?.status != chargyInterfaces.VerificationResult.ValidSignature)
@@ -682,13 +709,13 @@ export class AlfenCrypt01 extends ACrypt {
                                 return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
 
                             }
-                            catch (exception)
+                            catch
                             {
                                 return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
                             }
 
                         }
-                        catch (exception)
+                        catch
                         {
                             return setResult(chargyInterfaces.VerificationResult.InvalidPublicKey);
                         }
@@ -704,7 +731,7 @@ export class AlfenCrypt01 extends ACrypt {
                     return setResult(chargyInterfaces.VerificationResult.EnergyMeterNotFound);
 
             }
-            catch (exception)
+            catch
             {
                 return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
             }
@@ -846,15 +873,13 @@ export class AlfenCrypt01 extends ACrypt {
                             signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(
                                                                measurementValue.measurement.chargingSession?.chargingStation,
                                                                measurementValue.measurement.chargingSession?.EVSE,
-                                                               //@ts-ignore
-                                                               measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                               //@ts-ignore
-                                                               measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                                                               measurementValue.measurement.chargingSession?.EVSE?.meters[0],
+                                                               measurementValue.measurement.chargingSession?.EVSE?.meters[0]?.publicKeys?.[0],
                                                                signature
                                                            );
 
                     }
-                    catch (exception)
+                    catch
                     { }
 
                 }
@@ -986,7 +1011,7 @@ export class AlfenCrypt01 extends ACrypt {
             //#endregion
 
         }
-        catch (exception)
+        catch
         {
             statusArray.push(this.chargy.GetLocalizedMessage("Invalid meter status!"));
         }
@@ -1046,7 +1071,7 @@ export class AlfenCrypt01 extends ACrypt {
             //#endregion
 
         }
-        catch (exception)
+        catch
         {
             statusArray.push(this.chargy.GetLocalizedMessage("Invalid status!"));
         }

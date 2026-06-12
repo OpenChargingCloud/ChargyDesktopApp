@@ -27,7 +27,7 @@ import { ChargeIT }                         from './chargeIT'
 import { ChargePoint, ChargePointCrypt01 }  from './chargePoint'
 import { EMHCrypt01 }                       from './EMHCrypt01'
 import { GDFCrypt01 }                       from './GDFCrypt01'
-import { Mennekes }                         from './Mennekes'
+import { Mennekes, MennekesCrypt01 }        from './Mennekes'
 import { OCMF, OCMFv1_x }                   from './OCMF'
 import { PCDF, PCDFCrypt01, isPCDFText }    from './PCDF'
 import { SAFEXML }                          from './SAFE_XML'
@@ -54,12 +54,16 @@ type Asn1Builder = {
     seqof(schema: unknown): Asn1Builder;
 };
 
+export type EllipticKeyPair = {
+    verify(hash: string, signature: unknown): boolean;
+};
+
+export type EllipticCurve = {
+    keyFromPublic(publicKey: string | { x: string; y: string }, encoding: string): EllipticKeyPair;
+};
+
 type EllipticModule = {
-    ec: new (curve: string) => {
-        keyFromPublic(publicKey: string, encoding: string): {
-            verify(hash: string, signature: unknown): boolean;
-        };
-    };
+    ec: new (curve: string) => EllipticCurve;
 };
 
 export class Chargy {
@@ -1207,7 +1211,7 @@ export class Chargy {
 
             //#region XML processing...
 
-            if (textContent?.startsWith("<?xml"))
+            if (textContent?.startsWith("<?xml") || textContent?.startsWith("<"))
             {
                 try
                 {
@@ -1224,7 +1228,7 @@ export class Chargy {
                         {
 
                             case "http://www.mennekes.de/Mennekes.EdlVerification.xsd":
-                                processedFile.result = await new Mennekes().tryToParseMennekesXML(XMLDocument);
+                                processedFile.result = await new Mennekes(this).tryToParseMennekesXML(XMLDocument);
                                 break;
 
                             case "http://transparenz.software/schema/2018/07":
@@ -1253,6 +1257,13 @@ export class Chargy {
                             // The SAFE transparency software v1.0 does not understand its own
                             // XML namespace. Therefore we have to guess the format.
                             case "":
+                                if (XMLDocument.documentElement?.localName === "ChargingProcess" ||
+                                    XMLDocument.documentElement?.localName === "Billing")
+                                {
+                                    processedFile.result = await new Mennekes(this).tryToParseMennekesXML(XMLDocument);
+                                    break;
+                                }
+
                                 // if (XMLDocument.documentElement?.nodeName  === "values" ||
                                 //     XMLDocument.documentElement?.localName === "values")
                                 // {
@@ -1284,7 +1295,11 @@ export class Chargy {
 
                         // The SAFE transparency software v1.0 does not understand its own
                         // XML namespace. Therefore we have to guess the format.
-                        processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
+                        if (XMLDocument.documentElement?.localName === "ChargingProcess" ||
+                            XMLDocument.documentElement?.localName === "Billing")
+                            processedFile.result = await new Mennekes(this).tryToParseMennekesXML(XMLDocument);
+                        else
+                            processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
 
                         // Maybe another XML format, e.g. the XML container format?
                         if (processedFile.result.status === chargyInterfaces.SessionVerificationResult.InvalidSessionFormat &&
@@ -2060,6 +2075,10 @@ export class Chargy {
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/AlfenCrypt01+json":
                 chargingSession.method = new AlfenCrypt01(this);
+                return await chargingSession.method.VerifyChargingSession(chargingSession);
+
+            case "https://open.charging.cloud/contexts/SessionSignatureFormats/MennekesCrypt01+json":
+                chargingSession.method = new MennekesCrypt01(this);
                 return await chargingSession.method.VerifyChargingSession(chargingSession);
 
             case "https://open.charging.cloud/contexts/SessionSignatureFormats/PCDF+json":

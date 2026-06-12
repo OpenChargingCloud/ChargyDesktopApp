@@ -102,9 +102,52 @@ export class OCPI {
                 const firstSignedData = chargyLib.asString(chargyLib.asJSONObject(signed_values[0])?.["signed_data"]);
 
                 if (firstSignedData)
+                {
+
+                    //#region Optional container infos (placeInfo, meterInfo, ...)
+
+                    // Convert the optional place and meter information of the
+                    // container into the common container info format, so that
+                    // the OCMF parser can merge it into the resulting charge
+                    // transparency record.
+
+                    const placeInfo    = chargyLib.asJSONObject(SomeJSON["placeInfo"]);
+                    const geoLocation  = chargyLib.asJSONObject(placeInfo?.["geoLocation"]);
+                    const address      = chargyLib.asJSONObject(placeInfo?.["address"]);
+
+                    const geoLat       = chargyLib.asNumber(geoLocation?.["lat"]);
+                    const geoLon       = chargyLib.asNumber(geoLocation?.["lon"]);
+
+                    const containerInfos = {
+
+                        EVSEId:           chargyLib.asString(placeInfo?.["evseId"]),
+
+                        chargingStation:  {
+                            geoLocation:  geoLat !== undefined && geoLon !== undefined
+                                              ? { lat: geoLat, lng: geoLon }
+                                              : undefined,
+                            address:      address
+                                              ? {
+                                                    street:      chargyLib.asString(address["street"]),
+                                                    postalCode:  chargyLib.asString(address["zipCode"]) ?? "",
+                                                    city:        chargyLib.asString(address["town"]),
+                                                    country:     chargyLib.asString(address["country"]) ?? ""
+                                                }
+                                              : undefined
+                        },
+
+                        energyMeter:      chargyLib.asJSONObject(SomeJSON["meterInfo"])
+
+                    };
+
+                    //#endregion
+
                     return await new OCMF(this.chargy).TryToParseOCMFDocument(firstSignedData,
                                                                               chargyLib.asString(public_key),
-                                                                              encoding_method);
+                                                                              encoding_method,
+                                                                              containerInfos);
+
+                }
 
             }
 
