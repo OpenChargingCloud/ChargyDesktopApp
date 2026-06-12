@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-import type { Chargy }        from './chargy'
-import { ACrypt }             from './ACrypt'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
-import Decimal                from 'decimal.js';
+import type { Chargy }                from './chargy'
+import { ACrypt }                     from './ACrypt'
+import * as chargyInterfaces          from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
+import * as chargyLib                 from './chargyLib'
+import Decimal                        from 'decimal.js';
 
 // A single decoded 82-byte Alfen adapter data set.
 interface IAlfenDataSet
@@ -60,7 +61,7 @@ export class Alfen  {
     public async TryToParseALFENFormat(Content:         string|string[],
                                        ContainerInfos:  any)
 
-        : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+        : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
 
     {
 
@@ -470,14 +471,14 @@ export class Alfen  {
 
 }
 
-export interface IAlfenMeasurement extends chargyInterfaces.IMeasurement
+export interface IAlfenMeasurement extends chargeTransparencyRecord.IMeasurement
 {
     adapterId:                     string,
     adapterFWVersion:              string,
     adapterFWChecksum:             string
 }
 
-export interface IAlfenMeasurementValue extends chargyInterfaces.IMeasurementValue
+export interface IAlfenMeasurementValue extends chargeTransparencyRecord.IMeasurementValue
 {
     statusMeter:                   string,
     statusAdapter:                 string,
@@ -514,14 +515,14 @@ export interface IAlfenCrypt01Result extends chargyInterfaces.ICryptoResult
 }
 
 
-export interface IAlfenChargingSession extends chargyInterfaces.IChargingSession
+export interface IAlfenChargingSession extends chargeTransparencyRecord.IChargingSession
 {
     internalSessionId?:         string;
     meter?:                     chargyInterfaces.IMeter;
     measurements:               Array<IAlfenMeasurement>;
 }
 
-export interface IAlfenChargeTransparencyRecord extends chargyInterfaces.IChargeTransparencyRecord
+export interface IAlfenChargeTransparencyRecord extends chargeTransparencyRecord.IChargeTransparencyRecord
 {
     chargingSessions?:          Array<IAlfenChargingSession>;
 }
@@ -537,7 +538,7 @@ export class AlfenCrypt01 extends ACrypt {
     }
 
 
-    async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession: chargeTransparencyRecord.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         let sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;

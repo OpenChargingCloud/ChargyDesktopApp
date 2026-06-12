@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-import type { Chargy }        from './chargy'
-import { secp224k1 }          from './secp224k1'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
+import type { Chargy }                from './chargy'
+import { secp224k1 }                  from './secp224k1'
+import * as chargyInterfaces          from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
+import * as chargyLib                 from './chargyLib'
 
 export abstract class ACrypt {
 
@@ -125,11 +126,11 @@ export abstract class ACrypt {
     //#endregion
 
 
-    abstract VerifyChargingSession(chargingSession:         chargyInterfaces.IChargingSession):  Promise<chargyInterfaces.ISessionCryptoResult>;
+    abstract VerifyChargingSession(chargingSession:         chargeTransparencyRecord.IChargingSession):  Promise<chargyInterfaces.ISessionCryptoResult>;
 
-    abstract VerifyMeasurement    (measurementValue:        chargyInterfaces.IMeasurementValue): Promise<chargyInterfaces.ICryptoResult>;
+    abstract VerifyMeasurement    (measurementValue:        chargeTransparencyRecord.IMeasurementValue): Promise<chargyInterfaces.ICryptoResult>;
 
-    abstract ViewMeasurement      (measurementValue:        chargyInterfaces.IMeasurementValue,
+    abstract ViewMeasurement      (measurementValue:        chargeTransparencyRecord.IMeasurementValue,
                                    errorDiv:                HTMLDivElement,
                                    introDiv:                HTMLDivElement,
                                    infoDiv:                 HTMLDivElement,

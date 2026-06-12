@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy'
-import { ACrypt }             from './ACrypt'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
-import Decimal                from 'decimal.js'
+import { Chargy }                     from './chargy'
+import { ACrypt }                     from './ACrypt'
+import * as chargyInterfaces          from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
+import * as chargyLib                 from './chargyLib'
+import Decimal                        from 'decimal.js'
 
 
-export interface IBSMMeasurementValue extends chargyInterfaces.IMeasurementValue
+export interface IBSMMeasurementValue extends chargeTransparencyRecord.IMeasurementValue
 {
 
     Typ:                        number,
@@ -163,10 +164,10 @@ export class BSMCrypt01 extends ACrypt {
     }
 
 
-    public async tryToParseBSM_WS36aMeasurements(CTR:                   chargyInterfaces.IChargeTransparencyRecord,
+    public async tryToParseBSM_WS36aMeasurements(CTR:                   chargeTransparencyRecord.IChargeTransparencyRecord,
                                                  ExpectedEVSEId:        string,
                                                  ExpectedCscSwVersion:  string|null,
-                                                 Measurements:          Array<unknown>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+                                                 Measurements:          Array<unknown>) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         //#region Initial checks
@@ -928,7 +929,7 @@ export class BSMCrypt01 extends ACrypt {
 
             }
 
-            CTR.chargingSessions.push(session as unknown as chargyInterfaces.IChargingSession);
+            CTR.chargingSessions.push(session as unknown as chargeTransparencyRecord.IChargingSession);
 
             //#endregion
 
@@ -1012,7 +1013,7 @@ export class BSMCrypt01 extends ACrypt {
     }
 
 
-    async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession: chargeTransparencyRecord.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         let sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;

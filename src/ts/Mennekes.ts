@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-import type { Chargy }        from './chargy'
-import { ACrypt }             from './ACrypt'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
-import Decimal                from 'decimal.js';
+import type { Chargy }                from './chargy'
+import { ACrypt }                     from './ACrypt'
+import * as chargyInterfaces          from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
+import * as chargyLib                 from './chargyLib'
+import Decimal                        from 'decimal.js';
+
 
 export const MENNEKES_EDL40_XMLNS = "http://www.mennekes.de/Mennekes.EdlVerification.xsd";
 export const MENNEKES_EDL40_OBIS  = "1-0:1.17.0*255";
@@ -51,7 +53,7 @@ export interface IMennekesBilling {
     chargingProcesses:        IMennekesChargingProcess[];
 }
 
-export interface IMennekesMeasurementValue extends chargyInterfaces.IMeasurementValue {
+export interface IMennekesMeasurementValue extends chargeTransparencyRecord.IMeasurementValue {
     eventCounter:             number;
     meterStatusNumber:        number;
     originalSignature:        string;
@@ -59,7 +61,7 @@ export interface IMennekesMeasurementValue extends chargyInterfaces.IMeasurement
     measurement:              IMennekesChargyMeasurement;
 }
 
-export interface IMennekesChargyMeasurement extends chargyInterfaces.IMeasurement {
+export interface IMennekesChargyMeasurement extends chargeTransparencyRecord.IMeasurement {
     serverId:                 string;
     publicKey:                string;
     customerIdent:            string;
@@ -97,7 +99,7 @@ export class Mennekes {
 
     //#region tryToParseMennekesXML(XMLDocument)
 
-    public async tryToParseMennekesXML(XMLDocument: Document) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async tryToParseMennekesXML(XMLDocument: Document) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         try
@@ -128,11 +130,11 @@ export class Mennekes {
 
     //#endregion
 
-    private toChargeTransparencyRecord(chargingProcesses: IMennekesChargingProcess[]): chargyInterfaces.IChargeTransparencyRecord {
+    private toChargeTransparencyRecord(chargingProcesses: IMennekesChargingProcess[]): chargeTransparencyRecord.IChargeTransparencyRecord {
 
         const sessions = chargingProcesses.map((chargingProcess, index) => this.toChargingSession(chargingProcess, index));
 
-        const ctr: chargyInterfaces.IChargeTransparencyRecord = {
+        const ctr: chargeTransparencyRecord.IChargeTransparencyRecord = {
             "@id":              sessions[0]?.["@id"] ?? "",
             "@context":         "https://open.charging.cloud/contexts/CTR+json",
             "begin":            sessions[0]?.begin,
@@ -197,7 +199,7 @@ export class Mennekes {
     }
 
     private toChargingSession(chargingProcess: IMennekesChargingProcess,
-                              index:           number): chargyInterfaces.IChargingSession {
+                              index:           number): chargeTransparencyRecord.IChargingSession {
 
         const startMeasurement = chargingProcess.measurementStart;
         const endMeasurement   = chargingProcess.measurementEnd;
@@ -269,7 +271,7 @@ export class MennekesCrypt01 extends ACrypt {
               chargy);
     }
 
-    async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession: chargeTransparencyRecord.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         let sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;

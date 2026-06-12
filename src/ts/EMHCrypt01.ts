@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy'
-import { ACrypt }             from './ACrypt'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
+import { Chargy }                     from './chargy'
+import { ACrypt }                     from './ACrypt'
+import * as chargyInterfaces          from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
+import * as chargyLib                 from './chargyLib'
 
-export interface IEMHMeasurementValue extends chargyInterfaces.IMeasurementValue
+
+export interface IEMHMeasurementValue extends chargeTransparencyRecord.IMeasurementValue
 {
     infoStatus:                 string,
     secondsIndex:               number,
@@ -62,7 +64,7 @@ export class EMHCrypt01 extends ACrypt {
     }
 
 
-    async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession: chargeTransparencyRecord.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         let sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;

@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
-import { EMHCrypt01 }         from './EMHCrypt01'
-import { Alfen }              from './Alfen'
-import { OCMF }               from './OCMF'
+import { Chargy }                     from './chargy'
+import * as chargyInterfaces          from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
+import * as chargyLib                 from './chargyLib'
+import { EMHCrypt01 }                 from './EMHCrypt01'
+import { Alfen }                      from './Alfen'
+import { OCMF }                       from './OCMF'
+
 
 interface XMLContainerCommonFormat {
     publicKey:             string;
@@ -40,7 +42,7 @@ export class XMLContainer {
 
     //#region tryToParseXMLContainer(XMLDocument)
 
-    public async tryToParseXMLContainer(XMLDocument: Document) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async tryToParseXMLContainer(XMLDocument: Document) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         try

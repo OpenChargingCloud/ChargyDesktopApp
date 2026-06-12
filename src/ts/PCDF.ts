@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-import type { Chargy }        from './chargy'
-import { ACrypt }             from './ACrypt'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
-import Decimal                from 'decimal.js';
+import type { Chargy }                from './chargy'
+import { ACrypt }                     from './ACrypt'
+import * as chargyInterfaces          from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
+import * as chargyLib                 from './chargyLib'
+import Decimal                        from 'decimal.js';
+
 
 export const PCDF_PREFIX = "128.8.0";
 
@@ -100,19 +102,19 @@ export interface IPCDFDocument {
     validationStatus:  chargyInterfaces.VerificationResult;
 }
 
-export interface IPCDFMeasurementValue extends chargyInterfaces.IMeasurementValue {
+export interface IPCDFMeasurementValue extends chargeTransparencyRecord.IMeasurementValue {
     pcdfDocument?: IPCDFDocument;
 }
 
-export interface IPCDFMeasurement extends chargyInterfaces.IMeasurement {
+export interface IPCDFMeasurement extends chargeTransparencyRecord.IMeasurement {
     values: Array<IPCDFMeasurementValue>;
 }
 
-export interface IPCDFChargingSession extends chargyInterfaces.IChargingSession {
+export interface IPCDFChargingSession extends chargeTransparencyRecord.IChargingSession {
     measurements: Array<IPCDFMeasurement>;
 }
 
-export interface IPCDFChargeTransparencyRecord extends chargyInterfaces.IChargeTransparencyRecord {
+export interface IPCDFChargeTransparencyRecord extends chargeTransparencyRecord.IChargeTransparencyRecord {
     pcdf?: {
         chargingSessionCounter: number;
         timeValid:              boolean;
@@ -437,7 +439,7 @@ export class PCDFCrypt01 extends ACrypt {
               chargy);
     }
 
-    async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession: chargeTransparencyRecord.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         let sessionResult = chargyInterfaces.SessionVerificationResult.ValidSignature;

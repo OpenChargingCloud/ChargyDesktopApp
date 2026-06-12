@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy'
-import { Alfen }              from './Alfen'
-import { OCMF }               from './OCMF'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
+import { Chargy }                     from './chargy'
+import { Alfen }                      from './Alfen'
+import { OCMF }                       from './OCMF'
+import * as chargyInterfaces          from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
+import * as chargyLib                 from './chargyLib'
+
 
 export interface ISAFEXMLEVSEContext {
     "@id":         string;
@@ -126,7 +128,7 @@ export class SAFEXML {
 
     //#region tryToParseSAFEXML(XMLDocument)
 
-    public async tryToParseSAFEXML(XMLDocument: Document) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async tryToParseSAFEXML(XMLDocument: Document) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         // The SAFE transparency software v1.0 does not understand its own

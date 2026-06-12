@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy'
-import { ACrypt }             from './ACrypt'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
+import { Chargy }                     from './chargy'
+import { ACrypt }                     from './ACrypt'
+import * as chargyInterfaces          from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
+import * as chargyLib                 from './chargyLib'
 
-export interface IGDFMeasurementValue extends chargyInterfaces.IMeasurementValue
+
+export interface IGDFMeasurementValue extends chargeTransparencyRecord.IMeasurementValue
 {
     prevSignature:                 string,
 }
@@ -52,7 +54,7 @@ export class GDFCrypt01 extends ACrypt {
               chargy);
     }
 
-    async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession: chargeTransparencyRecord.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         let sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;

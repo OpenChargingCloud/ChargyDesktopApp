@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy'
-import { ACrypt }             from './ACrypt'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
-import Decimal                from 'decimal.js'
+import { Chargy }                     from './chargy'
+import { ACrypt }                     from './ACrypt'
+import * as chargyInterfaces          from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
+import * as chargyLib                 from './chargyLib'
+import Decimal                        from 'decimal.js'
 
 
-export interface IChargepointChargeTransparencyRecord extends chargyInterfaces.IChargeTransparencyRecord
+export interface IChargepointChargeTransparencyRecord extends chargeTransparencyRecord.IChargeTransparencyRecord
 {
     //chargingSessions?:          Array<IAlfenChargingSession>;
 }
@@ -37,7 +38,7 @@ export class ChargePoint {
 
     //#region TryToParseChargepointFormat(SomeJSON)
 
-    public async TryToParseChargepointFormat(SomeJSON: unknown) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async TryToParseChargepointFormat(SomeJSON: unknown) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         try
@@ -664,7 +665,7 @@ export class ChargePoint {
 }
 
 
-export interface IChargepointMeasurementValue extends chargyInterfaces.IMeasurementValue
+export interface IChargepointMeasurementValue extends chargeTransparencyRecord.IMeasurementValue
 {
     statusMeter:                   string,
     secondsIndex:                  number,
@@ -712,7 +713,7 @@ export class ChargePointCrypt01 extends ACrypt {
     }
 
 
-    async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession: chargeTransparencyRecord.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         if (chargingSession     === undefined ||

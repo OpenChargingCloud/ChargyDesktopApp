@@ -33,7 +33,8 @@ import { PCDF, PCDFCrypt01, isPCDFText }    from './PCDF'
 import { SAFEXML }                          from './SAFE_XML'
 import { XMLContainer }                     from './XMLContainer'
 import { OCPI }                             from './OCPI'
-import * as chargyInterfaces                from './chargyInterfaces'
+import * as chargyInterfaces                from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord        from './interfaces/IChargeTransparencyRecord'
 import * as chargyLib                       from './chargyLib'
 import * as pdfjsLib                        from 'pdfjs-dist';
 import { readQRCodeTextFromImage }          from './qrReader'
@@ -83,13 +84,13 @@ export class Chargy {
     private chargingStations          = new Array<chargyInterfaces.IChargingStation>();
     private EVSEs                     = new Array<chargyInterfaces.IEVSE>();
     private meters                    = new Array<chargyInterfaces.IMeter>();
-    private chargingSessions          = new Array<chargyInterfaces.IChargingSession>();
+    private chargingSessions          = new Array<chargeTransparencyRecord.IChargingSession>();
 
     private eMobilityProviders        = new Array<chargyInterfaces.IEMobilityProvider>();
     private mediationServices         = new Array<chargyInterfaces.IMediationService>();
 
-    public  currentCTR                = {} as chargyInterfaces.IChargeTransparencyRecord;
-    public  internalCTR               = {} as chargyInterfaces.IChargeTransparencyRecord;
+    public  currentCTR                = {} as chargeTransparencyRecord.IChargeTransparencyRecord;
+    public  internalCTR               = {} as chargeTransparencyRecord.IChargeTransparencyRecord;
 
     //#endregion
 
@@ -1069,7 +1070,7 @@ export class Chargy {
 
     //#region DetectAndConvertContentFormat(FileInfos)
 
-    public async DetectAndConvertContentFormat(FileInfos: Array<chargyInterfaces.IFileInfo>): Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult> {
+    public async DetectAndConvertContentFormat(FileInfos: Array<chargyInterfaces.IFileInfo>): Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult> {
 
         //#region Initial checks
 
@@ -1080,7 +1081,7 @@ export class Chargy {
         }
 
         let expandedFiles  = new Array<chargyInterfaces.IFileInfo>();
-        const processedFiles = new Array<chargyInterfaces.IExtendedFileInfo>();
+        const processedFiles = new Array<chargeTransparencyRecord.IExtendedFileInfo>();
 
         //#endregion
 
@@ -1201,7 +1202,7 @@ export class Chargy {
         for (const expandedFile of expandedFiles)
         {
 
-            const processedFile  = expandedFile as chargyInterfaces.IExtendedFileInfo;
+            const processedFile  = expandedFile as chargeTransparencyRecord.IExtendedFileInfo;
             let textContent    = new TextDecoder('utf-8').decode(expandedFile.data)?.trim();
 
             // Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
@@ -1455,7 +1456,7 @@ export class Chargy {
                     const JSONContext = (JSONContent["@context"] as string)?.trim() ?? "";
 
                     if      (JSONContext.startsWith("https://open.charging.cloud/contexts/CTR+json"))
-                        processedFile.result = JSONContent as chargyInterfaces.IChargeTransparencyRecord;
+                        processedFile.result = JSONContent as chargeTransparencyRecord.IChargeTransparencyRecord;
 
                     else if (JSONContext.startsWith("https://open.charging.cloud/contexts/publicKey+json"))
                         processedFile.result = JSONContent as chargyInterfaces.IPublicKeyInfo;
@@ -1547,10 +1548,10 @@ export class Chargy {
             if (processedFile)
             {
 
-                if (chargyInterfaces.IsAChargeTransparencyRecord(processedFile.result))
+                if (chargeTransparencyRecord.IsAChargeTransparencyRecord(processedFile.result))
                     return this.processChargeTransparencyRecord(processedFile.result);
 
-                if (chargyInterfaces.IsAPublicKeyLookup(processedFile.result))
+                if (chargeTransparencyRecord.IsAPublicKeyLookup(processedFile.result))
                     return {
                         status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:    this.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
@@ -1577,7 +1578,7 @@ export class Chargy {
         else if (processedFiles.length > 1)
         {
 
-            const mergedCTR:chargyInterfaces.IChargeTransparencyRecord = {
+            const mergedCTR:chargeTransparencyRecord.IChargeTransparencyRecord = {
                 "@id":      "",
                 "@context": "",
                 certainty:   0
@@ -1588,7 +1589,7 @@ export class Chargy {
 
                 const processedFileResult = processedFile?.result;
 
-                if (chargyInterfaces.IsAChargeTransparencyRecord(processedFileResult))
+                if (chargeTransparencyRecord.IsAChargeTransparencyRecord(processedFileResult))
                 {
 
                     if (mergedCTR["@id"] === "")
@@ -1661,7 +1662,7 @@ export class Chargy {
 
                 }
 
-                else if (chargyInterfaces.IsAPublicKeyLookup(processedFileResult))
+                else if (chargeTransparencyRecord.IsAPublicKeyLookup(processedFileResult))
                 {
 
                     if (!mergedCTR.publicKeys)
@@ -1676,7 +1677,7 @@ export class Chargy {
                 {
 
                     if (mergedCTR.invalidDataSets === undefined)
-                        mergedCTR.invalidDataSets = new Array<chargyInterfaces.IExtendedFileInfo>();
+                        mergedCTR.invalidDataSets = new Array<chargeTransparencyRecord.IExtendedFileInfo>();
 
                     mergedCTR.invalidDataSets.push(processedFile);
 
@@ -1684,7 +1685,7 @@ export class Chargy {
 
             }
 
-            if (chargyInterfaces.IsAChargeTransparencyRecord(mergedCTR))
+            if (chargeTransparencyRecord.IsAChargeTransparencyRecord(mergedCTR))
                 return this.processChargeTransparencyRecord(mergedCTR);
 
         }
@@ -1703,12 +1704,12 @@ export class Chargy {
 
     //#region (private) processChargeTransparencyRecord(CTR)
 
-    private async processChargeTransparencyRecord(CTR: chargyInterfaces.IChargeTransparencyRecord): Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    private async processChargeTransparencyRecord(CTR: chargeTransparencyRecord.IChargeTransparencyRecord): Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         //#region Initial checks
 
-        if (!chargyInterfaces.IsAChargeTransparencyRecord(CTR))
+        if (!chargeTransparencyRecord.IsAChargeTransparencyRecord(CTR))
             return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                 message:   this.GetLocalizedMessage("UnknownOrInvalidJSONChargeTransparencyFormat"),
@@ -1737,7 +1738,7 @@ export class Chargy {
         {
 
             // We operate on an agumented copy of the data!
-            this.internalCTR  = chargyLib.CloneCTR(CTR);
+            this.internalCTR  = chargeTransparencyRecord.CloneCTR(CTR);
             this.currentCTR   = CTR;
 
             //#region Process operators (pools, stations, evses, tariffs, ...)
@@ -2030,7 +2031,7 @@ export class Chargy {
 
     //#region (private) processChargingSession(chargingSession)
 
-    private async processChargingSession(chargingSession: chargyInterfaces.IChargingSession) : Promise<chargyInterfaces.ISessionCryptoResult>
+    private async processChargingSession(chargingSession: chargeTransparencyRecord.IChargingSession) : Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         //ToDo: Verify @id exists
@@ -2105,10 +2106,10 @@ export class Chargy {
 
 
 
-    public MergeChargeTransparencyRecords(CTRs: Array<chargyInterfaces.IChargeTransparencyRecord>): chargyInterfaces.IChargeTransparencyRecord
+    public MergeChargeTransparencyRecords(CTRs: Array<chargeTransparencyRecord.IChargeTransparencyRecord>): chargeTransparencyRecord.IChargeTransparencyRecord
     {
 
-        const mergedCTR:chargyInterfaces.IChargeTransparencyRecord = {
+        const mergedCTR:chargeTransparencyRecord.IChargeTransparencyRecord = {
             "@id":       "",
             "@context":  "",
             certainty:    0

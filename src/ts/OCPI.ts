@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy'
-import { Alfen }              from './Alfen'
-import { BSMCrypt01 }         from './BSMCrypt01'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
-import { OCMF }               from './OCMF'
+import { Chargy }                     from './chargy'
+import { Alfen }                      from './Alfen'
+import { BSMCrypt01 }                 from './BSMCrypt01'
+import * as chargyInterfaces          from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
+import * as chargyLib                 from './chargyLib'
+import { OCMF }                       from './OCMF'
+
 
 export class OCPI {
 
@@ -49,7 +51,7 @@ export class OCPI {
     //#region tryToParseChargeITContainerFormat(SomeJSON)
 
     // The chargeIT mobility data format does not always provide context information or format identifiers!
-    public async tryToParseOCPIFormat(SomeJSON: unknown) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async tryToParseOCPIFormat(SomeJSON: unknown) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         const errors    = new Array<string>();
@@ -533,7 +535,7 @@ export class OCPI {
 
                     const evseIdStr = chargyLib.asString(evseId) ?? "";
 
-                    const CTR: chargyInterfaces.IChargeTransparencyRecord = {
+                    const CTR: chargeTransparencyRecord.IChargeTransparencyRecord = {
 
                         "@id":              "",
                         "@context":         "https://open.charging.cloud/contexts/CTR+json",

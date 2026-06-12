@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-import type { Chargy }        from './chargy'
-import { Alfen }              from './Alfen'
-import { BSMCrypt01 }         from './BSMCrypt01'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
+import type { Chargy }                from './chargy'
+import { Alfen }                      from './Alfen'
+import { BSMCrypt01 }                 from './BSMCrypt01'
+import * as chargyInterfaces          from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
+import * as chargyLib                 from './chargyLib'
 
 
 export class ChargeIT {
@@ -52,7 +53,7 @@ export class ChargeIT {
                                                         evseId:             string,
                                                         address:            any,
                                                         geoLocation:        any,
-                                                        signedMeterValues:  Array<any>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+                                                        signedMeterValues:  Array<any>) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         const CTRArray:Array<any> = [];
@@ -410,7 +411,7 @@ export class ChargeIT {
     //#region TryToParseChargeITContainerFormat(SomeJSON)
 
     // The chargeIT mobility data format does not always provide context information or format identifiers!
-    public async TryToParseChargeITContainerFormat(SomeJSON: unknown) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async TryToParseChargeITContainerFormat(SomeJSON: unknown) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         const errors    = new Array<string>();
@@ -884,7 +885,7 @@ export class ChargeIT {
 
                         //#region Generate default charge transparency record
 
-                        const CTR: chargyInterfaces.IChargeTransparencyRecord = {
+                        const CTR: chargeTransparencyRecord.IChargeTransparencyRecord = {
 
                             "@id":              "",
                             "@context":         "https://open.charging.cloud/contexts/CTR+json",
@@ -1477,7 +1478,7 @@ export class ChargeIT {
 
                     const evseIdStr = chargyLib.asString(evseId) ?? "";
 
-                    const CTR: chargyInterfaces.IChargeTransparencyRecord = {
+                    const CTR: chargeTransparencyRecord.IChargeTransparencyRecord = {
 
                         "@id":              "",
                         "@context":         "https://open.charging.cloud/contexts/CTR+json",

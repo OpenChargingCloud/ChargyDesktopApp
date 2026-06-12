@@ -20,11 +20,12 @@
 
 import type { Chargy,
               EllipticCurve,
-              EllipticKeyPair }  from './chargy'
-import { ACrypt }                from './ACrypt'
-import * as chargyInterfaces     from './chargyInterfaces'
-import * as chargyLib            from './chargyLib'
-import Decimal                   from 'decimal.js';
+              EllipticKeyPair }       from './chargy'
+import { ACrypt }                     from './ACrypt'
+import * as chargyInterfaces          from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
+import * as chargyLib                 from './chargyLib'
+import Decimal                        from 'decimal.js';
 
 
 export interface IOCMFv1_0MeasurementValue extends IOCMFMeasurementValue
@@ -68,7 +69,7 @@ export class OCMFv1_x extends ACrypt {
     }
 
 
-    async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
+    async VerifyChargingSession(chargingSession: chargeTransparencyRecord.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
         let sessionResult:chargyInterfaces.SessionVerificationResult = chargyInterfaces.SessionVerificationResult.Unvalidated;
@@ -974,7 +975,7 @@ export interface IOCMFJSONDocument {
 
 //#region OCMF Charge Transparency Record Extensions
 
-export interface IOCMFMeasurementValue extends chargyInterfaces.IMeasurementValue
+export interface IOCMFMeasurementValue extends chargeTransparencyRecord.IMeasurementValue
 {
     measurement?:               IOCMFMeasurement;
     timeSync:                   string;
@@ -987,7 +988,7 @@ export interface IOCMFMeasurementValue extends chargyInterfaces.IMeasurementValu
     ocmfDocument?:              IOCMFJSONDocument;
 }
 
-export interface IOCMFMeasurement extends chargyInterfaces.IMeasurement
+export interface IOCMFMeasurement extends chargeTransparencyRecord.IMeasurement
 {
     currentType?:               string;
     values:                     Array<IOCMFMeasurementValue>;
@@ -1000,7 +1001,7 @@ export interface IOCMFAuthorization extends chargyInterfaces.IAuthorization
     identificationFlags?:       Array<string>;
 }
 
-export interface IOCMFChargingSession extends chargyInterfaces.IChargingSession
+export interface IOCMFChargingSession extends chargeTransparencyRecord.IChargingSession
 {
     internalSessionId?:         string;
     authorizationStart:         IOCMFAuthorization;
@@ -1015,7 +1016,7 @@ export interface IOCMFCTRExtensions {
     gatewayVersion?:            string
 }
 
-export interface IOCMFChargeTransparencyRecord extends chargyInterfaces.IChargeTransparencyRecord
+export interface IOCMFChargeTransparencyRecord extends chargeTransparencyRecord.IChargeTransparencyRecord
 {
     ocmf?:                      IOCMFCTRExtensions;
     chargingSessions?:          Array<IOCMFChargingSession>;
@@ -2277,7 +2278,7 @@ export class OCMF {
     public async TryToParseOCMFDocument(OCMFDocument:        string,
                                         PublicKey?:          string|chargyInterfaces.IPublicKeyXY,
                                         PublicKeyEncoding?:  string,
-                                        ContainerInfos?:     unknown) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+                                        ContainerInfos?:     unknown) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
         return await this.TryToParseOCMFDocuments([ OCMFDocument ], PublicKey, PublicKeyEncoding, ContainerInfos);
     }
@@ -2289,7 +2290,7 @@ export class OCMF {
     public async TryToParseOCMFDocuments(OCMFDocuments:       string[],
                                          PublicKey?:          string|chargyInterfaces.IPublicKeyXY,
                                          PublicKeyEncoding?:  string,
-                                         ContainerInfos?:     unknown) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+                                         ContainerInfos?:     unknown) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         //#region Data

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as chargyInterfaces  from './chargyInterfaces'
+import * as chargyInterfaces  from './interfaces/chargyInterfaces'
 
 
 // Digital Calibration Certificate (DCC)

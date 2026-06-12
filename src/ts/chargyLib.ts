@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as chargyInterfaces  from './chargyInterfaces'
+import * as chargyInterfaces  from './interfaces/chargyInterfaces'
 import Decimal                from 'decimal.js';
 import moment                 from 'moment';
 
@@ -1142,33 +1142,6 @@ export function InformationRelevanceToString(InfoRelevance: chargyInterfaces.Inf
         default:                                                 return "Unknown";
     }
 }
-
-
-export function CloneCTR(CTR: chargyInterfaces.IChargeTransparencyRecord): chargyInterfaces.IChargeTransparencyRecord
-{
-
-    // const jsonSerializer = (key:string, value:any) => {
-    //     return value instanceof Decimal ? value.toNumber() : value;
-    // };
-
-    const clonedCTR = JSON.parse(JSON.stringify(CTR)) as chargyInterfaces.IChargeTransparencyRecord;   //, jsonSerializer));
-
-    if (clonedCTR.chargingSessions)
-    {
-        for (const session of clonedCTR.chargingSessions) {
-            for (const measurement of session.measurements) {
-                for (const value of measurement.values) {
-                    if (typeof value.value === 'string' || typeof value.value === 'number')
-                        value.value = new Decimal(value.value);
-                }
-            }
-        }
-    }
-
-    return clonedCTR;
-
-}
-
 
 //#region jsonPrettyPrinter(value, KeyLookup?)
 

@@ -15,24 +15,25 @@
  * limitations under the License.
  */
 
-import { Chargy }             from './chargy'
-import { readQRCodeTextFromImageData } from './qrReader'
-import * as chargyInterfaces  from './chargyInterfaces'
-import * as chargyLib         from './chargyLib'
+import { Chargy }                       from './chargy'
+import { readQRCodeTextFromImageData }  from './qrReader'
+import * as chargyInterfaces            from './interfaces/chargyInterfaces'
+import * as chargeTransparencyRecord    from './interfaces/IChargeTransparencyRecord'
+import * as chargyLib                   from './chargyLib'
 
-import stringify              from 'safe-stable-stringify';
-import Decimal                from 'decimal.js';
-import * as elliptic          from 'elliptic';
-import moment                 from 'moment';
-import base32Decode           from 'base32-decode';
-import * as asn1              from 'asn1.js';
-import * as L                 from 'leaflet';
+import stringify                        from 'safe-stable-stringify';
+import Decimal                          from 'decimal.js';
+import * as elliptic                    from 'elliptic';
+import moment                           from 'moment';
+import base32Decode                     from 'base32-decode';
+import * as asn1                        from 'asn1.js';
+import * as L                           from 'leaflet';
 import 'leaflet.awesome-markers';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../css/chargy.scss';
 
 
-type DetectionResult = chargyInterfaces.IChargeTransparencyRecord | chargyInterfaces.ISessionCryptoResult;
+type DetectionResult = chargeTransparencyRecord.IChargeTransparencyRecord | chargyInterfaces.ISessionCryptoResult;
 
 type DetectionOptions = {
     prepareUI?: boolean;
@@ -1812,7 +1813,7 @@ export class ChargyApp {
                                                                              data: new TextEncoder().encode(FileInfos)
                                                                           }]);
 
-            else if (chargyInterfaces.isIFileInfo(FileInfos))
+            else if (chargeTransparencyRecord.isIFileInfo(FileInfos))
                 result = await this.chargy.DetectAndConvertContentFormat([ FileInfos ]);
 
             else
@@ -1829,7 +1830,7 @@ export class ChargyApp {
         }
 
 
-        if (chargyInterfaces.IsAChargeTransparencyRecord(result))
+        if (chargeTransparencyRecord.IsAChargeTransparencyRecord(result))
         {
             if (options?.prepareUI === false)
             {
@@ -1866,7 +1867,7 @@ export class ChargyApp {
 
     //#region showChargeTransparencyRecord  (CTR)
 
-    private async showChargeTransparencyRecord(CTR: chargyInterfaces.IChargeTransparencyRecord)
+    private async showChargeTransparencyRecord(CTR: chargeTransparencyRecord.IChargeTransparencyRecord)
     {
 
         if (CTR == null)
@@ -2698,7 +2699,7 @@ export class ChargyApp {
 
                 const result = invalidDataSet.result;
 
-                if (chargyInterfaces.IsASessionCryptoResult(result))
+                if (chargeTransparencyRecord.IsASessionCryptoResult(result))
                 {
 
                     const invalidDataSetDiv = chargyLib.CreateDiv(invalidDataSetsDiv, "invalidDataSet");
@@ -2741,7 +2742,7 @@ export class ChargyApp {
 
     //#region showChargingSessionDetails    (chargingSession)
 
-    private async showChargingSessionDetails(chargingSession: chargyInterfaces.IChargingSession)
+    private async showChargingSessionDetails(chargingSession: chargeTransparencyRecord.IChargingSession)
     {
 
         try
@@ -3631,7 +3632,7 @@ export class ChargyApp {
 
     //#region showMeasurementCryptoDetails  (measurementValue)
 
-    private showMeasurementCryptoDetails(measurementValue:  chargyInterfaces.IMeasurementValue) : void
+    private showMeasurementCryptoDetails(measurementValue:  chargeTransparencyRecord.IMeasurementValue) : void
     {
 
         function doError(text: string)

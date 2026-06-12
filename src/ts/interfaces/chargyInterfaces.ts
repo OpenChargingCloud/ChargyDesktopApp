@@ -15,22 +15,8 @@
  * limitations under the License.
  */
 
-import { ACrypt }  from './ACrypt'
-import Decimal     from 'decimal.js';
+import Decimal  from 'decimal.js';
 
-export function IsAChargeTransparencyRecord(data: IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult|undefined): data is IChargeTransparencyRecord
-{
-
-    if (data == null || data == undefined)
-        return false;
-
-    const chargeTransparencyRecord = data as IChargeTransparencyRecord;
-
-    return chargeTransparencyRecord.begin            !== undefined &&
-           chargeTransparencyRecord.end              !== undefined &&
-           chargeTransparencyRecord.chargingSessions !== undefined;
-
-}
 
 export function IsAPublicKeyInfo(data: any): data is IPublicKeyInfo
 {
@@ -44,34 +30,6 @@ export function IsAPublicKeyInfo(data: any): data is IPublicKeyInfo
            publicKeyInfo.subject      !== undefined &&
            publicKeyInfo.algorithm    !== undefined &&
            publicKeyInfo.value        !== undefined;
-
-}
-
-export function IsAPublicKeyLookup(data: IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult|undefined): data is IPublicKeyLookup
-{
-
-    if (data == null || data == undefined)
-        return false;
-
-    const publicKeyLookup = data as IPublicKeyLookup;
-    const chargeTransparencyRecord = data as IChargeTransparencyRecord;
-
-    return Array.isArray(publicKeyLookup.publicKeys) &&
-           chargeTransparencyRecord.chargingSessions === undefined &&
-           chargeTransparencyRecord.begin            === undefined &&
-           chargeTransparencyRecord.end              === undefined;
-
-}
-
-export function IsASessionCryptoResult(data: IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult): data is ISessionCryptoResult
-{
-
-    if (data == null || data == undefined)
-        return false;
-
-    const sessionCryptoResult = data as ISessionCryptoResult;
-
-    return sessionCryptoResult.status !== undefined;
 
 }
 
@@ -99,37 +57,7 @@ export interface CheckMeterPublicKeySignatureFunc {
      signature:        any|null): Promise<string>;
 }
 
-export interface IChargeTransparencyRecord
-{
 
-    "@id":                      string;
-    "@context":                 string | Array<string>;
-    begin?:                     string;
-    end?:                       string;
-    description?:               IMultilanguageText;
-    contract?:                  IContract;
-    chargingStationOperators?:  Array<IChargingStationOperator>;
-    chargingPools?:             Array<IChargingPool>;
-    chargingStations?:          Array<IChargingStation>;
-    chargingTariffs?:           Array<IChargingTariff>;
-    publicKeys?:                Array<IPublicKeyInfo>;
-    chargingSessions?:          Array<IChargingSession>;
-    eMobilityProviders?:        Array<IEMobilityProvider>;
-    mediationServices?:         Array<IMediationService>;
-    verificationResult?:        ISessionCryptoResult;
-    invalidDataSets?:           Array<IExtendedFileInfo>;
-
-    // How sure we are that this result is correct!
-    // (JSON) transparency records might not always include an unambiguously
-    // format identifier. So multiple chargy parsers might be candidates, but
-    // hopefully one will be the best matching parser.
-    certainty:                  number;
-
-    warnings?:                  Array<string>;
-    errors?:                    Array<string>;
-    status?:                    SessionVerificationResult;
-
-}
 
 export interface IContract
 {
@@ -367,44 +295,7 @@ export interface IMediationService
     publicKeys?:                Array<IPublicKey>;
 }
 
-export interface IChargingSession
-{
-    "@id":                      string;
-    "@context"?:                string;
-    ctr?:                       IChargeTransparencyRecord;
-    GUI?:                       HTMLDivElement;
-    begin:                      string;
-    end?:                       string;     // to allow still running sessions!
-    internalSessionId?:         string;
-    chargingProductRelevance?:  IChargingProductRelevance,
-    description?:               IMultilanguageText;
-    chargingStationOperatorId?: string;
-    chargingStationOperator?:   IChargingStationOperator;
-    chargingPoolId?:            string;
-    chargingPool?:              IChargingPool;
-    chargingStationId?:         string;
-    chargingStation?:           IChargingStation;
-    EVSEId:                     string;
-    EVSE?:                      IEVSE;
-    meterId?:                   string;
-    meter?:                     IMeter;
-    publicKey?:                 IPublicKeyInfo;
-    tariffId?:                  string;
-    chargingTariffs?:           Array<IChargingTariff>;
-    chargingPeriods?:           Array<IChargingPeriod>;
-    totalCosts?:                IChargingCosts;
-    authorizationStart:         IAuthorization;
-    authorizationStop?:         IAuthorization;
-    product?:                   IChargingProduct;
-    measurements:               Array<IMeasurement>;
-    parking?:                   Array<IParking>;
-    transparencyInfos?:         ITransparencyInfos;
-    method?:                    ACrypt;
-    original?:                  string;
-    signature?:                 string|ISignatureRS;
-    hashValue?:                 string;
-    verificationResult?:        ISessionCryptoResult;
-}
+
 
 export interface IChargingProduct
 {
@@ -466,31 +357,6 @@ export interface IAuthorization
     eMobilityProvider?:         string;
 }
 
-export interface IMeasurement
-{
-    "@context"?:                string;
-    chargingSession?:           IChargingSession;
-    energyMeterId:              string;
-    phenomena?:                 any[];
-    name:                       string;
-    obis:                       string;
-    unit?:                      string;
-    unitEncoded?:               number;
-    valueType?:                 string;
-    scale:                      number;
-    verifyChain?:               boolean;
-    signatureInfos?:            ISignatureInfos;
-    values:                     Array<IMeasurementValue>;
-    verificationResult?:        ICryptoResult;
-}
-
-export interface IMeasurements
-{
-    "@context"?:                string;
-    values:                     Array<IMeasurement>;
-    verificationResult?:        ICryptoResult;
-}
-
 export interface ISignatureInfos {
     hash:                       CryptoHashAlgorithms|string;
     hashTruncation?:                                 number;
@@ -542,31 +408,6 @@ export enum DisplayPrefixes {
     GIGA
 }
 
-
-export interface IMeasurementValue
-{
-
-    measurement?:               IMeasurement;
-    method?:                    ACrypt;
-    previousValue?:             IMeasurementValue;
-
-    timestamp:                  string;
-    value:                      Decimal;
-    value_displayPrefix?:       DisplayPrefixes;
-    value_displayPrecision?:    number;
-    statusMeter?:               string;
-    secondsIndex?:              number;
-    paginationId?:              number | string;
-    logBookIndex?:              string;
-    statusAdapter?:             string;
-
-    errors?:                    Array<string>;
-    warnings?:                  Array<string>;
-
-    signatures?:                Array<ISignature|ISignatureRS>;
-    result?:                    ICryptoResult;
-
-}
 
 export interface ISessionCryptoResult
 {
@@ -814,14 +655,6 @@ export interface IFileInfo {
     info?:          string,
     error?:         string,
     exception?:     any
-}
-
-export function isIFileInfo(obj: any): obj is IFileInfo {
-    return !!(obj?.name && typeof obj.name === 'string' && obj.data && (obj.data instanceof ArrayBuffer || ArrayBuffer.isView(obj.data)));
-}
-
-export interface IExtendedFileInfo extends IFileInfo {
-    result:                 IChargeTransparencyRecord|IPublicKeyLookup|ISessionCryptoResult
 }
 
 export interface IChargingPeriod
