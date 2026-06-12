@@ -5,34 +5,38 @@ import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, test, vi } from "vitest";
 
 import {
-  CryptoAlgorithms,
-  CryptoHashAlgorithms,
-  DisplayPrefixes,
-  InformationRelevance,
-  IsAChargeTransparencyRecord,
-  IsAPublicKeyInfo,
-  IsAPublicKeyLookup,
-  IsASessionCryptoResult,
-  ISOIDInfo,
-  PublicKeyFormats,
-  SessionVerificationResult,
-  SignatureFormats,
-  VerificationResult,
-  isICryptoResult,
-  isIFileInfo,
-  isIPublicKeyXY,
-  isISessionCryptoResult1,
-  isISessionCryptoResult2,
-  } from "../src/ts/chargyInterfaces";
+    CryptoAlgorithms,
+    CryptoHashAlgorithms,
+    DisplayPrefixes,
+    InformationRelevance,
+    IsAPublicKeyInfo,
+    ISOIDInfo,
+    PublicKeyFormats,
+    SessionVerificationResult,
+    SignatureFormats,
+    VerificationResult,
+    isICryptoResult,
+    isIPublicKeyXY,
+    isISessionCryptoResult1,
+    isISessionCryptoResult2
+} from '../src/ts/interfaces/chargyInterfaces';
+import {
+    IsAChargeTransparencyRecord,
+    IsAPublicKeyLookup,
+    IsASessionCryptoResult,
+    isIFileInfo
+} from '../src/ts/interfaces/IChargeTransparencyRecord';
 
 import type {
-  IChargeTransparencyRecord,
-  ICryptoResult,
-  IFileInfo,
-  IMeasurement,
-  IMeasurementValue,
-  ISessionCryptoResult
-} from "../src/ts/chargyInterfaces";
+    IChargeTransparencyRecord,
+    IMeasurement,
+    IMeasurementValue
+} from '../src/ts/interfaces/IChargeTransparencyRecord';
+import type {
+    ICryptoResult,
+    IFileInfo,
+    ISessionCryptoResult
+} from '../src/ts/interfaces/chargyInterfaces';
 
 import {
   OBIS2Hex,

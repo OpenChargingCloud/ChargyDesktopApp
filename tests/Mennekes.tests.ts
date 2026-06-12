@@ -4,17 +4,21 @@ import { DOMParser } from "@oozcitak/dom";
 import { describe, expect, test, vi } from 'vitest';
 import { Chargy } from '../src/ts/chargy';
 import {
-    IsAChargeTransparencyRecord,
+    IsAChargeTransparencyRecord
+} from '../src/ts/interfaces/IChargeTransparencyRecord';
+import {
     SessionVerificationResult,
     VerificationResult
-} from '../src/ts/chargyInterfaces';
+} from '../src/ts/interfaces/chargyInterfaces';
 import {
     buildMennekesSignatureData,
     dateToMennekesLocalEpochSeconds,
     extractMennekesChargingProcesses,
     hexToBytes
 } from '../src/ts/Mennekes';
-import type { IFileInfo } from '../src/ts/chargyInterfaces';
+import type {
+    IFileInfo
+} from '../src/ts/interfaces/chargyInterfaces';
 
 const require = createRequire(import.meta.url);
 

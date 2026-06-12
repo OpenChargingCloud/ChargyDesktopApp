@@ -4,11 +4,15 @@ import { createSign, generateKeyPairSync } from "node:crypto";
 import { describe, expect, test, vi } from 'vitest';
 import { Chargy } from '../src/ts/chargy';
 import {
-    IsAChargeTransparencyRecord,
+    IsAChargeTransparencyRecord
+} from '../src/ts/interfaces/IChargeTransparencyRecord';
+import {
     SessionVerificationResult,
     VerificationResult
-} from '../src/ts/chargyInterfaces';
-import type { IFileInfo } from '../src/ts/chargyInterfaces';
+} from '../src/ts/interfaces/chargyInterfaces';
+import type {
+    IFileInfo
+} from '../src/ts/interfaces/chargyInterfaces';
 import {
     PCDF_FIELD_ORDER,
     PCDF_PREFIX,

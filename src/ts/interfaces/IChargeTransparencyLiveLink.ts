@@ -46,46 +46,47 @@ export interface ChargeTransparencyLiveLink {
 
 /** Connector information */
 export interface Connector {
-  standard: string;
-  format: string;
-  powerType: string;
-  maxPower: string;
+    standard?:             string;
+    format?:               string;
+    powerType?:            string;
+    maxPower?:             string;
 }
+
+
 
 /** Union type for the different transport variants */
 export type Transport =
-  | TransportSnapshot
-  | TransportWebsocket
-  | TransportHttpSSE;
+  | TransportHTTP
+  | TransportHTTPSSE
+  | TransportWebsocket;
 
-/** Snapshot transport (simple HTTP GET) */
-export interface TransportSnapshot {
-  type: "snapshot";
-  url: string;
+
+export interface ITransport {
+    url?:  string;
+    urls?: ITransportURL[];
+    totp?: TOTPConfig;
 }
 
-/** WebSocket transport with load balancing and optional TOTP */
-export interface TransportWebsocket {
-  type: "websocket";
-  urls: WebsocketUrl[];
-  totp?: TOTPConfig;
+export interface TransportHTTP      extends ITransport {
+    type: "snapshot";
 }
 
-export interface WebsocketUrl {
-  url: string;
-  priority?: number;
-  weight?: number;
+export interface TransportHTTPSSE   extends ITransport {
+    type: "httpSSE";
 }
 
-/** HTTP Server-Sent Events transport */
-export interface TransportHttpSSE {
-  type: "httpSSE";
-  urls: string[];
-  totp?: TOTPConfig;
+export interface TransportWebsocket extends ITransport {
+    type: "websocket";
 }
 
-/** TOTP configuration (Time-based One-Time Password) */
+export interface ITransportURL {
+    url:                   string;
+    priority?:             number;
+    weight?:               number;
+}
+
+/** Time-based One-Time Password configuration */
 export interface TOTPConfig {
-  initialSharedSecret: string;
-  timeStep: number;
+    initialSharedSecret:   string;
+    timeStep:              number;
 }

@@ -4,15 +4,17 @@ import { readFileSync }   from "node:fs";
 import { createRequire }  from "node:module";
 import {
     IsAChargeTransparencyRecord
-} from '../src/ts/chargyInterfaces';
+} from '../src/ts/interfaces/IChargeTransparencyRecord';
 import type {
     IChargeTransparencyRecord,
+    IMeasurement,
+    IMeasurementValue
+} from '../src/ts/interfaces/IChargeTransparencyRecord';
+import type {
     ICryptoResult,
     IFileInfo,
-    IMeasurement,
-    IMeasurementValue,
     ISessionCryptoResult
-} from '../src/ts/chargyInterfaces';
+} from '../src/ts/interfaces/chargyInterfaces';
 
 export {
     expectVerificationReport,
