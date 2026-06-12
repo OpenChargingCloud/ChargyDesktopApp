@@ -45,11 +45,23 @@ export default tseslint.config(
         }
     },
 
+    // Rules that are completely worked off are promoted back to "error"
+    // for the whole code base, so they cannot silently regress:
+    {
+        rules: {
+            'prefer-const': 'error'
+        }
+    },
+
     // Warning-free files are promoted back to the original "error" severity,
     // so they cannot silently regress:
     {
         files: [
-            'src/ts/OCPI.ts'
+            'src/ts/OCPI.ts',
+            'src/ts/QIDigital_DCoA.ts',
+            'src/ts/QIDigital_DCoC.ts',
+            'src/ts/chargyLib.ts',
+            'src/ts/qrReader.ts'
         ],
         rules: Object.assign({}, ...tseslint.configs.strictTypeChecked.map(config => config.rules ?? {}))
     }

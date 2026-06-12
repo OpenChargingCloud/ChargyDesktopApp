@@ -22,6 +22,7 @@ import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyReco
 import * as chargyLib                 from './chargyLib'
 import Decimal                        from 'decimal.js';
 
+
 // A single decoded 82-byte Alfen adapter data set.
 interface IAlfenDataSet
 {
@@ -507,10 +508,10 @@ export interface IAlfenCrypt01Result extends chargyInterfaces.ICryptoResult
     sessionId?:                    string,
     paging?:                       string,
 
-    hashValue?:                    any,
+    hashValue?:                    string | bigint,
     publicKey?:                    string,
     publicKeyFormat?:              string,
-    publicKeySignatures?:          any,
+    publicKeySignatures?:          Array<unknown>,
     signature?:                    chargyInterfaces.ISignatureRS
 }
 
@@ -820,7 +821,8 @@ export class AlfenCrypt01 extends ACrypt {
                 HashedPlainTextDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Hashed plain text") + " (SHA256, hex)";
             }
 
-            HashedPlainTextDiv.innerHTML = result.hashValue.match(/.{1,8}/g).join(" ");
+            const hashValueText          = typeof result.hashValue === 'string' ? result.hashValue : result.hashValue?.toString(16) ?? "";
+            HashedPlainTextDiv.innerHTML = hashValueText.match(/.{1,8}/g)?.join(" ") ?? "";
 
         }
 
@@ -860,7 +862,7 @@ export class AlfenCrypt01 extends ACrypt {
 
             PublicKeyDiv.parentElement.children[3].innerHTML = "";
 
-            if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures))
+            if (result.publicKeySignatures)
             {
                 for (const signature of result.publicKeySignatures)
                 {

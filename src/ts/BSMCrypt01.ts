@@ -111,7 +111,7 @@ interface IBSMDataSet
 
 export interface IBSMCrypt01Result extends chargyInterfaces.ICryptoResult
 {
-    sha256value?:                  any,
+    sha256value?:                  string,
     meterId?:                      string,
     meter?:                        chargyInterfaces.IMeter,
     timestamp?:                    string,
@@ -149,7 +149,7 @@ export interface IBSMCrypt01Result extends chargyInterfaces.ICryptoResult
 
     publicKey?:                    string,
     publicKeyFormat?:              string,
-    publicKeySignatures?:          any,
+    publicKeySignatures?:          Array<unknown>,
     signature?:                    chargyInterfaces.ISignatureRS
 }
 
@@ -1372,7 +1372,7 @@ export class BSMCrypt01 extends ACrypt {
                 HashedPlainTextDiv.parentElement.children[0].innerHTML  = "Hashed plain text (SHA256, hex)";
             }
 
-            HashedPlainTextDiv.innerHTML                                = result.sha256value.match(/.{1,8}/g).join(" ");
+            HashedPlainTextDiv.innerHTML                                = result.sha256value?.match(/.{1,8}/g)?.join(" ") ?? "";
 
         }
 
@@ -1414,7 +1414,7 @@ export class BSMCrypt01 extends ACrypt {
                 PublicKeyDiv.parentElement.children[3].innerHTML = "";
             }
 
-            if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures)) {
+            if (result.publicKeySignatures) {
 
                 for (const signature of result.publicKeySignatures)
                 {

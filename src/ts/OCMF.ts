@@ -38,7 +38,7 @@ export interface IOCMFv1_0MeasurementValue extends IOCMFMeasurementValue
 
 export interface IOCMFv1_0Result extends chargyInterfaces.ICryptoResult
 {
-    sha256value?:                  any,
+    sha256value?:                  string,
     meterId?:                      string,
     meter?:                        chargyInterfaces.IMeter,
     timestamp?:                    string,
@@ -55,7 +55,7 @@ export interface IOCMFv1_0Result extends chargyInterfaces.ICryptoResult
     authorizationStartTimestamp?:  string,
     publicKey?:                    string,
     publicKeyFormat?:              string,
-    publicKeySignatures?:          any,
+    publicKeySignatures?:          Array<unknown>,
     signature?:                    chargyInterfaces.ISignatureRS
 }
 
@@ -479,7 +479,7 @@ export class OCMFv1_x extends ACrypt {
 
             const result = measurementValue.result as IOCMFv1_0Result;
 
-            if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures)) {
+            if (result.publicKeySignatures) {
 
                 for (const signature of result.publicKeySignatures)
                 {

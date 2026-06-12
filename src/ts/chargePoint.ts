@@ -675,7 +675,7 @@ export interface IChargepointMeasurementValue extends chargeTransparencyRecord.I
 
 export interface IChargePointCrypt01Result extends chargyInterfaces.ICryptoResult
 {
-    sha256value?:                  any,
+    sha256value?:                  string,
     meterId?:                      string,
     meter?:                        chargyInterfaces.IMeter,
     timestamp?:                    string,
@@ -692,7 +692,7 @@ export interface IChargePointCrypt01Result extends chargyInterfaces.ICryptoResul
     authorizationStartTimestamp?:  string,
     publicKey?:                    string,
     publicKeyFormat?:              string,
-    publicKeySignatures?:          any,
+    publicKeySignatures?:          Array<unknown>,
     signature?:                    chargyInterfaces.ISignatureRS
 }
 
@@ -1205,7 +1205,7 @@ export class ChargePointCrypt01 extends ACrypt {
                 PublicKeyDiv.parentElement.children[3].innerHTML = "";
             }
 
-            if (!chargyLib.IsNullOrEmpty(result.publicKeySignatures)) {
+            if (result.publicKeySignatures) {
 
                 for (const signature of result.publicKeySignatures)
                 {

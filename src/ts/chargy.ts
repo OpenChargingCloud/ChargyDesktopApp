@@ -516,16 +516,24 @@ export class Chargy {
 
     //#region CheckMeterPublicKeySignature(...)
 
-    public async CheckMeterPublicKeySignature(chargingStation:  any,
-                                              evse:             any,
-                                              meter:            any,
-                                              publicKey:        any,
-                                              signature:        any): Promise<string>
+    public async CheckMeterPublicKeySignature(chargingStation:  chargyInterfaces.IChargingStation | null | undefined,
+                                              evse:             chargyInterfaces.IEVSE            | null | undefined,
+                                              meter:            chargyInterfaces.IMeter           | null | undefined,
+                                              publicKey:        chargyInterfaces.IPublicKey       | null | undefined,
+                                              signature:        unknown): Promise<string>
     {
 
         // For now: Do not enforce this feature!
         if (chargingStation == null || evse == null || meter == null || publicKey == null || signature == null)
             return "";// "<i class=\"fas fa-exclamation-circle\"></i> Unbekannter Public Key!";
+
+        // Some of the signed legacy property names (softwareVersion, sockets,
+        // vendor, ...) are not part of the current interfaces, but must be
+        // kept, as they are part of the signed data structure!
+        const chargingStationView  = chargingStation as unknown as chargyLib.JSONObject;
+        const evseView             = evse            as unknown as chargyLib.JSONObject;
+        const meterView            = meter           as unknown as chargyLib.JSONObject;
+        const signatureView        = chargyLib.asJSONObject(signature) ?? {};
 
         try
         {
@@ -536,16 +544,16 @@ export class Chargy {
                 "description":          chargingStation.description,
                 "geoLocation":          chargingStation.geoLocation,
                 "address":              chargingStation.address,
-                "softwareVersion":      chargingStation.softwareVersion,
+                "softwareVersion":      chargingStationView["softwareVersion"],
 
                 "EVSE": {
                     "@id":                      evse["@id"],
                     "description":              evse.description,
-                    "sockets":                  evse.sockets,
+                    "sockets":                  evseView["sockets"],
 
                     "meter": {
                         "@id":                      meter["@id"],
-                        "vendor":                   meter.vendor,
+                        "vendor":                   meterView["vendor"],
                         "model":                    meter.model,
                         "firmwareVersion":          meter.firmwareVersion,
                         "signatureFormat":          meter.signatureFormat,
@@ -556,11 +564,11 @@ export class Chargy {
                             "value":                    publicKey.value,
 
                             "signature": {
-                                "signer":                   signature.signer,
-                                "timestamp":                signature.timestamp,
-                                "comment":                  signature.comment,
-                                "algorithm":                signature.algorithm,
-                                "format":                   signature.format
+                                "signer":                   signatureView["signer"],
+                                "timestamp":                signatureView["timestamp"],
+                                "comment":                  signatureView["comment"],
+                                "algorithm":                signatureView["algorithm"],
+                                "format":                   signatureView["format"]
                             }
 
                         }
@@ -568,7 +576,7 @@ export class Chargy {
                     }
 
                 }
- 
+
             };
 
             //ToDo: Checking the timestamp might be usefull!
@@ -576,19 +584,19 @@ export class Chargy {
             const sha256value = await chargyLib.sha256(JSON.stringify(toCheck));
 
             const result      = new this.elliptic.ec('secp256r1').
-                                        keyFromPublic(signature.publicKey, 'hex').
+                                        keyFromPublic(chargyLib.asString(signatureView["publicKey"]) ?? "", 'hex').
                                         verify       (sha256value,
-                                                      signature.signature);
+                                                      signatureView["signature"]);
 
             if (result)
-                return "<i class=\"fas fa-check-circle\"></i>" + signature.signer;
+                return "<i class=\"fas fa-check-circle\"></i>" + String(signatureView["signer"]);
 
 
         }
-        catch (exception)
+        catch
         { }
 
-        return "<i class=\"fas fa-times-circle\"></i>" + signature.signer;
+        return "<i class=\"fas fa-times-circle\"></i>" + String(signatureView["signer"]);
 
     }
 

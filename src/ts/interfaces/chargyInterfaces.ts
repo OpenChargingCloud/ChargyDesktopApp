@@ -18,7 +18,7 @@
 import Decimal  from 'decimal.js';
 
 
-export function IsAPublicKeyInfo(data: any): data is IPublicKeyInfo
+export function IsAPublicKeyInfo(data: unknown): data is IPublicKeyInfo
 {
 
     if (data == null || data == undefined)
@@ -50,11 +50,11 @@ export interface GetMeterFunc {
 }
 
 export interface CheckMeterPublicKeySignatureFunc {
-    (chargingStation:  any|null,
-     evse:             any|null,
-     meter:            any|null,
-     publicKey:        any|null,
-     signature:        any|null): Promise<string>;
+    (chargingStation:  IChargingStation | null | undefined,
+     evse:             IEVSE            | null | undefined,
+     meter:            IMeter           | null | undefined,
+     publicKey:        IPublicKey       | null | undefined,
+     signature:        unknown): Promise<string>;
 }
 
 
@@ -79,7 +79,7 @@ export interface IPublicKeyInfo
 {
     "@id":                      string; // Just for merging with IChargeTransparencyRecord!
     "@context":                 string;
-    subject:                    string|any;
+    subject:                    string;
     type?:                      string|IOIDInfo;
     algorithm:                  string|IOIDInfo;
     value:                      string;
@@ -102,7 +102,7 @@ export interface IOIDInfo
     name:                       string;
 }
 
-export function ISOIDInfo(data: any): data is IOIDInfo
+export function ISOIDInfo(data: unknown): data is IOIDInfo
 {
 
     if (data == null || data == undefined)
@@ -414,7 +414,7 @@ export interface ISessionCryptoResult
 
     status:                     SessionVerificationResult;
     message?:                   string;
-    exception?:                 any;
+    exception?:                 unknown;
 
     // How sure we are that this result is correct!
     // (JSON) transparency records might not always include an unambiguously
@@ -427,13 +427,15 @@ export interface ISessionCryptoResult
 
 }
 
-export function isISessionCryptoResult1(obj: any): obj is ISessionCryptoResult {
-    return obj.status !== undefined
+export function isISessionCryptoResult1(obj: unknown): obj is ISessionCryptoResult {
+    return typeof obj === 'object' && obj !== null &&
+           (obj as ISessionCryptoResult).status !== undefined
 }
 
-export function isISessionCryptoResult2(obj: any): obj is ISessionCryptoResult {
-    return obj.status !== undefined &&
-           obj.status !== SessionVerificationResult.InvalidSessionFormat
+export function isISessionCryptoResult2(obj: unknown): obj is ISessionCryptoResult {
+    return typeof obj === 'object' && obj !== null &&
+           (obj as ISessionCryptoResult).status !== undefined &&
+           (obj as ISessionCryptoResult).status !== SessionVerificationResult.InvalidSessionFormat
 }
 
 export interface ICryptoResult
@@ -443,12 +445,15 @@ export interface ICryptoResult
     warnings?:                  Array<string>;
 }
 
-export function isICryptoResult(obj: any): obj is ICryptoResult {
-    return obj.status !== undefined
+export function isICryptoResult(obj: unknown): obj is ICryptoResult {
+    return typeof obj === 'object' && obj !== null &&
+           (obj as ICryptoResult).status !== undefined
 }
 
-export function isIPublicKeyXY(obj: any): obj is IPublicKeyXY {
-    return obj && typeof obj.x === "string" && typeof obj.y === "string";
+export function isIPublicKeyXY(obj: unknown): obj is IPublicKeyXY {
+    return typeof obj === 'object' && obj !== null   &&
+           typeof (obj as IPublicKeyXY).x === "string" &&
+           typeof (obj as IPublicKeyXY).y === "string";
 }
 
 export interface IPublicKeyXY extends IPublicKey
@@ -464,7 +469,7 @@ export interface IPublicKey
     encoding:                   IEncoding|string;  // e.g. "hex" | "base64"
     value?:                     string;
     previousValue?:             string;
-    signatures?:                any;
+    signatures?:                Array<unknown>;
 }
 
 export interface ISignature
@@ -494,13 +499,13 @@ export interface ISignatureRS extends ISignature
 
 export interface IAddress {
     "@context"?:                string;
-    city:                       any;
+    city:                       string;
     street?:                    string;
     houseNumber?:               string;
     floorLevel?:                string;
     postalCode:                 string;
     country:                    string;
-    comment?:                   any;
+    comment?:                   string | IMultilanguageText;
 }
 
 export interface IGeoLocation {
@@ -590,25 +595,25 @@ export enum VerificationResult {
 
 export interface IVersions {
     name:           string,
-    description:    any,
+    description:    IMultilanguageText,
     versions:       Array<IVersion>
 }
 
 export interface IVersion {
     version:        string,
     releaseDate:    string,
-    description:    any,
+    description:    IMultilanguageText,
     tags:           Array<string>,
     packages:       Array<IVersionPackage>
 }
 
 export interface IVersionPackage {
     name:           string,
-    description:    any,
-    additionalInfo: any,
+    description:    IMultilanguageText,
+    additionalInfo: unknown,
     cryptoHashes:   ICryptoHashes,
     signatures:     Array<IVersionSignature>,
-    downloadURLs:   any
+    downloadURLs:   Record<string, string>
 }
 
 export interface ICryptoHashes {
@@ -654,7 +659,7 @@ export interface IFileInfo {
     data?:          ArrayBuffer|Uint8Array,
     info?:          string,
     error?:         string,
-    exception?:     any
+    exception?:     unknown
 }
 
 export interface IChargingPeriod
@@ -755,4 +760,4 @@ export interface IParkingTariff {
 
 }
 
-export type ShowPKIDetailsFunction = (pkiData: any) => void;
+export type ShowPKIDetailsFunction = (pkiData: unknown) => void;

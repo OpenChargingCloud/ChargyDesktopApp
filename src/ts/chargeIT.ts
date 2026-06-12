@@ -971,7 +971,7 @@ export class ChargeIT {
                                             "address": {
                                                 "street":               address_street,
                                                 "postalCode":           address_zipCode,
-                                                "city":                 address_town,
+                                                "city":                 chargyLib.asString(address_town) ?? "",
                                                 "country":              "Germany"
                                             },
                                             "EVSEs": [
@@ -1565,7 +1565,7 @@ export class ChargeIT {
                                             //"@context":             "",
                                             "street":               chargyLib.asString(address_street),
                                             "postalCode":           chargyLib.asString(address_zipCode) ?? "",
-                                            "city":                 address_town,
+                                            "city":                 chargyLib.asString(address_town) ?? "",
                                             "country":              chargyLib.asString(address_country) ?? ""
                                         },
                                         "EVSEs": [
