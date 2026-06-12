@@ -68,7 +68,7 @@ export class Alfen  {
             if (ContainerInfos == null)
                 ContainerInfos = {};
 
-            var common = {
+            const common = {
                     PublicKey:          "",
                     PublicKeyFormat:    "",
                     AdapterId:          "",
@@ -143,21 +143,21 @@ export class Alfen  {
                 }
 
                 // Everything is Little Endian
-                let AdapterId            = this.bufferToHex(DataSet.slice( 0, 10));                                                              // 0a 54 65 73 74 44 65 76 00 09
-                let AdapterFWVersion     = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(10, 14)) as any);                        // ASCII: 76 30 31 34 (v014)
-                let AdapterFWChecksum    = this.bufferToHex(DataSet.slice(14, 16));                                                              // B9 79
-                let MeterId              = this.bufferToHex(DataSet.slice(16, 26));                                                              // 0A 01 44 5A 47 00 33 00 25 02
-                let MeterStatus          = this.bufferToHex(DataSet.slice(26, 28), true);                                                        // 00 00
-                let AdapterStatus        = this.bufferToHex(DataSet.slice(28, 30), true);                                                        // 00 10
-                let SecondIndex          = new DataView(DataSet.slice(30, 34), 0).getInt32(0, true);                                             // 28 71 9A 02 => 43675944 dec
-                let Timestamp            = new Date(new DataView(DataSet.slice(34, 38), 0).getInt32(0, true) * 1000).toISOString();              // UNIX timestamp: 91 91 3D 5C => 1547538833 => 2019-01-15T07:53:53Z
-                let ObisId               = this.bufferToHex(DataSet.slice(38, 44));                                                              // 01 00 01 08 00 ff
-                let UnitEncoded          = this.bufferToNumber(DataSet.slice(44, 45));                                                           // 1e => 30 => Wh
-                let Scalar               = this.bufferToHex(DataSet.slice(45, 46));                                                              // 00
-                let Value                = new Number(new DataView(DataSet.slice(46, 54), 0).getBigInt64(0, true));                    // 73 29 00 00 00 00 00 00 => 10611 Wh so 10,611 KWh
-                let UID                  = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(54, 74)) as any).replace(/\0.*$/g, '');  // ASCII: 30 35 38 39 38 41 42 42 00 00 00 00 00 00 00 00 00 00 00 00 => UID: 05 89 8A BB
-                let InternalSessionId    = new DataView(DataSet.slice(74, 78), 0).getInt32(0, true)                                              // 81 01 00 00 => 385(dec)
-                let Paging               = new DataView(DataSet.slice(78, 82), 0).getInt32(0, true);                                             // 47 02 00 00 => 583(dec)
+                const AdapterId            = this.bufferToHex(DataSet.slice( 0, 10));                                                              // 0a 54 65 73 74 44 65 76 00 09
+                const AdapterFWVersion     = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(10, 14)) as any);                        // ASCII: 76 30 31 34 (v014)
+                const AdapterFWChecksum    = this.bufferToHex(DataSet.slice(14, 16));                                                              // B9 79
+                const MeterId              = this.bufferToHex(DataSet.slice(16, 26));                                                              // 0A 01 44 5A 47 00 33 00 25 02
+                const MeterStatus          = this.bufferToHex(DataSet.slice(26, 28), true);                                                        // 00 00
+                const AdapterStatus        = this.bufferToHex(DataSet.slice(28, 30), true);                                                        // 00 10
+                const SecondIndex          = new DataView(DataSet.slice(30, 34), 0).getInt32(0, true);                                             // 28 71 9A 02 => 43675944 dec
+                const Timestamp            = new Date(new DataView(DataSet.slice(34, 38), 0).getInt32(0, true) * 1000).toISOString();              // UNIX timestamp: 91 91 3D 5C => 1547538833 => 2019-01-15T07:53:53Z
+                const ObisId               = this.bufferToHex(DataSet.slice(38, 44));                                                              // 01 00 01 08 00 ff
+                const UnitEncoded          = this.bufferToNumber(DataSet.slice(44, 45));                                                           // 1e => 30 => Wh
+                const Scalar               = this.bufferToHex(DataSet.slice(45, 46));                                                              // 00
+                const Value                = new Number(new DataView(DataSet.slice(46, 54), 0).getBigInt64(0, true));                    // 73 29 00 00 00 00 00 00 => 10611 Wh so 10,611 KWh
+                const UID                  = String.fromCharCode.apply(null, new Uint8Array(DataSet.slice(54, 74)) as any).replace(/\0.*$/g, '');  // ASCII: 30 35 38 39 38 41 42 42 00 00 00 00 00 00 00 00 00 00 00 00 => UID: 05 89 8A BB
+                const InternalSessionId    = new DataView(DataSet.slice(74, 78), 0).getInt32(0, true)                                              // 81 01 00 00 => 385(dec)
+                const Paging               = new DataView(DataSet.slice(78, 82), 0).getInt32(0, true);                                             // 47 02 00 00 => 583(dec)
 
 
                 if (common.AdapterId === "")
@@ -270,11 +270,11 @@ export class Alfen  {
 
             }
 
-            var evseId             = ContainerInfos.EVSEId            ?? "DE*GEF*EVSE*CHARGY*1";
-            var chargingStationId  = ContainerInfos.ChargingStationId ?? "DE*GEF*STATION*CHARGY*1";
-            var n                  = common.dataSets.length-1;
+            const evseId             = ContainerInfos.EVSEId            ?? "DE*GEF*EVSE*CHARGY*1";
+            const chargingStationId  = ContainerInfos.ChargingStationId ?? "DE*GEF*STATION*CHARGY*1";
+            const n                  = common.dataSets.length-1;
 
-            var _CTR: IAlfenChargeTransparencyRecord = {
+            const _CTR: IAlfenChargeTransparencyRecord = {
 
                  "@id":              ContainerInfos.chargingSession?.["@id"] ?? common.InternalSessionId,
                  "@context":         "https://open.charging.cloud/contexts/CTR+json",
@@ -399,7 +399,7 @@ export class Alfen  {
 
             };
 
-            for (var dataSet of common.dataSets)
+            for (const dataSet of common.dataSets)
             {
                 if (_CTR["chargingSessions"]?.[0]?.["measurements"]?.[0]?.["values"] != null)
                     _CTR["chargingSessions"][0]["measurements"][0]["values"].push(
@@ -424,7 +424,7 @@ export class Alfen  {
             _CTR["status"] = chargyInterfaces.SessionVerificationResult.Unvalidated;
 
             //await this.processChargeTransparencyRecord(_CTR);
-            return _CTR as chargyInterfaces.IChargeTransparencyRecord;
+            return _CTR;
 
         }
         catch (exception)
@@ -513,11 +513,11 @@ export class AlfenCrypt01 extends ACrypt {
     async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
-        var sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
+        let sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
 
         if (chargingSession.measurements)
         {
-            for (var measurement of chargingSession.measurements)
+            for (const measurement of chargingSession.measurements)
             {
 
                 measurement.chargingSession = chargingSession;

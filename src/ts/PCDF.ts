@@ -452,7 +452,7 @@ export class PCDFCrypt01 extends ACrypt {
                 valueCount++;
                 measurementValue.measurement = measurement;
 
-                const result = await this.VerifyMeasurement(measurementValue as IPCDFMeasurementValue);
+                const result = await this.VerifyMeasurement(measurementValue);
 
                 if (result.status !== chargyInterfaces.VerificationResult.ValidSignature)
                     sessionResult = chargyInterfaces.SessionVerificationResult.InvalidSignature;

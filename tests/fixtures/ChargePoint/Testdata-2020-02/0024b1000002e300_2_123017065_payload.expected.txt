@@ -1,0 +1,19 @@
+format: ctr
+sessions: 1
+session 1: 0024b1000002e300-2-55
+session 1 evseId: 0024b1000002e300-2
+session 1 meterId: 240008S
+session 1 status: PublicKeyNotFound
+session 1 measurements: 1
+measurement 1.1 name: Bezogene Energiemenge
+measurement 1.1 obis: 1-0:1.8.0
+measurement 1.1 status: unknown
+measurement 1.1 values: 2
+value 1.1.1 timestamp: 2020-02-15T10:49:18Z
+value 1.1.1 value: 74.6
+value 1.1.1 signatures: 0
+value 1.1.1 status: unknown
+value 1.1.2 timestamp: 2020-02-15T13:20:02Z
+value 1.1.2 value: 86.6
+value 1.1.2 signatures: 0
+value 1.1.2 status: unknown

@@ -55,7 +55,7 @@ export class ChargeIT {
                                                         signedMeterValues:  Array<any>) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
-        let CTRArray:Array<any> = [];
+        const CTRArray:Array<any> = [];
 
         //#region Parse Signed Meter Values
 
@@ -225,7 +225,7 @@ export class ChargeIT {
 
         //#endregion
 
-        let n = CTRArray.length-1;
+        const n = CTRArray.length-1;
 
         CTR["@id"]  = CTRArray[n]!["transactionId"];
         CTR.begin   = this.chargy.moment.unix(CTRArray[0]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
@@ -884,7 +884,7 @@ export class ChargeIT {
 
                         //#region Generate default charge transparency record
 
-                        let CTR: chargyInterfaces.IChargeTransparencyRecord = {
+                        const CTR: chargyInterfaces.IChargeTransparencyRecord = {
 
                             "@id":              "",
                             "@context":         "https://open.charging.cloud/contexts/CTR+json",
@@ -1084,7 +1084,7 @@ export class ChargeIT {
             containerFormat == "https://www.chargeit-mobility.com/contexts/charging-station-json-v1")
         {
 
-            let numberOfFormatChecks  = 81;
+            const numberOfFormatChecks  = 81;
             let secondaryErrors       = 0;
 
             try
@@ -1460,7 +1460,7 @@ export class ChargeIT {
                     {
 
                         const currentSMV = chargyLib.asJSONObject(signedMeterValues[i]);
-                        let   context    = chargyLib.asString(currentSMV?.["@context"])?.trim()
+                        const   context    = chargyLib.asString(currentSMV?.["@context"])?.trim()
                                                ?? chargyLib.asString(currentSMV?.["format"])?.trim()
                                                ?? null;
 
@@ -1477,7 +1477,7 @@ export class ChargeIT {
 
                     const evseIdStr = chargyLib.asString(evseId) ?? "";
 
-                    let CTR: chargyInterfaces.IChargeTransparencyRecord = {
+                    const CTR: chargyInterfaces.IChargeTransparencyRecord = {
 
                         "@id":              "",
                         "@context":         "https://open.charging.cloud/contexts/CTR+json",

@@ -19,6 +19,7 @@ import { Chargy }             from './chargy'
 import { ACrypt }             from './ACrypt'
 import * as chargyInterfaces  from './chargyInterfaces'
 import * as chargyLib         from './chargyLib'
+import Decimal                from 'decimal.js'
 
 
 export interface IChargepointChargeTransparencyRecord extends chargyInterfaces.IChargeTransparencyRecord
@@ -36,23 +37,30 @@ export class ChargePoint {
 
     //#region TryToParseChargepointFormat(SomeJSON)
 
-    public async TryToParseChargepointFormat(SomeJSON: any) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public async TryToParseChargepointFormat(SomeJSON: unknown) : Promise<chargyInterfaces.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
         try
         {
 
+            if (!chargyLib.isMandatoryJSONObject(SomeJSON))
+                return {
+                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                    message:   this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
+                    certainty: 0
+                }
+
             //#region First CTR format
 
-            if (SomeJSON.company_name    !== undefined &&
-                SomeJSON.display_unit    !== undefined &&
-                //SomeJSON.energy          !== undefined &&
-                //SomeJSON.flat            !== undefined &&
-                SomeJSON.minMaxAdj       !== undefined &&
-                //SomeJSON.parking         !== undefined &&
-                SomeJSON.subtotal        !== undefined &&
-                SomeJSON.totalAmount     !== undefined &&
-                SomeJSON.additional_info !== undefined)
+            if (SomeJSON["company_name"]    !== undefined &&
+                SomeJSON["display_unit"]    !== undefined &&
+                //SomeJSON["energy"]          !== undefined &&
+                //SomeJSON["flat"]            !== undefined &&
+                SomeJSON["minMaxAdj"]       !== undefined &&
+                //SomeJSON["parking"]         !== undefined &&
+                SomeJSON["subtotal"]        !== undefined &&
+                SomeJSON["totalAmount"]     !== undefined &&
+                SomeJSON["additional_info"] !== undefined)
             {
 
                 //#region Documentation
@@ -152,84 +160,110 @@ export class ChargePoint {
 
                 //#endregion
 
-                let chargingStart  = "";
-                let chargingEnd    = "";
+                const additionalInfo = chargyLib.asJSONObject(SomeJSON["additional_info"]);
+                if (additionalInfo === undefined)
+                    throw new Error("Missing or invalid additional information!");
 
-                if (SomeJSON.energy && SomeJSON.energy.length > 0)
+                const energy   = chargyLib.asJSONArray(SomeJSON["energy"]);
+                const parking  = chargyLib.asJSONArray(SomeJSON["parking"]);
+
+                let chargingStart: number | undefined;
+                let chargingEnd:   number | undefined;
+
+                for (const energyItem of energy ?? [])
                 {
-                    for (let i=0; i<SomeJSON.energy.length; i++)
-                    {
-                        if (chargingStart == "" || SomeJSON.energy[i].start_time_utc < chargingStart)
-                            chargingStart = SomeJSON.energy[i].start_time_utc;
 
-                        if (chargingEnd   == "" || SomeJSON.energy[i].start_time_utc > chargingEnd)
-                            chargingEnd   = SomeJSON.energy[i].end_time_utc;
-                    }
+                    const energyObj      = chargyLib.asJSONObject(energyItem);
+                    const startTimeUTC   = chargyLib.asNumber(energyObj?.["start_time_utc"]);
+                    const endTimeUTC     = chargyLib.asNumber(energyObj?.["end_time_utc"]);
+
+                    if (startTimeUTC !== undefined && (chargingStart === undefined || startTimeUTC < chargingStart))
+                        chargingStart = startTimeUTC;
+
+                    if (startTimeUTC !== undefined && (chargingEnd   === undefined || startTimeUTC > chargingEnd))
+                        chargingEnd   = endTimeUTC;
+
                 }
 
-                let parkingStart  = "";
-                let parkingEnd    = "";
+                let parkingStart: number | undefined;
+                let parkingEnd:   number | undefined;
 
-                if (SomeJSON.parking && SomeJSON.parking.length > 0)
+                for (const parkingItem of parking ?? [])
                 {
-                    for (let i=0; i<SomeJSON.parking.length; i++)
-                    {
-                        if (parkingStart == "" || SomeJSON.parking[i].start_time_utc < parkingStart)
-                            parkingStart = SomeJSON.parking[i].start_time_utc;
 
-                        if (parkingEnd   == "" || SomeJSON.parking[i].start_time_utc > parkingEnd)
-                            parkingEnd   = SomeJSON.parking[i].end_time_utc;
-                    }
+                    const parkingObj     = chargyLib.asJSONObject(parkingItem);
+                    const startTimeUTC   = chargyLib.asNumber(parkingObj?.["start_time_utc"]);
+                    const endTimeUTC     = chargyLib.asNumber(parkingObj?.["end_time_utc"]);
+
+                    if (startTimeUTC !== undefined && (parkingStart === undefined || startTimeUTC < parkingStart))
+                        parkingStart = startTimeUTC;
+
+                    if (startTimeUTC !== undefined && (parkingEnd   === undefined || startTimeUTC > parkingEnd))
+                        parkingEnd   = endTimeUTC;
+
                 }
 
                 // Sometimes there is "parking" but no "energy"...
-                if (chargingStart == "")
+                if (chargingStart === undefined)
                     chargingStart = parkingStart;
 
-                if (chargingEnd   == "")
+                if (chargingEnd   === undefined)
                     chargingEnd   = parkingEnd;
 
 
-                let sessionStart = parkingStart < chargingStart ? parkingStart : chargingStart;
+                let sessionStart = (parkingStart !== undefined && (chargingStart === undefined || parkingStart < chargingStart))
+                                       ? parkingStart
+                                       : chargingStart;
 
-                if (sessionStart == "" && chargingStart != "")
-                    sessionStart = chargingStart;
-
-                if (sessionStart == "" && parkingStart != "")
+                if (sessionStart === undefined && parkingStart !== undefined)
                     sessionStart = parkingStart;
 
 
-                let sessionEnd   = parkingEnd   < chargingEnd   ? parkingEnd   : chargingEnd;
+                let sessionEnd   = (parkingEnd   !== undefined && (chargingEnd   === undefined || parkingEnd   < chargingEnd))
+                                       ? parkingEnd
+                                       : chargingEnd;
 
-                if (sessionEnd   == "" && chargingEnd != "")
-                    sessionEnd   = chargingEnd;
-
-                if (sessionEnd   == "" && parkingEnd != "")
+                if (sessionEnd   === undefined && parkingEnd !== undefined)
                     sessionEnd   = parkingEnd;
 
 
-                var CTR: IChargepointChargeTransparencyRecord = {
+                const stationMac    = chargyLib.asString(additionalInfo["station_mac"])   ?? "";
+                const outlet        = chargyLib.asNumber(additionalInfo["outlet"])        ?? NaN;
+                const sessionId     = chargyLib.asNumber(additionalInfo["session_id"])    ?? NaN;
+                const driverInfo    = chargyLib.asString(additionalInfo["driver_info"])   ?? "";
+                const meterSerial   = chargyLib.asString(additionalInfo["meter_serial"])  ?? "";
+                const currencyCode  = chargyLib.asString(additionalInfo["currency_code"]) ?? "";
+                const energyUnits   = chargyLib.asString(additionalInfo["energy_units"])  ?? "";
+                const evseId        = chargyLib.asString(SomeJSON["EVSEId"]) ?? stationMac + "-" + String(outlet);
+                const original      = chargyLib.asString(SomeJSON["original"]);
 
-                    "@id":              "chargepoint-" + SomeJSON.additional_info.station_mac + "-" +
-                                                         SomeJSON.additional_info.outlet      + "-" +
-                                                         SomeJSON.additional_info.session_id,
+                // The signature is usually a DER encoded string, but might
+                // already be in the rs-format...
+                const signature     = chargyLib.asString(SomeJSON["signature"])
+                                          ?? chargyLib.asJSONObject(SomeJSON["signature"]) as chargyInterfaces.ISignatureRS | undefined;
+
+                const CTR: IChargepointChargeTransparencyRecord = {
+
+                    "@id":              "chargepoint-" + stationMac     + "-" +
+                                                         String(outlet) + "-" +
+                                                         String(sessionId),
                     "@context":         "https://open.charging.cloud/contexts/CTR+json",
 
-                    "begin":            this.chargy.moment.unix(Number(sessionStart)).utc().format(),
-                    "end":              this.chargy.moment.unix(Number(sessionEnd)).utc().format(),
+                    "begin":            this.chargy.moment.unix(sessionStart ?? NaN).utc().format(),
+                    "end":              this.chargy.moment.unix(sessionEnd   ?? NaN).utc().format(),
 
                     // "description": {
                     //     "de":           "Alle Ladevorgänge"
                     // },
 
                     "contract": {
-                        "@id":          SomeJSON.additional_info.driver_info,
+                        "@id":          driverInfo,
                         "type":         "userId"
                     },
 
                     "chargingStationOperators": [{
 
-                        "@id":                      SomeJSON.company_name,
+                        "@id":                      chargyLib.asString(SomeJSON["company_name"]) ?? "",
                         "description": {
                             "de":                   "chargepoint - Charging Station Operator Services"
                         },
@@ -253,13 +287,14 @@ export class ChargePoint {
                         },
 
                         "chargingStations": [{
-                            "@id":                      SomeJSON.additional_info.station_mac,
-                            "geoLocation":              SomeJSON.geoLocation,
-                            "address":                  SomeJSON.address,
+                            "@id":                      stationMac,
+                            // ToDo: The geo location and address are not validated yet!
+                            "geoLocation":              chargyLib.asJSONObject(SomeJSON["geoLocation"]) as chargyInterfaces.IGeoLocation | undefined,
+                            "address":                  chargyLib.asJSONObject(SomeJSON["address"])     as chargyInterfaces.IAddress     | undefined,
                             "EVSEs": [{
-                                "@id":                      SomeJSON.EVSEId ?? SomeJSON.additional_info.station_mac + "-" + SomeJSON.additional_info.outlet,
+                                "@id":                      evseId,
                                 "meters": [{
-                                    "@id":                 SomeJSON.additional_info.meter_serial,
+                                    "@id":                 meterSerial,
                                     "manufacturer":       "Carlo Gavazzi",
                                     "manufacturerURL":    "https://www.gavazziautomation.com",
                                     "model":              "EM340-DIN.AV2.3.X.S1.X",
@@ -278,7 +313,7 @@ export class ChargePoint {
 
                         "chargingTariffs": [{
                             "@id":                  "default",
-                            "currency":             SomeJSON.additional_info.currency_code,
+                            "currency":             currencyCode,
                             "taxes": [{
                                 "@id":          "MwSt",
                                 "percentage":   19.0,
@@ -287,7 +322,7 @@ export class ChargePoint {
 
                         "parkingTariffs": [{
                             "@id":                  "default",
-                            "currency":             SomeJSON.additional_info.currency_code,
+                            "currency":             currencyCode,
                             "taxes": [{
                                 "@id":          "MwSt",
                                 "percentage":   19.0,
@@ -298,19 +333,19 @@ export class ChargePoint {
 
                     "chargingSessions": [{
 
-                        "original":                     SomeJSON.original,
-                        "signature":                    SomeJSON.signature,
+                        "original":                     original,
+                        "signature":                    signature,
 
-                        "@id":                          SomeJSON.additional_info.station_mac + "-" +
-                                                        SomeJSON.additional_info.outlet      + "-" +
-                                                        SomeJSON.additional_info.session_id,
+                        "@id":                          stationMac     + "-" +
+                                                        String(outlet) + "-" +
+                                                        String(sessionId),
                         "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json",
-                        "begin":                        this.chargy.moment.unix(Number(sessionStart)).utc().format(),
-                        "end":                          this.chargy.moment.unix(Number(sessionEnd)).utc().format(),
-                        "EVSEId":                       SomeJSON.EVSEId ?? SomeJSON.additional_info.station_mac + "-" + SomeJSON.additional_info.outlet,
+                        "begin":                        this.chargy.moment.unix(sessionStart ?? NaN).utc().format(),
+                        "end":                          this.chargy.moment.unix(sessionEnd   ?? NaN).utc().format(),
+                        "EVSEId":                       evseId,
 
                         "authorizationStart": {
-                            "@id":                      SomeJSON.additional_info.driver_info,
+                            "@id":                      driverInfo,
                             "type":                     "userId"
                         },
 
@@ -331,11 +366,11 @@ export class ChargePoint {
 
                         "measurements": [{
 
-                            "energyMeterId":        SomeJSON.additional_info.meter_serial,
+                            "energyMeterId":        meterSerial,
                             "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargePointCrypt01+json",
-                            "name":                 "Bezogene Energiemenge",//SomeJSON.energy != null && SomeJSON.energy.length > 0 ? SomeJSON.energy[0].type : "Bezogene Energiemenge",
+                            "name":                 "Bezogene Energiemenge",
                             "obis":                 "1-0:1.8.0",
-                            "unit":                 SomeJSON.additional_info.energy_units,
+                            "unit":                 energyUnits,
                     //        "unitEncoded":          CTRArray[0]["measuredValue"]["unitEncoded"],
                     //        "valueType":            CTRArray[0]["measuredValue"]["valueType"],
                             "scale":                0,
@@ -350,13 +385,13 @@ export class ChargePoint {
 
                             "values": [
                                 {
-                                    "timestamp":        this.chargy.moment.unix(Number(chargingStart)).utc().format(),
-                                    "value":            SomeJSON.additional_info.meter_startreading,
+                                    "timestamp":        this.chargy.moment.unix(chargingStart ?? NaN).utc().format(),
+                                    "value":            new Decimal(chargyLib.asNumber(additionalInfo["meter_startreading"]) ?? NaN),
                                     signatures:         []
                                 },
                                 {
-                                    "timestamp":        this.chargy.moment.unix(Number(chargingEnd)).utc().format(),
-                                    "value":            SomeJSON.additional_info.meter_endreading,
+                                    "timestamp":        this.chargy.moment.unix(chargingEnd ?? NaN).utc().format(),
+                                    "value":            new Decimal(chargyLib.asNumber(additionalInfo["meter_endreading"]) ?? NaN),
                                     signatures:         []
                                 }
                             ]
@@ -371,22 +406,26 @@ export class ChargePoint {
                 };
 
 
-                if (SomeJSON.parking && SomeJSON.parking.length > 0)
+                if (parking && parking.length > 0)
                 {
 
                     CTR.chargingSessions![0]!.parking = [];
 
-                    for (let parking of SomeJSON.parking)
+                    for (const parkingItem of parking)
                     {
-                        if (parking.seq_num != "SUBTOTAL")
+
+                        const parkingObj = chargyLib.asJSONObject(parkingItem);
+
+                        if (chargyLib.asString(parkingObj?.["seq_num"]) !== "SUBTOTAL")
                         {
                             CTR.chargingSessions![0]!.parking.push({
                                 "@id":     "-",
-                                begin:     this.chargy.moment.unix(parking.start_time_utc).utc().format(),
-                                end:       this.chargy.moment.unix(parking.end_time_utc).utc().format(),
-                                overstay:  parking.overstay == 1,
+                                begin:     this.chargy.moment.unix(chargyLib.asNumber(parkingObj?.["start_time_utc"]) ?? NaN).utc().format(),
+                                end:       this.chargy.moment.unix(chargyLib.asNumber(parkingObj?.["end_time_utc"])   ?? NaN).utc().format(),
+                                overstay:  chargyLib.asNumber(parkingObj?.["overstay"]) === 1,
                             });
                         }
+
                     }
 
                 }
@@ -399,17 +438,17 @@ export class ChargePoint {
 
             //#region Second CTR format
 
-            if (SomeJSON.outlet              !== undefined &&
-                SomeJSON.session_id          !== undefined &&
-                SomeJSON.station_mac         !== undefined &&
-                SomeJSON.driver_info         !== undefined &&
-                SomeJSON.meter_serial        !== undefined &&
-                SomeJSON.meter_startreading  !== undefined &&
-                SomeJSON.meter_endreading    !== undefined &&
-                SomeJSON.total_energy        !== undefined &&
-                SomeJSON.energy_units        !== undefined &&
-                SomeJSON.start_time          !== undefined &&
-                SomeJSON.end_time            !== undefined) {
+            if (SomeJSON["outlet"]              !== undefined &&
+                SomeJSON["session_id"]          !== undefined &&
+                SomeJSON["station_mac"]         !== undefined &&
+                SomeJSON["driver_info"]         !== undefined &&
+                SomeJSON["meter_serial"]        !== undefined &&
+                SomeJSON["meter_startreading"]  !== undefined &&
+                SomeJSON["meter_endreading"]    !== undefined &&
+                SomeJSON["total_energy"]        !== undefined &&
+                SomeJSON["energy_units"]        !== undefined &&
+                SomeJSON["start_time"]          !== undefined &&
+                SomeJSON["end_time"]            !== undefined) {
 
                 //#region Documentation
 
@@ -448,22 +487,38 @@ export class ChargePoint {
 
                 //#endregion
 
+                const stationMac    = chargyLib.asString(SomeJSON["station_mac"])  ?? "";
+                const outlet        = chargyLib.asNumber(SomeJSON["outlet"])       ?? NaN;
+                const sessionId     = chargyLib.asNumber(SomeJSON["session_id"])   ?? NaN;
+                const driverInfo    = chargyLib.asString(SomeJSON["driver_info"])  ?? "";
+                const meterSerial   = chargyLib.asString(SomeJSON["meter_serial"]) ?? "";
+                const energyUnits   = chargyLib.asString(SomeJSON["energy_units"]) ?? "";
+                const startTime     = chargyLib.asNumber(SomeJSON["start_time"])   ?? NaN;
+                const endTime       = chargyLib.asNumber(SomeJSON["end_time"])     ?? NaN;
+                const evseId        = chargyLib.asString(SomeJSON["EVSEId"]) ?? (stationMac + "-" + String(outlet));
+                const original      = chargyLib.asString(SomeJSON["original"]);
+
+                // The signature is usually a DER encoded string, but might
+                // already be in the rs-format...
+                const signature     = chargyLib.asString(SomeJSON["signature"])
+                                          ?? chargyLib.asJSONObject(SomeJSON["signature"]) as chargyInterfaces.ISignatureRS | undefined;
+
                 const CTR: IChargepointChargeTransparencyRecord = {
 
-                    "@id":              "chargepoint-" + SomeJSON.station_mac + "-" +
-                                                         SomeJSON.outlet      + "-" +
-                                                         SomeJSON.session_id,
+                    "@id":              "chargepoint-" + stationMac     + "-" +
+                                                         String(outlet) + "-" +
+                                                         String(sessionId),
                     "@context":         "https://open.charging.cloud/contexts/CTR+json",
 
-                    "begin":            this.chargy.moment.unix(SomeJSON.start_time).utc().format(),
-                    "end":              this.chargy.moment.unix(SomeJSON.end_time).utc().format(),
+                    "begin":            this.chargy.moment.unix(startTime).utc().format(),
+                    "end":              this.chargy.moment.unix(endTime).utc().format(),
 
                     // "description": {
                     //     "de":           "Alle Ladevorgänge"
                     // },
 
                     "contract": {
-                        "@id":          SomeJSON.driver_info,
+                        "@id":          driverInfo,
                         "type":         "userId"
                     },
 
@@ -493,13 +548,14 @@ export class ChargePoint {
                         },
 
                         "chargingStations": [{
-                            "@id":                      SomeJSON.station_mac,
-                            "geoLocation":              SomeJSON.geoLocation,
-                            "address":                  SomeJSON.address,
+                            "@id":                      stationMac,
+                            // ToDo: The geo location and address are not validated yet!
+                            "geoLocation":              chargyLib.asJSONObject(SomeJSON["geoLocation"]) as chargyInterfaces.IGeoLocation | undefined,
+                            "address":                  chargyLib.asJSONObject(SomeJSON["address"])     as chargyInterfaces.IAddress     | undefined,
                             "EVSEs": [{
-                                "@id":                  SomeJSON.EVSEId ?? SomeJSON.station_mac + "-" + SomeJSON.outlet,
+                                "@id":                  evseId,
                                 "meters": [{
-                                    "@id":                SomeJSON.meter_serial,
+                                    "@id":                meterSerial,
                                     "manufacturer":       "Carlo Gavazzi",
                                     "manufacturerURL":    "https://www.gavazziautomation.com",
                                     "model":              "EM340-DIN.AV2.3.X.S1.X",
@@ -525,19 +581,19 @@ export class ChargePoint {
 
                     "chargingSessions": [{
 
-                        "original":               SomeJSON.original,
-                        "signature":              SomeJSON.signature,
+                        "original":               original,
+                        "signature":              signature,
 
-                        "@id":                    SomeJSON.station_mac + "-" +
-                                                  SomeJSON.outlet      + "-" +
-                                                  SomeJSON.session_id,
+                        "@id":                    stationMac     + "-" +
+                                                  String(outlet) + "-" +
+                                                  String(sessionId),
                         "@context":               "https://open.charging.cloud/contexts/SessionSignatureFormats/ChargePointCrypt01+json",
-                        "begin":                  this.chargy.moment.unix(SomeJSON.start_time).utc().format(),
-                        "end":                    this.chargy.moment.unix(SomeJSON.end_time).utc().format(),
-                        "EVSEId":                 SomeJSON.EVSEId ?? (SomeJSON.station_mac + "-" + SomeJSON.outlet),
+                        "begin":                  this.chargy.moment.unix(startTime).utc().format(),
+                        "end":                    this.chargy.moment.unix(endTime).utc().format(),
+                        "EVSEId":                 evseId,
 
                         "authorizationStart": {
-                            "@id":                SomeJSON.driver_info,
+                            "@id":                driverInfo,
                             "type":               "userId"
                         },
 
@@ -550,22 +606,22 @@ export class ChargePoint {
 
                         "measurements": [{
 
-                            "energyMeterId":  SomeJSON.meter_serial,
+                            "energyMeterId":  meterSerial,
                             "@context":       "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/ChargePointCrypt01+json",
                             "name":           "Bezogene Energiemenge",
                             "obis":           "1-0:1.8.0",
-                            "unit":           SomeJSON.energy_units,
+                            "unit":           energyUnits,
                             "scale":          0,
 
                             "values": [
                                 {
-                                    "timestamp":        this.chargy.moment.unix(SomeJSON.start_time).utc().format(),
-                                    "value":            SomeJSON.meter_startreading,
+                                    "timestamp":        this.chargy.moment.unix(startTime).utc().format(),
+                                    "value":            new Decimal(chargyLib.asNumber(SomeJSON["meter_startreading"]) ?? NaN),
                                     "signatures":       []
                                 },
                                 {
-                                    "timestamp":        this.chargy.moment.unix(SomeJSON.end_time).utc().format(),
-                                    "value":            SomeJSON.meter_endreading,
+                                    "timestamp":        this.chargy.moment.unix(endTime).utc().format(),
+                                    "value":            new Decimal(chargyLib.asNumber(SomeJSON["meter_endreading"]) ?? NaN),
                                     "signatures":       []
                                 }
                             ]
@@ -579,7 +635,7 @@ export class ChargePoint {
 
                 };
 
-                return CTR as chargyInterfaces.IChargeTransparencyRecord;
+                return CTR;
 
             }
 
@@ -590,7 +646,7 @@ export class ChargePoint {
         {
             return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                message:   "Exception occured: " + (exception instanceof Error ? exception.message : String(exception)),
                 certainty: 0
             }
         }
@@ -683,16 +739,13 @@ export class ChargePointCrypt01 extends ACrypt {
             {
 
                 const ASN1_SignatureSchema  = this.chargy.asn1.define('Signature', function() {
-                    //@ts-ignore
                     this.seq().obj(
-                        //@ts-ignore
                         this.key('r').int(),
-                        //@ts-ignore
                         this.key('s').int()
                     );
                 });
 
-                const ASN1Signature         = ASN1_SignatureSchema.decode(Buffer.from(chargingSession.signature, 'hex'), 'der');
+                const ASN1Signature         = ASN1_SignatureSchema.decode<{ r: { toString(base: number): string }, s: { toString(base: number): string } }>(Buffer.from(chargingSession.signature, 'hex'), 'der');
 
                 chargingSession.signature   = { r: ASN1Signature.r.toString(16),
                                                 s: ASN1Signature.s.toString(16) };
@@ -709,7 +762,7 @@ export class ChargePointCrypt01 extends ACrypt {
             if (chargingSession.ctr.publicKeys != null)
             {
 
-                for (let publicKeyInfo of chargingSession.ctr?.publicKeys)
+                for (const publicKeyInfo of chargingSession.ctr?.publicKeys)
                 {
                     if (publicKeyInfo["@id"] === publicKeyId)
                         publicKeys.push(publicKeyInfo);
@@ -749,7 +802,7 @@ export class ChargePointCrypt01 extends ACrypt {
                 for (const publicKey of publicKeys)
                 {
 
-                    let algorithm = (typeof publicKey.algorithm === "object")
+                    const algorithm = (typeof publicKey.algorithm === "object")
                                         ? publicKey.algorithm.name
                                         : publicKey.algorithm;
 
@@ -835,7 +888,7 @@ export class ChargePointCrypt01 extends ACrypt {
 
             if (chargingSession.measurements)
             {
-                for (let measurement of chargingSession.measurements)
+                for (const measurement of chargingSession.measurements)
                 {
 
                     measurement.chargingSession = chargingSession;
@@ -846,7 +899,7 @@ export class ChargePointCrypt01 extends ACrypt {
 
                         //#region Validate measurements...
 
-                        for (let measurementValue of measurement.values)
+                        for (const measurementValue of measurement.values)
                         {
                             measurementValue.measurement = measurement;
                             await this.VerifyMeasurement(measurementValue as IChargepointMeasurementValue);
@@ -856,7 +909,7 @@ export class ChargePointCrypt01 extends ACrypt {
 
                         //#region Find an overall result...
 
-                        for (let measurementValue of measurement.values)
+                        for (const measurementValue of measurement.values)
                         {
                             if (measurementValue.result?.status !== chargyInterfaces.VerificationResult.ValidSignature &&
                                 measurementValue.result?.status !== chargyInterfaces.VerificationResult.NoOperation)
@@ -904,7 +957,7 @@ export class ChargePointCrypt01 extends ACrypt {
 
                                 //#region Adapt stop value
 
-                                else if (i = measurement.values.length-1)
+                                else if (i == measurement.values.length-1)
                                 {
                                     switch (currentResult.status)
                                     {
@@ -976,7 +1029,7 @@ export class ChargePointCrypt01 extends ACrypt {
         {
             return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSignature,
-                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                message:   "Exception occured: " + (exception instanceof Error ? exception.message : String(exception)),
                 certainty: 0
             }
         }
@@ -1162,12 +1215,10 @@ export class ChargePointCrypt01 extends ACrypt {
                         const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
 
                         if (signatureDiv != null)
-                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement!.chargingSession!.chargingStation,
-                                                                                                    measurementValue.measurement!.chargingSession!.EVSE,
-                                                                                                    //@ts-ignore
-                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                                                    //@ts-ignore
-                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
+                                                                                                    measurementValue.measurement.chargingSession.EVSE,
+                                                                                                    measurementValue.measurement.chargingSession.EVSE?.meters[0],
+                                                                                                    measurementValue.measurement.chargingSession.EVSE?.meters[0]?.publicKeys?.[0],
                                                                                                     signature);
 
                     }

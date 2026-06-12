@@ -105,7 +105,7 @@ export class secp224k1 {
 
       while (low > 1) {
 
-          let ratio = high / low,
+          const ratio = high / low,
               nm    = hm   - (ratio*lm),
               newm  = high - (ratio*low);
 
@@ -122,9 +122,9 @@ export class secp224k1 {
 
     public ECadd(a: Array<bigint>, b: Array<bigint>) {
 
-        let LamAdd  = this.modulo((b[1]!-a[1]!)*( this.modInv( b[0]!-a[0]! ) ), this.Pcurve);
-        let x       = this.modulo((LamAdd*LamAdd)-a[0]!-b[0]!, this.Pcurve);
-        let y       = this.modulo((LamAdd*( a[0]!-x )-a[1]!),  this.Pcurve);
+        const LamAdd  = this.modulo((b[1]!-a[1]!)*( this.modInv( b[0]!-a[0]! ) ), this.Pcurve);
+        const x       = this.modulo((LamAdd*LamAdd)-a[0]!-b[0]!, this.Pcurve);
+        const y       = this.modulo((LamAdd*( a[0]!-x )-a[1]!),  this.Pcurve);
 
         return [x, y];
 
@@ -132,9 +132,9 @@ export class secp224k1 {
 
     public ECdouble(a: Array<bigint>) {
 
-        let Lam  = this.modulo((((a[0]!*a[0]!)*this.Three) + this.Acurve)*( this.modInv( a[1]!*this.Two )), this.Pcurve);
-        let x    = this.modulo((Lam*Lam)-(a[0]!*this.Two),  this.Pcurve);
-        let y    = this.modulo( Lam*( a[0]!-x )-a[1]!,       this.Pcurve);
+        const Lam  = this.modulo((((a[0]!*a[0]!)*this.Three) + this.Acurve)*( this.modInv( a[1]!*this.Two )), this.Pcurve);
+        const x    = this.modulo((Lam*Lam)-(a[0]!*this.Two),  this.Pcurve);
+        const y    = this.modulo( Lam*( a[0]!-x )-a[1]!,       this.Pcurve);
 
         return [x, y];
 
@@ -145,7 +145,7 @@ export class secp224k1 {
         if (ScalarHex == this.Zero || ScalarHex >= this.N)
              throw "Invalid Scalar/Private Key";
 
-        let ScalarBinary = ScalarHex.toString(2);
+        const ScalarBinary = ScalarHex.toString(2);
         let Q            = GenPoint;
 
         for (let i = 1; i < ScalarBinary.length; i++) {
@@ -173,7 +173,7 @@ export class secp224k1 {
         if (typeof PrivateKey === 'string')
             PrivateKey = BigInt(PrivateKey);
 
-        let PublicKey     = this.ECmultiply(this.GPoint, PrivateKey);
+        const PublicKey     = this.ECmultiply(this.GPoint, PrivateKey);
         // let Px            = this.zfill(PublicKey[0].toString(16));
         // let Py            = this.zfill(PublicKey[1].toString(16));
 

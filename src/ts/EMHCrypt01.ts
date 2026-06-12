@@ -65,11 +65,11 @@ export class EMHCrypt01 extends ACrypt {
     async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
-        var sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
+        let sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
 
         if (chargingSession.measurements)
         {
-            for (var measurement of chargingSession.measurements)
+            for (const measurement of chargingSession.measurements)
             {
 
                 measurement.chargingSession = chargingSession;
@@ -133,8 +133,8 @@ export class EMHCrypt01 extends ACrypt {
 
         measurementValue.method = this;
 
-        var buffer        = new ArrayBuffer(320);
-        var cryptoBuffer  = new DataView(buffer);
+        const buffer        = new ArrayBuffer(320);
+        const cryptoBuffer  = new DataView(buffer);
 
         var cryptoResult:IEMHCrypt01Result = {
             status:                       chargyInterfaces.VerificationResult.InvalidSignature,
@@ -152,7 +152,7 @@ export class EMHCrypt01 extends ACrypt {
             authorizationStartTimestamp:  chargyLib.SetTimestamp32(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp,  169)
         };
 
-        var signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
+        const signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
         if (signatureExpected != null)
         {
 
@@ -477,12 +477,12 @@ export class EMHCrypt01 extends ACrypt {
     private DecodeStatus(statusValue: string) : Array<string>
     {
 
-        let statusArray:string[] = [];
+        const statusArray:string[] = [];
 
         try
         {
 
-            let status = parseInt(statusValue);
+            const status = parseInt(statusValue);
 
             if ((status &  1) ==  1)
                 statusArray.push("Fehler erkannt");

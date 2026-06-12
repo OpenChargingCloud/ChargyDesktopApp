@@ -55,11 +55,11 @@ export class GDFCrypt01 extends ACrypt {
     async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
-        var sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
+        let sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
 
         if (chargingSession.measurements)
         {
-            for (var measurement of chargingSession.measurements)
+            for (const measurement of chargingSession.measurements)
             {
 
                 measurement.chargingSession = chargingSession;
@@ -123,8 +123,8 @@ export class GDFCrypt01 extends ACrypt {
 
         measurementValue.method = this;
 
-        var buffer        = new ArrayBuffer(320);
-        var cryptoBuffer  = new DataView(buffer);
+        const buffer        = new ArrayBuffer(320);
+        const cryptoBuffer  = new DataView(buffer);
 
         var cryptoResult:IGDFCrypt01Result = {
             status:                       chargyInterfaces.VerificationResult.InvalidSignature,
@@ -138,7 +138,7 @@ export class GDFCrypt01 extends ACrypt {
             authorizationStartTimestamp:  chargyLib.SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp,  169)
         };
 
-        var signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
+        const signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
         if (signatureExpected != null)
         {
 

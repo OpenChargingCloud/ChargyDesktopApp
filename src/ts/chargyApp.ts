@@ -972,7 +972,7 @@ export class ChargyApp {
 
         }
 
-        const externalLinks = document.querySelectorAll('[data-external-url]') as NodeListOf<HTMLElement>;
+        const externalLinks = document.querySelectorAll<HTMLElement>('[data-external-url]');
 
         for (let i = 0; i < externalLinks.length; i++) {
 
@@ -990,7 +990,7 @@ export class ChargyApp {
 
         }
 
-        const protocolLinks = document.querySelectorAll('a[href^="mailto:"], a[href^="tel:"]') as NodeListOf<HTMLAnchorElement>;
+        const protocolLinks = document.querySelectorAll<HTMLAnchorElement>('a[href^="mailto:"], a[href^="tel:"]');
 
         for (let i = 0; i < protocolLinks.length; i++) {
 

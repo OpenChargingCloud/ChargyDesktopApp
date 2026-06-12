@@ -24,7 +24,7 @@ export function IsAChargeTransparencyRecord(data: IChargeTransparencyRecord|IPub
     if (data == null || data == undefined)
         return false;
 
-    let chargeTransparencyRecord = data as IChargeTransparencyRecord;
+    const chargeTransparencyRecord = data as IChargeTransparencyRecord;
 
     return chargeTransparencyRecord.begin            !== undefined &&
            chargeTransparencyRecord.end              !== undefined &&
@@ -38,7 +38,7 @@ export function IsAPublicKeyInfo(data: any): data is IPublicKeyInfo
     if (data == null || data == undefined)
         return false;
 
-    let publicKeyInfo = data as IPublicKeyInfo;
+    const publicKeyInfo = data as IPublicKeyInfo;
 
     return publicKeyInfo["@context"]  !== undefined &&
            publicKeyInfo.subject      !== undefined &&
@@ -53,8 +53,8 @@ export function IsAPublicKeyLookup(data: IChargeTransparencyRecord|IPublicKeyLoo
     if (data == null || data == undefined)
         return false;
 
-    let publicKeyLookup = data as IPublicKeyLookup;
-    let chargeTransparencyRecord = data as IChargeTransparencyRecord;
+    const publicKeyLookup = data as IPublicKeyLookup;
+    const chargeTransparencyRecord = data as IChargeTransparencyRecord;
 
     return Array.isArray(publicKeyLookup.publicKeys) &&
            chargeTransparencyRecord.chargingSessions === undefined &&
@@ -69,7 +69,7 @@ export function IsASessionCryptoResult(data: IChargeTransparencyRecord|IPublicKe
     if (data == null || data == undefined)
         return false;
 
-    let sessionCryptoResult = data as ISessionCryptoResult;
+    const sessionCryptoResult = data as ISessionCryptoResult;
 
     return sessionCryptoResult.status !== undefined;
 
@@ -180,7 +180,7 @@ export function ISOIDInfo(data: any): data is IOIDInfo
     if (data == null || data == undefined)
         return false;
 
-    let OIDInfo = data as IOIDInfo;
+    const OIDInfo = data as IOIDInfo;
 
     return OIDInfo.oid !== undefined;
 

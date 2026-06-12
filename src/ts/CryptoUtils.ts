@@ -330,7 +330,7 @@ function parseSignedJSONMessage(JSONMessage: string | unknown): {
         };
 
     return {
-        message: parsedMessage as SignedJSONMessage
+        message: parsedMessage
     };
 
 }

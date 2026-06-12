@@ -195,7 +195,7 @@ export class BSMCrypt01 extends ACrypt {
         const warnings  = new Array<string>();
 
         // How sure we are, that this is really a BSM meter value format
-        let numberOfFormatChecks  = 2*39; // At least two signed meter values!
+        const numberOfFormatChecks  = 2*39; // At least two signed meter values!
         let secondaryErrors       = 0;
 
         //#endregion
@@ -339,7 +339,7 @@ export class BSMCrypt01 extends ACrypt {
             const displayedFormatObj  = chargyLib.asJSONObject(valueObj?.["displayedFormat"]);
             const chargePointObj      = chargyLib.asJSONObject(firstMeasurement["chargePoint"]);
 
-            let common = {
+            const common = {
 
                 context:                           chargyLib.asString(firstMeasurement["@context"])         ?? "",
 
@@ -396,7 +396,7 @@ export class BSMCrypt01 extends ACrypt {
 
             let previousId: unknown     = "";
             let previousTime            = "";
-            let previousMeasurementId   = "";
+            const previousMeasurementId   = "";
             let previousValue: number | undefined;
 
             let previousRCR             = -1;
@@ -413,8 +413,8 @@ export class BSMCrypt01 extends ACrypt {
             for (const measurementRaw of Measurements)
             {
 
-                let currentErrors:   Array<string>  = [];
-                let currentWarnings: Array<string>  = [];
+                const currentErrors:   Array<string>  = [];
+                const currentWarnings: Array<string>  = [];
 
                 measurementCounter++;
 
@@ -427,7 +427,7 @@ export class BSMCrypt01 extends ACrypt {
                 if (currentMeasurement["@context"] !== common.context)
                     currentErrors.push(this.chargy.GetLocalizedMessageWithParameter("Inconsistent_SignedMeterValue_JSONContextP", measurementCounter));
 
-                let currentId = currentMeasurement["@id"];
+                const currentId = currentMeasurement["@id"];
                 if (previousId !== "" && typeof currentId === 'string')
                 {
 
@@ -797,13 +797,13 @@ export class BSMCrypt01 extends ACrypt {
                 );
             });
 
-            let session = {
+            const session = {
 
                 "@id":                          common.meterInfo_meterId + "-" + String(firstDataSet.Epoch),
                 "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/bsm-ws36a-v0+json",
                 "begin":                        firstDataSet.time,
                 "end":                          lastDataSet.time,
-                "EVSEId":                       CTR.chargingStationOperators![0]!["chargingStations"]![0]!["EVSEs"]![0]!["@id"],
+                "EVSEId":                       CTR.chargingStationOperators![0]!["chargingStations"]![0]!["EVSEs"][0]!["@id"],
 
                 "authorizationStart": {
                     "@id":                      common.contract_id,
@@ -855,7 +855,7 @@ export class BSMCrypt01 extends ACrypt {
 
             };
 
-            for (let dataSet of common.dataSets)
+            for (const dataSet of common.dataSets)
             {
 
                 let ASN1Signature:any = {};
@@ -874,7 +874,7 @@ export class BSMCrypt01 extends ACrypt {
                     errors.push(this.chargy.GetLocalizedMessageWithParameter("MissingOrInvalid_SignedMeterValue_SignatureP", 1))
                 }
 
-                let bsmMeasurementValue: IBSMMeasurementValue = {
+                const bsmMeasurementValue: IBSMMeasurementValue = {
 
                     timestamp:                                 dataSet.time,
                     Typ:                                       dataSet.Typ,
@@ -942,7 +942,7 @@ export class BSMCrypt01 extends ACrypt {
                 if (CTR.begin == undefined || CTR.begin === "" || CTR.begin > CTR.chargingSessions[0]!["begin"])
                     CTR.begin =   CTR.chargingSessions[0]?.begin;
 
-                var end = CTR.chargingSessions[CTR.chargingSessions.length - 1]?.end;
+                const end = CTR.chargingSessions[CTR.chargingSessions.length - 1]?.end;
                 if (end !== undefined)
                 {
                     if (CTR.end == undefined || CTR.end === "" || CTR.end < end)
@@ -963,7 +963,7 @@ export class BSMCrypt01 extends ACrypt {
                 CTR.contract["@context"] = common.contract_type;
             }
 
-            (CTR!.chargingStationOperators![0]!.chargingStations![0]!.EVSEs[0]?.meters)?.push({
+            (CTR.chargingStationOperators![0]!.chargingStations![0]!.EVSEs[0]?.meters)?.push({
                 "@id":               common.meterInfo_meterId,
                 model:               common.meterInfo_type,
                 manufacturer:        common.meterInfo_manufacturer,
@@ -1015,11 +1015,11 @@ export class BSMCrypt01 extends ACrypt {
     async VerifyChargingSession(chargingSession: chargyInterfaces.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
-        var sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
+        let sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
 
         if (chargingSession.measurements)
         {
-            for (var measurement of chargingSession.measurements)
+            for (const measurement of chargingSession.measurements)
             {
 
                 measurement.chargingSession = chargingSession;
@@ -1147,17 +1147,17 @@ export class BSMCrypt01 extends ACrypt {
 
         measurementValue.method = this;
 
-        let MA1_length    = new TextEncoder().encode(measurementValue.MA1  ).length + 4;
-        let Meta1_length  = new TextEncoder().encode(measurementValue.Meta1).length + 4;
-        let Meta2_length  = new TextEncoder().encode(measurementValue.Meta2).length + 4;
-        let Meta3_length  = new TextEncoder().encode(measurementValue.Meta3).length + 4;
-        let requiredSize  = 13*6 + MA1_length + Meta1_length + Meta2_length + Meta3_length;
-        let buffer        = new ArrayBuffer(requiredSize);
-        let cryptoBuffer  = new DataView(buffer);
+        const MA1_length    = new TextEncoder().encode(measurementValue.MA1  ).length + 4;
+        const Meta1_length  = new TextEncoder().encode(measurementValue.Meta1).length + 4;
+        const Meta2_length  = new TextEncoder().encode(measurementValue.Meta2).length + 4;
+        const Meta3_length  = new TextEncoder().encode(measurementValue.Meta3).length + 4;
+        const requiredSize  = 13*6 + MA1_length + Meta1_length + Meta2_length + Meta3_length;
+        const buffer        = new ArrayBuffer(requiredSize);
+        const cryptoBuffer  = new DataView(buffer);
 
         // TODO: Use units and scale factors from input data instead of making
         // assumptions about them.
-        let cryptoResult:IBSMCrypt01Result = {
+        const cryptoResult:IBSMCrypt01Result = {
             status:        chargyInterfaces.VerificationResult.InvalidSignature,
             ArraySize:     requiredSize,
             Typ:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.Typ,          0, 255,   0),
@@ -1179,7 +1179,7 @@ export class BSMCrypt01 extends ACrypt {
             Evt:           chargyLib.SetUInt32_withCode(cryptoBuffer, measurementValue.Evt,          0, 255,  72 + MA1_length + Meta1_length + Meta2_length + Meta3_length),
         };
 
-        var signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
+        const signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
         if (signatureExpected != null)
         {
 
@@ -1548,7 +1548,7 @@ export class BSMCrypt01 extends ACrypt {
     public ParseEvents(value: number) : string[]
     {
 
-        let events: string[] = [];
+        const events: string[] = [];
 
         if ((value & (1 <<  1)) != 0) events.push("Power Failure");
         if ((value & (1 <<  2)) != 0) events.push("Under Voltage");
@@ -1590,12 +1590,12 @@ export class BSMCrypt01 extends ACrypt {
     private DecodeStatus(statusValue: string) : Array<string>
     {
 
-        let statusArray:string[] = [];
+        const statusArray:string[] = [];
 
         try
         {
 
-            let status = parseInt(statusValue);
+            const status = parseInt(statusValue);
 
             if ((status &  1) ==  1)
                 statusArray.push("Fehler erkannt");

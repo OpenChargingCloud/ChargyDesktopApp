@@ -46,7 +46,7 @@ export class XMLContainer {
         try
         {
 
-            let common: XMLContainerCommonFormat = {
+            const common: XMLContainerCommonFormat = {
                 publicKey:             "",
                 meterValueSignatures:  [],
                 signatureMethod:       "",
@@ -54,7 +54,7 @@ export class XMLContainer {
                 encodedMeterValues:    []
             };
 
-            let values = XMLDocument.querySelectorAll("signedMeterValues");
+            const values = XMLDocument.querySelectorAll("signedMeterValues");
             if (values.length == 1)
             {
 
@@ -68,11 +68,11 @@ export class XMLContainer {
                         //#region publicKey
 
                         // Note: The public key might be optional...
-                        let publicKey = valueList[i]?.querySelector("publicKey");
+                        const publicKey = valueList[i]?.querySelector("publicKey");
                         if (publicKey != null)
                         {
 
-                            let publicKeyEncoding  = publicKey.attributes.getNamedItem("encoding")?.value?.trim()?.toLowerCase() ?? "";
+                            const publicKeyEncoding  = publicKey.attributes.getNamedItem("encoding")?.value?.trim()?.toLowerCase() ?? "";
                             let publicKeyValue     = publicKey.textContent?.trim() ?? "";
 
                             switch (publicKeyEncoding)
@@ -127,11 +127,11 @@ export class XMLContainer {
 
                         //#region meterValueSignature
 
-                        let meterValueSignature = valueList[i]?.querySelector("meterValueSignature");
+                        const meterValueSignature = valueList[i]?.querySelector("meterValueSignature");
                         if (meterValueSignature != null)
                         {
 
-                            let meterValueSignatureEncoding  = meterValueSignature.attributes.getNamedItem("encoding")?.value?.trim()?.toLowerCase() ?? "";
+                            const meterValueSignatureEncoding  = meterValueSignature.attributes.getNamedItem("encoding")?.value?.trim()?.toLowerCase() ?? "";
                             let meterValueSignatureValue     = meterValueSignature.textContent?.trim() ?? "";
 
                             switch (meterValueSignatureEncoding)
@@ -178,7 +178,7 @@ export class XMLContainer {
 
                         //#region signatureMethod
 
-                        let signatureMethod = valueList[i]?.querySelector("signatureMethod")?.textContent?.trim()?.toLowerCase() ?? "";
+                        const signatureMethod = valueList[i]?.querySelector("signatureMethod")?.textContent?.trim()?.toLowerCase() ?? "";
 
                         if (common.signatureMethod == "")
                             common.signatureMethod = signatureMethod;
@@ -194,7 +194,7 @@ export class XMLContainer {
 
                         //#region encodingMethod
 
-                        let encodingMethod  = valueList[i]?.querySelector("encodingMethod")?.textContent?.trim()?.toLowerCase() ?? "";
+                        const encodingMethod  = valueList[i]?.querySelector("encodingMethod")?.textContent?.trim()?.toLowerCase() ?? "";
 
                         if (common.encodingMethod == "")
                             common.encodingMethod = encodingMethod;
@@ -210,11 +210,11 @@ export class XMLContainer {
 
                         //#region encodedMeterValue
 
-                        let encodedMeterValue = valueList[i]?.querySelector("encodedMeterValue");
+                        const encodedMeterValue = valueList[i]?.querySelector("encodedMeterValue");
                         if (encodedMeterValue != null)
                         {
 
-                            let signedDataEncoding = encodedMeterValue.attributes.getNamedItem("encoding")?.value?.trim() ?? "";
+                            const signedDataEncoding = encodedMeterValue.attributes.getNamedItem("encoding")?.value?.trim() ?? "";
                             let signedDataValue    = encodedMeterValue.textContent?.trim()                                ?? "";
 
                             switch (signedDataEncoding)

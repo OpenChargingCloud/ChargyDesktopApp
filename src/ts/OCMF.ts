@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 // Note: More information about implementation details and limitations
 //       can be found within ~/documentation/OCMF/README.md!
 
@@ -74,7 +73,7 @@ export class OCMFv1_x extends ACrypt {
 
         if (chargingSession.measurements)
         {
-            for (var measurement of chargingSession.measurements)
+            for (const measurement of chargingSession.measurements)
             {
 
                 measurement.chargingSession = chargingSession;
@@ -646,7 +645,7 @@ export interface IOCMFReading {
 
     RT?:        string,                 // Reading-Current-Type:          The optional type of current measured by the meter, e.g. "AC", "DC"
 
-    CL?:        Number,                 // Cumulated Loss:                This parameter is optional and can be added only when RI is indicating an accumulation register reading. The value
+    CL?:        number,                 // Cumulated Loss:                This parameter is optional and can be added only when RI is indicating an accumulation register reading. The value
                                         //                                reported here represents cumulated loss withdrawned from measurement when computing loss compensation on RV.
                                         //                                CL must be reset at TX=B. CL is given in the same unit as RV which is specified in RU.
 
@@ -1170,7 +1169,7 @@ export class OCMF {
                         certainty: 0
                     }
 
-                    var CTR:IOCMFChargeTransparencyRecord = {
+                    const CTR:IOCMFChargeTransparencyRecord = {
 
                         "@id":       "?",
                         "@context":  "https://open.charging.cloud/contexts/CTR+json",
@@ -1373,10 +1372,10 @@ export class OCMF {
 
                                 //#endregion
 
-                                if (CTR!.chargingSessions?.[0]?.begin === "?")
-                                    CTR!.chargingSessions![0]!.begin = timeStampISO8601;
+                                if (CTR.chargingSessions?.[0]?.begin === "?")
+                                    CTR.chargingSessions[0].begin = timeStampISO8601;
 
-                                CTR!.chargingSessions![0]!.end = timeStampISO8601;
+                                CTR.chargingSessions![0]!.end = timeStampISO8601;
 
                                 const measurementKey = [
                                     readingIdentification ?? "?",
@@ -1401,7 +1400,7 @@ export class OCMF {
                                     };
 
                                     measurementsByKey.set(measurementKey, measurement);
-                                    CTR!.chargingSessions![0]!.measurements.push(measurement);
+                                    CTR.chargingSessions![0]!.measurements.push(measurement);
 
                                 }
 
@@ -1434,7 +1433,7 @@ export class OCMF {
 
                     CTR.status = (OCMFJSONDocuments.every(ocmfJSONDocument => ocmfJSONDocument.validationStatus === chargyInterfaces.VerificationResult.ValidSignature)
                                      ? chargyInterfaces.SessionVerificationResult.ValidSignature
-                                     : chargyInterfaces.SessionVerificationResult.InvalidSignature) as chargyInterfaces.SessionVerificationResult;
+                                     : chargyInterfaces.SessionVerificationResult.InvalidSignature);
 
 
                     if (CTR.chargingSessions        != null &&
@@ -1921,7 +1920,7 @@ export class OCMF {
         let   startIndex              = -1;
         let   endIndex                = -1;
 
-        let   ocmfJSONDocuments: Array<IOCMFJSONDocument> = [];
+        const   ocmfJSONDocuments: Array<IOCMFJSONDocument> = [];
 
         //#endregion
 
@@ -2261,7 +2260,7 @@ export class OCMF {
              certainty: 0
          }
 
-        const ocmfJSONDocumentGroups  = new Map<String, Array<IOCMFJSONDocument>>();
+        const ocmfJSONDocumentGroups  = new Map<string, Array<IOCMFJSONDocument>>();
         const ocmfCTRs                = new Array<IOCMFChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>();
 
         //#endregion

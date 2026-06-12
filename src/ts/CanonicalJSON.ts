@@ -33,7 +33,7 @@ export class CanonicalJSONError extends TypeError {
  * values which are not representable as RFC 8259 JSON.
  */
 export function canonicalJSONStringify(value: unknown): string {
-    return serializeJSONValue(value, "$", new WeakSet<object>());
+    return serializeJSONValue(value, "$", new WeakSet());
 }
 
 export function canonicalJSONBytes(value: unknown): Uint8Array {

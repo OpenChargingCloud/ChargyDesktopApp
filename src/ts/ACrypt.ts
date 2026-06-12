@@ -72,7 +72,7 @@ export abstract class ACrypt {
                                   bufferDiv:  HTMLDivElement)
     {
 
-        var lineDiv = chargyLib.CreateDiv(infoDiv, "row");
+        const lineDiv = chargyLib.CreateDiv(infoDiv, "row");
                       chargyLib.CreateDiv(lineDiv, "id",    this.chargy.GetLocalizedMessage(id));
                       chargyLib.CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value?.toString()));
 
@@ -87,7 +87,7 @@ export abstract class ACrypt {
                          bufferDiv:  HTMLDivElement)
     {
 
-        var lineDiv = chargyLib.CreateDiv(infoDiv, "row");
+        const lineDiv = chargyLib.CreateDiv(infoDiv, "row");
                       chargyLib.CreateDiv(lineDiv, "id",    id);
                       chargyLib.CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value?.toString()));
 
@@ -100,7 +100,7 @@ export abstract class ACrypt {
                                 lineDiv:    HTMLDivElement)
     {
 
-        let newText = chargyLib.CreateDiv(bufferDiv, "entry", valueHEX);
+        const newText = chargyLib.CreateDiv(bufferDiv, "entry", valueHEX);
 
         newText.onmouseenter = function(this: GlobalEventHandlers, ev: MouseEvent) {
             lineDiv.children[0]?.classList.add("overEntry");

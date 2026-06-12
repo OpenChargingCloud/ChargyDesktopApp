@@ -133,9 +133,9 @@ export class Chargy {
             );
         });
 
-        const publicKeyDER   = ASN1_PublicKey.decode(publicKeyBuffer, 'der') as DERPublicKey;
+        const publicKeyDER   = ASN1_PublicKey.decode(publicKeyBuffer, 'der');
 
-        const KeyType_OID    = publicKeyDER.oids[0].join(".") as string;
+        const KeyType_OID    = publicKeyDER.oids[0].join(".");
         let   KeyType        = "unknown";
         switch (KeyType_OID)
         {
@@ -144,7 +144,7 @@ export class Chargy {
                 break;
         }
 
-        const Curve_OID      = publicKeyDER.oids[1].join(".") as string;
+        const Curve_OID      = publicKeyDER.oids[1].join(".");
         let   Curve          = "unknown";
         switch (Curve_OID)
         {
@@ -460,7 +460,7 @@ export class Chargy {
 
     public GetChargingPool: chargyInterfaces.GetChargingPoolFunc = (Id: string) => {
 
-        for (var chargingPool of this.chargingPools)
+        for (const chargingPool of this.chargingPools)
         {
             if (chargingPool["@id"] === Id)
                 return chargingPool;
@@ -472,7 +472,7 @@ export class Chargy {
 
     public GetChargingStation: chargyInterfaces.GetChargingStationFunc = (Id: string) => {
 
-        for (var chargingStation of this.chargingStations)
+        for (const chargingStation of this.chargingStations)
         {
             if (chargingStation["@id"] === Id)
                 return chargingStation;
@@ -484,7 +484,7 @@ export class Chargy {
 
     public GetEVSE: chargyInterfaces.GetEVSEFunc = (Id: string) => {
 
-        for (var evse of this.EVSEs)
+        for (const evse of this.EVSEs)
         {
             if (evse["@id"] === Id)
                 return evse;
@@ -496,7 +496,7 @@ export class Chargy {
 
     public GetMeter: chargyInterfaces.GetMeterFunc = (Id: string) => {
 
-        for (var meter of this.meters)
+        for (const meter of this.meters)
         {
             if (meter["@id"] === Id)
                 return meter;
@@ -525,7 +525,7 @@ export class Chargy {
         try
         {
 
-            var toCheck = {
+            const toCheck = {
 
                 "@id":                  chargingStation["@id"],
                 "description":          chargingStation.description,
@@ -609,7 +609,7 @@ export class Chargy {
             archiveFound      = false;
             expandedFileInfos = new Array<chargyInterfaces.IFileInfo>();
 
-            for (let FileInfo of FileInfos)
+            for (const FileInfo of FileInfos)
             {
 
                 if (FileInfo.data != null && FileInfo.data.byteLength > 0)
@@ -693,7 +693,7 @@ export class Chargy {
                             try
                             {
 
-                                let compressedFiles = await this.extractArchive(FileInfo.name,
+                                const compressedFiles = await this.extractArchive(FileInfo.name,
                                                                                 FileInfo.data,
                                                                                 filetype.mime.toString());
 
@@ -724,7 +724,7 @@ export class Chargy {
                                 if (compressedFiles.length >= 2)
                                 {
 
-                                    for (let file of compressedFiles)
+                                    for (const file of compressedFiles)
                                     {
                                         if (file.type === "file")
                                         {
@@ -793,7 +793,7 @@ export class Chargy {
 
                                 //#region Multiple files
 
-                                for (let compressedFile of compressedFiles)
+                                for (const compressedFile of compressedFiles)
                                 {
                                     if (compressedFile.type === "file")
                                     {
@@ -1076,7 +1076,7 @@ export class Chargy {
         }
 
         let expandedFiles  = new Array<chargyInterfaces.IFileInfo>();
-        let processedFiles = new Array<chargyInterfaces.IExtendedFileInfo>();
+        const processedFiles = new Array<chargyInterfaces.IExtendedFileInfo>();
 
         //#endregion
 
@@ -1084,7 +1084,7 @@ export class Chargy {
 
         if (FileInfos && FileInfos.length > 0)
         {
-            for (var fileInfo of FileInfos)
+            for (const fileInfo of FileInfos)
             {
 
                 //#region Process PDF/A-3 attachments
@@ -1176,7 +1176,7 @@ export class Chargy {
 
         const publicKeyHEXLookup = new Map<string, string>();
 
-        for (let expandedFile of expandedFiles)
+        for (const expandedFile of expandedFiles)
         {
             let textContent = new TextDecoder('utf-8').decode(expandedFile.data)?.trim();
 
@@ -1194,10 +1194,10 @@ export class Chargy {
 
         //#region Process JSON/XML/text files
 
-        for (let expandedFile of expandedFiles)
+        for (const expandedFile of expandedFiles)
         {
 
-            let processedFile  = expandedFile as chargyInterfaces.IExtendedFileInfo;
+            const processedFile  = expandedFile as chargyInterfaces.IExtendedFileInfo;
             let textContent    = new TextDecoder('utf-8').decode(expandedFile.data)?.trim();
 
             // Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
@@ -1212,11 +1212,11 @@ export class Chargy {
                 try
                 {
 
-                    let XMLDocument = new DOMParser().parseFromString(textContent, "text/xml");
+                    const XMLDocument = new DOMParser().parseFromString(textContent, "text/xml");
 
                     //#region XML namespace found...
 
-                    let xmlns = XMLDocument.lookupNamespaceURI(null);
+                    const xmlns = XMLDocument.lookupNamespaceURI(null);
                     if (xmlns != null)
                     {
 
@@ -1528,7 +1528,7 @@ export class Chargy {
         if (processedFiles.length == 1)
         {
 
-            var processedFile = processedFiles[0];
+            const processedFile = processedFiles[0];
             if (processedFile)
             {
 
@@ -1562,7 +1562,7 @@ export class Chargy {
         else if (processedFiles.length > 1)
         {
 
-            let mergedCTR:chargyInterfaces.IChargeTransparencyRecord = {
+            const mergedCTR:chargyInterfaces.IChargeTransparencyRecord = {
                 "@id":      "",
                 "@context": "",
                 certainty:   0
@@ -1599,19 +1599,19 @@ export class Chargy {
                     if (!mergedCTR.chargingStationOperators)
                         mergedCTR.chargingStationOperators = processedFileResult.chargingStationOperators;
                     else if (processedFileResult.chargingStationOperators)
-                        for (let chargingStationOperator of processedFileResult.chargingStationOperators)
+                        for (const chargingStationOperator of processedFileResult.chargingStationOperators)
                             mergedCTR.chargingStationOperators.push(chargingStationOperator);
 
                     if (!mergedCTR.chargingPools)
                         mergedCTR.chargingPools = processedFileResult.chargingPools;
                     else if (processedFileResult.chargingPools)
-                        for (let chargingPool of processedFileResult.chargingPools)
+                        for (const chargingPool of processedFileResult.chargingPools)
                             mergedCTR.chargingPools.push(chargingPool);
 
                     if (!mergedCTR.chargingStations)
                         mergedCTR.chargingStations = processedFileResult.chargingStations;
                     else if (processedFileResult.chargingStations)
-                        for (let chargingStation of processedFileResult.chargingStations)
+                        for (const chargingStation of processedFileResult.chargingStations)
                             mergedCTR.chargingStations.push(chargingStation);
 
                     // publicKeys
@@ -1619,19 +1619,19 @@ export class Chargy {
                     if (!mergedCTR.chargingSessions)
                         mergedCTR.chargingSessions = processedFileResult.chargingSessions;
                     else if (processedFileResult.chargingSessions)
-                        for (let chargingSession of processedFileResult.chargingSessions)
+                        for (const chargingSession of processedFileResult.chargingSessions)
                             mergedCTR.chargingSessions.push(chargingSession);
 
                     if (!mergedCTR.eMobilityProviders)
                         mergedCTR.eMobilityProviders = processedFileResult.eMobilityProviders;
                     else if (processedFileResult.eMobilityProviders)
-                        for (let eMobilityProvider of processedFileResult.eMobilityProviders)
+                        for (const eMobilityProvider of processedFileResult.eMobilityProviders)
                             mergedCTR.eMobilityProviders.push(eMobilityProvider);
 
                     if (!mergedCTR.mediationServices)
                         mergedCTR.mediationServices = processedFileResult.mediationServices;
                     else if (processedFileResult.mediationServices)
-                        for (let mediationService of processedFileResult.mediationServices)
+                        for (const mediationService of processedFileResult.mediationServices)
                             mergedCTR.mediationServices.push(mediationService);
 
                 }
@@ -1730,7 +1730,7 @@ export class Chargy {
             if (this.internalCTR.chargingStationOperators)
             {
 
-                for (var chargingStationOperator of this.internalCTR.chargingStationOperators)
+                for (const chargingStationOperator of this.internalCTR.chargingStationOperators)
                 {
 
                     this.chargingStationOperators.push(chargingStationOperator);
@@ -1989,7 +1989,7 @@ export class Chargy {
 
             if (this.internalCTR.chargingSessions)
             {
-                for (let chargingSession of this.internalCTR.chargingSessions)
+                for (const chargingSession of this.internalCTR.chargingSessions)
                 {
                     chargingSession.ctr                = this.internalCTR;
                     chargingSession.verificationResult = await this.processChargingSession(chargingSession);
@@ -2123,19 +2123,19 @@ export class Chargy {
             if (!mergedCTR.chargingStationOperators)
                 mergedCTR.chargingStationOperators = ctr.chargingStationOperators;
             else if (ctr.chargingStationOperators)
-                for (let chargingStationOperator of ctr.chargingStationOperators)
+                for (const chargingStationOperator of ctr.chargingStationOperators)
                     mergedCTR.chargingStationOperators.push(chargingStationOperator);
 
             if (!mergedCTR.chargingPools)
                 mergedCTR.chargingPools = ctr.chargingPools;
             else if (ctr.chargingPools)
-                for (let chargingPool of ctr.chargingPools)
+                for (const chargingPool of ctr.chargingPools)
                     mergedCTR.chargingPools.push(chargingPool);
 
             if (!mergedCTR.chargingStations)
                 mergedCTR.chargingStations = ctr.chargingStations;
             else if (ctr.chargingStations)
-                for (let chargingStation of ctr.chargingStations)
+                for (const chargingStation of ctr.chargingStations)
                     mergedCTR.chargingStations.push(chargingStation);
 
             // publicKeys
@@ -2143,19 +2143,19 @@ export class Chargy {
             if (!mergedCTR.chargingSessions)
                 mergedCTR.chargingSessions = ctr.chargingSessions;
             else if (ctr.chargingSessions)
-                for (let chargingSession of ctr.chargingSessions)
+                for (const chargingSession of ctr.chargingSessions)
                     mergedCTR.chargingSessions.push(chargingSession);
 
             if (!mergedCTR.eMobilityProviders)
                 mergedCTR.eMobilityProviders = ctr.eMobilityProviders;
             else if (ctr.eMobilityProviders)
-                for (let eMobilityProvider of ctr.eMobilityProviders)
+                for (const eMobilityProvider of ctr.eMobilityProviders)
                     mergedCTR.eMobilityProviders.push(eMobilityProvider);
 
             if (!mergedCTR.mediationServices)
                 mergedCTR.mediationServices = ctr.mediationServices;
             else if (ctr.mediationServices)
-                for (let mediationService of ctr.mediationServices)
+                for (const mediationService of ctr.mediationServices)
                     mergedCTR.mediationServices.push(mediationService);
 
         }
