@@ -35,6 +35,7 @@ import { XMLContainer }                     from './XMLContainer'
 import { OCPI }                             from './OCPI'
 import * as chargyInterfaces                from './interfaces/chargyInterfaces'
 import * as chargeTransparencyRecord        from './interfaces/IChargeTransparencyRecord'
+import * as chargeTransparencyLiveLink      from './interfaces/IChargeTransparencyLiveLink'
 import * as chargyLib                       from './chargyLib'
 import * as pdfjsLib                        from 'pdfjs-dist';
 import { readQRCodeTextFromImage }          from './qrReader'
@@ -1078,7 +1079,7 @@ export class Chargy {
 
     //#region DetectAndConvertContentFormat(FileInfos)
 
-    public async DetectAndConvertContentFormat(FileInfos: Array<chargyInterfaces.IFileInfo>): Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult> {
+    public async DetectAndConvertContentFormat(FileInfos: Array<chargyInterfaces.IFileInfo>): Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargeTransparencyLiveLink.IChargeTransparencyLiveLink|chargyInterfaces.ISessionCryptoResult> {
 
         //#region Initial checks
 
@@ -1463,7 +1464,17 @@ export class Chargy {
                     const JSONContent = JSON.parse(textContent);
                     const JSONContext = (JSONContent["@context"] as string)?.trim() ?? "";
 
-                    if      (JSONContext.startsWith("https://open.charging.cloud/contexts/CTR+json"))
+                    if      (chargeTransparencyLiveLink.IsAChargeTransparencyLiveLink(JSONContent))
+                    {
+
+                        if (JSONContent.timestamp == null)
+                            JSONContent.timestamp = new Date().toISOString();
+
+                        processedFile.result = JSONContent;
+
+                    }
+
+                    else if (JSONContext.startsWith("https://open.charging.cloud/contexts/CTR+json"))
                         processedFile.result = JSONContent as chargeTransparencyRecord.IChargeTransparencyRecord;
 
                     else if (JSONContext.startsWith("https://open.charging.cloud/contexts/publicKey+json"))
@@ -1558,6 +1569,9 @@ export class Chargy {
 
                 if (chargeTransparencyRecord.IsAChargeTransparencyRecord(processedFile.result))
                     return this.processChargeTransparencyRecord(processedFile.result);
+
+                if (chargeTransparencyLiveLink.IsAChargeTransparencyLiveLink(processedFile.result))
+                    return processedFile.result;
 
                 if (chargeTransparencyRecord.IsAPublicKeyLookup(processedFile.result))
                     return {

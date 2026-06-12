@@ -33,6 +33,26 @@ export function IsAPublicKeyInfo(data: unknown): data is IPublicKeyInfo
 
 }
 
+export function isObject(data: unknown): data is Record<string, unknown> {
+    return typeof data === "object" && data !== null;
+}
+
+export function isMultilanguageText(data: unknown): data is IMultilanguageText {
+    return isObject(data) &&
+           Object.values(data).every(value => typeof value === "string");
+}
+
+export function isGeoLocation(data: unknown): data is IGeoLocation {
+    if (!isObject(data))
+        return false;
+
+    const latitude  = data["lat"];
+    const longitude = data["lng"];
+
+    return (latitude  === undefined || typeof latitude  === "number") &&
+           (longitude === undefined || typeof longitude === "number");
+}
+
 export interface GetChargingPoolFunc {
     (Id: string): IChargingPool|null;
 }

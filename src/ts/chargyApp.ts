@@ -19,6 +19,7 @@ import { Chargy }                       from './chargy'
 import { readQRCodeTextFromImageData }  from './qrReader'
 import * as chargyInterfaces            from './interfaces/chargyInterfaces'
 import * as chargeTransparencyRecord    from './interfaces/IChargeTransparencyRecord'
+import * as chargeTransparencyLiveLink  from './interfaces/IChargeTransparencyLiveLink'
 import * as chargyLib                   from './chargyLib'
 
 import stringify                        from 'safe-stable-stringify';
@@ -33,7 +34,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../css/chargy.scss';
 
 
-type DetectionResult = chargeTransparencyRecord.IChargeTransparencyRecord | chargyInterfaces.ISessionCryptoResult;
+type DetectionResult = chargeTransparencyRecord.IChargeTransparencyRecord | chargeTransparencyLiveLink.IChargeTransparencyLiveLink | chargyInterfaces.ISessionCryptoResult;
 
 type DetectionOptions = {
     prepareUI?: boolean;
@@ -1847,6 +1848,20 @@ export class ChargyApp {
 
         }
 
+        if (chargeTransparencyLiveLink.IsAChargeTransparencyLiveLink(result))
+        {
+            if (options?.prepareUI === false)
+            {
+                this.inputInfosDiv.style.display = 'none';
+                this.errorTextDiv.style.display  = 'none';
+            }
+
+            await this.showChargeTransparencyLiveLink(result);
+
+            return true;
+
+        }
+
         const sessionResult = result ??
                               {
                                   status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
@@ -1860,6 +1875,186 @@ export class ChargyApp {
             this.doGlobalError(sessionResult);
 
         return false;
+
+    }
+
+    //#endregion
+
+//#region showChargeTransparencyLiveLink(LiveLink)
+
+    private async showChargeTransparencyLiveLink(LiveLink: chargeTransparencyLiveLink.IChargeTransparencyLiveLink)
+    {
+
+        if (LiveLink == null)
+            return;
+
+        this.inputDiv.style.flexDirection            = "column";
+        this.chargingSessionScreenDiv.style.display  = "flex";
+        this.chargingSessionScreenDiv.innerText      = "";
+        this.invalidDataSetsScreenDiv.style.display  = "none";
+        this.invalidDataSetsScreenDiv.innerText      = "";
+        this.inputButtonsDiv.style.display           = "flex";
+        this.exportButtonDiv.style.display           = "none";
+
+        const descriptionDiv       = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
+        descriptionDiv.id          = "description";
+        descriptionDiv.innerText   = chargyLib.firstValue(LiveLink.description) ?? "Charge Transparency Live-Link";
+
+        if (LiveLink.timestamp)
+        {
+            const timestampDiv     = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
+            timestampDiv.id        = "begin";
+            timestampDiv.className = "dates";
+            timestampDiv.innerText = "Zeitstempel " + chargyLib.time2human(LiveLink.timestamp);
+        }
+
+        const liveLinksDiv         = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
+        liveLinksDiv.id            = "chargingSessions";
+
+        const liveLinkDiv          = chargyLib.CreateDiv(liveLinksDiv, "chargingSession");
+        liveLinkDiv.classList.add("chargeTransparencyLiveLink");
+
+        const tableDiv             = liveLinkDiv.appendChild(document.createElement('div'));
+        tableDiv.className         = "table";
+
+        if (LiveLink.geoLocation)
+            this.appendLiveLinkInfoRow(
+                tableDiv,
+                "locationInfos",
+                '<i class="fas fa-map-marker-alt"></i>',
+                "Position " + [
+                    LiveLink.geoLocation.lat,
+                    LiveLink.geoLocation.lng
+                ].filter(value => value != null).join(", ")
+            );
+
+        if (LiveLink.connector)
+            this.appendLiveLinkInfoRow(
+                tableDiv,
+                "chargingStationInfos",
+                '<i class="fas fa-plug"></i>',
+                [
+                    LiveLink.connector.standard,
+                    LiveLink.connector.format,
+                    LiveLink.connector.powerType,
+                    LiveLink.connector.maxPower
+                ].filter(value => value != null && value !== "").join(", ")
+            );
+
+        if (LiveLink.transports && LiveLink.transports.length > 0)
+        {
+            const transportsDiv = document.createElement('div');
+            transportsDiv.className = "liveLinkTransports";
+
+            for (const transport of LiveLink.transports)
+                transportsDiv.appendChild(this.createLiveLinkTransportDiv(transport));
+
+            this.appendLiveLinkInfoRow(
+                tableDiv,
+                "productInfos",
+                '<i class="fas fa-satellite-dish"></i>',
+                transportsDiv
+            );
+        }
+
+        if (LiveLink.imageURLs && LiveLink.imageURLs.length > 0)
+        {
+            const imagesDiv = document.createElement('div');
+
+            for (const imageURL of LiveLink.imageURLs)
+                imagesDiv.appendChild(this.createLiveLinkAnchor(imageURL, imageURL));
+
+            this.appendLiveLinkInfoRow(
+                tableDiv,
+                "imageInfos",
+                '<i class="fas fa-image"></i>',
+                imagesDiv
+            );
+        }
+
+        if (LiveLink.signatures)
+            this.appendLiveLinkInfoRow(
+                tableDiv,
+                "signatureInfos",
+                '<i class="fas fa-file-signature"></i>',
+                LiveLink.signatures.length === 1
+                    ? "1 Signatur"
+                    : LiveLink.signatures.length + " Signaturen"
+            );
+
+    }
+
+    private appendLiveLinkInfoRow(tableDiv:   HTMLDivElement,
+                                  className:  string,
+                                  iconHTML:   string,
+                                  content:    string|HTMLElement): void {
+
+        const rowDiv         = tableDiv.appendChild(document.createElement('div'));
+        rowDiv.className     = className;
+
+        const iconDiv        = rowDiv.appendChild(document.createElement('div'));
+        iconDiv.className    = "icon";
+        iconDiv.innerHTML    = iconHTML;
+
+        const textDiv        = rowDiv.appendChild(document.createElement('div'));
+        textDiv.className    = "text";
+
+        if (typeof content === "string")
+            textDiv.innerText = content;
+        else
+            textDiv.appendChild(content);
+
+    }
+
+    private createLiveLinkTransportDiv(transport: chargeTransparencyLiveLink.Transport): HTMLDivElement {
+
+        const transportDiv = document.createElement('div');
+        transportDiv.className = "liveLinkTransport";
+
+        const transportTypeDiv = transportDiv.appendChild(document.createElement('div'));
+        transportTypeDiv.className = "type";
+        transportTypeDiv.innerText = transport.type;
+
+        if (transport.url)
+            transportDiv.appendChild(this.createLiveLinkAnchor(transport.url, transport.url));
+
+        if (transport.urls)
+        {
+            for (const urlInfo of transport.urls)
+            {
+                const url       = typeof urlInfo === "string" ? urlInfo : urlInfo.url;
+                const labelInfo = typeof urlInfo === "string"
+                                      ? ""
+                                      : [
+                                            urlInfo.priority != null ? "Priorität " + urlInfo.priority : "",
+                                            urlInfo.weight   != null ? "Gewicht "   + urlInfo.weight   : ""
+                                        ].filter(value => value !== "").join(", ");
+
+                transportDiv.appendChild(this.createLiveLinkAnchor(url, labelInfo !== "" ? url + " (" + labelInfo + ")" : url));
+            }
+        }
+
+        if (transport.totp)
+        {
+            const totpDiv = transportDiv.appendChild(document.createElement('div'));
+            totpDiv.className = "totp";
+            totpDiv.innerText = "TOTP: " + transport.totp.timeStep + " s";
+        }
+
+        return transportDiv;
+
+    }
+
+    private createLiveLinkAnchor(url: string,
+                                 text: string): HTMLAnchorElement {
+
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.target = "_blank";
+        anchor.rel = "noopener";
+        anchor.innerText = text;
+
+        return anchor;
 
     }
 

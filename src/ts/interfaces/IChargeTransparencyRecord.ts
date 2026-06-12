@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-import Decimal                from 'decimal.js';
-import { ACrypt }             from '../ACrypt'
-import type { ISignatureRS }  from './chargyInterfaces';
-import * as chargyInterfaces  from './chargyInterfaces'
+import Decimal                          from 'decimal.js';
+import { ACrypt }                       from '../ACrypt'
+import type { ISignatureRS }            from './chargyInterfaces';
+import * as chargyInterfaces            from './chargyInterfaces'
+import * as chargeTransparencyLiveLink  from './IChargeTransparencyLiveLink'
 
-export function IsAChargeTransparencyRecord(data: IChargeTransparencyRecord|chargyInterfaces.IPublicKeyLookup|chargyInterfaces.ISessionCryptoResult|undefined): data is IChargeTransparencyRecord
+
+export function IsAChargeTransparencyRecord(data: unknown): data is IChargeTransparencyRecord
 {
 
     if (data == null || data == undefined)
@@ -70,7 +72,7 @@ export interface IChargeTransparencyRecord
 
 
 
-export function IsAPublicKeyLookup(data: IChargeTransparencyRecord|chargyInterfaces.IPublicKeyLookup|chargyInterfaces.ISessionCryptoResult|undefined): data is chargyInterfaces.IPublicKeyLookup
+export function IsAPublicKeyLookup(data: unknown): data is chargyInterfaces.IPublicKeyLookup
 {
 
     if (data == null || data == undefined)
@@ -86,7 +88,7 @@ export function IsAPublicKeyLookup(data: IChargeTransparencyRecord|chargyInterfa
 
 }
 
-export function IsASessionCryptoResult(data: IChargeTransparencyRecord|chargyInterfaces.IPublicKeyLookup|chargyInterfaces.ISessionCryptoResult): data is chargyInterfaces.ISessionCryptoResult
+export function IsASessionCryptoResult(data: unknown): data is chargyInterfaces.ISessionCryptoResult
 {
 
     if (data == null || data == undefined)
@@ -196,7 +198,7 @@ export function isIFileInfo(obj: any): obj is chargyInterfaces.IFileInfo {
 }
 
 export interface IExtendedFileInfo extends chargyInterfaces.IFileInfo {
-    result:         IChargeTransparencyRecord|chargyInterfaces.IPublicKeyLookup|chargyInterfaces.ISessionCryptoResult
+    result:         IChargeTransparencyRecord|chargeTransparencyLiveLink.IChargeTransparencyLiveLink|chargyInterfaces.IPublicKeyInfo|chargyInterfaces.IPublicKeyLookup|chargyInterfaces.ISessionCryptoResult
 }
 
 

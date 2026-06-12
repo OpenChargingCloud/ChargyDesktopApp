@@ -731,6 +731,24 @@
 
                                     }
 
+                                    .imageInfos, .signatureInfos {
+
+                                        display:            table-row;
+
+                                        .icon {
+                                            display:            table-cell;
+                                            padding:            0px 7px 0px 3px;
+                                            text-align:         center;
+                                            vertical-align:     top;
+                                        }
+
+                                        .text {
+                                            display:            table-cell;
+                                            color:            #212427;
+                                        }
+
+                                    }
+
                                     .costsInfos {
 
                                         display:            table-row;
@@ -770,6 +788,39 @@
 
                                     }
 
+                                }
+
+                                .liveLinkTransports {
+
+                                    display:            flex;
+                                    flex-direction:     column;
+                                    gap:                6px;
+
+                                    .liveLinkTransport {
+
+                                        display:            flex;
+                                        flex-direction:     column;
+                                        gap:                2px;
+
+                                        .type {
+                                            font-weight:        bold;
+                                        }
+
+                                        .totp {
+                                            color:              #6e8195;
+                                        }
+
+                                    }
+
+                                }
+
+                                a {
+                                    color:              #1f5f93;
+                                    overflow-wrap:      anywhere;
+                                }
+
+                                .imageInfos a, .liveLinkTransport a {
+                                    display:            block;
                                 }
 
                                 .verificationStatus {

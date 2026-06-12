@@ -636,7 +636,7 @@ ipcMain.on('getAppContext', (event) => {
         copyright,
         commandLineArguments,
         packageJson:  require('../package.json'),
-        i18n:         require('../i18n.json'),
+        i18n:         require('./i18n.json'),
         httpConfig:   [ httpHost, httpPort ],
         mapbox: {
             accessToken:          mapboxAccessToken,

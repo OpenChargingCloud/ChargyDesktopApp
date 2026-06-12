@@ -22,7 +22,7 @@
 
     "transports":    [
                          {
-                             "type": "snapshot",
+                             "type": "https",
                              "url":  "https://api1.example.com/chargingSessions/1234567890/transparency/live?token=abcdef"
                          },
                          {
