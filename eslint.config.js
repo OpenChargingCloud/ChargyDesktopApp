@@ -49,7 +49,12 @@ export default tseslint.config(
     // for the whole code base, so they cannot silently regress:
     {
         rules: {
-            'prefer-const': 'error'
+            'prefer-const':                                            'error',
+            '@typescript-eslint/no-non-null-asserted-optional-chain':  'error',
+            '@typescript-eslint/restrict-template-expressions':        'error',
+            '@typescript-eslint/no-empty-object-type':                 'error',
+            '@typescript-eslint/no-useless-constructor':               'error',
+            '@typescript-eslint/only-throw-error':                     'error'
         }
     },
 

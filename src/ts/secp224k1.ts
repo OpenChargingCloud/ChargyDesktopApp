@@ -44,9 +44,6 @@ export class secp224k1 {
     private Gy     = BigInt("0x7E089FED7FBA344282CAFBD6F7E319F7C0B0BD59E2CA4BDB556D61A5");
     private GPoint = [this.Gx, this.Gy]; // This is our generator point. Trillions of dif ones possible
 
-    constructor() {
-    }
-
     public Sign(hash:          bigint,
                 RandomNumber:  bigint,
                 privateKey:    bigint)
@@ -67,10 +64,10 @@ export class secp224k1 {
     {
 
         if (signatureR==this.Zero || signatureR>=this.N)
-            throw "Invalid R";
+            throw new Error("Invalid R");
 
         if (signatureS==this.Zero || signatureS>=this.N)
-            throw "Invalid S";
+            throw new Error("Invalid S");
 
         const w           = this.modInv(signatureS, this.N);
         const u1          = this.ECmultiply(this.GPoint, this.modulo(w * hash,       this.N));
@@ -143,7 +140,7 @@ export class secp224k1 {
     public ECmultiply(GenPoint: Array<bigint>, ScalarHex: bigint) {
 
         if (ScalarHex == this.Zero || ScalarHex >= this.N)
-             throw "Invalid Scalar/Private Key";
+             throw new Error("Invalid Scalar/Private Key");
 
         const ScalarBinary = ScalarHex.toString(2);
         let Q            = GenPoint;

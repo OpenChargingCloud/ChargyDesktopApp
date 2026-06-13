@@ -421,7 +421,7 @@ export class BSMCrypt01 extends ACrypt {
 
                 const currentMeasurement = chargyLib.asJSONObject(measurementRaw);
                 if (currentMeasurement === undefined)
-                    throw new Error(`Invalid signed meter value #${measurementCounter}!`);
+                    throw new Error(`Invalid signed meter value #${String(measurementCounter)}!`);
 
                 //#region Validate common values
 
@@ -433,7 +433,7 @@ export class BSMCrypt01 extends ACrypt {
                 {
 
                     if (typeof previousId !== 'string')
-                        throw new Error(`Invalid identification of signed meter value #${measurementCounter - 1}!`);
+                        throw new Error(`Invalid identification of signed meter value #${String(measurementCounter - 1)}!`);
 
                     // IDs from the BSM-WS36A are in the form of "PREFIX-COUNTER". Check that prefixes
                     // match match and the counters are stricly increasing.
@@ -476,7 +476,7 @@ export class BSMCrypt01 extends ACrypt {
 
                 const additionalValuesRaw = currentMeasurement["additionalValues"];
                 if (!chargyLib.isMandatoryJSONArray(additionalValuesRaw))
-                    throw new Error(`Missing or invalid additional values within signed meter value #${measurementCounter}!`);
+                    throw new Error(`Missing or invalid additional values within signed meter value #${String(measurementCounter)}!`);
 
                 const additionalValues = additionalValuesRaw.map((element, index) => {
 
@@ -486,7 +486,7 @@ export class BSMCrypt01 extends ACrypt {
                     const displayedFormat  = chargyLib.asJSONObject(elementObj?.["displayedFormat"]);
 
                     if (elementObj === undefined || measurand === undefined)
-                        throw new Error(`Invalid additional value #${index + 1} within signed meter value #${measurementCounter}!`);
+                        throw new Error(`Invalid additional value #${String(index + 1)} within signed meter value #${String(measurementCounter)}!`);
 
                     return {
                         measurandId:    chargyLib.asString(measurand["id"]),
@@ -575,10 +575,10 @@ export class BSMCrypt01 extends ACrypt {
                 const rcrInAdditional = additionalValues.find(element => element.measurandName == 'RCR');
 
                 if (currentMeasurement["value"] == null)
-                    throw new Error(`Missing value within signed meter value #${measurementCounter}!`);
+                    throw new Error(`Missing value within signed meter value #${String(measurementCounter)}!`);
 
                 if ((valueObj?.["measurand"] || valueObj?.["measuredValue"]) && rcrInAdditional === undefined)
-                    throw new Error(`Missing 'RCR' within the additional values of signed meter value #${measurementCounter}!`);
+                    throw new Error(`Missing 'RCR' within the additional values of signed meter value #${String(measurementCounter)}!`);
 
                 if (valueObj?.["measurand"])
                 {
@@ -1192,8 +1192,8 @@ export class BSMCrypt01 extends ACrypt {
                 const meter = this.chargy.GetMeter(measurementValue.measurement!.energyMeterId);
 
                 cryptoResult.signature = {
-                    algorithm:  (measurementValue.measurement!.signatureInfos ?? meter?.signatureInfos)?.algorithm!,
-                    format:     (measurementValue.measurement!.signatureInfos ?? meter?.signatureInfos)?.format!,
+                    algorithm:  (measurementValue.measurement!.signatureInfos ?? meter?.signatureInfos)?.algorithm,
+                    format:     (measurementValue.measurement!.signatureInfos ?? meter?.signatureInfos)?.format,
                     r:          signatureExpected.r,
                     s:          signatureExpected.s
                 };

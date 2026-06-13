@@ -1176,7 +1176,7 @@ export class Chargy {
                             });
 
                         } catch (error) {
-                            console.error(`Error extracting PDF/A-3 attachments: ${error}`);
+                            console.error(`Error extracting PDF/A-3 attachments: ${String(error)}`);
                         }
                     }
 

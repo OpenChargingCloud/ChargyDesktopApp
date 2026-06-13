@@ -23,10 +23,9 @@ import * as chargyLib                 from './chargyLib'
 import Decimal                        from 'decimal.js'
 
 
-export interface IChargepointChargeTransparencyRecord extends chargeTransparencyRecord.IChargeTransparencyRecord
-{
-    //chargingSessions?:          Array<IAlfenChargingSession>;
-}
+// ToDo: Add a chargepoint-specific chargingSessions type, when needed:
+//       chargingSessions?: Array<IChargepointChargingSession>;
+export type IChargepointChargeTransparencyRecord = chargeTransparencyRecord.IChargeTransparencyRecord;
 
 export class ChargePoint {
 

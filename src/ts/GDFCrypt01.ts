@@ -71,7 +71,7 @@ export class GDFCrypt01 extends ACrypt {
                 {
 
                     // Validate...
-                    for (var measurementValue of measurement.values)
+                    for (const measurementValue of measurement.values)
                     {
                         measurementValue.measurement = measurement;
                         await this.VerifyMeasurement(measurementValue as IGDFMeasurementValue);
@@ -81,7 +81,7 @@ export class GDFCrypt01 extends ACrypt {
                     // Find an overall result...
                     sessionResult = chargyInterfaces.SessionVerificationResult.ValidSignature;
 
-                    for (var measurementValue of measurement.values)
+                    for (const measurementValue of measurement.values)
                     {
                         if (sessionResult                   === chargyInterfaces.SessionVerificationResult.ValidSignature &&
                             measurementValue.result?.status !== chargyInterfaces.VerificationResult.ValidSignature)
@@ -128,7 +128,7 @@ export class GDFCrypt01 extends ACrypt {
         const buffer        = new ArrayBuffer(320);
         const cryptoBuffer  = new DataView(buffer);
 
-        var cryptoResult:IGDFCrypt01Result = {
+        const cryptoResult:IGDFCrypt01Result = {
             status:                       chargyInterfaces.VerificationResult.InvalidSignature,
             meterId:                      chargyLib.SetText     (cryptoBuffer, measurementValue.measurement.energyMeterId,                                   0),
             timestamp:                    chargyLib.SetTimestamp(cryptoBuffer, measurementValue.timestamp,                                                  10),
@@ -148,8 +148,8 @@ export class GDFCrypt01 extends ACrypt {
             {
 
                 cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos!.algorithm,
-                    format:     measurementValue.measurement.signatureInfos!.format,
+                    algorithm:  measurementValue.measurement.signatureInfos?.algorithm,
+                    format:     measurementValue.measurement.signatureInfos?.format,
                     r:          signatureExpected.r,
                     s:          signatureExpected.s
                 };
@@ -186,13 +186,13 @@ export class GDFCrypt01 extends ACrypt {
                                 return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
 
                             }
-                            catch (exception)
+                            catch
                             {
                                 return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
                             }
 
                         }
-                        catch (exception)
+                        catch
                         {
                             return setResult(chargyInterfaces.VerificationResult.InvalidPublicKey);
                         }
@@ -208,7 +208,7 @@ export class GDFCrypt01 extends ACrypt {
                     return setResult(chargyInterfaces.VerificationResult.EnergyMeterNotFound);
 
             }
-            catch (exception)
+            catch
             {
                 return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
             }
@@ -281,7 +281,7 @@ export class GDFCrypt01 extends ACrypt {
             this.CreateLine("OBIS-Kennzahl",            measurementValue.measurement.obis,                                                              result.obis                                            || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Einheit (codiert)",        measurementValue.measurement.unitEncoded ?? 0,                                                  result.unitEncoded                                     || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Skalierung",               measurementValue.measurement.scale,                                                             result.scale                                           || "",  infoDiv, PlainTextDiv);
-            this.CreateLine("Messwert",                 measurementValue.value + " Wh",                                                                 result.value                                           || "",  infoDiv, PlainTextDiv);
+            this.CreateLine("Messwert",                 measurementValue.value.toString() + " Wh",                                                                 result.value                                           || "",  infoDiv, PlainTextDiv);
             //this.CreateLine("Logbuchindex",             measurementValue.logBookIndex + " hex",                                                         result.logBookIndex                                    || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Autorisierung",            measurementValue.measurement.chargingSession.authorizationStart["@id"] + " hex",                chargyLib.pad(result.authorizationStart,          128) || "",  infoDiv, PlainTextDiv);
             this.CreateLine("Autorisierungszeitpunkt",  chargyLib.UTC2human(measurementValue.measurement.chargingSession.authorizationStart.timestamp), chargyLib.pad(result.authorizationStartTimestamp, 151) || "",  infoDiv, PlainTextDiv);
@@ -331,8 +331,8 @@ export class GDFCrypt01 extends ACrypt {
             if (!chargyLib.IsNullOrEmpty(result.publicKey))
                 PublicKeyDiv.innerHTML                                 = result.publicKey.startsWith("04") // Add some space after '04' to avoid confused customers
                                                                             ? "<span class=\"leadingFour\">04</span> "
-                                                                                + result.publicKey.substring(2).match(/.{1,8}/g)!.join(" ")
-                                                                            :   result.publicKey.match(/.{1,8}/g)!.join(" ");
+                                                                                + (result.publicKey.substring(2).match(/.{1,8}/g)?.join(" ") ?? "")
+                                                                            :   (result.publicKey.match(/.{1,8}/g)?.join(" ") ?? "");
 
 
             //#region Public key signatures
@@ -356,16 +356,14 @@ export class GDFCrypt01 extends ACrypt {
                         const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
 
                         if (signatureDiv != null)
-                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession?.chargingStation,
-                                                                                                    measurementValue.measurement.chargingSession?.EVSE,
-                                                                                                    //@ts-ignore
-                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0],
-                                                                                                    //@ts-ignore
-                                                                                                    measurementValue.measurement.chargingSession.EVSE.meters[0].publicKeys[0],
+                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
+                                                                                                    measurementValue.measurement.chargingSession.EVSE,
+                                                                                                    measurementValue.measurement.chargingSession.EVSE?.meters[0],
+                                                                                                    measurementValue.measurement.chargingSession.EVSE?.meters[0]?.publicKeys?.[0],
                                                                                                     signature);
 
                     }
-                    catch (exception)
+                    catch
                     { }
 
                 }
@@ -392,8 +390,8 @@ export class GDFCrypt01 extends ACrypt {
             }
 
             if (result.signature.r && result.signature.s)
-                SignatureExpectedDiv.innerHTML                            = "r: " + result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") + "<br />" +
-                                                                            "s: " + result.signature.s.toLowerCase().match(/.{1,8}/g)?.join(" ");
+                SignatureExpectedDiv.innerHTML                            = "r: " + (result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "") + "<br />" +
+                                                                            "s: " + (result.signature.s.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "");
 
             else if (result.signature.value)
                 SignatureExpectedDiv.innerHTML                            = result.signature.value.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
