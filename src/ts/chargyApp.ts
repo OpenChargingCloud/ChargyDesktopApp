@@ -150,7 +150,7 @@ export class ChargyApp {
     private languageSelectorDiv:                HTMLDivElement;
     private languageButton:                     HTMLButtonElement;
     private languageMenuDiv:                    HTMLDivElement;
-    private languageFlagSpan:                   HTMLSpanElement;
+    private languageFlagImage:                  HTMLImageElement;
     private updateAvailableButton:              HTMLButtonElement;
     private aboutButton:                        HTMLButtonElement;
     private fullScreenButton:                   HTMLButtonElement;
@@ -284,7 +284,7 @@ export class ChargyApp {
         this.languageSelectorDiv                      = document.getElementById('languageSelector')                         as HTMLDivElement;
         this.languageButton                           = document.getElementById('languageButton')                           as HTMLButtonElement;
         this.languageMenuDiv                          = document.getElementById('languageMenu')                             as HTMLDivElement;
-        this.languageFlagSpan                         = document.getElementById('languageFlag')                             as HTMLSpanElement;
+        this.languageFlagImage                        = document.getElementById('languageFlag')                             as HTMLImageElement;
         this.updateAvailableButton                    = document.getElementById('updateAvailableButton')                    as HTMLButtonElement;
         this.aboutButton                              = document.getElementById('aboutButton')                              as HTMLButtonElement;
         this.fullScreenButton                         = document.getElementById('fullScreenButton')                         as HTMLButtonElement;
@@ -1311,7 +1311,7 @@ export class ChargyApp {
         this.languageMenuDiv.classList.remove("open");
         this.languageButton.setAttribute("aria-expanded", "false");
 
-        this.languageFlagSpan.className = "languageFlag languageFlag-" + this.UILanguage;
+        this.languageFlagImage.src = "images/flags/" + this.UILanguage + ".svg";
 
         for (const languageMenuButton of Array.from(this.languageMenuDiv.querySelectorAll("button[data-language]")) as HTMLButtonElement[])
         {

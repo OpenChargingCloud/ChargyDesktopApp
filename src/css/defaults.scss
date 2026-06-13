@@ -117,52 +117,14 @@
                     }
 
                     .languageFlag {
-                        display:            inline-grid;
-                        grid-template-rows: 1fr 1fr 1fr;
+                        display:            inline-block;
                         width:              22px;
                         height:             14px;
+                        object-fit:         cover;
                         overflow:           hidden;
                         border:             1px solid rgba(0, 0, 0, 0.22);
                         box-shadow:         0 0 0 1px rgba(255, 255, 255, 0.45) inset;
-                    }
-
-                    .languageFlag span {
-                        display:            block;
-                    }
-
-                    .languageFlag-de span:nth-child(1) {
-                        background-color:   #000000;
-                    }
-
-                    .languageFlag-de span:nth-child(2) {
-                        background-color:   #dd0000;
-                    }
-
-                    .languageFlag-de span:nth-child(3) {
-                        background-color:   #ffce00;
-                    }
-
-                    .languageFlag-en {
-                        position:           relative;
-                        display:            inline-block;
-                        background:         linear-gradient(180deg, #012169 0 100%);
-                    }
-
-                    .languageFlag-en::before {
-                        content:            "";
-                        position:           absolute;
-                        inset:              0;
-                        background:
-                            linear-gradient(33deg, transparent 0 42%, #ffffff 43% 50%, #c8102e 51% 57%, #ffffff 58% 65%, transparent 66%),
-                            linear-gradient(147deg, transparent 0 42%, #ffffff 43% 50%, #c8102e 51% 57%, #ffffff 58% 65%, transparent 66%),
-                            linear-gradient(90deg, transparent 0 38%, #ffffff 39% 61%, transparent 62%),
-                            linear-gradient(0deg, transparent 0 34%, #ffffff 35% 65%, transparent 66%),
-                            linear-gradient(90deg, transparent 0 44%, #c8102e 45% 55%, transparent 56%),
-                            linear-gradient(0deg, transparent 0 40%, #c8102e 41% 59%, transparent 60%);
-                    }
-
-                    .languageFlag-en span {
-                        display:            none;
+                        pointer-events:      none;
                     }
 
                 }
