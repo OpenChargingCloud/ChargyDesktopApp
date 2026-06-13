@@ -40,3 +40,55 @@ describe('chargeIT Tests', () => {
     });
 
 });
+
+
+describe('chargeIT BSM Tests', () => {
+
+    test("bsm-ws36a-good", async () => {
+        await expectVerificationReport(
+            "chargeIT/BSM/bsm-ws36a-good.json",
+            "chargeIT/BSM/bsm-ws36a-good.expected.txt"
+        );
+    });
+
+    test("ocmf", async () => {
+        await expectVerificationReport(
+            "chargeIT/BSM/ocmf.xml",
+            "chargeIT/BSM/ocmf.expected.txt"
+        );
+    });
+
+    test("ocmf_withoutIF", async () => {
+        await expectVerificationReport(
+            "chargeIT/BSM/ocmf_withoutIF.xml",
+            "chargeIT/BSM/ocmf_withoutIF.expected.txt"
+        );
+    });
+
+});
+
+
+describe('chargeIT New Container Format Tests', () => {
+
+    test("bsm-ws36a-good-new-style-header", async () => {
+        await expectVerificationReport(
+            "chargeIT/new_container_format/bsm-ws36a-good-new-style-header.json",
+            "chargeIT/new_container_format/bsm-ws36a-good-new-style-header.expected.txt"
+        );
+    });
+
+    test("bsm-ws36a-good-with-non-zero-scale-factors", async () => {
+        await expectVerificationReport(
+            "chargeIT/new_container_format/bsm-ws36a-good-with-non-zero-scale-factors.json",
+            "chargeIT/new_container_format/bsm-ws36a-good-with-non-zero-scale-factors.expected.txt"
+        );
+    });
+
+    test("ev-charging-chargy-with-display-format-hints", async () => {
+        await expectVerificationReport(
+            "chargeIT/new_container_format/ev-charging-chargy-with-display-format-hints.json",
+            "chargeIT/new_container_format/ev-charging-chargy-with-display-format-hints.expected.txt"
+        );
+    });
+
+});

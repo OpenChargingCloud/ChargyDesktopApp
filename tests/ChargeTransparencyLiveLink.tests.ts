@@ -25,7 +25,7 @@ vi.stubGlobal("window", {
 });
 
 const require          = createRequire(import.meta.url);
-const currentDirectory = fileURLToPath(new URL(".", import.meta.url));
+const currentDirectory = fileURLToPath(new URL(".",  import.meta.url));
 const projectRoot      = fileURLToPath(new URL("..", import.meta.url));
 
 type ChargyConstructor = typeof import("../src/ts/chargy").Chargy;

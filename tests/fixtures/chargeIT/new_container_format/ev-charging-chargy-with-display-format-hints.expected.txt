@@ -1,0 +1,19 @@
+format: ctr
+sessions: 1
+session 1: 001BZR1521070006-1657267228
+session 1 evseId: DE*BDO*E8025334492*2
+session 1 meterId: 001BZR1521070006
+session 1 status: ValidSignature
+session 1 measurements: 1
+measurement 1.1 name: undefined
+measurement 1.1 obis: undefined
+measurement 1.1 status: unknown
+measurement 1.1 values: 2
+value 1.1.1 timestamp: 2022-07-08T10:00:28+02:00
+value 1.1.1 value: 0
+value 1.1.1 signatures: 1
+value 1.1.1 status: ValidSignature
+value 1.1.2 timestamp: 2022-07-08T10:05:52+02:00
+value 1.1.2 value: 15
+value 1.1.2 signatures: 1
+value 1.1.2 status: ValidSignature
