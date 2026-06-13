@@ -97,7 +97,7 @@ function serializeJSONArray(value: unknown[],
     for (let i = 0; i < value.length; i++)
     {
         if (!Object.prototype.hasOwnProperty.call(value, i))
-            throw new CanonicalJSONError(`Sparse array slot at ${path}[${i}] is not valid JSON.`);
+            throw new CanonicalJSONError(`Sparse array slot at ${path}[${String(i)}] is not valid JSON.`);
 
         indexedKeys.add(String(i));
     }
@@ -111,7 +111,7 @@ function serializeJSONArray(value: unknown[],
     rejectEnumerableSymbolProperties(value, path);
 
     const serializedItems = value.map((item, index) =>
-        serializeJSONValue(item, `${path}[${index}]`, seen)
+        serializeJSONValue(item, `${path}[${String(index)}]`, seen)
     );
 
     seen.delete(value);
@@ -177,4 +177,3 @@ function formatPathProperty(propertyName: string): string {
                : `[${JSON.stringify(propertyName)}]`;
 
 }
-

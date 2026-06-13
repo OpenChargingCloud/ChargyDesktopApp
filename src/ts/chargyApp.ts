@@ -41,6 +41,10 @@ type DetectionOptions = {
     onError?:   (result: chargyInterfaces.ISessionCryptoResult) => void;
 };
 
+type SupportedLanguage = "de" | "en";
+
+const supportedLanguages: ReadonlyArray<SupportedLanguage> = [ "de", "en" ];
+
 interface ChargyElectronAPI {
 
     getAppContext(): {
@@ -119,7 +123,7 @@ export class ChargyApp {
     public  defaultIssueURL:                    string              = "";
     public  packageJson:                        any                 = {};
     public  i18n:                               chargyInterfaces.I18NDictionary = {};
-    public  UILanguage:                         string              = "de";
+    public  UILanguage:                         SupportedLanguage   = "en";
 
     private readonly electron:                  ChargyElectronAPI   = window.chargyElectron;
     private readonly appContext:                ReturnType<ChargyElectronAPI["getAppContext"]>;
@@ -143,6 +147,10 @@ export class ChargyApp {
     private headlineDiv:                        HTMLDivElement;
     private verifyframeDiv:                     HTMLDivElement;
 
+    private languageSelectorDiv:                HTMLDivElement;
+    private languageButton:                     HTMLButtonElement;
+    private languageMenuDiv:                    HTMLDivElement;
+    private languageFlagSpan:                   HTMLSpanElement;
     private updateAvailableButton:              HTMLButtonElement;
     private aboutButton:                        HTMLButtonElement;
     private fullScreenButton:                   HTMLButtonElement;
@@ -213,6 +221,10 @@ export class ChargyApp {
     private qrCodeScannerLastText:              string|null          = null;
     private qrCodeScannerLastURL:               URL|null             = null;
 
+    private currentChargeTransparencyRecord:    chargeTransparencyRecord.IChargeTransparencyRecord|null = null;
+    private currentChargeTransparencyLiveLink:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink|null = null;
+    private currentGlobalError:                 chargyInterfaces.ISessionCryptoResult|null = null;
+
     //#endregion
 
     constructor(versionsURL?:          string,
@@ -229,6 +241,7 @@ export class ChargyApp {
         this.defaultFeedbackEMail                     = feedbackEMail       ?? [];
         this.defaultFeedbackHotline                   = feedbackHotline     ?? [];
         this.defaultIssueURL                          = issueURL            ?? "";
+        this.UILanguage                               = this.getInitialUILanguage();
 
         //#endregion
 
@@ -268,6 +281,10 @@ export class ChargyApp {
         this.softwareInfosDiv                         = this.aboutScreenDiv.    querySelector("#softwareInfos")             as HTMLDivElement;
         this.openSourceLibsDiv                        = this.aboutScreenDiv.    querySelector("#openSourceLibs")            as HTMLDivElement;
 
+        this.languageSelectorDiv                      = document.getElementById('languageSelector')                         as HTMLDivElement;
+        this.languageButton                           = document.getElementById('languageButton')                           as HTMLButtonElement;
+        this.languageMenuDiv                          = document.getElementById('languageMenu')                             as HTMLDivElement;
+        this.languageFlagSpan                         = document.getElementById('languageFlag')                             as HTMLSpanElement;
         this.updateAvailableButton                    = document.getElementById('updateAvailableButton')                    as HTMLButtonElement;
         this.aboutButton                              = document.getElementById('aboutButton')                              as HTMLButtonElement;
         this.fullScreenButton                         = document.getElementById('fullScreenButton')                         as HTMLButtonElement;
@@ -355,6 +372,10 @@ export class ChargyApp {
                                                             this.base32Decode,
                                                             this.showPKIDetails.bind(this)
                                                         );
+
+
+        this.setUILanguage(this.UILanguage, false);
+        this.setupLanguageSelector();
 
 
         //#region OnWindowResize
@@ -485,19 +506,19 @@ export class ChargyApp {
                                true);
                 sendIssue.setRequestHeader('Content-type', 'application/json');
 
-                sendIssue.onreadystatechange = function () {
+                sendIssue.onreadystatechange = () => {
 
                     // 0 UNSENT | 1 OPENED | 2 HEADERS_RECEIVED | 3 LOADING | 4 DONE
-                    if (this.readyState == 4) {
+                    if (sendIssue.readyState == 4) {
 
-                        if (this.status == 201) { // HTTP 201 - Created
+                        if (sendIssue.status == 201) { // HTTP 201 - Created
                             (document.getElementById('issueTracker') as HTMLDivElement).style.display  = 'none';
                             //ToDo: Show thank you for your issue!
                         }
 
                         else
                         {
-                            alert("Leider ist ein Fehler bei der Datenübertragung aufgetreten. Bitte probieren Sie es erneut!");
+                            alert(this.getLocalizedText("issueSubmitFailed"));
                         }
 
                     }
@@ -511,7 +532,7 @@ export class ChargyApp {
             }
             catch (exception)
             {
-                alert("Leider ist ein Fehler bei der Datenübertragung aufgetreten. Bitte probieren Sie es erneut!");
+                alert(this.getLocalizedText("issueSubmitFailed"));
             }
 
         }
@@ -828,7 +849,7 @@ export class ChargyApp {
 
                     // Bad hash value
                     if (this.currentPackage.cryptoHashes.SHA512.replace("0x", "") !== this.applicationHash)
-                        sigHeadDiv.innerHTML = "<i class=\"fas fa-times-circle\"></i> Ungültiger Hashwert!";
+                        sigHeadDiv.innerHTML = "<i class=\"fas fa-times-circle\"></i> " + this.getLocalizedText("invalidHashValue");
 
                     // At least the same hash value...
                     else
@@ -836,14 +857,14 @@ export class ChargyApp {
 
                         if (this.currentPackage.signatures == null || this.currentPackage.signatures.length == 0)
                         {
-                            sigHeadDiv.innerHTML = "<i class=\"fas fa-check-circle\"></i> Gültiger Hashwert";
+                            sigHeadDiv.innerHTML = "<i class=\"fas fa-check-circle\"></i> " + this.getLocalizedText("validHashValue");
                         }
 
                         // Some crypto signatures found...
                         else
                         {
 
-                            sigHeadDiv.innerHTML = "Bestätigt durch...";
+                            sigHeadDiv.innerHTML = this.getLocalizedText("confirmedBy");
 
                             const signaturesDiv = this.applicationHashDiv.children[3];
 
@@ -920,6 +941,9 @@ export class ChargyApp {
             this.exportButtonDiv.style.display           = "none";
             this.fileInput.value                         = "";
             this.detailedInfosDiv.innerHTML              = "";
+            this.currentChargeTransparencyRecord         = null;
+            this.currentChargeTransparencyLiveLink       = null;
+            this.currentGlobalError                      = null;
 
             this.minlat = +1000;
             this.maxlat = -1000;
@@ -946,7 +970,7 @@ export class ChargyApp {
             }
             catch(exception)
             {
-                alert('Failed to save the charge transparency record!' + exception);
+                alert(this.getLocalizedText("exportFailed") + exception);
             }
 
         }
@@ -1134,7 +1158,7 @@ export class ChargyApp {
             if (this.qrCodeScannerLastURL != null)
             {
                 window.open(this.qrCodeScannerLastURL.href, "_blank", "noopener");
-                this.setQRCodeScannerStatus("URL wurde geöffnet.");
+                this.setQRCodeScannerStatus(this.getLocalizedText("urlWasOpened"));
             }
         }
 
@@ -1162,6 +1186,167 @@ export class ChargyApp {
 
     }
 
+
+    //#region UI language handling
+
+    private getInitialUILanguage(): SupportedLanguage {
+
+        const storedLanguage = localStorage.getItem("ChargyUILanguage");
+
+        if (this.isSupportedLanguage(storedLanguage))
+            return storedLanguage;
+
+        return "en";
+
+    }
+
+    private isSupportedLanguage(language: string|null|undefined): language is SupportedLanguage {
+
+        return supportedLanguages.includes(language as SupportedLanguage);
+
+    }
+
+    private getLocalizedText(key: string,
+                             fallback?: string): string {
+
+        const multiLanguage = this.i18n[key];
+
+        if (multiLanguage != null)
+        {
+            const localized = multiLanguage[this.UILanguage];
+            if (localized != null)
+                return localized;
+
+            const english = multiLanguage["en"];
+            if (english != null)
+                return english;
+        }
+
+        return fallback ?? key;
+
+    }
+
+    private getLocalizedDataText(data: chargyInterfaces.IMultilanguageText|undefined): string|undefined {
+
+        if (data == null)
+            return undefined;
+
+        return data[this.UILanguage] ??
+               data["en"];
+
+    }
+
+    private setupLanguageSelector(): void {
+
+        this.languageButton.onclick = (ev: MouseEvent) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+
+            const isOpen = this.languageMenuDiv.classList.toggle("open");
+            this.languageButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        };
+
+        for (const languageMenuButton of Array.from(this.languageMenuDiv.querySelectorAll("button[data-language]")) as HTMLButtonElement[])
+        {
+            languageMenuButton.onclick = async (ev: MouseEvent) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+
+                const language = languageMenuButton.dataset["language"];
+                if (this.isSupportedLanguage(language))
+                    await this.setUILanguage(language);
+            };
+        }
+
+        document.addEventListener("click", () => {
+            this.languageMenuDiv.classList.remove("open");
+            this.languageButton.setAttribute("aria-expanded", "false");
+        });
+
+    }
+
+    private async setUILanguage(language: SupportedLanguage,
+                                persist:  boolean = true): Promise<void> {
+
+        this.UILanguage = language;
+        this.chargy?.SetUILanguage(language);
+        this.moment?.locale(language);
+        chargyLib.setUILocale(language);
+
+        if (persist)
+            localStorage.setItem("ChargyUILanguage", language);
+
+        this.applyTranslations();
+        await this.rerenderCurrentView();
+
+    }
+
+    private applyTranslations(): void {
+
+        document.documentElement.lang = this.UILanguage;
+
+        for (const element of Array.from(document.querySelectorAll("[data-i18n-key]")) as HTMLElement[])
+        {
+            const key = element.dataset["i18nKey"];
+            if (key != null)
+                element.innerHTML = this.getLocalizedText(key, element.innerHTML);
+        }
+
+        for (const element of Array.from(document.querySelectorAll("[data-i18n-title-key]")) as HTMLElement[])
+        {
+            const key = element.dataset["i18nTitleKey"];
+            if (key != null)
+                element.title = this.getLocalizedText(key, element.title);
+        }
+
+        for (const element of Array.from(document.querySelectorAll("[data-i18n-placeholder-key]")) as HTMLInputElement[])
+        {
+            const key = element.dataset["i18nPlaceholderKey"];
+            if (key != null)
+                element.placeholder = this.getLocalizedText(key, element.placeholder);
+        }
+
+        this.languageButton.title = this.getLocalizedText("languageButtonTitle", this.languageButton.title);
+        this.languageButton.setAttribute("aria-label", this.languageButton.title);
+        this.languageMenuDiv.classList.remove("open");
+        this.languageButton.setAttribute("aria-expanded", "false");
+
+        this.languageFlagSpan.className = "languageFlag languageFlag-" + this.UILanguage;
+
+        for (const languageMenuButton of Array.from(this.languageMenuDiv.querySelectorAll("button[data-language]")) as HTMLButtonElement[])
+        {
+            const isActive = languageMenuButton.dataset["language"] === this.UILanguage;
+            languageMenuButton.classList.toggle("active", isActive);
+            languageMenuButton.setAttribute("aria-pressed", isActive ? "true" : "false");
+        }
+
+    }
+
+    private async rerenderCurrentView(): Promise<void> {
+
+        if (this.currentChargeTransparencyRecord != null &&
+            this.chargingSessionScreenDiv.style.display !== "none")
+        {
+            await this.showChargeTransparencyRecord(this.currentChargeTransparencyRecord);
+            return;
+        }
+
+        if (this.currentChargeTransparencyLiveLink != null &&
+            this.chargingSessionScreenDiv.style.display !== "none")
+        {
+            await this.showChargeTransparencyLiveLink(this.currentChargeTransparencyLiveLink);
+            return;
+        }
+
+        if (this.currentGlobalError != null &&
+            this.errorTextDiv.style.display !== "none")
+        {
+            this.doGlobalError(this.currentGlobalError);
+        }
+
+    }
+
+    //#endregion    
 
     //#region UpdateFeedbackSection()
 
@@ -1230,7 +1415,7 @@ export class ChargyApp {
 
     private getSessionCryptoResultText(result?: chargyInterfaces.ISessionCryptoResult|null): string {
 
-        let text = "Unbekannter Transparenzdatensatz!";
+        let text = this.getLocalizedText("UnknownOrInvalidChargeTransparencyRecord");
 
         if (result?.message !== null &&
             result?.message !== undefined)
@@ -1258,6 +1443,10 @@ export class ChargyApp {
     private doGlobalError(result:   chargyInterfaces.ISessionCryptoResult,
                           context?: any)
     {
+
+        this.currentGlobalError                = result;
+        this.currentChargeTransparencyRecord   = null;
+        this.currentChargeTransparencyLiveLink = null;
 
         let text = "Unbekannter Transparenzdatensatz!";
 
@@ -1375,13 +1564,13 @@ export class ChargyApp {
 
         if (mediaDevices?.getUserMedia == null)
         {
-            this.setQRCodeScannerButtonAvailability(false, "Dieser Browser unterstützt keinen Kamerazugriff.");
+            this.setQRCodeScannerButtonAvailability(false, this.getLocalizedText("cameraAccessUnsupported"));
             return;
         }
 
         if (mediaDevices.enumerateDevices == null)
         {
-            this.setQRCodeScannerButtonAvailability(true, "QR-Code mit der Kamera scannen.");
+            this.setQRCodeScannerButtonAvailability(true, this.getLocalizedText("scanQRCodeWithCamera"));
             return;
         }
 
@@ -1393,13 +1582,13 @@ export class ChargyApp {
             this.setQRCodeScannerButtonAvailability(
                 hasCamera,
                 hasCamera
-                    ? "QR-Code mit der Kamera scannen."
-                    : "Keine Kamera verfügbar."
+                    ? this.getLocalizedText("scanQRCodeWithCamera")
+                    : this.getLocalizedText("noCameraAvailable")
             );
         }
         catch
         {
-            this.setQRCodeScannerButtonAvailability(true, "QR-Code mit der Kamera scannen.");
+            this.setQRCodeScannerButtonAvailability(true, this.getLocalizedText("scanQRCodeWithCamera"));
         }
 
     }
@@ -1417,7 +1606,7 @@ export class ChargyApp {
         if (this.qrScanButton.disabled)
             return;
 
-        this.resetQRCodeScannerDialog("Kamera wird gestartet...");
+        this.resetQRCodeScannerDialog(this.getLocalizedText("cameraStarting"));
 
         try
         {
@@ -1441,7 +1630,7 @@ export class ChargyApp {
             this.closeQRCodeScanner();
             this.doGlobalError({
                 status:     chargyInterfaces.SessionVerificationResult.UnknownSessionFormat,
-                message:    "Kamera konnte nicht gestartet werden.",
+                message:    this.getLocalizedText("cameraCouldNotStart"),
                 exception:  exception,
                 certainty:  0
             });
@@ -1480,7 +1669,7 @@ export class ChargyApp {
         this.qrCodeScannerIsProcessing = false;
         this.qrCodeScannerLastText     = null;
         this.qrCodeScannerLastURL      = null;
-        this.resetQRCodeScannerDialog("Kamera bereit. QR-Code in den Rahmen halten.");
+        this.resetQRCodeScannerDialog(this.getLocalizedText("cameraReady"));
 
         if (this.qrCodeScannerAnimationFrame == null)
             this.scanQRCodeFrame();
@@ -1547,7 +1736,7 @@ export class ChargyApp {
     private async handleScannedQRCodeText(qrText: string): Promise<void> {
 
         this.qrCodeScannerIsProcessing = true;
-        this.setQRCodeScannerStatus("QR-Code erkannt. Transparenzdatensatz wird geprüft...");
+        this.setQRCodeScannerStatus(this.getLocalizedText("qrCodeDetected"));
 
         const detected = await this.detectAndConvertContentFormat(
             {
@@ -1581,8 +1770,8 @@ export class ChargyApp {
 
         this.setQRCodeScannerStatus(
             url != null
-                ? "Der QR-Code enthält eine URL. Bitte bestätigen, bevor sie geöffnet wird."
-                : "Der QR-Code enthält keinen erkannten Transparenzdatensatz."
+                ? this.getLocalizedText("qrCodeContainsURL")
+                : this.getLocalizedText("qrCodeContainsNoRecord")
         );
 
     }
@@ -1667,7 +1856,7 @@ export class ChargyApp {
                         loadedFiles.push({
                             "name":       filename.name,
                             "path":       filename.path,
-                            "error":     "Fehlerhafter Transparenzdatensatz!",
+                            "error":      this.getLocalizedText("invalidChargeTransparencyRecord"),
                             "exception":  exception
                          });
                     }
@@ -1824,7 +2013,7 @@ export class ChargyApp {
         {
             result = {
                 status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:    "Unbekannter Transparenzdatensatz!",
+                message:    this.getLocalizedText("UnknownOrInvalidChargeTransparencyRecord"),
                 exception:  exception,
                 certainty:  0
             };
@@ -1865,7 +2054,7 @@ export class ChargyApp {
         const sessionResult = result ??
                               {
                                   status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                  message:    "Unbekannter Transparenzdatensatz!",
+                                  message:    this.getLocalizedText("UnknownOrInvalidChargeTransparencyRecord"),
                                   certainty:  0
                               };
 
@@ -1888,6 +2077,10 @@ export class ChargyApp {
         if (LiveLink == null)
             return;
 
+        this.currentChargeTransparencyLiveLink       = LiveLink;
+        this.currentChargeTransparencyRecord         = null;
+        this.currentGlobalError                      = null;
+
         this.inputDiv.style.flexDirection            = "column";
         this.chargingSessionScreenDiv.style.display  = "flex";
         this.chargingSessionScreenDiv.innerText      = "";
@@ -1898,14 +2091,14 @@ export class ChargyApp {
 
         const descriptionDiv       = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
         descriptionDiv.id          = "description";
-        descriptionDiv.innerText   = chargyLib.firstValue(LiveLink.description) ?? "Charge Transparency Live-Link";
+        descriptionDiv.innerText   = this.getLocalizedDataText(LiveLink.description) ?? "Charge Transparency Live-Link";
 
         if (LiveLink.timestamp)
         {
             const timestampDiv     = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
             timestampDiv.id        = "begin";
             timestampDiv.className = "dates";
-            timestampDiv.innerText = "Zeitstempel " + chargyLib.time2human(LiveLink.timestamp);
+            timestampDiv.innerText = this.getLocalizedText("Timestamp") + " " + chargyLib.time2human(LiveLink.timestamp);
         }
 
         const liveLinksDiv         = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
@@ -2068,6 +2261,10 @@ export class ChargyApp {
         if (CTR == null)
             return;
 
+        this.currentChargeTransparencyRecord         = CTR;
+        this.currentChargeTransparencyLiveLink       = null;
+        this.currentGlobalError                      = null;
+
         //#region Prepare View
 
         this.inputDiv.style.flexDirection            = "column";
@@ -2083,12 +2280,12 @@ export class ChargyApp {
 
         //#region Show CTR infos
 
-        const descriptionDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
-        descriptionDiv.id  = "description";
-        descriptionDiv.innerText = chargyLib.firstValue(CTR.description) ?? this.chargy.GetLocalizedMessage("All charging sessions");
+        const descriptionDiv      = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
+        descriptionDiv.id         = "description";
+        descriptionDiv.innerText  = this.getLocalizedDataText(CTR.description) ?? this.chargy.GetLocalizedMessage("All charging sessions");
 
-        const ctrBeginText  = CTR.begin ? chargyLib.parseUTC(CTR.begin).format('dddd, D. MMMM YYYY') : null;
-        const ctrEndText    = CTR.end   ? chargyLib.parseUTC(CTR.end).  format('dddd, D. MMMM YYYY') : null;
+        const ctrBeginText        = CTR.begin ? chargyLib.parseUTC(CTR.begin).format('dddd, D. MMMM YYYY') : null;
+        const ctrEndText          = CTR.end   ? chargyLib.parseUTC(CTR.end).  format('dddd, D. MMMM YYYY') : null;
 
         if (ctrBeginText) {
             const beginDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
@@ -2496,7 +2693,7 @@ export class ChargyApp {
 
                             chargingStationDiv.classList.add("EVSE");
                             chargingStationDiv.innerHTML      = (chargingSession.EVSE   != null && chargingSession.EVSE.description != null
-                                                                    ? chargyLib.firstValue(chargingSession.EVSE.description) + "<br />"
+                                                                    ? this.getLocalizedDataText(chargingSession.EVSE.description) + "<br />"
                                                                     : "") +
                                                                 (chargingSession.EVSEId != null
                                                                     ? chargingSession.EVSEId
@@ -2535,7 +2732,7 @@ export class ChargyApp {
 
                                 chargingStationDiv.classList.add("chargingStation");
                                 chargingStationDiv.innerHTML      = (chargingSession.chargingStation   != null && chargingSession.chargingStation.description != null
-                                                                        ? chargyLib.firstValue(chargingSession.chargingStation.description) + "<br />"
+                                                                        ? this.getLocalizedDataText(chargingSession.chargingStation.description) + "<br />"
                                                                         : "") +
                                                                     (chargingSession.chargingStationId != null
                                                                         ? chargingSession.chargingStationId
@@ -2566,7 +2763,7 @@ export class ChargyApp {
 
                                 chargingStationDiv.classList.add("chargingPool");
                                 chargingStationDiv.innerHTML      = (chargingSession.chargingPool   != null && chargingSession.chargingPool.description != null
-                                                                        ? chargyLib.firstValue(chargingSession.chargingPool.description) + "<br />"
+                                                                        ? this.getLocalizedDataText(chargingSession.chargingPool.description) + "<br />"
                                                                         : "") +
                                                                     (chargingSession.chargingPoolId != null
                                                                         ? chargingSession.chargingPoolId
@@ -2884,7 +3081,7 @@ export class ChargyApp {
 
             const headlineDiv       = this.invalidDataSetsScreenDiv.appendChild(document.createElement('div'));
             headlineDiv.id          = "description";
-            headlineDiv.innerHTML   = "Ungültige Datensätze";
+            headlineDiv.innerHTML   = this.getLocalizedText("invalidDataSets");
 
             const invalidDataSetsDiv  = this.invalidDataSetsScreenDiv.appendChild(document.createElement('div'));
             invalidDataSetsDiv.id   = "invalidDataSets";
@@ -2900,11 +3097,11 @@ export class ChargyApp {
                     const invalidDataSetDiv = chargyLib.CreateDiv(invalidDataSetsDiv, "invalidDataSet");
 
                     const filenameDiv = chargyLib.CreateDiv(invalidDataSetDiv, "row");
-                    chargyLib.CreateDiv(filenameDiv, "key",   "Dateiname");
+                    chargyLib.CreateDiv(filenameDiv, "key",   this.getLocalizedText("fileNameLabel"));
                     chargyLib.CreateDiv(filenameDiv, "value", invalidDataSet.name);
 
                     const resultDiv = chargyLib.CreateDiv(invalidDataSetDiv, "row");
-                    chargyLib.CreateDiv(resultDiv,   "key",   "Fehler");
+                    chargyLib.CreateDiv(resultDiv,   "key",   this.getLocalizedText("errorLabel"));
                     const valueDiv  = chargyLib.CreateDiv(resultDiv, "value");
 
                     if (result.message)
@@ -2915,7 +3112,7 @@ export class ChargyApp {
                         {
 
                             case chargyInterfaces.SessionVerificationResult.InvalidSessionFormat:
-                                valueDiv.innerHTML  = "Ungültiges Transparenzformat";
+                                valueDiv.innerHTML  = this.getLocalizedText("invalidTransparencyFormat");
                                 break;
 
                             default:

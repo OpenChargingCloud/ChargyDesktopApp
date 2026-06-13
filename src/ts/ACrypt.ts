@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import type { Chargy }                from './chargy'
+import type { Chargy, EllipticCurve } from './chargy'
 import { secp224k1 }                  from './secp224k1'
 import * as chargyInterfaces          from './interfaces/chargyInterfaces'
 import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
@@ -28,11 +28,11 @@ export abstract class ACrypt {
     readonly description:  string;
     readonly chargy:       Chargy;
 
-    readonly curve192r1:   any;
+    readonly curve192r1:   EllipticCurve;
     readonly curve224k1:   secp224k1;
-    readonly curve256r1:   any;
-    readonly curve384r1:   any;
-    readonly curve521r1:   any;
+    readonly curve256r1:   EllipticCurve;
+    readonly curve384r1:   EllipticCurve;
+    readonly curve521r1:   EllipticCurve;
 
     //#endregion
 
@@ -74,8 +74,8 @@ export abstract class ACrypt {
     {
 
         const lineDiv = chargyLib.CreateDiv(infoDiv, "row");
-                      chargyLib.CreateDiv(lineDiv, "id",    this.chargy.GetLocalizedMessage(id));
-                      chargyLib.CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value?.toString()));
+                        chargyLib.CreateDiv(lineDiv, "id",    this.chargy.GetLocalizedMessage(id));
+                        chargyLib.CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value.toString()));
 
         this.AddToVisualBuffer(valueHEX, bufferDiv, lineDiv);
 
@@ -89,8 +89,8 @@ export abstract class ACrypt {
     {
 
         const lineDiv = chargyLib.CreateDiv(infoDiv, "row");
-                      chargyLib.CreateDiv(lineDiv, "id",    id);
-                      chargyLib.CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value?.toString()));
+                        chargyLib.CreateDiv(lineDiv, "id",    id);
+                        chargyLib.CreateDiv(lineDiv, "value", (typeof value === "string" ? value : value.toString()));
 
         this.AddToVisualBuffer(valueHEX, bufferDiv, lineDiv);
 
@@ -103,21 +103,21 @@ export abstract class ACrypt {
 
         const newText = chargyLib.CreateDiv(bufferDiv, "entry", valueHEX);
 
-        newText.onmouseenter = function(this: GlobalEventHandlers, ev: MouseEvent) {
+        newText.onmouseenter = function(this: GlobalEventHandlers) {
             lineDiv.children[0]?.classList.add("overEntry");
             lineDiv.children[1]?.classList.add("overEntry");
         }
 
-        newText.onmouseleave = function(this: GlobalEventHandlers, ev: MouseEvent) {
+        newText.onmouseleave = function(this: GlobalEventHandlers) {
             lineDiv.children[0]?.classList.remove("overEntry");
             lineDiv.children[1]?.classList.remove("overEntry");
         }
 
-        lineDiv.onmouseenter = function(this: GlobalEventHandlers, ev: MouseEvent) {
+        lineDiv.onmouseenter = function(this: GlobalEventHandlers) {
             newText.classList.add("overEntry");
         }
 
-        lineDiv.onmouseleave = function(this: GlobalEventHandlers, ev: MouseEvent) {
+        lineDiv.onmouseleave = function(this: GlobalEventHandlers) {
             newText.classList.remove("overEntry");
         }
 

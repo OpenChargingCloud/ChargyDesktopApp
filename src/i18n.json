@@ -983,6 +983,361 @@
     "Charging Periods": {
         "de": "Ladeperioden",
         "en": "Charging Periods"
+    },
+
+    "appHeadline": {
+        "de": "Chargy - Transparenzsoftware für die Elektromobilität",
+        "en": "Chargy - Transparency software for electric mobility"
+    },
+
+    "languageButtonTitle": {
+        "de": "Sprache auswählen",
+        "en": "Select language"
+    },
+
+    "inputHelp": {
+        "de": "Sie können einen oder mehrere Transparenzdatensätze und deren dazugehörige Public Keys zu Ihren Ladevorgängen entweder aus einer Datei laden, über die Zwischenablage einfügen oder Drag'n'Drop verwenden...",
+        "en": "You can load one or more transparency records and their public keys for your charging sessions from files, paste them from the clipboard, or use drag and drop..."
+    },
+
+    "recordsLabel": {
+        "de": "Datensätze",
+        "en": "Records"
+    },
+
+    "loadLabel": {
+        "de": "laden",
+        "en": "load"
+    },
+
+    "qrCodeLabel": {
+        "de": "QR-Code",
+        "en": "QR code"
+    },
+
+    "scanLabel": {
+        "de": "scannen",
+        "en": "scan"
+    },
+
+    "pasteLabel": {
+        "de": "einfügen",
+        "en": "paste"
+    },
+
+    "aboutOpenSourceIntro": {
+        "de": "Diese Software ist Open Source und basiert auf den folgenden Open-Source-Software-Bibliotheken:",
+        "en": "This software is open source and is based on the following open-source software libraries:"
+    },
+
+    "aboutCryptoAPI": {
+        "de": "Die SHA256/512-Hash-Funktionen werden durch die Crypto API des Web Browsers realisiert.",
+        "en": "The SHA-256/512 hash functions are provided by the web browser's Crypto API."
+    },
+
+    "aboutECCIntro": {
+        "de": "Elliptische Kurven Kryptographie wird durch",
+        "en": "Elliptic curve cryptography is provided by"
+    },
+
+    "aboutECCAnd": {
+        "de": "und einer angepassten Implementierung der",
+        "en": "and a customized implementation of the"
+    },
+
+    "aboutECCOutro": {
+        "de": "realisiert. Hierbei kommen je nach Verfahren und Ladestations- bzw. Smart-Meter-Hersteller unterschiedliche elliptische Kurven zum Einsatz.",
+        "en": "curve. Different elliptic curves are used depending on the method and the charging station or smart meter manufacturer."
+    },
+
+    "aboutDocumentation": {
+        "de": "Weitere Details zu den internen Datenstrukturen und Abläufen von Chargy gibt es auf",
+        "en": "More details about Chargy's internal data structures and workflows are available on"
+    },
+
+    "applicationHashLabel": {
+        "de": "SHA-512 Hashwert dieser Software:",
+        "en": "SHA-512 hash value of this software:"
+    },
+
+    "isBeingCalculated": {
+        "de": "Wird berechnet...",
+        "en": "Being calculated..."
+    },
+
+    "applicationSignaturesLabel": {
+        "de": "Digitale Signaturen dieser Software:",
+        "en": "Digital signatures of this software:"
+    },
+
+    "areBeingCalculated": {
+        "de": "Werden berechnet...",
+        "en": "Being calculated..."
+    },
+
+    "exportLabel": {
+        "de": "Exportieren",
+        "en": "Export"
+    },
+
+    "feedbackQuestion": {
+        "de": "Falsche Daten, falsche Signaturen oder sonstige Fragen?",
+        "en": "Incorrect data, invalid signatures, or other questions?"
+    },
+
+    "feedbackContact": {
+        "de": "Treten Sie mit uns in Kontakt:",
+        "en": "Contact us:"
+    },
+
+    "reportIssueLabel": {
+        "de": "Mängel melden",
+        "en": "Report issue"
+    },
+
+    "tariffInformations": {
+        "de": "Tarifinformationen:",
+        "en": "Tariff information:"
+    },
+
+    "chargingPeriod": {
+        "de": "Ladeperiode",
+        "en": "Charging period"
+    },
+
+    "signatureRelevantDataIntro": {
+        "de": "Folgende Daten des Ladevorgangs sind <span class=\"important\">mess- und eichrechtsrelevant</span> und damit gemäß",
+        "en": "The following charging session data is <span class=\"important\">relevant for metrological and legal metrological purposes</span> and therefore according to"
+    },
+
+    "signatureRelevantDataOutro": {
+        "de": "Teil der digitalen Signatur:",
+        "en": "part of the digital signature:"
+    },
+
+    "issueTrackerHeadline": {
+        "de": "Sie wollen einen oder mehrere Mängel melden?",
+        "en": "Would you like to report one or more issues?"
+    },
+
+    "issueCategoriesLabel": {
+        "de": "Bitte wählen sie eine oder mehrere Kategorien...",
+        "en": "Please select one or more categories..."
+    },
+
+    "issueInvalidCTR": {
+        "de": "Transparenzdatensatz konnte nicht geladen werden",
+        "en": "Transparency record could not be loaded"
+    },
+
+    "issueInvalidStationData": {
+        "de": "Falsche Daten zu einer Ladestation",
+        "en": "Incorrect charging station data"
+    },
+
+    "issueInvalidSignatures": {
+        "de": "Signatur(en) im Transparenzdatensatz sind ungültig",
+        "en": "Signature(s) in the transparency record are invalid"
+    },
+
+    "issueInvalidCertificates": {
+        "de": "Fehler bei der Überprüfung von digitalen Zertifikaten",
+        "en": "Error while checking digital certificates"
+    },
+
+    "issueSoftwareBug": {
+        "de": "Allgemeiner Fehler in der Transparenzsoftware",
+        "en": "General error in the transparency software"
+    },
+
+    "issueDSGVO": {
+        "de": "Anfrage nach der Datenschutz-Grundverordnung (DSGVO)",
+        "en": "Request under the General Data Protection Regulation (GDPR)"
+    },
+
+    "issueBITV": {
+        "de": "Anfrage bezüglich barrierefreier Informationstechnik (BITV 2.0, EU Direktive 2016/2102)",
+        "en": "Request regarding accessible information technology (BITV 2.0, EU Directive 2016/2102)"
+    },
+
+    "issueDescriptionLabel": {
+        "de": "Bitte beschreiben Sie die aufgetretenen Fehler oder Probleme ein wenig genauer...",
+        "en": "Please describe the errors or problems in a little more detail..."
+    },
+
+    "issueIncludeCTRLabel": {
+        "de": "Sollen die Daten Ihres Ladevorgangs zur einfacheren Klärung des Problems mit übermittelt werden?",
+        "en": "Should the data from your charging session be submitted to help clarify the problem?"
+    },
+
+    "yesLabel": {
+        "de": "ja",
+        "en": "yes"
+    },
+
+    "noLabel": {
+        "de": "nein",
+        "en": "no"
+    },
+
+    "issueContactLabel": {
+        "de": "Ihre Kontaktdaten, falls Rückfragen notwendig sein sollten...",
+        "en": "Your contact details, in case follow-up questions are necessary..."
+    },
+
+    "issueNamePlaceholder": {
+        "de": "Ihr Name",
+        "en": "Your name"
+    },
+
+    "issuePhonePlaceholder": {
+        "de": "Ihre Telefonnummer",
+        "en": "Your phone number"
+    },
+
+    "issueEMailPlaceholder": {
+        "de": "Ihre E-Mail Adresse",
+        "en": "Your email address"
+    },
+
+    "privacyStatementLabel": {
+        "de": "Datenschutzerklärung",
+        "en": "Privacy statement"
+    },
+
+    "privacyStatementAcceptedLabel": {
+        "de": "gelesen und akzeptiert?",
+        "en": "read and accepted?"
+    },
+
+    "scanQRCodeLabel": {
+        "de": "QR-Code scannen",
+        "en": "Scan QR code"
+    },
+
+    "cameraStarting": {
+        "de": "Kamera wird gestartet...",
+        "en": "Starting camera..."
+    },
+
+    "recognizedContent": {
+        "de": "Erkannter Inhalt",
+        "en": "Recognized content"
+    },
+
+    "openURLLabel": {
+        "de": "URL öffnen",
+        "en": "Open URL"
+    },
+
+    "rescanLabel": {
+        "de": "Erneut scannen",
+        "en": "Scan again"
+    },
+
+    "issueSubmitFailed": {
+        "de": "Leider ist ein Fehler bei der Datenübertragung aufgetreten. Bitte probieren Sie es erneut!",
+        "en": "Unfortunately an error occurred while transmitting the data. Please try again."
+    },
+
+    "exportFailed": {
+        "de": "Der Transparenzdatensatz konnte nicht gespeichert werden: ",
+        "en": "Failed to save the charge transparency record: "
+    },
+
+    "invalidHashValue": {
+        "de": "Ungültiger Hashwert!",
+        "en": "Invalid hash value!"
+    },
+
+    "validHashValue": {
+        "de": "Gültiger Hashwert",
+        "en": "Valid hash value"
+    },
+
+    "confirmedBy": {
+        "de": "Bestätigt durch...",
+        "en": "Confirmed by..."
+    },
+
+    "UnknownOrInvalidChargeTransparencyRecord": {
+        "de": "Unbekannter oder ungültiger Transparenzdatensatz!",
+        "en": "Unknown or invalid charge transparency record!"
+    },
+
+    "cameraAccessUnsupported": {
+        "de": "Dieser Browser unterstützt keinen Kamerazugriff.",
+        "en": "This browser does not support camera access."
+    },
+
+    "scanQRCodeWithCamera": {
+        "de": "QR-Code mit der Kamera scannen.",
+        "en": "Scan QR code with the camera."
+    },
+
+    "noCameraAvailable": {
+        "de": "Keine Kamera verfügbar.",
+        "en": "No camera available."
+    },
+
+    "cameraCouldNotStart": {
+        "de": "Kamera konnte nicht gestartet werden.",
+        "en": "Camera could not be started."
+    },
+
+    "cameraReady": {
+        "de": "Kamera bereit. QR-Code in den Rahmen halten.",
+        "en": "Camera ready. Hold the QR code inside the frame."
+    },
+
+    "qrCodeDetected": {
+        "de": "QR-Code erkannt. Transparenzdatensatz wird geprüft...",
+        "en": "QR code detected. Checking transparency record..."
+    },
+
+    "qrCodeContainsURL": {
+        "de": "Der QR-Code enthält eine URL. Bitte bestätigen, bevor sie geöffnet wird.",
+        "en": "The QR code contains a URL. Please confirm before opening it."
+    },
+
+    "qrCodeContainsNoRecord": {
+        "de": "Der QR-Code enthält keinen erkannten Transparenzdatensatz.",
+        "en": "The QR code does not contain a recognized transparency record."
+    },
+
+    "urlWasOpened": {
+        "de": "URL wurde geöffnet.",
+        "en": "URL was opened."
+    },
+
+    "invalidChargeTransparencyRecord": {
+        "de": "Fehlerhafter Transparenzdatensatz!",
+        "en": "Invalid transparency record!"
+    },
+
+    "invalidDataSets": {
+        "de": "Ungültige Datensätze",
+        "en": "Invalid data sets"
+    },
+
+    "fileNameLabel": {
+        "de": "Dateiname",
+        "en": "File name"
+    },
+
+    "errorLabel": {
+        "de": "Fehler",
+        "en": "Error"
+    },
+
+    "invalidTransparencyFormat": {
+        "de": "Ungültiges Transparenzformat",
+        "en": "Invalid transparency format"
+    },
+
+    "Intermediate value": {
+        "de": "Zwischenwert",
+        "en": "Intermediate value"
     }
 
 }

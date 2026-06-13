@@ -85,7 +85,7 @@ export async function SignMessage(JSONMessage: SignedJSONMessage,
 }
 
 export async function signJSONMessage(JSONMessage: SignedJSONMessage | null | undefined,
-                                      KeyPairs:    Array<EC.KeyPair | null | undefined>,
+                                      KeyPairs:    Array<EC.KeyPair | null | undefined> | null | undefined,
                                       options?:    SignJSONMessageOptions): Promise<boolean> {
 
     if (JSONMessage == null || KeyPairs == null || KeyPairs.length === 0)
@@ -145,7 +145,7 @@ export async function verifyJSONSignature(JSONMessage: SignedJSONMessage,
 
 }
 
-export async function verifyJSONSignatureResult(JSONMessage: SignedJSONMessage,
+export async function verifyJSONSignatureResult(JSONMessage: SignedJSONMessage | null | undefined,
                                                 signature:   unknown,
                                                 options?:    SignJSONMessageOptions): Promise<JSONSignatureVerificationResult> {
 
@@ -215,14 +215,14 @@ export async function verifyJSONSignatureResult(JSONMessage: SignedJSONMessage,
 
 }
 
-export async function verifyJSONMessageSignatures(JSONMessage: string | unknown,
+export async function verifyJSONMessageSignatures(JSONMessage: unknown,
                                                   options?:    SignJSONMessageOptions): Promise<boolean> {
 
     return isVerificationTrue((await verifyJSONMessageSignatureResults(JSONMessage, options)).status);
 
 }
 
-export async function verifyJSONMessageSignatureResults(JSONMessage: string | unknown,
+export async function verifyJSONMessageSignatureResults(JSONMessage: unknown,
                                                         options?:    SignJSONMessageOptions): Promise<JSONMessageSignaturesVerificationResult> {
 
     const parsedMessage = parseSignedJSONMessage(JSONMessage);
@@ -233,7 +233,14 @@ export async function verifyJSONMessageSignatureResults(JSONMessage: string | un
             signatures: {}
         };
 
-    const signedMessage = parsedMessage.message!;
+    const signedMessage = parsedMessage.message;
+
+    if (signedMessage == null)
+        return {
+            ...verificationResult(JSONSignatureVerificationStatus.InvalidJSON,
+                                  "JSON message could not be parsed."),
+            signatures: {}
+        };
 
     if (signedMessage.signatures == null || signedMessage.signatures.length === 0)
         return {
@@ -269,7 +276,7 @@ export async function verifyJSONMessageSignatureResults(JSONMessage: string | un
 
 }
 
-export async function VerifyJSONMessageSignatures(JSONMessage: string | unknown,
+export async function VerifyJSONMessageSignatures(JSONMessage: unknown,
                                                   options?:    SignJSONMessageOptions): Promise<boolean> {
 
     return verifyJSONMessageSignatures(JSONMessage, options);
@@ -295,7 +302,7 @@ function cloneMessageWithoutSignatures(JSONMessage: SignedJSONMessage): JSONMess
 
 }
 
-function parseSignedJSONMessage(JSONMessage: string | unknown): {
+function parseSignedJSONMessage(JSONMessage: unknown): {
     message?: SignedJSONMessage;
     result?:  JSONSignatureVerificationResult;
 } {

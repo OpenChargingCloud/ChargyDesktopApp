@@ -54,8 +54,7 @@
                 text-align:           center;
             }
 
-            #logo::before {
-                content:              "Chargy - Transparenzsoftware für die Elektromobilität";
+            #logo span {
                 padding-left:         5vw;
             }
 
@@ -64,6 +63,109 @@
                 display:            flex;
                 justify-content:    flex-end;
                 flex-grow:          1;
+                align-items:        center;
+
+                #languageSelector {
+
+                    position:           relative;
+                    display:            flex;
+                    align-items:        center;
+
+                    #languageButton {
+                        display:            flex;
+                        align-items:        center;
+                        justify-content:    center;
+                        width:              30px;
+                        height:             26px;
+                        padding:            0;
+                    }
+
+                    #languageMenu {
+                        display:            none;
+                        position:           absolute;
+                        top:                30px;
+                        right:              0;
+                        z-index:            2000;
+                        min-width:          135px;
+                        padding:            4px;
+                        border-radius:      6px;
+                        background-color:   #ffffff;
+                        box-shadow:         0 5px 18px rgba(0, 0, 0, 0.18);
+
+                        button {
+                            display:            flex;
+                            align-items:        center;
+                            gap:                8px;
+                            width:              100%;
+                            padding:            6px 8px;
+                            border-radius:      4px;
+                            font-size:          90%;
+                            text-align:         left;
+                            white-space:        nowrap;
+                        }
+
+                        button:hover,
+                        button.active {
+                            color:              #111111;
+                            background-color:   #e7f2fb;
+                        }
+
+                    }
+
+                    #languageMenu.open {
+                        display:            block;
+                    }
+
+                    .languageFlag {
+                        display:            inline-grid;
+                        grid-template-rows: 1fr 1fr 1fr;
+                        width:              22px;
+                        height:             14px;
+                        overflow:           hidden;
+                        border:             1px solid rgba(0, 0, 0, 0.22);
+                        box-shadow:         0 0 0 1px rgba(255, 255, 255, 0.45) inset;
+                    }
+
+                    .languageFlag span {
+                        display:            block;
+                    }
+
+                    .languageFlag-de span:nth-child(1) {
+                        background-color:   #000000;
+                    }
+
+                    .languageFlag-de span:nth-child(2) {
+                        background-color:   #dd0000;
+                    }
+
+                    .languageFlag-de span:nth-child(3) {
+                        background-color:   #ffce00;
+                    }
+
+                    .languageFlag-en {
+                        position:           relative;
+                        display:            inline-block;
+                        background:         linear-gradient(180deg, #012169 0 100%);
+                    }
+
+                    .languageFlag-en::before {
+                        content:            "";
+                        position:           absolute;
+                        inset:              0;
+                        background:
+                            linear-gradient(33deg, transparent 0 42%, #ffffff 43% 50%, #c8102e 51% 57%, #ffffff 58% 65%, transparent 66%),
+                            linear-gradient(147deg, transparent 0 42%, #ffffff 43% 50%, #c8102e 51% 57%, #ffffff 58% 65%, transparent 66%),
+                            linear-gradient(90deg, transparent 0 38%, #ffffff 39% 61%, transparent 62%),
+                            linear-gradient(0deg, transparent 0 34%, #ffffff 35% 65%, transparent 66%),
+                            linear-gradient(90deg, transparent 0 44%, #c8102e 45% 55%, transparent 56%),
+                            linear-gradient(0deg, transparent 0 40%, #c8102e 41% 59%, transparent 60%);
+                    }
+
+                    .languageFlag-en span {
+                        display:            none;
+                    }
+
+                }
 
                 button {
                     padding:            0px 5px;

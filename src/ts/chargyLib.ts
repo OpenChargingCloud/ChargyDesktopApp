@@ -58,7 +58,7 @@ export function getDirectChildByLocalName(parent: Document | Element, localName:
 }
 
 export function getTrimmedTextContent(element?: Element): string | undefined {
-    const text = element?.textContent.trim();
+    const text = element?.textContent?.trim();
     return text && text.length > 0 ? text : undefined;
 }
 
@@ -142,9 +142,20 @@ export function firstValue<T>(obj: Record<string, T> | undefined): T | undefined
         return obj[a];
 }
 
+let uiLocale = typeof window !== "undefined"
+                   ? window.navigator.language
+                   : "de";
+
+export function setUILocale(locale: string): void {
+
+    uiLocale = locale;
+    moment.locale(locale);
+
+}
+
 export function parseUTC(UTCTime: string|number): moment.Moment {
 
-    moment.locale(window.navigator.language);
+    moment.locale(uiLocale);
 
     return typeof UTCTime === 'string'
                ? moment.utc(UTCTime).local()
@@ -154,7 +165,7 @@ export function parseUTC(UTCTime: string|number): moment.Moment {
 
 export function time2human(Time: string|number): string {
 
-    moment.locale(window.navigator.language);
+    moment.locale(uiLocale);
 
     return (typeof Time === 'string'
                 ? moment(Time)
@@ -162,13 +173,13 @@ export function time2human(Time: string|number): string {
                format('dddd, D; MMM YYYY HH:mm:ss').
                    replace(".", "").    // Nov. -> Nov
                    replace(";", ".") +  // 14;  -> 14.
-                   " Uhr";
+                   (uiLocale.toLowerCase().startsWith("de") ? " Uhr" : "");
 
 }
 
 export function UTC2human(UTCTime: string|number): string {
 
-    moment.locale(window.navigator.language);
+    moment.locale(uiLocale);
 
     return (typeof UTCTime === 'string'
                 ? moment.utc(UTCTime)
@@ -176,7 +187,7 @@ export function UTC2human(UTCTime: string|number): string {
                format('dddd, D; MMM YYYY HH:mm:ss').
                    replace(".", "").    // Nov. -> Nov
                    replace(";", ".") +  // 14;  -> 14.
-                   " Uhr";
+                   (uiLocale.toLowerCase().startsWith("de") ? " Uhr" : "");
 
 }
 
@@ -1142,6 +1153,7 @@ export function InformationRelevanceToString(InfoRelevance: chargyInterfaces.Inf
         default:                                                 return "Unknown";
     }
 }
+
 
 //#region jsonPrettyPrinter(value, KeyLookup?)
 

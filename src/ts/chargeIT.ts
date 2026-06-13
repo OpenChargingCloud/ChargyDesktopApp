@@ -18,9 +18,63 @@
 import type { Chargy }                from './chargy'
 import { Alfen }                      from './Alfen'
 import { BSMCrypt01 }                 from './BSMCrypt01'
+import type { IEMHMeasurementValue }  from './EMHCrypt01'
 import * as chargyInterfaces          from './interfaces/chargyInterfaces'
 import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
 import * as chargyLib                 from './chargyLib'
+import Decimal                        from 'decimal.js'
+
+
+// A local time stamp of the old chargeIT meter value format.
+interface IChargeITTimestampLocal {
+    timestamp:     number;
+    localOffset:   number;
+    seasonOffset:  number;
+}
+
+// A single, fully validated meter value of the old chargeIT format.
+interface IChargeITMeterValue {
+    timestamp:      number;
+    meterInfo: {
+        firmwareVersion:      string;
+        publicKey:            string;
+        publicKeySignatures:  Array<unknown> | undefined;
+        meterId:              string;
+        type:                 string;
+        manufacturer:         string;
+    };
+    transactionId:  string;
+    contract: {
+        type:            string;
+        timestampLocal:  IChargeITTimestampLocal;
+        timestamp:       number;
+        id:              string;
+    };
+    measurementId:  string;
+    measuredValue: {
+        timestampLocal:  IChargeITTimestampLocal;
+        value:           string;
+        unit:            string;
+        scale:           number;
+        valueType:       string;
+        unitEncoded:     number;
+    };
+    measurand: {
+        id:    string;
+        name:  string;
+    };
+    additionalInfo: {
+        indexes: {
+            timer:    number;
+            logBook:  string;
+        };
+        status:  string;
+    };
+    chargePoint: {
+        softwareVersion:  string | undefined;
+    };
+    signature:  string;
+}
 
 
 export class ChargeIT {
@@ -49,14 +103,14 @@ export class ChargeIT {
 
     //#region TryToParseOldChargeITMeterValuesFormat(CTR, evseId, address, geoLocation, signedMeterValues)
 
-    public async TryToParseOldChargeITMeterValuesFormat(CTR:                any,
+    public async TryToParseOldChargeITMeterValuesFormat(CTR:                chargeTransparencyRecord.IChargeTransparencyRecord,
                                                         evseId:             string,
-                                                        address:            any,
-                                                        geoLocation:        any,
-                                                        signedMeterValues:  Array<any>) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+                                                        address:            chargyLib.JSONObject,
+                                                        geoLocation:        chargyLib.JSONObject,
+                                                        signedMeterValues:  Array<unknown>) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
     {
 
-        const CTRArray:Array<any> = [];
+        const CTRArray = new Array<IChargeITMeterValue>();
 
         //#region Parse Signed Meter Values
 
@@ -65,55 +119,59 @@ export class ChargeIT {
 
             //#region Data
 
-            const measurementId                              = signedMeterValue.measurementId;
-            const timestamp                                  = signedMeterValue.timestamp;
-            const transactionId                              = signedMeterValue.transactionId;
-            const signature                                  = signedMeterValue.signature;
+            const smv = chargyLib.asJSONObject(signedMeterValue);
+            if (smv === undefined)
+                continue;
 
-            const meterInfo                                  = signedMeterValue.meterInfo;
-            const meterInfo_meterId                          = meterInfo.meterId;
-            const meterInfo_type                             = meterInfo.type;
-            const meterInfo_firmwareVersion                  = meterInfo.firmwareVersion;
-            const meterInfo_publicKey                        = meterInfo.publicKey;
-            const meterInfo_manufacturer                     = meterInfo.manufacturer;
+            const measurementId                              = smv["measurementId"];
+            const timestamp                                  = smv["timestamp"];
+            const transactionId                              = smv["transactionId"];
+            const signature                                  = smv["signature"];
 
-            const meterInfo_publicKeySignatures              = meterInfo.publicKeySignatures;
+            const meterInfo                                  = chargyLib.asJSONObject(smv["meterInfo"]);
+            const meterInfo_meterId                          = meterInfo?.["meterId"];
+            const meterInfo_type                             = meterInfo?.["type"];
+            const meterInfo_firmwareVersion                  = meterInfo?.["firmwareVersion"];
+            const meterInfo_publicKey                        = meterInfo?.["publicKey"];
+            const meterInfo_manufacturer                     = meterInfo?.["manufacturer"];
 
-            const contract                                   = signedMeterValue.contract;
-            const contract_id                                = contract.id;
-            const contract_type                              = contract.type;
-            const contract_timestamp                         = contract.timestamp;
+            const meterInfo_publicKeySignatures              = meterInfo?.["publicKeySignatures"];
 
-            const contract_timestampLocal                    = contract.timestampLocal;
-            const contract_timestampLocal_timestamp          = contract_timestampLocal.timestamp;
-            const contract_timestampLocal_localOffset        = contract_timestampLocal.localOffset;
-            const contract_timestampLocal_seasonOffset       = contract_timestampLocal.seasonOffset;
+            const contract                                   = chargyLib.asJSONObject(smv["contract"]);
+            const contract_id                                = contract?.["id"];
+            const contract_type                              = contract?.["type"];
+            const contract_timestamp                         = contract?.["timestamp"];
 
-            const measuredValue                              = signedMeterValue.measuredValue;
-            const measuredValue_value                        = measuredValue.value;
-            const measuredValue_unit                         = measuredValue.unit;
-            const measuredValue_scale                        = measuredValue.scale;
-            const measuredValue_valueType                    = measuredValue.valueType;
-            const measuredValue_unitEncoded                  = measuredValue.unitEncoded;
+            const contract_timestampLocal                    = chargyLib.asJSONObject(contract?.["timestampLocal"]);
+            const contract_timestampLocal_timestamp          = contract_timestampLocal?.["timestamp"];
+            const contract_timestampLocal_localOffset        = contract_timestampLocal?.["localOffset"];
+            const contract_timestampLocal_seasonOffset       = contract_timestampLocal?.["seasonOffset"];
 
-            const measuredValue_timestampLocal               = measuredValue.timestampLocal;
-            const measuredValue_timestampLocal_timestamp     = measuredValue_timestampLocal.timestamp;
-            const measuredValue_timestampLocal_localOffset   = measuredValue_timestampLocal.localOffset;
-            const measuredValue_timestampLocal_seasonOffset  = measuredValue_timestampLocal.seasonOffset;
+            const measuredValue                              = chargyLib.asJSONObject(smv["measuredValue"]);
+            const measuredValue_value                        = measuredValue?.["value"];
+            const measuredValue_unit                         = measuredValue?.["unit"];
+            const measuredValue_scale                        = measuredValue?.["scale"];
+            const measuredValue_valueType                    = measuredValue?.["valueType"];
+            const measuredValue_unitEncoded                  = measuredValue?.["unitEncoded"];
 
-            const measurand                                  = signedMeterValue.measurand;
-            const measurand_id                               = measurand.id;
-            const measurand_name                             = measurand.name;
+            const measuredValue_timestampLocal               = chargyLib.asJSONObject(measuredValue?.["timestampLocal"]);
+            const measuredValue_timestampLocal_timestamp     = measuredValue_timestampLocal?.["timestamp"];
+            const measuredValue_timestampLocal_localOffset   = measuredValue_timestampLocal?.["localOffset"];
+            const measuredValue_timestampLocal_seasonOffset  = measuredValue_timestampLocal?.["seasonOffset"];
 
-            const additionalInfo                             = signedMeterValue.additionalInfo;
-            const additionalInfo_status                      = additionalInfo.status;
+            const measurand                                  = chargyLib.asJSONObject(smv["measurand"]);
+            const measurand_id                               = measurand?.["id"];
+            const measurand_name                             = measurand?.["name"];
 
-            const additionalInfo_indexes                     = additionalInfo.indexes;
-            const additionalInfo_indexes_timer               = additionalInfo_indexes.timer;
-            const additionalInfo_indexes_logBook             = additionalInfo_indexes.logBook;
+            const additionalInfo                             = chargyLib.asJSONObject(smv["additionalInfo"]);
+            const additionalInfo_status                      = additionalInfo?.["status"];
 
-            const chargePoint                                = signedMeterValue.chargePoint;
-            const chargePoint_softwareVersion                = chargePoint?.softwareVersion;
+            const additionalInfo_indexes                     = chargyLib.asJSONObject(additionalInfo?.["indexes"]);
+            const additionalInfo_indexes_timer               = additionalInfo_indexes?.["timer"];
+            const additionalInfo_indexes_logBook             = additionalInfo_indexes?.["logBook"];
+
+            const chargePoint                                = smv["chargePoint"];
+            const chargePoint_softwareVersion                = chargyLib.asString(chargyLib.asJSONObject(chargePoint)?.["softwareVersion"]);
 
             //#endregion
 
@@ -174,7 +232,7 @@ export class ChargeIT {
                         "meterInfo": {
                             "firmwareVersion":      meterInfo_firmwareVersion,
                             "publicKey":            meterInfo_publicKey,
-                            "publicKeySignatures":  meterInfo_publicKeySignatures,
+                            "publicKeySignatures":  chargyLib.asJSONArray(meterInfo_publicKeySignatures),
                             "meterId":              meterInfo_meterId,
                             "type":                 meterInfo_type,
                             "manufacturer":         meterInfo_manufacturer
@@ -226,15 +284,23 @@ export class ChargeIT {
 
         //#endregion
 
-        const n = CTRArray.length-1;
+        const firstMeterValue  = CTRArray[0];
+        const lastMeterValue   = CTRArray[CTRArray.length - 1];
 
-        CTR["@id"]  = CTRArray[n]!["transactionId"];
-        CTR.begin   = this.chargy.moment.unix(CTRArray[0]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
-        CTR.end     = this.chargy.moment.unix(CTRArray[n]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
+        if (firstMeterValue === undefined || lastMeterValue === undefined)
+            return {
+                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+                message:   this.chargy.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
+                certainty: 0
+            };
+
+        CTR["@id"]  = lastMeterValue["transactionId"];
+        CTR.begin   = this.chargy.moment.unix(firstMeterValue["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
+        CTR.end     = this.chargy.moment.unix(lastMeterValue["measuredValue"]["timestampLocal"]["timestamp"]).utc().format();
 
         CTR.contract = {
-            "@id":       CTRArray[0]!["contract"]["id"],
-            "@context":  CTRArray[0]!["contract"]["type"]
+            "@id":       firstMeterValue["contract"]["id"],
+            "@context":  firstMeterValue["contract"]["type"]
         };
 
         CTR.chargingStationOperators = [{
@@ -249,12 +315,14 @@ export class ChargeIT {
                 "publicKeys": [{
                     "algorithm":  "secp192r1",
                     "format":     "DER",
+                    "encoding":   "hex",
                     "value":      "042313b9e469612b4ca06981bfdecb226e234632b01d84b6a814f63a114b7762c34ddce2e6853395b7a0f87275f63ffe3c",
                     //"signatures":   [ ]
                 },
                 {
                     "algorithm":    "secp256k1",
                     "format":       "DER",
+                    "encoding":     "hex",
                     "value":        "04a8ff0d82107922522e004a167cc658f0eef408c5020f98e7a2615be326e61852666877335f4f8d9a0a756c26f0c9fb3f401431416abb5317cc0f5d714d3026fe",
                     //"signatures":   [ ]
                 }
@@ -295,13 +363,13 @@ export class ChargeIT {
                     // "description": {
                     //     "de":                   "GraphDefined Charging Station - CI-Tests Pool 3 / Station A"
                     // },
-                    "firmwareVersion":          CTRArray[0]!["chargePoint"]["softwareVersion"],
-                    "geoLocation":              { "lat": geoLocation.lat, "lng": geoLocation.lon },
+                    "firmwareVersion":          firstMeterValue["chargePoint"]["softwareVersion"],
+                    "geoLocation":              { "lat": chargyLib.asNumber(geoLocation["lat"]) ?? 0, "lng": chargyLib.asNumber(geoLocation["lon"]) ?? 0 },
                     "address": {
-                        "street":               address.street,
-                        "postalCode":           address.zipCode,
-                        "city":                 address.town,
-                        "country":              address.country
+                        "street":               chargyLib.asString(address["street"]),
+                        "postalCode":           chargyLib.asString(address["zipCode"]) ?? "",
+                        "city":                 chargyLib.asString(address["town"]) ?? "",
+                        "country":              chargyLib.asString(address["country"]) ?? ""
                     },
                     "EVSEs": [
                         {
@@ -312,21 +380,22 @@ export class ChargeIT {
                             // "connectors": [{ }],
                             "meters": [
                                 {
-                                    "@id":                      CTRArray[0]!["meterInfo"]["meterId"],
-                                    "manufacturer":             CTRArray[0]!["meterInfo"]["manufacturer"],
+                                    "@id":                      firstMeterValue["meterInfo"]["meterId"],
+                                    "manufacturer":             firstMeterValue["meterInfo"]["manufacturer"],
                                     "manufacturerURL":          "https://www.emh-metering.de",
-                                    "model":                    CTRArray[0]!["meterInfo"]["type"],
+                                    "model":                    firstMeterValue["meterInfo"]["type"],
                                     "hardwareVersion":          "1.0",
-                                    "firmwareVersion":          CTRArray[0]!["meterInfo"]["firmwareVersion"],
+                                    "firmwareVersion":          firstMeterValue["meterInfo"]["firmwareVersion"],
                                     "signatureFormat":          "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01",
                                     "publicKeys": [
                                         {
                                             "algorithm":        "secp192r1",
                                             "format":           "DER",
-                                            "value":            CTRArray[0]!["meterInfo"]["publicKey"].startsWith("04")
-                                                                    ?        CTRArray[0]!["meterInfo"]["publicKey"]
-                                                                    : "04" + CTRArray[0]!["meterInfo"]["publicKey"],
-                                            "signatures":       CTRArray[0]!["meterInfo"]["publicKeySignatures"]
+                                            "encoding":         "hex",
+                                            "value":            firstMeterValue["meterInfo"]["publicKey"].startsWith("04")
+                                                                    ?        firstMeterValue["meterInfo"]["publicKey"]
+                                                                    : "04" + firstMeterValue["meterInfo"]["publicKey"],
+                                            "signatures":       firstMeterValue["meterInfo"]["publicKeySignatures"]
                                         }
                                     ]
                                 }
@@ -338,54 +407,15 @@ export class ChargeIT {
 
         }];
 
-        CTR.chargingSessions = [{
-
-            "@id":                          CTRArray[n]!["transactionId"],
-            "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
-            "begin":                        this.chargy.moment.unix(CTRArray[0]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
-            "end":                          this.chargy.moment.unix(CTRArray[n]!["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
-            "EVSEId":                       evseId,
-
-            "authorizationStart": {
-                "@id":                      CTRArray[0]!["contract"]["id"],
-                "type":                     CTRArray[0]!["contract"]["type"],
-                "timestamp":                this.chargy.moment.unix(CTRArray[0]!["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
-                                                                    CTRArray[0]!["contract"]["timestampLocal"]["localOffset"] +
-                                                                    CTRArray[0]!["contract"]["timestampLocal"]["seasonOffset"]).format(),
-            },
-
-            "measurements": [{
-
-                "energyMeterId":        CTRArray[0]!["meterInfo"]["meterId"],
-                "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
-                "name":                 CTRArray[0]!["measurand"]["name"],
-                "obis":                 chargyLib.parseOBIS(CTRArray[0]!["measurand"]["id"]),
-                "unit":                 CTRArray[0]!["measuredValue"]["unit"],
-                "unitEncoded":          CTRArray[0]!["measuredValue"]["unitEncoded"],
-                "valueType":            CTRArray[0]!["measuredValue"]["valueType"],
-                "scale":                CTRArray[0]!["measuredValue"]["scale"],
-
-                "signatureInfos": {
-                    "hash":                 chargyInterfaces.CryptoHashAlgorithms.SHA256,
-                    "hashTruncation":       24,
-                    "algorithm":            chargyInterfaces.CryptoAlgorithms.ECC,
-                    "curve":                "secp192r1",
-                    "format":               chargyInterfaces.SignatureFormats.RS
-                },
-
-                "values": [ ]
-
-            }]
-
-        }];
+        const measurementValues = new Array<IEMHMeasurementValue>();
 
         for (const measurement of CTRArray)
         {
-            CTR["chargingSessions"][0]!["measurements"][0]!["values"].push({
+            measurementValues.push({
                 "timestamp":     this.chargy.moment.unix(measurement["measuredValue"]["timestampLocal"]["timestamp"]).utc().utcOffset(
                                                         measurement["measuredValue"]["timestampLocal"]["localOffset"] +
                                                         measurement["measuredValue"]["timestampLocal"]["seasonOffset"]).format(),
-                "value":         parseInt(measurement["measuredValue"]["value"]),
+                "value":         new Decimal(parseInt(measurement["measuredValue"]["value"])),
                 "infoStatus":    measurement["additionalInfo"]["status"],
                 "secondsIndex":  measurement["additionalInfo"]["indexes"]["timer"],
                 "paginationId":  measurement["measurementId"],
@@ -398,6 +428,47 @@ export class ChargeIT {
                 ]
             });
         }
+
+        CTR.chargingSessions = [{
+
+            "@id":                          lastMeterValue["transactionId"],
+            "@context":                     "https://open.charging.cloud/contexts/SessionSignatureFormats/EMHCrypt01+json",
+            "begin":                        this.chargy.moment.unix(firstMeterValue["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+            "end":                          this.chargy.moment.unix(lastMeterValue["measuredValue"]["timestampLocal"]["timestamp"]).utc().format(),
+            "EVSEId":                       evseId,
+
+            "authorizationStart": {
+                "@id":                      firstMeterValue["contract"]["id"],
+                "type":                     firstMeterValue["contract"]["type"],
+                "timestamp":                this.chargy.moment.unix(firstMeterValue["contract"]["timestampLocal"]["timestamp"]).utc().utcOffset(
+                                                                    firstMeterValue["contract"]["timestampLocal"]["localOffset"] +
+                                                                    firstMeterValue["contract"]["timestampLocal"]["seasonOffset"]).format(),
+            },
+
+            "measurements": [{
+
+                "energyMeterId":        firstMeterValue["meterInfo"]["meterId"],
+                "@context":             "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/EMHCrypt01+json",
+                "name":                 firstMeterValue["measurand"]["name"],
+                "obis":                 chargyLib.parseOBIS(firstMeterValue["measurand"]["id"]),
+                "unit":                 firstMeterValue["measuredValue"]["unit"],
+                "unitEncoded":          firstMeterValue["measuredValue"]["unitEncoded"],
+                "valueType":            firstMeterValue["measuredValue"]["valueType"],
+                "scale":                firstMeterValue["measuredValue"]["scale"],
+
+                "signatureInfos": {
+                    "hash":                 chargyInterfaces.CryptoHashAlgorithms.SHA256,
+                    "hashTruncation":       24,
+                    "algorithm":            chargyInterfaces.CryptoAlgorithms.ECC,
+                    "curve":                "secp192r1",
+                    "format":               chargyInterfaces.SignatureFormats.RS
+                },
+
+                "values": measurementValues
+
+            }]
+
+        }];
 
         CTR["status"] = chargyInterfaces.SessionVerificationResult.Unvalidated;
 
@@ -1064,7 +1135,7 @@ export class ChargeIT {
             {
                 return {
                     status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                    message:    "Exception occured: " + (exception instanceof Error ? exception.message : String(exception)),
                     errors:     errors,
                     warnings:   warnings,
                     certainty: (numberOfFormatChecks - errors.length - secondaryErrors)/numberOfFormatChecks
@@ -1365,9 +1436,7 @@ export class ChargeIT {
 
                     for (let i = 0; i < chargingTariffs.length; i++)
                     {
-
-                        const chargingTariff = chargingTariffs[i];
-
+                        // ToDo: Validate and import the charging tariffs!
                     }
 
                 }
@@ -1642,7 +1711,7 @@ export class ChargeIT {
             {
                 return {
                     status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:    "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                    message:    "Exception occured: " + (exception instanceof Error ? exception.message : String(exception)),
                     errors:     errors,
                     warnings:   warnings,
                     certainty: (numberOfFormatChecks - errors.length - secondaryErrors)/numberOfFormatChecks

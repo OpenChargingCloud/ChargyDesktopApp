@@ -61,7 +61,10 @@ export default tseslint.config(
             'src/ts/QIDigital_DCoA.ts',
             'src/ts/QIDigital_DCoC.ts',
             'src/ts/chargyLib.ts',
-            'src/ts/qrReader.ts'
+            'src/ts/qrReader.ts',
+            'src/ts/ACrypt.ts',
+            'src/ts/CanonicalJSON.ts',
+            'src/ts/CryptoUtils.ts'
         ],
         rules: Object.assign({}, ...tseslint.configs.strictTypeChecked.map(config => config.rules ?? {}))
     }

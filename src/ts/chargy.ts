@@ -73,7 +73,7 @@ export class Chargy {
     //#region Data
 
     public  readonly i18n:            chargyInterfaces.I18NDictionary;
-    public  readonly UILanguage:      string;
+    public  UILanguage:               string;
     public  readonly elliptic:        EllipticModule;
     public  readonly moment:          typeof Moment;
     public  readonly asn1:            typeof Asn1;
@@ -110,6 +110,13 @@ export class Chargy {
         this.asn1            = asn1;
         this.base32Decode    = base32Decode;
         this.showPKIDetails  = ShowPKIDetails;
+
+    }
+
+
+    public SetUILanguage(UILanguage: string): void {
+
+        this.UILanguage = UILanguage;
 
     }
 
@@ -433,7 +440,7 @@ export class Chargy {
 
         }
 
-        return "Undefined Error!";
+        return Text;
 
     }
 
@@ -456,7 +463,7 @@ export class Chargy {
 
         }
 
-        return "Undefined Error!";
+        return Text.replace("%p", String(Parameter));
 
     }
 
