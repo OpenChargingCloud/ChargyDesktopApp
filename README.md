@@ -2,8 +2,9 @@
 
 Chargy is a transparency software for the validation of secure and transparent e-mobility charging processes, as defined by the *German Calibration Law ("Eichrecht")* in combination with the [Alternative Fuels Infrastructure Regulation (AFIR)](https://transport.ec.europa.eu/transport-themes/clean-transport/alternative-fuels-sustainable-mobility-europe/alternative-fuels-infrastructure_en) of the European Commission and the [European Digital Quality Infrastructure](https://www.qi-digital.de/en/). The software allows you to verify the cryptographic signatures of energy measurements within charge detail records and comes with a couple of useful extentions to simplify the entire process for endusers and operators.
 
-![](documentation/Screenshot02.png)
-
+<kbd>
+  <img src="documentation/Screenshot02.png" alt="Screenshot" />
+</kbd>
 
 ## Benefits of Chargy
 
