@@ -59,10 +59,11 @@ export class Alfen  {
 
     //#region TryToParseALFENFormat(Content)
 
-    public async TryToParseALFENFormat(Content:         string|string[],
-                                       ContainerInfos:  any)
+    public TryToParseALFENFormat(Content:         string|string[],
+                                 ContainerInfos:  unknown)
 
-        : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+        : chargeTransparencyRecord.IChargeTransparencyRecord |
+          chargyInterfaces.        ISessionCryptoResult
 
     {
 
@@ -82,7 +83,6 @@ export class Alfen  {
 
         try
         {
-
             // The container infos are optional and provided by the
             // surrounding container parsers (OCPI, chargeIT, ...).
             const containerInfos   = chargyLib.asJSONObject(ContainerInfos) ?? {};
@@ -630,8 +630,8 @@ export class AlfenCrypt01 extends ACrypt {
             {
 
                 cryptoResult.signature = {
-                    algorithm:  measurementValue.measurement.signatureInfos!.algorithm,
-                    format:     measurementValue.measurement.signatureInfos!.format,
+                    algorithm:  measurementValue.measurement.signatureInfos?.algorithm,
+                    format:     measurementValue.measurement.signatureInfos?.format,
                     r:          signatureExpected.r,
                     s:          signatureExpected.s
                 };
@@ -668,14 +668,19 @@ export class AlfenCrypt01 extends ACrypt {
                                                                                                 cryptoResult.signature);
                                         break;
 
-                                     case "curve224k1":
-                                        cryptoResult.hashValue  = (BigInt("0x" + (await chargyLib.sha256(cryptoBuffer))) >> BigInt(31));//.toString(16);
-                                        result                  = this.curve224k1.validate(BigInt("0x" + cryptoResult.hashValue),
-                                                                            BigInt("0x" + signatureExpected.r),
-                                                                            BigInt("0x" + signatureExpected.s),
-                                                                            [ BigInt("0x" + publicKey.substring(2, 58)),
-                                                                              BigInt("0x" + publicKey.substring(58)) ])
+                                    case "curve224k1":
+                                    {
+                                        const hashValue224k1    = BigInt("0x" + (await chargyLib.sha256(cryptoBuffer))) >> BigInt(31);
+                                        cryptoResult.hashValue  = hashValue224k1;
+                                        result                  = this.curve224k1.validate(
+                                                                      hashValue224k1,
+                                                                      BigInt(signatureExpected.r !== undefined ? "0x" + signatureExpected.r : "0x0"),
+                                                                      BigInt(signatureExpected.s !== undefined ? "0x" + signatureExpected.s : "0x0"),
+                                                                      [ BigInt("0x" + publicKey.substring(2, 58)),
+                                                                        BigInt("0x" + publicKey.substring(58)) ]
+                                                                  )
                                          break;
+                                    }
 
                                     case "curve256r1":
                                         cryptoResult.hashValue  = (await chargyLib.sha256(cryptoBuffer));
@@ -780,22 +785,22 @@ export class AlfenCrypt01 extends ACrypt {
             PlainTextDiv.style.maxHeight   = "";
             PlainTextDiv.style.overflowY   = "";
 
-            this.CreateLocalizedLine("Adapter Id",                 measurementValue.measurement.adapterId,                                                   result.adapterId              || "",  infoDiv, PlainTextDiv);
-            this.CreateLocalizedLine("Adapter Firmware Version",   measurementValue.measurement.adapterFWVersion,                                            result.adapterFWVersion       || "",  infoDiv, PlainTextDiv);
-            this.CreateLocalizedLine("Adapter Firmware Checksum",  measurementValue.measurement.adapterFWChecksum,                                           result.adapterFWChecksum      || "",  infoDiv, PlainTextDiv);
-            this.CreateLocalizedLine("Meter number",               measurementValue.measurement.energyMeterId,                                               result.meterId                || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Adapter Id",                 measurementValue.measurement.adapterId,                                                    result.adapterId              || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Adapter Firmware Version",   measurementValue.measurement.adapterFWVersion,                                             result.adapterFWVersion       || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Adapter Firmware Checksum",  measurementValue.measurement.adapterFWChecksum,                                            result.adapterFWChecksum      || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Meter number",               measurementValue.measurement.energyMeterId,                                                result.meterId                || "",  infoDiv, PlainTextDiv);
             this.CreateLocalizedLine("Meter status",               chargyLib.hex2bin(measurementValue.statusMeter, true) + " (" + measurementValue.statusMeter + " hex)<br /><span class=\"statusInfos\">" +
                                                                    this.DecodeMeterStatus(measurementValue.statusMeter).join("<br />") + "</span>",
-                                                                                                                                                            result.statusMeter            || "",  infoDiv, PlainTextDiv);
+                                                                                                                                                              result.statusMeter            || "",  infoDiv, PlainTextDiv);
             this.CreateLocalizedLine("Adapter status",             chargyLib.hex2bin(measurementValue.statusAdapter, true) + " (" + measurementValue.statusAdapter + " hex)<br /><span class=\"statusInfos\">" +
                                                                    this.DecodeAdapterStatus(measurementValue.statusAdapter).join("<br />") + "</span>",    
-                                                                                                                                                             result.statusAdapter          || "",  infoDiv, PlainTextDiv);
+                                                                                                                                                              result.statusAdapter          || "",  infoDiv, PlainTextDiv);
             this.CreateLocalizedLine("Seconds index",               measurementValue.secondsIndex,                                                            result.secondsIndex           || "",  infoDiv, PlainTextDiv);
             this.CreateLocalizedLine("Timestamp",                   chargyLib.UTC2human(measurementValue.timestamp),                                          result.timestamp              || "",  infoDiv, PlainTextDiv);
             this.CreateLocalizedLine("OBIS code",                   measurementValue.measurement.obis,                                                        result.obisId                 || "",  infoDiv, PlainTextDiv);
             this.CreateLocalizedLine("Unit (encoded)",              measurementValue.measurement.unitEncoded ?? 0,                                            result.unitEncoded            || "",  infoDiv, PlainTextDiv);
             this.CreateLocalizedLine("Scaling",                     measurementValue.measurement.scale,                                                       result.scalar                 || "",  infoDiv, PlainTextDiv);
-            this.CreateLocalizedLine("Measurement Value",           measurementValue.value + " Wh",                                                           result.value                  || "",  infoDiv, PlainTextDiv);
+            this.CreateLocalizedLine("Measurement Value",           measurementValue.value.toString() + " Wh",                                                result.value                  || "",  infoDiv, PlainTextDiv);
             this.CreateLocalizedLine("Authorization",              (measurementValue.measurement.chargingSession?.authorizationStart["@id"] ?? "") + " hex",  chargyLib.pad(result.uid, 20) || "",  infoDiv, PlainTextDiv);
             this.CreateLocalizedLine("SessionId",                  (measurementValue.measurement.chargingSession?.["@id"] ?? ""),                             result.sessionId              || "",  infoDiv, PlainTextDiv);
             this.CreateLocalizedLine("Pagination counter",          measurementValue.paginationId,                                                            result.paging                 || "",  infoDiv, PlainTextDiv);
@@ -872,7 +877,9 @@ export class AlfenCrypt01 extends ACrypt {
 
                     }
                     catch
-                    { }
+                    {
+                        // Optional public key signature metadata is displayed only when available.
+                    }
 
                 }
 
@@ -894,8 +901,13 @@ export class AlfenCrypt01 extends ACrypt {
             }
 
             if (result.signature.r && result.signature.s)
-                SignatureExpectedDiv.innerHTML = "r: " + result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") + "<br />" +
-                                                 "s: " + result.signature.s.toLowerCase().match(/.{1,8}/g)?.join(" ");
+            {
+                const signatureR = result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
+                const signatureS = result.signature.s.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
+
+                SignatureExpectedDiv.innerHTML = "r: " + signatureR + "<br />" +
+                                                 "s: " + signatureS;
+            }
 
             else if (result.signature.value)
                 SignatureExpectedDiv.innerHTML = result.signature.value.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";

@@ -315,6 +315,7 @@ export class Chargy {
 
         try
         {
+
             const url = new URL(qrText);
 
             const candidates = [
@@ -345,7 +346,9 @@ export class Chargy {
             }
         }
         catch
-        { }
+        {
+            console.log("Invalid URL in QR code: " + qrText);
+        }
 
         return qrText;
 
@@ -370,7 +373,9 @@ export class Chargy {
                 return signedDataValues.join("\n");
         }
         catch
-        { }
+        {
+            console.log("Error parsing XML content from QR code: " + qrText);
+        }
 
         return qrText;
 
@@ -603,7 +608,9 @@ export class Chargy {
 
         }
         catch
-        { }
+        {
+            console.log("Error verifying public key signature!");
+        }
 
         return "<i class=\"fas fa-times-circle\"></i>" + String(signatureView["signer"]);
 
@@ -622,8 +629,8 @@ export class Chargy {
 
         //#endregion
 
-        let archiveFound      = false;
-        let expandedFileInfos = new Array<chargyInterfaces.IFileInfo>();
+        let archiveFound:      boolean;
+        let expandedFileInfos: chargyInterfaces.IFileInfo[];
 
         do
         {
@@ -1397,10 +1404,10 @@ export class Chargy {
             //#region ALFEN processing
 
             else if (textContent.startsWith("AP;"))
-                processedFile.result = await new Alfen(this).TryToParseALFENFormat(textContent, {});
+                processedFile.result = new Alfen(this).TryToParseALFENFormat(textContent, {});
 
             else if (textContent.startsWith("\"AP;") && textContent.endsWith("\""))
-                processedFile.result = await new Alfen(this).TryToParseALFENFormat(textContent.substring(1, textContent.length - 1), {});
+                processedFile.result = new Alfen(this).TryToParseALFENFormat(textContent.substring(1, textContent.length - 1), {});
 
             //#endregion
 
@@ -1510,7 +1517,7 @@ export class Chargy {
                                      JSONContext.startsWith("https://www.eneco.com/contexts/charging-station-json")     ||
                                      JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
                             {
-                                processedFile.result = await new ChargeIT(this).TryToParseChargeITContainerFormat(JSONContent);
+                                processedFile.result = new ChargeIT(this).TryToParseChargeITContainerFormat(JSONContent);
                             }
 
                         }
@@ -1520,8 +1527,8 @@ export class Chargy {
                         {
 
                             const results = [
-                                await new ChargeIT(this).   TryToParseChargeITContainerFormat(JSONContent),
-                                await new ChargePoint(this).TryToParseChargepointFormat      (JSONContent),
+                                new ChargeIT(this).   TryToParseChargeITContainerFormat(JSONContent),
+                                new ChargePoint(this).TryToParseChargepointFormat      (JSONContent),
                                 await new OCPI(this).       tryToParseOCPIFormat             (JSONContent)
                             ];
 

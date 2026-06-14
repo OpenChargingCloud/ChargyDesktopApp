@@ -103,11 +103,15 @@ export class ChargeIT {
 
     //#region TryToParseOldChargeITMeterValuesFormat(CTR, evseId, address, geoLocation, signedMeterValues)
 
-    public async TryToParseOldChargeITMeterValuesFormat(CTR:                chargeTransparencyRecord.IChargeTransparencyRecord,
-                                                        evseId:             string,
-                                                        address:            chargyLib.JSONObject,
-                                                        geoLocation:        chargyLib.JSONObject,
-                                                        signedMeterValues:  Array<unknown>) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public TryToParseOldChargeITMeterValuesFormat(CTR:                chargeTransparencyRecord.IChargeTransparencyRecord,
+                                                  evseId:             string,
+                                                  address:            chargyLib.JSONObject,
+                                                  geoLocation:        chargyLib.JSONObject,
+                                                  signedMeterValues:  Array<unknown>)
+
+        : chargeTransparencyRecord.IChargeTransparencyRecord |
+          chargyInterfaces.        ISessionCryptoResult
+
     {
 
         const CTRArray = new Array<IChargeITMeterValue>();
@@ -482,7 +486,11 @@ export class ChargeIT {
     //#region TryToParseChargeITContainerFormat(SomeJSON)
 
     // The chargeIT mobility data format does not always provide context information or format identifiers!
-    public async TryToParseChargeITContainerFormat(SomeJSON: unknown) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public TryToParseChargeITContainerFormat(SomeJSON: unknown)
+
+        : chargeTransparencyRecord.IChargeTransparencyRecord |
+          chargyInterfaces.        ISessionCryptoResult
+
     {
 
         const errors    = new Array<string>();
@@ -1079,41 +1087,52 @@ export class ChargeIT {
                             signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v0" ||
                             signedMeterValueContext === "https://www.chargeit-mobility.com/contexts/bsm-ws36a-json-v1") {
 
-                            return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseId, null, signedMeterValues);
+                            return new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(
+                                       CTR,
+                                       evseId,
+                                       null,
+                                       signedMeterValues
+                                   );
 
                         }
 
                         if (signedMeterValueContext.startsWith("ALFEN")) {
-                            return await new Alfen(this.chargy).TryToParseALFENFormat(signedMeterValues.map(value => chargyLib.asString(chargyLib.asJSONObject(value)?.["payload"]) ?? ""),
-                                         {
-                                            EVSEId: evseId,
-                                            chargingStation: {
-                                               geoLocation: { "lat":    geoLocation_lat, "lng":        geoLocation_lon },
-                                               address:     { "street": address_street,  "postalCode": address_zipCode, "city": address_town, "country": address_country }
-                                            }
-                                         });
+                            return new Alfen(this.chargy).TryToParseALFENFormat(
+                                       signedMeterValues.map(value => chargyLib.asString(chargyLib.asJSONObject(value)?.["payload"]) ?? ""),
+                                       {
+                                          EVSEId: evseId,
+                                          chargingStation: {
+                                             geoLocation: { "lat":    geoLocation_lat, "lng":        geoLocation_lon },
+                                             address:     { "street": address_street,  "postalCode": address_zipCode, "city": address_town, "country": address_country }
+                                          }
+                                       }
+                                   );
                         }
 
                         if (containerFormat === oldChargeITContainerFormat) {
 
                             if (chargyLib.asJSONObject(signedMeterValues[0])?.["format"] == "ALFEN")
-                                return await new Alfen(this.chargy).TryToParseALFENFormat(signedMeterValues.map(value => chargyLib.asString(chargyLib.asJSONObject(value)?.["payload"]) ?? ""),
-                                         {
-                                            EVSEId: evseId,
-                                            chargingStation: {
-                                               geoLocation: { "lat":    geoLocation_lat, "lng":        geoLocation_lon },
-                                               address:     { "street": address_street,  "postalCode": address_zipCode, "city": address_town, "country": address_country }
-                                            }
-                                         });
+                                return new Alfen(this.chargy).TryToParseALFENFormat(
+                                           signedMeterValues.map(value => chargyLib.asString(chargyLib.asJSONObject(value)?.["payload"]) ?? ""),
+                                           {
+                                               EVSEId: evseId,
+                                               chargingStation: {
+                                                  geoLocation: { "lat":    geoLocation_lat, "lng":        geoLocation_lon },
+                                                  address:     { "street": address_street,  "postalCode": address_zipCode, "city": address_town, "country": address_country }
+                                               }
+                                           }
+                                       );
 
                         }
 
                         if (signedMeterValueContext === oldChargeITMeterValueFormat)
-                            return await this.TryToParseOldChargeITMeterValuesFormat(CTR,
-                                                                                     evseId,
-                                                                                     address,
-                                                                                     geoLocation,
-                                                                                     signedMeterValues);
+                            return this.TryToParseOldChargeITMeterValuesFormat(
+                                       CTR,
+                                       evseId,
+                                       address,
+                                       geoLocation,
+                                       signedMeterValues
+                                   );
 
                         //#endregion
 
@@ -1664,10 +1683,10 @@ export class ChargeIT {
                     //#endregion
 
                     if      (smvContext?.startsWith("https://www.chargeit-mobility.com/contexts/bsm-ws36a-json"))
-                        return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseIdStr, chargyLib.asString(chargingStation_controllerSoftwareVersion) ?? null, signedMeterValues);
+                        return new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseIdStr, chargyLib.asString(chargingStation_controllerSoftwareVersion) ?? null, signedMeterValues);
 
                     if (smvContext?.startsWith("ALFEN"))
-                        return await new Alfen(this.chargy).TryToParseALFENFormat(
+                        return new Alfen(this.chargy).TryToParseALFENFormat(
                                          signedMeterValues.map(value => chargyLib.asString(chargyLib.asJSONObject(value)?.["payload"]) ?? ""),
                                          {
                                              chargingSession: {

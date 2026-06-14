@@ -820,7 +820,7 @@ export function pad(text: string|undefined, paddingValue: number) {
  */
 export async function sha256(message: string|DataView): Promise<string> {
 
-    let hashBuffer: ArrayBuffer | null = null;
+    let hashBuffer: ArrayBuffer | null;
 
     if (typeof message === 'string')
         hashBuffer = await crypto.subtle.digest('SHA-256', Buffer.from(message, 'utf8'));
@@ -841,7 +841,7 @@ export async function sha256(message: string|DataView): Promise<string> {
  */
 export async function sha384(message: string|DataView): Promise<string> {
 
-    let hashBuffer: ArrayBuffer | null = null;
+    let hashBuffer: ArrayBuffer | null;
 
     if (typeof message === 'string')
         hashBuffer = await crypto.subtle.digest('SHA-384', Buffer.from(message, 'utf8'));
@@ -862,7 +862,7 @@ export async function sha384(message: string|DataView): Promise<string> {
  */
 export async function sha512(message: string|DataView): Promise<string> {
 
-    let hashBuffer: ArrayBuffer | null = null;
+    let hashBuffer: ArrayBuffer | null;
 
     if (typeof message === 'string')
         hashBuffer = await crypto.subtle.digest('SHA-512', Buffer.from(message, 'utf8'));

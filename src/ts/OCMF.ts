@@ -1026,8 +1026,12 @@ export class OCMF {
 
     //#region (private) tryToParseOCMFv1_0(OCMFDataList, ContainerInfos?)
 
-    private async tryToParseOCMFv1_0(OCMFJSONDocuments:   IOCMFJSONDocument[],
-                                     ContainerInfos?:     unknown) : Promise<IOCMFChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    private tryToParseOCMFv1_0(OCMFJSONDocuments:  IOCMFJSONDocument[],
+                               ContainerInfos?:    unknown)
+
+        : IOCMFChargeTransparencyRecord |
+          chargyInterfaces.ISessionCryptoResult
+
     {
 
         try

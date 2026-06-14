@@ -37,7 +37,11 @@ export class ChargePoint {
 
     //#region TryToParseChargepointFormat(SomeJSON)
 
-    public async TryToParseChargepointFormat(SomeJSON: unknown) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public TryToParseChargepointFormat(SomeJSON: unknown)
+
+        : chargeTransparencyRecord.IChargeTransparencyRecord |
+          chargyInterfaces.        ISessionCryptoResult
+
     {
 
         try
@@ -1196,8 +1200,10 @@ export class ChargePointCrypt01 extends ACrypt {
                                                                                                     signature);
 
                     }
-                    catch (exception)
-                    { }
+                    catch
+                    {
+                        // Optional public key signature metadata is displayed only when available.
+                    }
 
                 }
 

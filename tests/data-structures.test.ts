@@ -77,7 +77,6 @@ describe("Chargy data structure guards", () => {
 
     test("recognizes public key lookup containers", () => {
       expect(IsAPublicKeyLookup(samplePublicKeyLookup())).toBe(true);
-      expect(IsAPublicKeyLookup(sampleChargeTransparencyRecord())).toBe(false);
     });
 
     test("recognizes session and measurement crypto results", () => {

@@ -649,37 +649,37 @@ export class OCPI {
                     //#endregion
 
                     if      (smvContext?.startsWith("https://www.chargeit-mobility.com/contexts/bsm-ws36a-json"))
-                        return await new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseIdStr, chargyLib.asString(chargingStation_controllerSoftwareVersion) ?? null, signedMeterValues);
+                        return new BSMCrypt01(this.chargy).tryToParseBSM_WS36aMeasurements(CTR, evseIdStr, chargyLib.asString(chargingStation_controllerSoftwareVersion) ?? null, signedMeterValues);
 
                     if (smvContext?.startsWith("ALFEN"))
-                        return await new Alfen(this.chargy).TryToParseALFENFormat(
-                                         signedMeterValues.map(value => chargyLib.asString(chargyLib.asJSONObject(value)?.["payload"]) ?? ""),
-                                         {
-                                             chargingSession: {
-                                                "@id":            chargingSessionId
-                                             },
-                                             EVSEId:              evseId,
-                                             chargingStation: {
-                                                manufacturer:     chargingStation_manufacturer,
-                                                type:             chargingStation_type,
-                                                serialNumber:     chargingStation_serialNumber,
-                                                firmwareVersion:  chargingStation_controllerSoftwareVersion,
-                                                legalCompliance:  {
-                                                    conformity: [{
+                        return new Alfen(this.chargy).TryToParseALFENFormat(
+                                   signedMeterValues.map(value => chargyLib.asString(chargyLib.asJSONObject(value)?.["payload"]) ?? ""),
+                                   {
+                                       chargingSession: {
+                                          "@id":            chargingSessionId
+                                       },
+                                       EVSEId:              evseId,
+                                       chargingStation: {
+                                          manufacturer:     chargingStation_manufacturer,
+                                          type:             chargingStation_type,
+                                          serialNumber:     chargingStation_serialNumber,
+                                          firmwareVersion:  chargingStation_controllerSoftwareVersion,
+                                          legalCompliance:  {
+                                              conformity: [{
 
-                                                        freeText:  chargingStation_compliance
-                                                    }],
-                                                    calibration: [{
-                                                        freeText:  chargingStation_calibration
-                                                    }]
-                                                },
-                                                geoLocation:      { "lat":    geoLocation_lat, "lng":        geoLocation_lon },
-                                                address:          { "street": address_street,  "postalCode": address_zipCode, "city": address_town, "country": address_country }
-                                             },
-                                            energyMeter:          meterInfo,
-                                            connector:            connectorInfo,
-                                            chargingCosts:        chargingCostsInfo
-                                         });
+                                                  freeText:  chargingStation_compliance
+                                              }],
+                                              calibration: [{
+                                                  freeText:  chargingStation_calibration
+                                              }]
+                                          },
+                                          geoLocation:      { "lat":    geoLocation_lat, "lng":        geoLocation_lon },
+                                          address:          { "street": address_street,  "postalCode": address_zipCode, "city": address_town, "country": address_country }
+                                       },
+                                      energyMeter:          meterInfo,
+                                      connector:            connectorInfo,
+                                      chargingCosts:        chargingCostsInfo
+                                   });
 
                 }
 
