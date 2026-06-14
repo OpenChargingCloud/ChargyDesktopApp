@@ -75,6 +75,7 @@ export default tseslint.config(
             'src/ts/OCPI.ts',
             'src/ts/QIDigital_DCoA.ts',
             'src/ts/QIDigital_DCoC.ts',
+            'src/ts/QIDigital_DCC.ts',
             'src/ts/chargyLib.ts',
             'src/ts/qrReader.ts',
             'src/ts/ACrypt.ts',

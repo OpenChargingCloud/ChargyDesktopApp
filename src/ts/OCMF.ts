@@ -453,10 +453,10 @@ export class OCMFv1_x extends ACrypt {
             }
 
             PublicKeyDiv.innerHTML = typeof measurementValue.ocmfDocument.publicKey === 'string'
-                                         ? measurementValue.ocmfDocument.publicKey
-                                         : "der: "           + (measurementValue.ocmfDocument.publicKey.value?.match(/.{1,8}/g)?.join(" ") ?? "-") + "<br /><br />" +
-                                           "x:&nbsp;&nbsp; " +  measurementValue.ocmfDocument.publicKey.x.     match(/.{1,8}/g)?.join(" ") + "<br />" +
-                                           "y:&nbsp;&nbsp; " +  measurementValue.ocmfDocument.publicKey.y.     match(/.{1,8}/g)?.join(" ");
+                                          ? measurementValue.ocmfDocument.publicKey
+                                          : "der: "           + (measurementValue.ocmfDocument.publicKey.value?.match(/.{1,8}/g)?.join(" ") ?? "-") + "<br /><br />" +
+                                            "x:&nbsp;&nbsp; " + (measurementValue.ocmfDocument.publicKey.x.     match(/.{1,8}/g)?.join(" ") ?? "-") + "<br />" +
+                                            "y:&nbsp;&nbsp; " + (measurementValue.ocmfDocument.publicKey.y.     match(/.{1,8}/g)?.join(" ") ?? "-");
 
         }
 
@@ -483,16 +483,18 @@ export class OCMFv1_x extends ACrypt {
                         const signatureDiv = PublicKeyDiv.parentElement.children[3].appendChild(document.createElement('div'));
 
                         signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(
-                                                               measurementValue.measurement.chargingSession.chargingStation,
-                                                               measurementValue.measurement.chargingSession.EVSE,
-                                                               measurementValue.measurement.chargingSession.EVSE?.meters[0],
-                                                               measurementValue.measurement.chargingSession.EVSE?.meters[0]?.publicKeys?.[0],
-                                                               signature
-                                                           );
+                                                           measurementValue.measurement.chargingSession.chargingStation,
+                                                           measurementValue.measurement.chargingSession.EVSE,
+                                                           measurementValue.measurement.chargingSession.EVSE?.meters[0],
+                                                           measurementValue.measurement.chargingSession.EVSE?.meters[0]?.publicKeys?.[0],
+                                                           signature
+                                                       );
 
                     }
                     catch
-                    { }
+                    {
+                        console.error("Error while checking public key signature!");
+                    }
 
                 }
 
@@ -513,7 +515,7 @@ export class OCMFv1_x extends ACrypt {
                 SignatureExpectedDiv.parentElement.children[0].innerHTML  = this.chargy.GetLocalizedMessage("Expected signature") + " (rs, hex)";
             }
 
-            SignatureExpectedDiv.innerHTML = "der: "           +  measurementValue.ocmfDocument.signature.SD.                                   match(/.{1,8}/g)?.join(" ") + "<br /><br />" +
+            SignatureExpectedDiv.innerHTML = "der: "           + (measurementValue.ocmfDocument.signature.SD.                                   match(/.{1,8}/g)?.join(" ") ?? "-") + "<br /><br />" +
                                              "r:&nbsp;&nbsp; " + (measurementValue.ocmfDocument.signatureRS?.r?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") ?? "-") + "<br />" +
                                              "s:&nbsp;&nbsp; " + (measurementValue.ocmfDocument.signatureRS?.s?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") ?? "-");
 
@@ -1704,9 +1706,6 @@ export class OCMF {
                         curve = new this.chargy.elliptic.ec('secp256k1');
                         break;
 
-                    case "ECDSA-secp256k1-SHA256":
-                        break;
-
                     case "ECDSA-brainpool256r1-SHA256":
                         break;
 
@@ -1810,7 +1809,7 @@ export class OCMF {
 
                         const hexRegex     = /^[0-9A-Fa-f]+$/;
                         const base32Regex  = /^(?:[A-Z2-7]{8})*(?:[A-Z2-7]{2}={6}|[A-Z2-7]{4}={4}|[A-Z2-7]{5}={3}|[A-Z2-7]{7}=)?$/;
-                        const base64Regex  = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
+                        const base64Regex  = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
 
                         if (hexRegex.test(OCMFJSONDocument.publicKey))
                         {
@@ -1850,11 +1849,11 @@ export class OCMF {
 
                     // Assuming the public key is an uncompressed point
                     // The first byte is 0x04 (indicating an uncompressed point), followed by the x and y coordinates
-                    const coordinates    = publicKeyASN1.pubKey.data.slice(1); // Remove the first byte
+                    const coordinates    = publicKeyASN1.pubKey.data.subarray(1); // Remove the first byte
                     const halfLength     = coordinates.length / 2;
                     const publicKeyXY    = {
-                                               x: coordinates.slice(0, halfLength).toString('hex'),
-                                               y: coordinates.slice(   halfLength).toString('hex')
+                                               x: coordinates.subarray(0, halfLength).toString('hex'),
+                                               y: coordinates.subarray(   halfLength).toString('hex')
                                            }
                                            // Will fail when the public key does not match the curve!
                     publicKey            = curve.keyFromPublic(publicKeyXY, 'hex');
@@ -2039,7 +2038,7 @@ export class OCMF {
                                     }
                                     catch
                                     {
-                                        return "The " + (ocmfJSONDocuments.length + 1) + ". OCMF payload is not a valid JSON document!";
+                                        return "The " + (ocmfJSONDocuments.length + 1).toString() + ". OCMF payload is not a valid JSON document!";
                                     }
                                 }
 
@@ -2058,7 +2057,7 @@ export class OCMF {
                                     }
                                     catch
                                     {
-                                        return "The " + (ocmfJSONDocuments.length + 1) + ". OCMF signature is not a valid JSON document!";
+                                        return "The " + (ocmfJSONDocuments.length + 1).toString() + ". OCMF signature is not a valid JSON document!";
                                     }
 
                                     //#endregion
@@ -2083,11 +2082,6 @@ export class OCMF {
                                                 break;
 
                                             case "ECDSA-secp192r1-SHA256":
-                                                hashAlgorithm  = "SHA256";
-                                                hashValue      = (await chargyLib.sha256(plaintext));
-                                                break;
-
-                                            case "ECDSA-secp256k1-SHA256":
                                                 hashAlgorithm  = "SHA256, 256 Bits, hex";
                                                 hashValue      = (await chargyLib.sha256(plaintext));
                                                 break;
@@ -2325,13 +2319,13 @@ export class OCMF {
 
                                            (ocmfJSONDocument.payload.MV ?? "") + "|" +
                                            (ocmfJSONDocument.payload.MM ?? "") + "|" +
-                                            ocmfJSONDocument.payload.MS        + "|" +
+                                           (ocmfJSONDocument.payload.MS ?? "") + "|" +
                                            (ocmfJSONDocument.payload.MF ?? "") + "|" +
 
                                            (ocmfJSONDocument.payload.IS ? "1|" : "0|") +
                                            (ocmfJSONDocument.payload.IL ?? "") + "|" +
                                            (ocmfJSONDocument.payload.IF ?? "") + "|" +
-                                            ocmfJSONDocument.payload.IT        + "|" +
+                                           (ocmfJSONDocument.payload.IT ?? "") + "|" +
                                            (ocmfJSONDocument.payload.ID ?? "") + "|" +
                                            (ocmfJSONDocument.payload.TT ?? "") + "|" +
 
@@ -2377,12 +2371,13 @@ export class OCMF {
                             // OCMF 0.1 SAFE reference data uses a few legacy field names/forms (VI/VV,
                             // string based IS values), but the compact signed document structure is close
                             // enough to the 1.x parser once those compatibility aliases are normalized.
+                            // falls through
                         case "1.0":
                         case "1.1":
                         case "1.2":
                         case "1.3":
                         case "1.4":
-                            ocmfCTRs.push(await this.tryToParseOCMFv1_0(ocmfJSONDocumentGroup, ContainerInfos));
+                            ocmfCTRs.push(this.tryToParseOCMFv1_0(ocmfJSONDocumentGroup, ContainerInfos));
                             break;
 
                         default:

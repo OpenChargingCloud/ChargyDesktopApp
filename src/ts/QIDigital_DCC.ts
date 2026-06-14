@@ -117,7 +117,7 @@ export interface IDCCStringWithLangType {
 
 export interface FormulaType {
     latex?:                         string;
-    mathml?:                        any;
+    mathml?:                        unknown;
     id?:                            string;
     refId?:                         Array<string>;
     refType?:                       string;
@@ -159,11 +159,11 @@ export interface PrimitiveQuantityType {
     noQuantity?:                    RichContentType;
     charsXMLList?:                  Array<string>;
     // References to SI types not shown, as they would be defined externally or adapted to local TypeScript definitions.
-    real?:                          any; // Placeholder for actual type, as specific details were not provided.
-    hybrid?:                        any;
-    complex?:                       any;
-    constant?:                      any;
-    realListXMLList?:               any;
+    real?:                          unknown; // Placeholder for actual type, as specific details were not provided.
+    hybrid?:                        unknown;
+    complex?:                       unknown;
+    constant?:                      unknown;
+    realListXMLList?:               unknown;
     id?:                            string;
     refId?:                         Array<string>;
     refType?:                       string;
@@ -273,7 +273,7 @@ export interface ByteDataType {
 }
 
 export interface XMLType {
-    content:                        any; // Typically XML content, TypeScript has no specific type for XML, so 'any' is used.
+    content:                        unknown; // Typically XML content, TypeScript has no specific type for XML, so 'unknown' is used.
     id?:                            string;
     refId?:                         Array<string>;
     refType?:                       string;
@@ -284,11 +284,11 @@ export interface QuantityType {
     description?:                   RichContentType;
     noQuantity?:                    RichContentType;
     charsXMLList?:                  Array<string>;
-    real?:                          any; // Placeholder for actual type, as specific details were not provided.
-    hybrid?:                        any;
-    complex?:                       any;
-    constant?:                      any;
-    realListXMLList?:               any;
+    real?:                          unknown; // Placeholder for actual type, as specific details were not provided.
+    hybrid?:                        unknown;
+    complex?:                       unknown;
+    constant?:                      unknown;
+    realListXMLList?:               unknown;
     id?:                            string;
     refId?:                         Array<string>;
     refType?:                       string;

@@ -19,9 +19,9 @@ import { Chargy }                     from './chargy'
 import * as chargyInterfaces          from './interfaces/chargyInterfaces'
 import * as chargeTransparencyRecord  from './interfaces/IChargeTransparencyRecord'
 import * as chargyLib                 from './chargyLib'
-import { EMHCrypt01 }                 from './EMHCrypt01'
-import { Alfen }                      from './Alfen'
-import { OCMF }                       from './OCMF'
+//import { EMHCrypt01 }                 from './EMHCrypt01'
+//import { Alfen }                      from './Alfen'
+//import { OCMF }                       from './OCMF'
 
 
 interface XMLContainerCommonFormat {
@@ -42,7 +42,11 @@ export class XMLContainer {
 
     //#region tryToParseXMLContainer(XMLDocument)
 
-    public async tryToParseXMLContainer(XMLDocument: Document) : Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargyInterfaces.ISessionCryptoResult>
+    public tryToParseXMLContainer(XMLDocument: Document)
+
+        : chargeTransparencyRecord.IChargeTransparencyRecord |
+          chargyInterfaces.        ISessionCryptoResult
+
     {
 
         try
@@ -74,8 +78,8 @@ export class XMLContainer {
                         if (publicKey != null)
                         {
 
-                            const publicKeyEncoding  = publicKey.attributes.getNamedItem("encoding")?.value?.trim()?.toLowerCase() ?? "";
-                            let publicKeyValue     = publicKey.textContent?.trim() ?? "";
+                            const publicKeyEncoding  = publicKey.attributes.getNamedItem("encoding")?.value.trim().toLowerCase() ?? "";
+                            let publicKeyValue     = publicKey.textContent.trim();
 
                             switch (publicKeyEncoding)
                             {
@@ -133,8 +137,8 @@ export class XMLContainer {
                         if (meterValueSignature != null)
                         {
 
-                            const meterValueSignatureEncoding  = meterValueSignature.attributes.getNamedItem("encoding")?.value?.trim()?.toLowerCase() ?? "";
-                            let meterValueSignatureValue     = meterValueSignature.textContent?.trim() ?? "";
+                            const meterValueSignatureEncoding  = meterValueSignature.attributes.getNamedItem("encoding")?.value.trim().toLowerCase() ?? "";
+                            let meterValueSignatureValue     = meterValueSignature.textContent.trim();
 
                             switch (meterValueSignatureEncoding)
                             {
@@ -180,7 +184,7 @@ export class XMLContainer {
 
                         //#region signatureMethod
 
-                        const signatureMethod = valueList[i]?.querySelector("signatureMethod")?.textContent?.trim()?.toLowerCase() ?? "";
+                        const signatureMethod = valueList[i]?.querySelector("signatureMethod")?.textContent.trim().toLowerCase() ?? "";
 
                         if (common.signatureMethod == "")
                             common.signatureMethod = signatureMethod;
@@ -196,7 +200,7 @@ export class XMLContainer {
 
                         //#region encodingMethod
 
-                        const encodingMethod  = valueList[i]?.querySelector("encodingMethod")?.textContent?.trim()?.toLowerCase() ?? "";
+                        const encodingMethod  = valueList[i]?.querySelector("encodingMethod")?.textContent.trim().toLowerCase() ?? "";
 
                         if (common.encodingMethod == "")
                             common.encodingMethod = encodingMethod;
@@ -216,8 +220,8 @@ export class XMLContainer {
                         if (encodedMeterValue != null)
                         {
 
-                            const signedDataEncoding = encodedMeterValue.attributes.getNamedItem("encoding")?.value?.trim() ?? "";
-                            let signedDataValue    = encodedMeterValue.textContent?.trim()                                ?? "";
+                            const signedDataEncoding = encodedMeterValue.attributes.getNamedItem("encoding")?.value.trim() ?? "";
+                            let signedDataValue    = encodedMeterValue.textContent.trim();
 
                             switch (signedDataEncoding)
                             {
@@ -299,7 +303,7 @@ export class XMLContainer {
         {
             return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                message:   "Exception occured: " + (exception instanceof Error ? exception.message : String(exception)),
                 certainty: 0
             }
         }
