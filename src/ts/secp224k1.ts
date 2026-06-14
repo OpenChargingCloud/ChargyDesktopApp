@@ -209,22 +209,22 @@ export class secp224k1 {
         if (typeof PrivateKey === 'string')
             PrivateKey = BigInt(PrivateKey);
 
-        const PublicKey = this.ECmultiply(this.GPoint, PrivateKey);
+        const publicKey = this.ECmultiply(this.GPoint, PrivateKey);
 
-        if (PublicKey[0] !== undefined &&
-            PublicKey[1] !== undefined)
+        if (publicKey[0] !== undefined &&
+            publicKey[1] !== undefined)
         {
 
-            const Px = this.zfill(PublicKey[0].toString(16));
-            const Py = this.zfill(PublicKey[1].toString(16));
+            const Px = this.zfill(publicKey[0].toString(16));
+            const Py = this.zfill(publicKey[1].toString(16));
 
             return {
-                x:             PublicKey[0],
-                y:             PublicKey[1],
+                x:             publicKey[0],
+                y:             publicKey[1],
                 xy:            [Px, Py],
-                uncompressed:  PublicKey[0].toString(16) + PublicKey[1].toString(16),
+                uncompressed:  publicKey[0].toString(16) + publicKey[1].toString(16),
                 compressed:    "04" + Px + Py,
-                address:       (this.modulo(PublicKey[1], this.Two) == this.One)
+                address:       (this.modulo(publicKey[1], this.Two) == this.One)
                                       ? "03" + Px
                                       : "02" + Px
             };
