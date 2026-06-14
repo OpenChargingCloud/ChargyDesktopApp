@@ -2051,7 +2051,7 @@ export class ChargyApp {
             this.errorTextDiv.style.display  = 'none';
         }
 
-        let result:DetectionResult|null = null;
+        let result:DetectionResult;
 
         try
         {
@@ -2064,7 +2064,7 @@ export class ChargyApp {
                                    }]
                                );
 
-            else if (chargeTransparencyRecord.isIFileInfo(FileInfos))
+            else if (chargyInterfaces.isIFileInfo(FileInfos))
                 result = await this.chargy.DetectAndConvertContentFormat([ FileInfos ]);
 
             else

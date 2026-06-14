@@ -1,8 +1,7 @@
-import { describe, expect, test, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import {
-    isIFileInfo,
-    IsAChargeTransparencyRecord
-} from '../src/ts/interfaces/IChargeTransparencyRecord';
+    isIFileInfo
+} from '../src/ts/interfaces/chargyInterfaces';
 
 
 describe('IFileInfo', () => {

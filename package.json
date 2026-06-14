@@ -45,6 +45,7 @@
   ],
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^4.2.1",
+    "@eslint/js": "^10.0.1",
     "@types/elliptic": "^6.4.18",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^25.9.3",

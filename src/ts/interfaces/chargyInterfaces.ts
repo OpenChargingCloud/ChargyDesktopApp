@@ -649,6 +649,18 @@ export interface TarInfo {
     type:           string
 }
 
+export function isIFileInfo(obj: unknown): obj is IFileInfo {
+
+    if (!chargyLib.isMandatoryJSONObject(obj))
+        return false;
+
+    const fileInfo = obj as Record<string, unknown>;
+
+    return typeof fileInfo["name"] === 'string' &&
+           (fileInfo["data"] instanceof ArrayBuffer || ArrayBuffer.isView(fileInfo["data"]));
+
+}
+
 export interface IFileInfo {
     name:           string,
     path?:          string,

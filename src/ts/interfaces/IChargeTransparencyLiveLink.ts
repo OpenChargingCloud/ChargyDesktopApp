@@ -107,7 +107,7 @@ export interface IChargeTransparencyLiveLink extends chargyLib.JSONObject {
     transports?:    Transport[];
 
     /** Digital signatures (currently empty or extendable) */
-    signatures?:    any[];
+    signatures?:    chargyInterfaces.ISignature[];
 
 }
 

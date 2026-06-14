@@ -2,7 +2,6 @@ import Decimal from "decimal.js";
 import {
     CryptoAlgorithms,
     CryptoHashAlgorithms,
-    PublicKeyFormats,
     SessionVerificationResult,
     SignatureFormats,
     VerificationResult
@@ -14,10 +13,12 @@ import type {
     IMeasurementValue
 } from '../../src/ts/interfaces/IChargeTransparencyRecord';
 import type {
+    IPublicKeyInfo,
+    IPublicKeyLookup
+} from '../../src/ts/interfaces/IPublicKeyInfo';
+import type {
     ICryptoResult,
     IFileInfo,
-    IPublicKeyInfo,
-    IPublicKeyLookup,
     ISessionCryptoResult
 } from '../../src/ts/interfaces/chargyInterfaces';
 

@@ -1,4 +1,5 @@
-import tseslint from 'typescript-eslint';
+import eslint    from '@eslint/js';
+import tseslint  from 'typescript-eslint';
 
 // Downgrade every rule of the shared presets from "error" to "warn", so the
 // existing code keeps building while the findings are worked off file by file.
@@ -34,7 +35,10 @@ export default tseslint.config(
         ]
     },
 
-    ...asWarnings(tseslint.configs.strictTypeChecked),
+    ...asWarnings([
+        eslint.configs.recommended,
+        ...tseslint.configs.strictTypeChecked
+    ]),
 
     {
         languageOptions: {

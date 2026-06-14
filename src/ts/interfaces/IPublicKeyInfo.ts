@@ -38,6 +38,10 @@ export interface IPublicKeyLookup extends chargyLib.JSONObject
     status?:                    chargyInterfaces.SessionVerificationResult;
 }
 
+
+
+
+
 export function IsAPublicKeyInfo(data: unknown): data is IPublicKeyInfo
 {
 
@@ -87,6 +91,10 @@ export interface IPublicKeyInfo extends chargyLib.JSONObject
     signatures?:                Array<IPublicKeysignature>;
     certainty?:                 number;
 }
+
+
+
+
 
 export interface IPublicKeysignature
 {

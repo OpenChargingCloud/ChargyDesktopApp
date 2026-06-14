@@ -13,12 +13,12 @@ import {
     isICryptoResult,
     isIPublicKeyXY,
     isISessionCryptoResult1,
-    isISessionCryptoResult2
+    isISessionCryptoResult2,
+    isIFileInfo
 } from '../src/ts/interfaces/chargyInterfaces';
 import {
     IsAChargeTransparencyRecord,
-    IsASessionCryptoResult,
-    isIFileInfo
+    IsASessionCryptoResult
 } from '../src/ts/interfaces/IChargeTransparencyRecord';
 import {
     IsAPublicKeyLookup,

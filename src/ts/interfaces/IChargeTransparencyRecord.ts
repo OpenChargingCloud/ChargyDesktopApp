@@ -33,7 +33,7 @@ export function IsAChargeTransparencyRecord(data: unknown): data is IChargeTrans
     const chargeTransparencyRecord = data as IChargeTransparencyRecord;
 
     return chargeTransparencyRecord.begin            !== undefined &&
-           chargeTransparencyRecord.end              !== undefined &&
+           //chargeTransparencyRecord.end              !== undefined &&
            chargeTransparencyRecord.chargingSessions !== undefined;
 
 }
@@ -181,12 +181,14 @@ export interface IMeasurementValue
 
 }
 
-export function isIFileInfo(obj: any): obj is chargyInterfaces.IFileInfo {
-    return !!(obj?.name && typeof obj.name === 'string' && obj.data && (obj.data instanceof ArrayBuffer || ArrayBuffer.isView(obj.data)));
-}
-
 export interface IExtendedFileInfo extends chargyInterfaces.IFileInfo {
-    result:         IChargeTransparencyRecord|chargeTransparencyLiveLink.IChargeTransparencyLiveLink|publicKeyInfo.IPublicKeyInfo|publicKeyInfo.IPublicKeyLookup|chargyInterfaces.ISessionCryptoResult
+
+    result:  IChargeTransparencyRecord                              |
+             chargeTransparencyLiveLink.IChargeTransparencyLiveLink |
+             publicKeyInfo.IPublicKeyInfo                           |
+             publicKeyInfo.IPublicKeyLookup                         |
+             chargyInterfaces.ISessionCryptoResult
+
 }
 
 
