@@ -19,13 +19,15 @@ import Decimal                          from 'decimal.js';
 import { ACrypt }                       from '../ACrypt'
 import type { ISignatureRS }            from './chargyInterfaces';
 import * as chargyInterfaces            from './chargyInterfaces'
+import * as chargyLib                   from '../chargyLib'
 import * as chargeTransparencyLiveLink  from './IChargeTransparencyLiveLink'
+import * as publicKeyInfo               from './IPublicKeyInfo';
 
 
 export function IsAChargeTransparencyRecord(data: unknown): data is IChargeTransparencyRecord
 {
 
-    if (data == null || data == undefined)
+    if (!chargyLib.isMandatoryJSONObject(data))
         return false;
 
     const chargeTransparencyRecord = data as IChargeTransparencyRecord;
@@ -37,7 +39,7 @@ export function IsAChargeTransparencyRecord(data: unknown): data is IChargeTrans
 }
 
 
-export interface IChargeTransparencyRecord
+export interface IChargeTransparencyRecord extends chargyLib.JSONObject
 {
 
     "@id":                      string;
@@ -50,7 +52,7 @@ export interface IChargeTransparencyRecord
     chargingPools?:             Array<chargyInterfaces.IChargingPool>;
     chargingStations?:          Array<chargyInterfaces.IChargingStation>;
     chargingTariffs?:           Array<chargyInterfaces.IChargingTariff>;
-    publicKeys?:                Array<chargyInterfaces.IPublicKeyInfo>;
+    publicKeys?:                Array<publicKeyInfo.   IPublicKeyInfo>;
     chargingSessions?:          Array<IChargingSession>;
     eMobilityProviders?:        Array<chargyInterfaces.IEMobilityProvider>;
     mediationServices?:         Array<chargyInterfaces.IMediationService>;
@@ -72,26 +74,12 @@ export interface IChargeTransparencyRecord
 
 
 
-export function IsAPublicKeyLookup(data: unknown): data is chargyInterfaces.IPublicKeyLookup
-{
 
-    if (data == null || data == undefined)
-        return false;
-
-    const publicKeyLookup = data as chargyInterfaces.IPublicKeyLookup;
-    const chargeTransparencyRecord = data as IChargeTransparencyRecord;
-
-    return Array.isArray(publicKeyLookup.publicKeys) &&
-           chargeTransparencyRecord.chargingSessions === undefined &&
-           chargeTransparencyRecord.begin            === undefined &&
-           chargeTransparencyRecord.end              === undefined;
-
-}
 
 export function IsASessionCryptoResult(data: unknown): data is chargyInterfaces.ISessionCryptoResult
 {
 
-    if (data == null || data == undefined)
+    if (!chargyLib.isMandatoryJSONObject(data))
         return false;
 
     const sessionCryptoResult = data as chargyInterfaces.ISessionCryptoResult;
@@ -124,7 +112,7 @@ export interface IChargingSession
     EVSE?:                      chargyInterfaces.IEVSE;
     meterId?:                   string;
     meter?:                     chargyInterfaces.IMeter;
-    publicKey?:                 chargyInterfaces.IPublicKeyInfo;
+    publicKey?:                 publicKeyInfo.IPublicKeyInfo;
     tariffId?:                  string;
     chargingTariffs?:           Array<chargyInterfaces.IChargingTariff>;
     chargingPeriods?:           Array<chargyInterfaces.IChargingPeriod>;
@@ -198,7 +186,7 @@ export function isIFileInfo(obj: any): obj is chargyInterfaces.IFileInfo {
 }
 
 export interface IExtendedFileInfo extends chargyInterfaces.IFileInfo {
-    result:         IChargeTransparencyRecord|chargeTransparencyLiveLink.IChargeTransparencyLiveLink|chargyInterfaces.IPublicKeyInfo|chargyInterfaces.IPublicKeyLookup|chargyInterfaces.ISessionCryptoResult
+    result:         IChargeTransparencyRecord|chargeTransparencyLiveLink.IChargeTransparencyLiveLink|publicKeyInfo.IPublicKeyInfo|publicKeyInfo.IPublicKeyLookup|chargyInterfaces.ISessionCryptoResult
 }
 
 

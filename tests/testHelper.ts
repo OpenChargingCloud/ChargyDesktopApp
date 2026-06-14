@@ -21,6 +21,9 @@ import type {
     IFileInfo,
     ISessionCryptoResult
 } from '../src/ts/interfaces/chargyInterfaces';
+import type {
+    IPublicKeyInfo
+} from '../src/ts/interfaces/IPublicKeyInfo';
 
 export {
     expectVerificationReport,
@@ -126,7 +129,7 @@ function expectReportLines(summary: string, expected: string) {
     const maxLength     = Math.max(summaryLines.length, expectedLines.length);
 
     for (let i = 0; i < maxLength; i++)
-        expect.soft(summaryLines[i], "verification report line " + (i + 1)).toBe(expectedLines[i]);
+        expect.soft(summaryLines[i], "verification report line " + ((i + 1).toString())).toBe(expectedLines[i]);
 
 }
 
@@ -227,7 +230,16 @@ async function expectVerificationReportWithPublicKey(inputFixture: string, publi
 
 }
 
-async function verifyChargeData(fileName: string, input: string | Uint8Array, type?: string): Promise<IChargeTransparencyRecord | IChargeTransparencyLiveLink | ISessionCryptoResult> {
+async function verifyChargeData(fileName:  string,
+                                input:     string | Uint8Array,
+                                type?:     string)
+
+    : Promise<IChargeTransparencyRecord   |
+              IChargeTransparencyLiveLink |
+              IPublicKeyInfo              |
+              ISessionCryptoResult>
+
+{
 
     const fileInfo: IFileInfo = {
         name: fileName,
@@ -241,42 +253,49 @@ async function verifyChargeData(fileName: string, input: string | Uint8Array, ty
 
 }
 
-async function verifyChargeDataFiles(fileInfos: IFileInfo[]): Promise<IChargeTransparencyRecord | IChargeTransparencyLiveLink | ISessionCryptoResult> {
+async function verifyChargeDataFiles(fileInfos: IFileInfo[])
+
+    : Promise<IChargeTransparencyRecord   |
+              IChargeTransparencyLiveLink |
+              IPublicKeyInfo              |
+              ISessionCryptoResult>
+
+{
     return await createChargy().DetectAndConvertContentFormat(fileInfos);
 }
 
-function formatChargeDataVerificationReport(report: IChargeTransparencyRecord | IChargeTransparencyLiveLink | ISessionCryptoResult): string {
+function formatChargeDataVerificationReport(report: IChargeTransparencyRecord | IChargeTransparencyLiveLink | IPublicKeyInfo | ISessionCryptoResult): string {
 
     if (IsAChargeTransparencyLiveLink(report))
         return [
             "format: charge-transparency-live-link",
-            "timestamp: " + (report.timestamp ?? ""),
-            "transports: " + (report.transports?.length ?? 0)
+            "timestamp: "  +  (report.timestamp ?? ""),
+            "transports: " + ((report.transports?.length ?? 0).toString())
         ].join("\n");
 
     if (!IsAChargeTransparencyRecord(report))
         return [
             "format: session-result",
-            "status: " + report.status,
+            "status: "  +  report.status,
             "message: " + (report.message ?? "")
         ].join("\n");
 
     const sessions = report.chargingSessions ?? [];
-    const lines = [
+    const lines    = [
         "format: ctr",
-        "sessions: " + sessions.length
+        "sessions: " + sessions.length.toString()
     ];
 
     for (const [sessionIndex, session] of sessions.entries()) {
 
-        const measurements = session.measurements ?? [];
+        const measurements = session.measurements;
         const meterId      = session.meterId ?? measurements[0]?.energyMeterId ?? "";
 
-        lines.push("session " + (sessionIndex + 1) + ": " + (session["@id"] ?? ""));
-        lines.push("session " + (sessionIndex + 1) + " evseId: " + (session.EVSEId ?? ""));
-        lines.push("session " + (sessionIndex + 1) + " meterId: " + meterId);
-        lines.push("session " + (sessionIndex + 1) + " status: " + (session.verificationResult?.status ?? "unknown"));
-        lines.push("session " + (sessionIndex + 1) + " measurements: " + measurements.length);
+        lines.push("session " + ((sessionIndex + 1).toString()) + ": " + session["@id"]);
+        lines.push("session " + ((sessionIndex + 1).toString()) + " evseId: " + session.EVSEId);
+        lines.push("session " + ((sessionIndex + 1).toString()) + " meterId: " + meterId);
+        lines.push("session " + ((sessionIndex + 1).toString()) + " status: " + (session.verificationResult?.status ?? "unknown"));
+        lines.push("session " + ((sessionIndex + 1).toString()) + " measurements: " + measurements.length.toString());
 
         for (const [measurementIndex, measurement] of measurements.entries())
             appendMeasurementLines(lines, sessionIndex + 1, measurementIndex + 1, measurement);
@@ -287,29 +306,32 @@ function formatChargeDataVerificationReport(report: IChargeTransparencyRecord | 
 
 }
 
-function appendMeasurementLines(lines: string[], sessionNumber: number, measurementNumber: number, measurement: IMeasurement) {
+function appendMeasurementLines(lines:              string[],
+                                sessionNumber:      number,
+                                measurementNumber:  number,
+                                measurement:        IMeasurement) {
 
-    lines.push("measurement " + sessionNumber + "." + measurementNumber + " name: " + measurement.name);
-    lines.push("measurement " + sessionNumber + "." + measurementNumber + " obis: " + measurement.obis);
-    lines.push("measurement " + sessionNumber + "." + measurementNumber + " status: " + formatCryptoResult(measurement.verificationResult));
-    lines.push("measurement " + sessionNumber + "." + measurementNumber + " values: " + measurement.values.length);
+    lines.push("measurement " + sessionNumber.toString() + "." + measurementNumber.toString() + " name: " + measurement.name);
+    lines.push("measurement " + sessionNumber.toString() + "." + measurementNumber.toString() + " obis: " + measurement.obis);
+    lines.push("measurement " + sessionNumber.toString() + "." + measurementNumber.toString() + " status: " + formatCryptoResult(measurement.verificationResult));
+    lines.push("measurement " + sessionNumber.toString() + "." + measurementNumber.toString() + " values: " + measurement.values.length.toString());
 
     for (const [valueIndex, value] of measurement.values.entries())
         appendMeasurementValueLines(lines, sessionNumber, measurementNumber, valueIndex + 1, value);
 
 }
 
-function appendMeasurementValueLines(lines: string[],
-                                        sessionNumber: number,
-                                        measurementNumber: number,
-                                        valueNumber: number,
-                                        value: IMeasurementValue) {
+function appendMeasurementValueLines(lines:              string[],
+                                     sessionNumber:      number,
+                                     measurementNumber:  number,
+                                     valueNumber:        number,
+                                     value:              IMeasurementValue) {
 
-    const prefix = "value " + sessionNumber + "." + measurementNumber + "." + valueNumber;
+    const prefix = "value " + sessionNumber.toString() + "." + measurementNumber.toString() + "." + valueNumber.toString();
 
     lines.push(prefix + " timestamp: " + value.timestamp);
     lines.push(prefix + " value: " + value.value.toString());
-    lines.push(prefix + " signatures: " + (value.signatures?.length ?? 0));
+    lines.push(prefix + " signatures: " + ((value.signatures?.length ?? 0).toString()));
     lines.push(prefix + " status: " + formatCryptoResult(value.result));
 
 }

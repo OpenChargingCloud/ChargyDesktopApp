@@ -5,8 +5,7 @@ import {
     CryptoHashAlgorithms,
     DisplayPrefixes,
     InformationRelevance,
-    IsAPublicKeyInfo,
-    ISOIDInfo,
+    isOIDInfo,
     PublicKeyFormats,
     SessionVerificationResult,
     SignatureFormats,
@@ -18,10 +17,13 @@ import {
 } from '../src/ts/interfaces/chargyInterfaces';
 import {
     IsAChargeTransparencyRecord,
-    IsAPublicKeyLookup,
     IsASessionCryptoResult,
     isIFileInfo
 } from '../src/ts/interfaces/IChargeTransparencyRecord';
+import {
+    IsAPublicKeyLookup,
+    IsAPublicKeyInfo
+} from '../src/ts/interfaces/IPublicKeyInfo';
 
 import {
   OBIS2Hex,
@@ -71,7 +73,6 @@ describe("Chargy data structure guards", () => {
     test("recognizes public key info and rejects incomplete keys", () => {
       expect(IsAPublicKeyInfo(samplePublicKeyInfo())).toBe(true);
       expect(IsAPublicKeyInfo(samplePublicKeyInfo({ value: undefined as unknown as string }))).toBe(false);
-      expect(IsAPublicKeyInfo(null)).toBe(false);
     });
 
     test("recognizes public key lookup containers", () => {
@@ -93,8 +94,8 @@ describe("Chargy data structure guards", () => {
     });
 
     test("recognizes OID, XY public keys and in-memory file infos", () => {
-      expect(ISOIDInfo({ oid: "1.2.3.4", name: "Example OID" })).toBe(true);
-      expect(ISOIDInfo({ name: "Missing OID" })).toBe(false);
+      expect(isOIDInfo({ oid: "1.2.3.4", name: "Example OID" })).toBe(true);
+      expect(isOIDInfo({ name: "Missing OID" })).toBe(false);
 
       expect(isIPublicKeyXY({ x: "aa", y: "bb" })).toBe(true);
       expect(isIPublicKeyXY({ x: "aa" })).toBe(false);

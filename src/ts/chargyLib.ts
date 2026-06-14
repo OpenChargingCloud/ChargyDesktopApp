@@ -20,6 +20,22 @@ import Decimal                from 'decimal.js';
 import moment                 from 'moment';
 
 
+export type JSONLDObject = {
+  "@context": number;
+};
+
+export function isJSONLDObject(value: unknown): value is JSONLDObject {
+
+    if (typeof value !== "object" || value === null) {
+        return false;
+    }
+
+    const obj = value as Record<string, unknown>;
+
+    return typeof obj["@context"] === "string";
+
+}
+
 export function toArrayBuffer(data: ArrayBuffer | Uint8Array): ArrayBuffer {
 
     if (data instanceof ArrayBuffer)
@@ -58,7 +74,7 @@ export function getDirectChildByLocalName(parent: Document | Element, localName:
 }
 
 export function getTrimmedTextContent(element?: Element): string | undefined {
-    const text = element?.textContent?.trim();
+    const text = element?.textContent.trim();
     return text && text.length > 0 ? text : undefined;
 }
 
@@ -901,7 +917,11 @@ export function asNumber(value: unknown): number | undefined {
  * @returns true, when the given json object exists and is a valid json object
  */
 export function isMandatoryJSONObject(value: unknown): value is JSONObject {
-    return typeof value === "object" && value !== null && !Array.isArray(value);
+
+    return typeof value === "object" && 
+                  value !== null     &&
+                  !Array.isArray(value);
+
 }
 
 /**

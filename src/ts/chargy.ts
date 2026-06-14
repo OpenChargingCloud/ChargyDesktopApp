@@ -36,6 +36,7 @@ import { OCPI }                             from './OCPI'
 import * as chargyInterfaces                from './interfaces/chargyInterfaces'
 import * as chargeTransparencyRecord        from './interfaces/IChargeTransparencyRecord'
 import * as chargeTransparencyLiveLink      from './interfaces/IChargeTransparencyLiveLink'
+import * as publicKeyInfo                   from './interfaces/IPublicKeyInfo'
 import * as chargyLib                       from './chargyLib'
 import * as pdfjsLib                        from 'pdfjs-dist';
 import { readQRCodeTextFromImage }          from './qrReader'
@@ -131,7 +132,7 @@ export class Chargy {
 
 
     private TryToParseDERPublicKey(keyId: string,
-                                   publicKeyBuffer: Buffer): chargyInterfaces.IPublicKeyLookup & { "@id": string, "@context": string } {
+                                   publicKeyBuffer: Buffer): publicKeyInfo.IPublicKeyLookup & { "@id": string, "@context": string } {
 
         // https://lapo.it/asn1js/ for a visual check...
         // https://github.com/indutny/asn1.js
@@ -359,11 +360,11 @@ export class Chargy {
 
         try
         {
-            const xmlDocument      = new DOMParser().parseFromString(trimmedQRCodeText, "text/xml");
-            const signedDataValues = chargyLib.getElementsByLocalName(xmlDocument, "signedData").
-                                        filter(signedData => (signedData.getAttribute("format") ?? "").trim().toLowerCase() === "alfen").
-                                        map   (signedData => signedData.textContent?.trim() ?? "").
-                                        filter(signedData => signedData.startsWith("AP;"));
+            const xmlDocument       = new DOMParser().parseFromString(trimmedQRCodeText, "text/xml");
+            const signedDataValues  = chargyLib.getElementsByLocalName(xmlDocument, "signedData").
+                                         filter(signedData => (signedData.getAttribute("format") ?? "").trim().toLowerCase() === "alfen").
+                                         map   (signedData => signedData.textContent.trim()).
+                                         filter(signedData => signedData.startsWith("AP;"));
 
             if (signedDataValues.length > 0)
                 return signedDataValues.join("\n");
@@ -616,7 +617,7 @@ export class Chargy {
 
         //#region Initial checks
 
-        if (FileInfos == null || FileInfos.length == 0)
+        if (FileInfos.length == 0)
             return FileInfos;
 
         //#endregion
@@ -670,8 +671,8 @@ export class Chargy {
 
                         }
 
-                        else if (filetype.mime.toString() === "text/xml" ||
-                                 filetype.mime.toString() === "application/xml"
+                        else if (filetype.mime === "text/xml" ||
+                                 filetype.mime === "application/xml"
                                  )
                         {
                             expandedFileInfos.push({
@@ -682,8 +683,8 @@ export class Chargy {
                             continue;
                         }
 
-                        else if (filetype.mime.toString() === "text/json" ||
-                                 filetype.mime.toString() === "application/json"
+                        else if (filetype.mime === "text/json" ||
+                                 filetype.mime === "application/json"
                                  )
                         {
                             expandedFileInfos.push({
@@ -694,21 +695,21 @@ export class Chargy {
                             continue;
                         }
 
-                        else if (this.isSupportedQRCodeImageFile(FileInfo, filetype.mime.toString()))
+                        else if (this.isSupportedQRCodeImageFile(FileInfo, filetype.mime))
                         {
                             expandedFileInfos.push({
                                                   name:  FileInfo.name,
                                                   data:  FileInfo.data,
-                                                  type:  filetype.mime.toString(),
+                                                  type:  filetype.mime,
                                                   info:  "QR code image file"
                                               });
                             continue;
                         }
 
-                        else if (filetype.mime.toString() === "application/zip"     ||
-                                 filetype.mime.toString() === "application/x-bzip2" ||
-                                 filetype.mime.toString() === "application/gzip"    ||
-                                 filetype.mime.toString() === "application/x-tar")
+                        else if (filetype.mime === "application/zip"     ||
+                                 filetype.mime === "application/x-bzip2" ||
+                                 filetype.mime === "application/gzip"    ||
+                                 filetype.mime === "application/x-tar")
                         {
 
                             try
@@ -716,7 +717,7 @@ export class Chargy {
 
                                 const compressedFiles = await this.extractArchive(FileInfo.name,
                                                                                 FileInfo.data,
-                                                                                filetype.mime.toString());
+                                                                                filetype.mime);
 
                                 if (compressedFiles.length == 0)
                                     continue;
@@ -758,9 +759,9 @@ export class Chargy {
                                                     {
                                                         dataFile = new TextDecoder('utf-8').decode(file.data);
                                                     }
-                                                    catch (Exception)
+                                                    catch (exception)
                                                     {
-                                                        console.debug("Invalid chargepoint 'secrrct' file!")
+                                                        console.debug("Invalid chargepoint 'secrrct' file: " + (exception instanceof Error ? exception.message : String(exception)));
                                                     }
                                                 }
                                                 break;
@@ -771,9 +772,9 @@ export class Chargy {
                                                     {
                                                         signatureFile = chargyLib.buf2hex(file.data);
                                                     }
-                                                    catch (Exception)
+                                                    catch (exception)
                                                     {
-                                                        console.debug("Invalid chargepoint 'secrrct.sign' file!")
+                                                        console.debug("Invalid chargepoint 'secrrct.sign' file: " + (exception instanceof Error ? exception.message : String(exception)));
                                                     }
                                                 }
                                                 break;
@@ -783,8 +784,8 @@ export class Chargy {
 
                                     }
 
-                                    if (dataFile?.     length > 0 &&
-                                        signatureFile?.length > 0)
+                                    if (dataFile.     length > 0 &&
+                                        signatureFile.length > 0)
                                     {
                                         try
                                         {
@@ -801,9 +802,9 @@ export class Chargy {
                                             });
 
                                         }
-                                        catch (Exception)
+                                        catch (exception)
                                         {
-                                            console.debug("Could not parse chargepoint 'secrrct' file!")
+                                            console.debug("Could not parse chargepoint 'secrrct' file: " + (exception instanceof Error ? exception.message : String(exception)));
                                         }
                                         continue;
                                     }
@@ -829,7 +830,7 @@ export class Chargy {
 
                             }
                             catch (exception) {
-                                console.log("Error decompressing files: " + exception);
+                                console.log("Error decompressing files: " + (exception instanceof Error ? exception.message : String(exception)));
                             }
 
                             continue;
@@ -867,9 +868,9 @@ export class Chargy {
 
     //#endregion
 
-    private async extractArchive(fileName: string,
-                                 data: ArrayBuffer | Uint8Array,
-                                 mimeType: string): Promise<Array<chargyInterfaces.TarInfo>> {
+    private async extractArchive(fileName:  string,
+                                 data:      ArrayBuffer | Uint8Array,
+                                 mimeType:  string): Promise<Array<chargyInterfaces.TarInfo>> {
 
         const archiveData = this.toUint8Array(data);
 
@@ -1086,11 +1087,16 @@ export class Chargy {
 
     //#region DetectAndConvertContentFormat(FileInfos)
 
-    public async DetectAndConvertContentFormat(FileInfos: Array<chargyInterfaces.IFileInfo>): Promise<chargeTransparencyRecord.IChargeTransparencyRecord|chargeTransparencyLiveLink.IChargeTransparencyLiveLink|chargyInterfaces.ISessionCryptoResult> {
+    public async DetectAndConvertContentFormat(FileInfos: Array<chargyInterfaces.IFileInfo>)
+
+        : Promise<chargeTransparencyRecord.  IChargeTransparencyRecord   |
+                  chargeTransparencyLiveLink.IChargeTransparencyLiveLink |
+                  publicKeyInfo.             IPublicKeyInfo              |
+                  chargyInterfaces.          ISessionCryptoResult> {
 
         //#region Initial checks
 
-        if (FileInfos == null || FileInfos.length == 0) return {
+        if (FileInfos.length == 0) return {
             status:    chargyInterfaces.SessionVerificationResult.NoChargeTransparencyRecordsFound,
             message:   this.GetLocalizedMessage("No charge transparency records found!"),
             certainty: 0
@@ -1103,7 +1109,7 @@ export class Chargy {
 
         //#region Process PDF/A-3 and compressed files
 
-        if (FileInfos && FileInfos.length > 0)
+        if (FileInfos.length > 0)
         {
             for (const fileInfo of FileInfos)
             {
@@ -1199,11 +1205,12 @@ export class Chargy {
 
         for (const expandedFile of expandedFiles)
         {
-            let textContent = new TextDecoder('utf-8').decode(expandedFile.data)?.trim();
+
+            let textContent = new TextDecoder('utf-8').decode(expandedFile.data).trim();
 
             // Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
             // conversion translates it to FEFF (UTF-16 BOM)
-            if (textContent?.charCodeAt(0) === 0xFEFF)
+            if (textContent.charCodeAt(0) === 0xFEFF)
                 textContent = textContent.substring(1);
 
             const publicKeyHEX = this.TryToGetDERPublicKeyHEX(expandedFile.name, textContent);
@@ -1219,16 +1226,16 @@ export class Chargy {
         {
 
             const processedFile  = expandedFile as chargeTransparencyRecord.IExtendedFileInfo;
-            let textContent    = new TextDecoder('utf-8').decode(expandedFile.data)?.trim();
+            let textContent      = new TextDecoder('utf-8').decode(expandedFile.data).trim();
 
             // Catches EFBBBF (UTF-8 BOM) because the buffer-to-string
             // conversion translates it to FEFF (UTF-16 BOM)
-            if (textContent?.charCodeAt(0) === 0xFEFF)
+            if (textContent.charCodeAt(0) === 0xFEFF)
                 textContent = textContent.substring(1);
 
             //#region XML processing...
 
-            if (textContent?.startsWith("<?xml") || textContent?.startsWith("<"))
+            if (textContent.startsWith("<?xml") || textContent.startsWith("<"))
             {
                 try
                 {
@@ -1274,8 +1281,8 @@ export class Chargy {
                             // The SAFE transparency software v1.0 does not understand its own
                             // XML namespace. Therefore we have to guess the format.
                             case "":
-                                if (XMLDocument.documentElement?.localName === "ChargingProcess" ||
-                                    XMLDocument.documentElement?.localName === "Billing")
+                                if (XMLDocument.documentElement.localName === "ChargingProcess" ||
+                                    XMLDocument.documentElement.localName === "Billing")
                                 {
                                     processedFile.result = await new Mennekes(this).tryToParseMennekesXML(XMLDocument);
                                     break;
@@ -1312,8 +1319,8 @@ export class Chargy {
 
                         // The SAFE transparency software v1.0 does not understand its own
                         // XML namespace. Therefore we have to guess the format.
-                        if (XMLDocument.documentElement?.localName === "ChargingProcess" ||
-                            XMLDocument.documentElement?.localName === "Billing")
+                        if (XMLDocument.documentElement.localName === "ChargingProcess" ||
+                            XMLDocument.documentElement.localName === "Billing")
                             processedFile.result = await new Mennekes(this).tryToParseMennekesXML(XMLDocument);
                         else
                             processedFile.result = await new SAFEXML(this).tryToParseSAFEXML(XMLDocument);
@@ -1344,7 +1351,7 @@ export class Chargy {
 
             //#region OCMF processing
 
-            else if (textContent?.startsWith("OCMF"))
+            else if (textContent.startsWith("OCMF"))
             {
                 const publicKeyHEX = publicKeyHEXLookup.get(this.PublicKeyIdFromFileName(processedFile.name)) ??
                                      (publicKeyHEXLookup.size === 1 ? publicKeyHEXLookup.values().next().value : undefined);
@@ -1356,7 +1363,7 @@ export class Chargy {
                 );
             }
 
-            else if (textContent?.startsWith("\"OCMF") && textContent?.endsWith("\""))
+            else if (textContent.startsWith("\"OCMF") && textContent.endsWith("\""))
             {
                 const publicKeyHEX = publicKeyHEXLookup.get(this.PublicKeyIdFromFileName(processedFile.name)) ??
                                      (publicKeyHEXLookup.size === 1 ? publicKeyHEXLookup.values().next().value : undefined);
@@ -1374,6 +1381,7 @@ export class Chargy {
 
             else if (isPCDFText(textContent))
             {
+
                 const publicKeyHEX = publicKeyHEXLookup.get(this.PublicKeyIdFromFileName(processedFile.name)) ??
                                      (publicKeyHEXLookup.size === 1 ? publicKeyHEXLookup.values().next().value : undefined);
 
@@ -1381,24 +1389,25 @@ export class Chargy {
                     textContent,
                     publicKeyHEX
                 );
+
             }
 
             //#endregion
 
             //#region ALFEN processing
 
-            else if (textContent?.startsWith("AP;"))
+            else if (textContent.startsWith("AP;"))
                 processedFile.result = await new Alfen(this).TryToParseALFENFormat(textContent, {});
 
-            else if (textContent?.startsWith("\"AP;") && textContent?.endsWith("\""))
+            else if (textContent.startsWith("\"AP;") && textContent.endsWith("\""))
                 processedFile.result = await new Alfen(this).TryToParseALFENFormat(textContent.substring(1, textContent.length - 1), {});
 
             //#endregion
 
             //#region Public key processing (PEM format)
 
-            else if (textContent?.startsWith("-----BEGIN PUBLIC KEY-----") &&
-                     textContent?.endsWith  ("-----END PUBLIC KEY-----"))
+            else if (textContent.startsWith("-----BEGIN PUBLIC KEY-----") &&
+                     textContent.endsWith  ("-----END PUBLIC KEY-----"))
             {
 
                 try
@@ -1463,76 +1472,90 @@ export class Chargy {
 
             //#region JSON processing
 
-            else if (textContent?.startsWith("{") || textContent?.startsWith("["))
+            else if (textContent.startsWith("{") && textContent.endsWith("}"))
             {
                 try
                 {
 
-                    const JSONContent = JSON.parse(textContent);
-                    const JSONContext = (JSONContent["@context"] as string)?.trim() ?? "";
+                    const JSONContent: unknown = JSON.parse(textContent);
 
-                    if      (chargeTransparencyLiveLink.IsAChargeTransparencyLiveLink(JSONContent))
+                    if (typeof JSONContent !== "object" || JSONContent === null)
+                        throw new Error("Parsed JSON content is not an object or array!");
+
+                    if (chargyLib.isMandatoryJSONObject(JSONContent))
                     {
 
-                        if (JSONContent.timestamp == null)
-                            JSONContent.timestamp = new Date().toISOString();
+                        const JSONContext = JSONContent["@context"];//?.trim().toString() ?? "";
 
-                        processedFile.result = JSONContent;
+                        if      (chargeTransparencyLiveLink.IsAChargeTransparencyLiveLink(JSONContent))
+                        {
 
-                    }
+                            if (JSONContent.timestamp == null)
+                                JSONContent.timestamp = new Date().toISOString();
 
-                    else if (JSONContext.startsWith("https://open.charging.cloud/contexts/CTR+json"))
-                        processedFile.result = JSONContent as chargeTransparencyRecord.IChargeTransparencyRecord;
+                            processedFile.result = JSONContent;
 
-                    else if (JSONContext.startsWith("https://open.charging.cloud/contexts/publicKey+json"))
-                        processedFile.result = JSONContent as chargyInterfaces.IPublicKeyInfo;
+                        }
 
-                    else if (JSONContext.startsWith("https://www.lichtblick.de/contexts/charging-station-json") ||
-                             JSONContext.startsWith("https://www.eneco.com/contexts/charging-station-json")     ||
-                             JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
-                    {
-                        processedFile.result = await new ChargeIT(this).TryToParseChargeITContainerFormat(JSONContent);
-                    }
+                        else if (chargyLib.isMandatoryString(JSONContext))
+                        {
 
-                    // Some formats do not provide any context or format identifiers...
-                    else
-                    {
+                            if (JSONContext.startsWith("https://open.charging.cloud/contexts/CTR+json"))
+                                processedFile.result = JSONContent as chargeTransparencyRecord.IChargeTransparencyRecord;
 
-                        const results = [
-                            await new ChargeIT(this).     TryToParseChargeITContainerFormat(JSONContent),
-                            await new ChargePoint(this).TryToParseChargepointFormat      (JSONContent),
-                            await new OCPI(this).         tryToParseOCPIFormat             (JSONContent)
-                        ];
+                            else if (JSONContext.startsWith("https://open.charging.cloud/contexts/publicKey+json"))
+                                processedFile.result = JSONContent as publicKeyInfo.IPublicKeyInfo;
 
-                        //#region Filter and sort results
-
-                        const filteredResults = results.filter((ctr) => {
-
-                            // At this point we currently only know whether the CTR data format is correct,
-                            // but NOT whether the crypto signatures are correct!
-                            return chargyInterfaces.isISessionCryptoResult1(ctr);// &&
-                                //ctr.status === chargyInterfaces.SessionVerificationResult.Unvalidated;
-
-                        });
-
-                        const sortedResults = filteredResults.sort((ctr1, ctr2) => {
-
-                            if (ctr1.certainty > ctr2.certainty) {
-                                return -1;
+                            else if (JSONContext.startsWith("https://www.lichtblick.de/contexts/charging-station-json") ||
+                                     JSONContext.startsWith("https://www.eneco.com/contexts/charging-station-json")     ||
+                                     JSONContext.startsWith("https://www.chargeit-mobility.com/contexts/charging-station-json"))
+                            {
+                                processedFile.result = await new ChargeIT(this).TryToParseChargeITContainerFormat(JSONContent);
                             }
 
-                            if (ctr1.certainty < ctr2.certainty) {
-                                return 1;
-                            }
+                        }
 
-                            return 0;
+                        // Some formats do not provide any context or format identifiers...
+                        else
+                        {
 
-                        });
+                            const results = [
+                                await new ChargeIT(this).   TryToParseChargeITContainerFormat(JSONContent),
+                                await new ChargePoint(this).TryToParseChargepointFormat      (JSONContent),
+                                await new OCPI(this).       tryToParseOCPIFormat             (JSONContent)
+                            ];
 
-                        if (sortedResults.length >= 1 && sortedResults[0])
-                            processedFile.result = sortedResults[0];
+                            //#region Filter and sort results
 
-                        //#endregion
+                            const filteredResults = results.filter((ctr) => {
+
+                                // At this point we currently only know whether the CTR data format is correct,
+                                // but NOT whether the crypto signatures are correct!
+                                return chargyInterfaces.isISessionCryptoResult1(ctr);// &&
+                                    //ctr.status === chargyInterfaces.SessionVerificationResult.Unvalidated;
+
+                            });
+
+                            const sortedResults = filteredResults.sort((ctr1, ctr2) => {
+
+                                if (ctr1.certainty > ctr2.certainty) {
+                                    return -1;
+                                }
+
+                                if (ctr1.certainty < ctr2.certainty) {
+                                    return 1;
+                                }
+
+                                return 0;
+
+                            });
+
+                            if (sortedResults.length >= 1 && sortedResults[0])
+                                processedFile.result = sortedResults[0];
+
+                            //#endregion
+
+                        }
 
                     }
 
@@ -1550,13 +1573,13 @@ export class Chargy {
             //#endregion
 
 
-            if (processedFile.result == undefined) {
-                processedFile.result = {
-                    status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                    message:   this.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
-                    certainty: 0
-                }
-            }
+            // if (processedFile.result == undefined) {
+            //     processedFile.result = {
+            //         status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
+            //         message:   this.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
+            //         certainty: 0
+            //     }
+            // }
 
             processedFiles.push(processedFile);
 
@@ -1580,7 +1603,7 @@ export class Chargy {
                 if (chargeTransparencyLiveLink.IsAChargeTransparencyLiveLink(processedFile.result))
                     return processedFile.result;
 
-                if (chargeTransparencyRecord.IsAPublicKeyLookup(processedFile.result))
+                if (publicKeyInfo.IsAPublicKeyLookup(processedFile.result))
                     return {
                         status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:    this.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord"),
@@ -1616,7 +1639,7 @@ export class Chargy {
             for (const processedFile of processedFiles)
             {
 
-                const processedFileResult = processedFile?.result;
+                const processedFileResult = processedFile.result;
 
                 if (chargeTransparencyRecord.IsAChargeTransparencyRecord(processedFileResult))
                 {
@@ -1681,21 +1704,21 @@ export class Chargy {
 
                 }
 
-                else if (chargyInterfaces.IsAPublicKeyInfo(processedFileResult))
+                else if (publicKeyInfo.IsAPublicKeyInfo(processedFileResult))
                 {
 
                     if (!mergedCTR.publicKeys)
-                        mergedCTR.publicKeys = new Array<chargyInterfaces.IPublicKeyInfo>();
+                        mergedCTR.publicKeys = new Array<publicKeyInfo.IPublicKeyInfo>();
 
                     mergedCTR.publicKeys.push(processedFileResult);
 
                 }
 
-                else if (chargeTransparencyRecord.IsAPublicKeyLookup(processedFileResult))
+                else if (publicKeyInfo.IsAPublicKeyLookup(processedFileResult))
                 {
 
                     if (!mergedCTR.publicKeys)
-                        mergedCTR.publicKeys = new Array<chargyInterfaces.IPublicKeyInfo>();
+                        mergedCTR.publicKeys = new Array<publicKeyInfo.IPublicKeyInfo>();
 
                     for (const publicKey of processedFileResult.publicKeys)
                         mergedCTR.publicKeys.push(publicKey);
@@ -1782,7 +1805,7 @@ export class Chargy {
 
                     if (chargingStationOperator.chargingPools) {
 
-                        for (var chargingPool of chargingStationOperator.chargingPools)
+                        for (const chargingPool of chargingStationOperator.chargingPools)
                         {
 
                             this.chargingPools.push(chargingPool);
@@ -1790,71 +1813,20 @@ export class Chargy {
                             if (chargingPool.chargingStations)
                             {
 
-                                for (var chargingStation of chargingPool.chargingStations)
+                                for (const chargingStation of chargingPool.chargingStations)
                                 {
 
                                     this.chargingStations.push(chargingStation);
 
-                                    if (chargingStation.EVSEs) {
+                                    for (const EVSE of chargingStation.EVSEs)
+                                    {
 
-                                        for (var EVSE of chargingStation.EVSEs)
-                                        {
+                                        EVSE.chargingStation    = chargingStation;
+                                        EVSE.chargingStationId  = chargingStation["@id"];
 
-                                            EVSE.chargingStation    = chargingStation;
-                                            EVSE.chargingStationId  = chargingStation["@id"];
+                                        this.EVSEs.push(EVSE);
 
-                                            this.EVSEs.push(EVSE);
-
-                                            if (EVSE.meters) {
-
-                                                for (var meter of EVSE.meters)
-                                                {
-
-                                                    meter.EVSE               = EVSE;
-                                                    meter.EVSEId             = EVSE["@id"];
-
-                                                    meter.chargingStation    = chargingStation;
-                                                    meter.chargingStationId  = chargingStation["@id"];
-
-                                                    this.meters.push(meter);
-
-                                                }
-
-                                            }
-
-                                        }
-
-                                    }
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-
-                    if (chargingStationOperator.chargingStations)
-                    {
-
-                        for (var chargingStation of chargingStationOperator.chargingStations)
-                        {
-
-                            this.chargingStations.push(chargingStation);
-
-                            if (chargingStation.EVSEs) {
-
-                                for (var EVSE of chargingStation.EVSEs)
-                                {
-
-                                    EVSE.chargingStation    = chargingStation;
-                                    EVSE.chargingStationId  = chargingStation["@id"];
-
-                                    this.EVSEs.push(EVSE);
-
-                                    if (EVSE.meters) {
-
-                                        for (var meter of EVSE.meters)
+                                        for (const meter of EVSE.meters)
                                         {
 
                                             meter.EVSE               = EVSE;
@@ -1877,9 +1849,44 @@ export class Chargy {
 
                     }
 
+                    if (chargingStationOperator.chargingStations)
+                    {
+
+                        for (const chargingStation of chargingStationOperator.chargingStations)
+                        {
+
+                            this.chargingStations.push(chargingStation);
+
+                            for (const EVSE of chargingStation.EVSEs)
+                            {
+
+                                EVSE.chargingStation    = chargingStation;
+                                EVSE.chargingStationId  = chargingStation["@id"];
+
+                                this.EVSEs.push(EVSE);
+
+                                for (const meter of EVSE.meters)
+                                {
+
+                                    meter.EVSE               = EVSE;
+                                    meter.EVSEId             = EVSE["@id"];
+
+                                    meter.chargingStation    = chargingStation;
+                                    meter.chargingStationId  = chargingStation["@id"];
+
+                                    this.meters.push(meter);
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
                     if (chargingStationOperator.EVSEs) {
 
-                        for (var EVSE of chargingStationOperator.EVSEs)
+                        for (const EVSE of chargingStationOperator.EVSEs)
                         {
 
                             // EVSE.chargingStation    = chargingStation;
@@ -1887,20 +1894,16 @@ export class Chargy {
 
                             this.EVSEs.push(EVSE);
 
-                            if (EVSE.meters) {
+                            for (const meter of EVSE.meters)
+                            {
 
-                                for (var meter of EVSE.meters)
-                                {
+                                meter.EVSE               = EVSE;
+                                meter.EVSEId             = EVSE["@id"];
 
-                                    meter.EVSE               = EVSE;
-                                    meter.EVSEId             = EVSE["@id"];
+                                // meter.chargingStation    = chargingStation;
+                                // meter.chargingStationId  = chargingStation["@id"];
 
-                                    // meter.chargingStation    = chargingStation;
-                                    // meter.chargingStationId  = chargingStation["@id"];
-
-                                    this.meters.push(meter);
-
-                                }
+                                this.meters.push(meter);
 
                             }
 
@@ -1918,7 +1921,7 @@ export class Chargy {
 
             if (this.internalCTR.chargingPools) {
 
-                for (var chargingPool of this.internalCTR.chargingPools)
+                for (const chargingPool of this.internalCTR.chargingPools)
                 {
 
                     this.chargingPools.push(chargingPool);
@@ -1926,37 +1929,29 @@ export class Chargy {
                     if (chargingPool.chargingStations)
                     {
 
-                        for (var chargingStation of chargingPool.chargingStations)
+                        for (const chargingStation of chargingPool.chargingStations)
                         {
 
                             this.chargingStations.push(chargingStation);
 
-                            if (chargingStation.EVSEs) {
+                            for (const EVSE of chargingStation.EVSEs)
+                            {
 
-                                for (var EVSE of chargingStation.EVSEs)
+                                EVSE.chargingStation    = chargingStation;
+                                EVSE.chargingStationId  = chargingStation["@id"];
+
+                                this.EVSEs.push(EVSE);
+
+                                for (const meter of EVSE.meters)
                                 {
 
-                                    EVSE.chargingStation    = chargingStation;
-                                    EVSE.chargingStationId  = chargingStation["@id"];
+                                    meter.EVSE               = EVSE;
+                                    meter.EVSEId             = EVSE["@id"];
 
-                                    this.EVSEs.push(EVSE);
+                                    meter.chargingStation    = chargingStation;
+                                    meter.chargingStationId  = chargingStation["@id"];
 
-                                    if (EVSE.meters) {
-
-                                        for (var meter of EVSE.meters)
-                                        {
-        
-                                            meter.EVSE               = EVSE;
-                                            meter.EVSEId             = EVSE["@id"];
-        
-                                            meter.chargingStation    = chargingStation;
-                                            meter.chargingStationId  = chargingStation["@id"];
-        
-                                            this.meters.push(meter);
-        
-                                        }
-        
-                                    }
+                                    this.meters.push(meter);
 
                                 }
 
@@ -1976,37 +1971,29 @@ export class Chargy {
 
             if (this.internalCTR.chargingStations) {
 
-                for (var chargingStation of this.internalCTR.chargingStations)
+                for (const chargingStation of this.internalCTR.chargingStations)
                 {
 
                     this.chargingStations.push(chargingStation);
 
-                    if (chargingStation.EVSEs) {
+                    for (const EVSE of chargingStation.EVSEs)
+                    {
 
-                        for (var EVSE of chargingStation.EVSEs)
+                        EVSE.chargingStation    = chargingStation;
+                        EVSE.chargingStationId  = chargingStation["@id"];
+
+                        this.EVSEs.push(EVSE);
+
+                        for (const meter of EVSE.meters)
                         {
 
-                            EVSE.chargingStation    = chargingStation;
-                            EVSE.chargingStationId  = chargingStation["@id"];
+                            meter.EVSE               = EVSE;
+                            meter.EVSEId             = EVSE["@id"];
 
-                            this.EVSEs.push(EVSE);
+                            meter.chargingStation    = chargingStation;
+                            meter.chargingStationId  = chargingStation["@id"];
 
-                            if (EVSE.meters) {
-
-                                for (var meter of EVSE.meters)
-                                {
-
-                                    meter.EVSE               = EVSE;
-                                    meter.EVSEId             = EVSE["@id"];
-
-                                    meter.chargingStation    = chargingStation;
-                                    meter.chargingStationId  = chargingStation["@id"];
-
-                                    this.meters.push(meter);
-
-                                }
-
-                            }
+                            this.meters.push(meter);
 
                         }
 
@@ -2014,7 +2001,7 @@ export class Chargy {
 
                     if (chargingStation.meters) {
 
-                        for (var meter of chargingStation.meters)
+                        for (const meter of chargingStation.meters)
                         {
 
                             meter.chargingStation    = chargingStation;
@@ -2049,8 +2036,8 @@ export class Chargy {
         {
             return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
-                certainty: 0
+                message:   "Exception occured: " + (exception instanceof Error ? exception.message : String(exception)),
+                certainty:  0
             }
         }
 
@@ -2073,16 +2060,6 @@ export class Chargy {
         //ToDo: Verify meterId                    => set meter
         //ToDo: Verify tariffId                   => set tariff
         //ToDo: Verify measurements exists & count >= 1
-
-        if (chargingSession              == null ||
-            chargingSession.measurements == null)
-        {
-            return {
-                status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:   this.GetLocalizedMessage("UnknownOrInvalidChargingSessionFormat"),
-                certainty: 0
-            }
-        }
 
         switch (chargingSession["@context"])
         {

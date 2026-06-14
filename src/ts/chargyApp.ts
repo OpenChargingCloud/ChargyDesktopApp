@@ -20,6 +20,7 @@ import { readQRCodeTextFromImageData }  from './qrReader'
 import * as chargyInterfaces            from './interfaces/chargyInterfaces'
 import * as chargeTransparencyRecord    from './interfaces/IChargeTransparencyRecord'
 import * as chargeTransparencyLiveLink  from './interfaces/IChargeTransparencyLiveLink'
+import * as publicKeyInfo               from './interfaces/IPublicKeyInfo'
 import * as chargyLib                   from './chargyLib'
 
 import stringify                        from 'safe-stable-stringify';
@@ -34,16 +35,20 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../css/chargy.scss';
 
 
-type DetectionResult = chargeTransparencyRecord.IChargeTransparencyRecord | chargeTransparencyLiveLink.IChargeTransparencyLiveLink | chargyInterfaces.ISessionCryptoResult;
+type DetectionResult = chargeTransparencyRecord.  IChargeTransparencyRecord   |
+                       chargeTransparencyLiveLink.IChargeTransparencyLiveLink |
+                       publicKeyInfo.             IPublicKeyInfo              |
+                       chargyInterfaces.          ISessionCryptoResult;
 
 type DetectionOptions = {
     prepareUI?: boolean;
     onError?:   (result: chargyInterfaces.ISessionCryptoResult) => void;
 };
 
-type SupportedLanguage = "de" | "en";
+const supportedLanguages = [ "de", "en" ] as const;
 
-const supportedLanguages: ReadonlyArray<SupportedLanguage> = [ "de", "en" ];
+type SupportedLanguage = typeof supportedLanguages[number];
+
 
 interface ChargyElectronAPI {
 
@@ -458,42 +463,86 @@ export class ChargyApp {
 
                 //#region Collect issue data...
 
-                const newIssueForm  = document.getElementById('newIssueForm') as HTMLFormElement;
-                const   data:any      = {};
+                const newIssueForm = document.getElementById('newIssueForm') as HTMLFormElement;
 
-                data["timestamp"]                  = new Date().toISOString();
-                data["chargyVersion"]              = this.packageJson.version;
-                data["platform"]                   = this.platform;
+                const queryRequired = (selector: string): Element => {
 
-                data["invalidCTR"]                 = (newIssueForm.querySelector("#invalidCTR")                as HTMLInputElement).checked;
-                data["InvalidStationData"]         = (newIssueForm.querySelector("#InvalidStationData")        as HTMLInputElement).checked;
-                data["invalidSignatures"]          = (newIssueForm.querySelector("#invalidSignatures")         as HTMLInputElement).checked;
-                data["invalidCertificates"]        = (newIssueForm.querySelector("#invalidCertificates")       as HTMLInputElement).checked;
-                data["transparencenySoftwareBug"]  = (newIssueForm.querySelector("#transparencenySoftwareBug") as HTMLInputElement).checked;
-                data["DSGVO"]                      = (newIssueForm.querySelector("#DSGVO")                     as HTMLInputElement).checked;
-                data["BITV"]                       = (newIssueForm.querySelector("#BITV")                      as HTMLInputElement).checked;
+                    const element = newIssueForm.querySelector(selector);
 
-                data["description"]                = (newIssueForm.querySelector("#issueDescription")          as HTMLTextAreaElement).value;
+                    if (element == null)
+                        throw new Error("Missing issue form element: " + selector);
 
-                if ((newIssueForm.querySelector("#includeCTR") as HTMLSelectElement).value == "yes")
+                    return element;
+
+                };
+
+                const queryInput = (selector: string): HTMLInputElement => {
+
+                    const element = queryRequired(selector);
+
+                    if (!(element instanceof HTMLInputElement))
+                        throw new Error("Issue form element is not an input: " + selector);
+
+                    return element;
+
+                };
+
+                const querySelect = (selector: string): HTMLSelectElement => {
+
+                    const element = queryRequired(selector);
+
+                    if (!(element instanceof HTMLSelectElement))
+                        throw new Error("Issue form element is not a select: " + selector);
+
+                    return element;
+
+                };
+
+                const queryTextArea = (selector: string): HTMLTextAreaElement => {
+
+                    const element = queryRequired(selector);
+
+                    if (!(element instanceof HTMLTextAreaElement))
+                        throw new Error("Issue form element is not a textarea: " + selector);
+
+                    return element;
+
+                };
+
+                const packageJson = this.packageJson as { version?: unknown };
+                const data: chargyInterfaces.IssueReportPayload = {
+                    timestamp:                  new Date().toISOString(),
+                    chargyVersion:              typeof packageJson.version === "string" ? packageJson.version : "",
+                    platform:                   process.platform,
+                    invalidCTR:                 queryInput("#invalidCTR").checked,
+                    InvalidStationData:         queryInput("#InvalidStationData").checked,
+                    invalidSignatures:          queryInput("#invalidSignatures").checked,
+                    invalidCertificates:        queryInput("#invalidCertificates").checked,
+                    transparencenySoftwareBug:  queryInput("#transparencenySoftwareBug").checked,
+                    DSGVO:                      queryInput("#DSGVO").checked,
+                    BITV:                       queryInput("#BITV").checked,
+                    description:                queryTextArea("#issueDescription").value,
+                    name:                       queryInput("#issueName").value,
+                    phone:                      queryInput("#issuePhone").value,
+                    eMail:                      queryInput("#issueEMail").value
+                };
+
+                if (querySelect("#includeCTR").value == "yes")
                 {
                     try
                     {
 
-                        const stringify  = require('safe-stable-stringify');
-                        const ctr        = stringify(this.chargy.currentCTR);
+                        const ctr = JSON.stringify(this.chargy.currentCTR);
 
                         if (ctr !== "{}")
                             data["chargeTransparencyRecord"] = ctr;
 
                     }
-                    catch (exception)
-                    { }
+                    catch
+                    {
+                        // Optional diagnostic attachment; the issue report itself can still be sent.
+                    }
                 }
-
-                data["name"]                       = (newIssueForm.querySelector("#issueName")                 as HTMLInputElement).value;
-                data["phone"]                      = (newIssueForm.querySelector("#issuePhone")                as HTMLInputElement).value;
-                data["eMail"]                      = (newIssueForm.querySelector("#issueEMail")                as HTMLInputElement).value;
 
                 //#endregion
 
@@ -532,7 +581,7 @@ export class ChargyApp {
             }
             catch (exception)
             {
-                alert(this.getLocalizedText("issueSubmitFailed"));
+                alert(this.getLocalizedText("issueSubmitFailed") + ": " + (exception instanceof Error ? exception.message : String(exception)));
             }
 
         }
@@ -900,9 +949,8 @@ export class ChargyApp {
 
         //#region Handle the 'Full Screen'-button
 
-        const d = document as any;
-        this.fullScreenButton.onclick = (ev: MouseEvent) => {
-            if (d.fullScreen || d.mozFullScreen || d.webkitIsFullScreen)
+        this.fullScreenButton.onclick = () => {
+            if (document.fullscreenElement)
             {
                 this.measurementsDetailsDiv.classList.remove("fullScreen");
                 chargyLib.closeFullscreen();
@@ -1196,6 +1244,19 @@ export class ChargyApp {
         if (this.isSupportedLanguage(storedLanguage))
             return storedLanguage;
 
+        const browserLanguages = [
+            navigator.language,
+            ...(navigator.languages)
+        ].map(language => language.toLowerCase());
+
+        for (const supportedLanguage of supportedLanguages)
+            if (browserLanguages.includes(supportedLanguage))
+                return supportedLanguage;
+
+        for (const supportedLanguage of supportedLanguages)
+            if (browserLanguages.some(language => language.startsWith(supportedLanguage + "-")))
+                return supportedLanguage;
+
         return "en";
 
     }
@@ -1246,7 +1307,7 @@ export class ChargyApp {
             this.languageButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
         };
 
-        for (const languageMenuButton of Array.from(this.languageMenuDiv.querySelectorAll("button[data-language]")) as HTMLButtonElement[])
+        for (const languageMenuButton of Array.from(this.languageMenuDiv.querySelectorAll<HTMLButtonElement>("button[data-language]")))
         {
             languageMenuButton.onclick = async (ev: MouseEvent) => {
                 ev.preventDefault();
@@ -1285,21 +1346,21 @@ export class ChargyApp {
 
         document.documentElement.lang = this.UILanguage;
 
-        for (const element of Array.from(document.querySelectorAll("[data-i18n-key]")) as HTMLElement[])
+        for (const element of Array.from(document.querySelectorAll<HTMLElement>("[data-i18n-key]")))
         {
             const key = element.dataset["i18nKey"];
             if (key != null)
                 element.innerHTML = this.getLocalizedText(key, element.innerHTML);
         }
 
-        for (const element of Array.from(document.querySelectorAll("[data-i18n-title-key]")) as HTMLElement[])
+        for (const element of Array.from(document.querySelectorAll<HTMLElement>("[data-i18n-title-key]")))
         {
             const key = element.dataset["i18nTitleKey"];
             if (key != null)
                 element.title = this.getLocalizedText(key, element.title);
         }
 
-        for (const element of Array.from(document.querySelectorAll("[data-i18n-placeholder-key]")) as HTMLInputElement[])
+        for (const element of Array.from(document.querySelectorAll<HTMLInputElement>("[data-i18n-placeholder-key]")))
         {
             const key = element.dataset["i18nPlaceholderKey"];
             if (key != null)
@@ -1313,7 +1374,7 @@ export class ChargyApp {
 
         this.languageFlagImage.src = "images/flags/" + this.UILanguage + ".svg";
 
-        for (const languageMenuButton of Array.from(this.languageMenuDiv.querySelectorAll("button[data-language]")) as HTMLButtonElement[])
+        for (const languageMenuButton of Array.from(this.languageMenuDiv.querySelectorAll<HTMLButtonElement>("button[data-language]")))
         {
             const isActive = languageMenuButton.dataset["language"] === this.UILanguage;
             languageMenuButton.classList.toggle("active", isActive);
@@ -1413,23 +1474,19 @@ export class ChargyApp {
 
     //#endregion
 
-    private getSessionCryptoResultText(result?: chargyInterfaces.ISessionCryptoResult|null): string {
+    private getSessionCryptoResultText(result?: chargyInterfaces.ISessionCryptoResult|null): string
+    {
 
         let text = this.getLocalizedText("UnknownOrInvalidChargeTransparencyRecord");
 
-        if (result?.message !== null &&
-            result?.message !== undefined)
-        {
+        if (result?.message !== undefined)
             text = result.message.trim();
-        }
 
-        if (result !== null                    &&
-            result !== undefined               &&
-            result.errors                      &&
-            result.errors        !== undefined &&
-            result.errors        !== null      &&
-            result.errors.length   > 0         &&
-            result.errors[0]     !== undefined)
+        if (result !== null          &&
+            result !== undefined     &&
+            result.errors            &&
+            result.errors.length > 0 &&
+            result.errors[0] !== undefined)
         {
             text = result.errors[0].trim();
         }
@@ -1440,15 +1497,15 @@ export class ChargyApp {
 
     //#region doGlobalError(...)
 
-    private doGlobalError(result:   chargyInterfaces.ISessionCryptoResult,
-                          context?: any)
+    private doGlobalError(result:    chargyInterfaces.ISessionCryptoResult,
+                          context?:  unknown)
     {
 
         this.currentGlobalError                = result;
         this.currentChargeTransparencyRecord   = null;
         this.currentChargeTransparencyLiveLink = null;
 
-        let text = "Unbekannter Transparenzdatensatz!";
+        let text = this.getLocalizedText("UnknownOrInvalidChargeTransparencyRecord");
 
         if (result?.message !== null &&
             result?.message !== undefined)
@@ -1476,8 +1533,8 @@ export class ChargyApp {
         this.errorTextDiv.style.display              = 'inline-block';
         this.errorTextDiv.innerHTML                  = '<i class="fas fa-times-circle"></i> ' + text;
 
-        // console.log(text);
-        // console.log(context);
+        console.log(text);
+        console.log(context);
 
         this.electron.setVerificationResult(result);
 
@@ -1491,6 +1548,7 @@ export class ChargyApp {
     {
         try
         {
+
             const imageData = await this.electron.readClipboardImage();
             const text      = await this.electron.readClipboardText();
 
@@ -1997,17 +2055,21 @@ export class ChargyApp {
 
         try
         {
+
             if (typeof FileInfos === 'string')
-                result = await this.chargy.DetectAndConvertContentFormat([{
-                                                                             name: "clipboard",
-                                                                             data: new TextEncoder().encode(FileInfos)
-                                                                          }]);
+                result = await this.chargy.DetectAndConvertContentFormat(
+                                   [{
+                                       name:  "clipboard",
+                                       data:  new TextEncoder().encode(FileInfos)
+                                   }]
+                               );
 
             else if (chargeTransparencyRecord.isIFileInfo(FileInfos))
                 result = await this.chargy.DetectAndConvertContentFormat([ FileInfos ]);
 
             else
                 result = await this.chargy.DetectAndConvertContentFormat(FileInfos);
+
         }
         catch (exception)
         {
@@ -2022,6 +2084,7 @@ export class ChargyApp {
 
         if (chargeTransparencyRecord.IsAChargeTransparencyRecord(result))
         {
+
             if (options?.prepareUI === false)
             {
                 this.inputInfosDiv.style.display = 'none';
@@ -2039,6 +2102,7 @@ export class ChargyApp {
 
         if (chargeTransparencyLiveLink.IsAChargeTransparencyLiveLink(result))
         {
+
             if (options?.prepareUI === false)
             {
                 this.inputInfosDiv.style.display = 'none';
@@ -2051,17 +2115,25 @@ export class ChargyApp {
 
         }
 
-        const sessionResult = result ??
-                              {
-                                  status:     chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                                  message:    this.getLocalizedText("UnknownOrInvalidChargeTransparencyRecord"),
-                                  certainty:  0
-                              };
+        if (publicKeyInfo.IsAPublicKeyInfo(result))
+        {
 
-        if (options?.onError != null)
-            options.onError(sessionResult);
+            if (options?.prepareUI === false)
+            {
+                this.inputInfosDiv.style.display = 'none';
+                this.errorTextDiv.style.display  = 'none';
+            }
+
+            // await this.showPublicKeyInfo(result);
+
+            return true;
+
+        }
+
+        if (options?.onError !== undefined)
+            options.onError(result);
         else
-            this.doGlobalError(sessionResult);
+            this.doGlobalError(result);
 
         return false;
 
@@ -2073,9 +2145,6 @@ export class ChargyApp {
 
     private async showChargeTransparencyLiveLink(LiveLink: chargeTransparencyLiveLink.IChargeTransparencyLiveLink)
     {
-
-        if (LiveLink == null)
-            return;
 
         this.currentChargeTransparencyLiveLink       = LiveLink;
         this.currentChargeTransparencyRecord         = null;
@@ -2118,7 +2187,7 @@ export class ChargyApp {
                 "Position " + [
                     LiveLink.geoLocation.lat,
                     LiveLink.geoLocation.lng
-                ].filter(value => value != null).join(", ")
+                ].join(", ")
             );
 
         if (LiveLink.connector)
@@ -2172,7 +2241,7 @@ export class ChargyApp {
                 '<i class="fas fa-file-signature"></i>',
                 LiveLink.signatures.length === 1
                     ? "1 Signatur"
-                    : LiveLink.signatures.length + " Signaturen"
+                    : LiveLink.signatures.length.toString() + " Signaturen"
             );
 
     }
@@ -2219,8 +2288,8 @@ export class ChargyApp {
                 const labelInfo = typeof urlInfo === "string"
                                       ? ""
                                       : [
-                                            urlInfo.priority != null ? "Priorität " + urlInfo.priority : "",
-                                            urlInfo.weight   != null ? "Gewicht "   + urlInfo.weight   : ""
+                                            urlInfo.priority != null ? "Priorität " + urlInfo.priority.toString() : "",
+                                            urlInfo.weight   != null ? "Gewicht "   + urlInfo.weight.  toString() : ""
                                         ].filter(value => value !== "").join(", ");
 
                 transportDiv.appendChild(this.createLiveLinkAnchor(url, labelInfo !== "" ? url + " (" + labelInfo + ")" : url));
@@ -2231,14 +2300,14 @@ export class ChargyApp {
         {
             const totpDiv = transportDiv.appendChild(document.createElement('div'));
             totpDiv.className = "totp";
-            totpDiv.innerText = "TOTP: " + transport.totp.timeStep + " s";
+            totpDiv.innerText = `TOTP: ${transport.totp.timeStep} seconds`;
         }
 
         return transportDiv;
 
     }
 
-    private createLiveLinkAnchor(url: string,
+    private createLiveLinkAnchor(url:  string,
                                  text: string): HTMLAnchorElement {
 
         const anchor = document.createElement('a');
@@ -2257,9 +2326,6 @@ export class ChargyApp {
 
     private async showChargeTransparencyRecord(CTR: chargeTransparencyRecord.IChargeTransparencyRecord)
     {
-
-        if (CTR == null)
-            return;
 
         this.currentChargeTransparencyRecord         = CTR;
         this.currentChargeTransparencyLiveLink       = null;
@@ -2324,22 +2390,21 @@ export class ChargyApp {
 
                 const chargingSessionDiv    = chargyLib.CreateDiv(chargingSessionsDiv, "chargingSession");
                 chargingSession.GUI         = chargingSessionDiv;
-                chargingSessionDiv.onclick  = (ev: MouseEvent) => {
+                chargingSessionDiv.onclick  = async (ev: MouseEvent) => {
 
                     //#region Highlight the selected charging session...
 
                     const AllChargingSessionsDivs = document.getElementsByClassName("chargingSession");
 
-                    if (AllChargingSessionsDivs != null)
-                        for(let i=0; i<AllChargingSessionsDivs.length; i++)
-                            AllChargingSessionsDivs[i]?.classList.remove("activated");
+                    for(let i=0; i<AllChargingSessionsDivs.length; i++)
+                        AllChargingSessionsDivs[i]?.classList.remove("activated");
 
                     //(this as HTMLDivElement)?.classList.add("activated");
-                    (ev.currentTarget as HTMLDivElement)?.classList.add("activated");
+                    (ev.currentTarget as HTMLDivElement).classList.add("activated");
 
                     //#endregion
 
-                    this.showChargingSessionDetails(chargingSession);
+                    await this.showChargingSessionDetails(chargingSession);
 
                 };
 
@@ -2434,74 +2499,71 @@ export class ChargyApp {
 
                     }
 
-                    if (chargingSession.measurements)
+                    for (const measurement of chargingSession.measurements)
                     {
-                        for (const measurement of chargingSession.measurements)
+                        //<i class="far fa-chart-bar"></i>
+                        if (measurement.values && measurement.values.length > 0)
                         {
-                            //<i class="far fa-chart-bar"></i>
-                            if (measurement.values && measurement.values.length > 0)
+
+                            if (measurement.phenomena && measurement.phenomena.length > 0)
                             {
 
-                                if (measurement.phenomena && measurement.phenomena.length > 0)
-                                {
+                                measurement.name         = measurement.phenomena[0].name;
+                                measurement.obis         = measurement.phenomena[0].obis;
+                                measurement.unit         = measurement.phenomena[0].unit;
+                                measurement.unitEncoded  = measurement.phenomena[0].unitEncoded;
+                                measurement.valueType    = measurement.phenomena[0].valueType;
+                                measurement.scale        = measurement.phenomena[0].scale;
 
-                                    measurement.name         = measurement.phenomena[0].name;
-                                    measurement.obis         = measurement.phenomena[0].obis;
-                                    measurement.unit         = measurement.phenomena[0].unit;
-                                    measurement.unitEncoded  = measurement.phenomena[0].unitEncoded;
-                                    measurement.valueType    = measurement.phenomena[0].valueType;
-                                    measurement.scale        = measurement.phenomena[0].scale;
-
-                                    if (measurement.scale == undefined || measurement.scale == null)
-                                        measurement.scale = 0;
-
-                                }
-
-                                const first  = measurement?.values[0]?.value                           ?? new Decimal(0);
-                                const last   = measurement?.values[measurement.values.length-1]?.value ?? first;
-                                let   amount = parseFloat(((last.minus(first)).times(Math.pow(10, measurement.scale))).toFixed(10));
-
-                                switch (measurement.unit)
-                                {
-
-                                    case "kWh":
-                                    case "KILO_WATT_HOURS":
-                                        break;
-
-                                    // "WATT_HOURS" or "Wh"
-                                    default:
-                                        amount = parseFloat((amount / 1000).toFixed(10));
-                                        break;
-
-                                }
-
-                                productDiv.innerHTML += "<br />" + chargyLib.measurementName2human(measurement.name) + " " + amount.toString() + " kWh";// (" + measurement.values.length + " Messwerte)";
-
-
-                                if (chargingSession.chargingProductRelevance != undefined && chargingSession.chargingProductRelevance.energy != undefined)
-                                {
-                                    switch (chargingSession.chargingProductRelevance.energy)
-                                    {
-
-                                        case chargyInterfaces.InformationRelevance.Unknown:
-                                        case chargyInterfaces.InformationRelevance.Ignored:
-                                        case chargyInterfaces.InformationRelevance.Important:
-                                            break;
-
-                                        case chargyInterfaces.InformationRelevance.Informative:
-                                            productDiv.innerHTML += " <span class=\"relevance\">(informativ)</span>";
-                                            break;
-
-                                        default:
-                                            productDiv.innerHTML += " <span class=\"relevance\">(" + chargingSession.chargingProductRelevance.energy + ")</span>";
-                                            break;
-
-                                    }
-                                }
+                                if (measurement.scale == undefined || measurement.scale == null)
+                                    measurement.scale = 0;
 
                             }
 
+                            const first  = measurement?.values[0]?.value                           ?? new Decimal(0);
+                            const last   = measurement?.values[measurement.values.length-1]?.value ?? first;
+                            let   amount = parseFloat(((last.minus(first)).times(Math.pow(10, measurement.scale))).toFixed(10));
+
+                            switch (measurement.unit)
+                            {
+
+                                case "kWh":
+                                case "KILO_WATT_HOURS":
+                                    break;
+
+                                // "WATT_HOURS" or "Wh"
+                                default:
+                                    amount = parseFloat((amount / 1000).toFixed(10));
+                                    break;
+
+                            }
+
+                            productDiv.innerHTML += "<br />" + chargyLib.measurementName2human(measurement.name) + " " + amount.toString() + " kWh";// (" + measurement.values.length + " Messwerte)";
+
+
+                            if (chargingSession.chargingProductRelevance != undefined && chargingSession.chargingProductRelevance.energy != undefined)
+                            {
+                                switch (chargingSession.chargingProductRelevance.energy)
+                                {
+
+                                    case chargyInterfaces.InformationRelevance.Unknown:
+                                    case chargyInterfaces.InformationRelevance.Ignored:
+                                    case chargyInterfaces.InformationRelevance.Important:
+                                        break;
+
+                                    case chargyInterfaces.InformationRelevance.Informative:
+                                        productDiv.innerHTML += " <span class=\"relevance\">(informativ)</span>";
+                                        break;
+
+                                    default:
+                                        productDiv.innerHTML += " <span class=\"relevance\">(" + chargingSession.chargingProductRelevance.energy + ")</span>";
+                                        break;
+
+                                }
+                            }
+
                         }
+
                     }
 
                 }
@@ -2583,39 +2645,36 @@ export class ChargyApp {
 
                 //#region Show authorization start/stop information
 
-                try {
+                try
+                {
 
-                    if (chargingSession.authorizationStart != null)
+                    const authorizationStartDiv            = tableDiv.appendChild(document.createElement('div'));
+                        authorizationStartDiv.className  = "authorizationStart";
+
+                    const authorizationStartIconDiv                   = authorizationStartDiv.appendChild(document.createElement('div'));
+                    authorizationStartIconDiv.className             = "icon";
+                    switch (chargingSession.authorizationStart.type)
                     {
 
-                        const authorizationStartDiv            = tableDiv.appendChild(document.createElement('div'));
-                            authorizationStartDiv.className  = "authorizationStart";
+                        case "cryptoKey":
+                            authorizationStartIconDiv.innerHTML     = '<i class="fas fa-key"></i>';
+                            break;
 
-                        const authorizationStartIconDiv                   = authorizationStartDiv.appendChild(document.createElement('div'));
-                        authorizationStartIconDiv.className             = "icon";
-                        switch (chargingSession.authorizationStart.type)
-                        {
+                        case "eMAId":
+                        case "EVCOId":
+                            authorizationStartIconDiv.innerHTML     = '<i class="fas fa-mobile-alt"></i>';
+                            break;
 
-                            case "cryptoKey":
-                                authorizationStartIconDiv.innerHTML     = '<i class="fas fa-key"></i>';
-                                break;
-
-                            case "eMAId":
-                            case "EVCOId":
-                                authorizationStartIconDiv.innerHTML     = '<i class="fas fa-mobile-alt"></i>';
-                                break;
-
-                            default:
-                                authorizationStartIconDiv.innerHTML     = '<i class="fas fa-id-card"></i>';
-                                break;
-
-                        }
-
-                        const authorizationStartIdDiv                     = authorizationStartDiv.appendChild(document.createElement('div'));
-                        authorizationStartIdDiv.className               = "id";
-                        authorizationStartIdDiv.innerHTML = chargingSession.authorizationStart["@id"];
+                        default:
+                            authorizationStartIconDiv.innerHTML     = '<i class="fas fa-id-card"></i>';
+                            break;
 
                     }
+
+                    const authorizationStartIdDiv                     = authorizationStartDiv.appendChild(document.createElement('div'));
+                    authorizationStartIdDiv.className               = "id";
+                    authorizationStartIdDiv.innerHTML = chargingSession.authorizationStart["@id"];
+
 
                     if (chargingSession.authorizationStop != null)
                     {
@@ -2695,7 +2754,7 @@ export class ChargyApp {
                             chargingStationDiv.innerHTML      = (chargingSession.EVSE   != null && chargingSession.EVSE.description != null
                                                                     ? this.getLocalizedDataText(chargingSession.EVSE.description) + "<br />"
                                                                     : "") +
-                                                                (chargingSession.EVSEId != null
+                                                                (chargingSession.EVSEId !== undefined
                                                                     ? chargingSession.EVSEId
                                                                     : chargingSession.EVSE!["@id"]);
 
@@ -2709,7 +2768,7 @@ export class ChargyApp {
                                 {
                                     chargingSession.chargingPool      = chargingSession.EVSE.chargingStation.chargingPool;
                                     chargingSession.chargingPoolId    = chargingSession.EVSE.chargingStation.chargingPoolId;
-                                    address                           = chargingSession.EVSE.chargingStation.address;
+                                    //address           = chargingSession.EVSE.chargingStation.address;
                                 }
 
                             }
@@ -2789,7 +2848,7 @@ export class ChargyApp {
                 try
                 {
 
-                    var address:chargyInterfaces.IAddress|undefined = undefined;
+                    let address:chargyInterfaces.IAddress|undefined = undefined;
 
                     if (chargingSession.chargingStation != null && chargingSession.chargingStation.address != null)
                         address = chargingSession.chargingStation.address;
@@ -3056,9 +3115,9 @@ export class ChargyApp {
             if (CTR.chargingSessions.length >= 1)
                 CTR.chargingSessions[0]?.GUI?.click();
 
-            if (this.minlat == +1000 &&
+            if (this.minlat ==  1000 &&
                 this.maxlat == -1000 &&
-                this.minlng == +1000 &&
+                this.minlng ==  1000 &&
                 this.maxlng == -1000)
             {
                 this.map.setView([0, 0], 1);
@@ -3116,7 +3175,7 @@ export class ChargyApp {
                                 break;
 
                             default:
-                                valueDiv.innerHTML  = result.status.toString();
+                                valueDiv.innerHTML  = result.status;
 
                         }
 
@@ -4088,7 +4147,15 @@ export class ChargyApp {
                                                 publicKeyDiv,
                                                 signatureExpectedDiv,
 
-                                                signatureCheckDiv);
+                                                signatureCheckDiv).
+            then(viewError => {
+                // ViewMeasurement returns an Error when the measurement itself could not be rendered.
+                if (viewError)
+                    doError(viewError.message);
+            }).
+            catch((exception: unknown) => {
+                doError(exception instanceof Error ? exception.message : String(exception));
+            });
 
     }
 

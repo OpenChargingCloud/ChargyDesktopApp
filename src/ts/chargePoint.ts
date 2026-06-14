@@ -406,24 +406,31 @@ export class ChargePoint {
                 };
 
 
-                if (parking && parking.length > 0)
+                if (parking && parking.length > 0 && CTR.chargingSessions)
                 {
 
-                    CTR.chargingSessions![0]!.parking = [];
+                    const chargingSession = CTR.chargingSessions[0];
 
-                    for (const parkingItem of parking)
+                    if (chargingSession !== undefined)
                     {
 
-                        const parkingObj = chargyLib.asJSONObject(parkingItem);
+                        chargingSession.parking = [];
 
-                        if (chargyLib.asString(parkingObj?.["seq_num"]) !== "SUBTOTAL")
+                        for (const parkingItem of parking)
                         {
-                            CTR.chargingSessions![0]!.parking.push({
-                                "@id":     "-",
-                                begin:     this.chargy.moment.unix(chargyLib.asNumber(parkingObj?.["start_time_utc"]) ?? NaN).utc().format(),
-                                end:       this.chargy.moment.unix(chargyLib.asNumber(parkingObj?.["end_time_utc"])   ?? NaN).utc().format(),
-                                overstay:  chargyLib.asNumber(parkingObj?.["overstay"]) === 1,
-                            });
+
+                            const parkingObj = chargyLib.asJSONObject(parkingItem);
+
+                            if (chargyLib.asString(parkingObj?.["seq_num"]) !== "SUBTOTAL")
+                            {
+                                chargingSession.parking.push({
+                                    "@id":     "-",
+                                    begin:     this.chargy.moment.unix(chargyLib.asNumber(parkingObj?.["start_time_utc"]) ?? NaN).utc().format(),
+                                    end:       this.chargy.moment.unix(chargyLib.asNumber(parkingObj?.["end_time_utc"])   ?? NaN).utc().format(),
+                                    overstay:  chargyLib.asNumber(parkingObj?.["overstay"]) === 1,
+                                });
+                            }
+
                         }
 
                     }
@@ -715,8 +722,7 @@ export class ChargePointCrypt01 extends ACrypt {
     async VerifyChargingSession(chargingSession: chargeTransparencyRecord.IChargingSession): Promise<chargyInterfaces.ISessionCryptoResult>
     {
 
-        if (chargingSession     === undefined ||
-            chargingSession.ctr === undefined)
+        if (chargingSession.ctr === undefined)
         {
             return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSignature,
@@ -762,7 +768,7 @@ export class ChargePointCrypt01 extends ACrypt {
             if (chargingSession.ctr.publicKeys != null)
             {
 
-                for (const publicKeyInfo of chargingSession.ctr?.publicKeys)
+                for (const publicKeyInfo of chargingSession.ctr.publicKeys)
                 {
                     if (publicKeyInfo["@id"] === publicKeyId)
                         publicKeys.push(publicKeyInfo);
@@ -770,7 +776,7 @@ export class ChargePointCrypt01 extends ACrypt {
 
                 if (publicKeys.length == 0)
                 {
-                    for (const publicKeyInfo of chargingSession.ctr?.publicKeys)
+                    for (const publicKeyInfo of chargingSession.ctr.publicKeys)
                     {
                         publicKeys.push(publicKeyInfo);
                     }
@@ -813,10 +819,10 @@ export class ChargePointCrypt01 extends ACrypt {
 
                             sha225Value          = sha225Value ?? (BigInt("0x" + (await chargyLib.sha256(plainText))) >> BigInt(31)).toString(16);
                             sessionResult        = this.curve224k1.validate(BigInt("0x" + sha225Value),
-                                                                            BigInt("0x" + chargingSession.signature.r),
-                                                                            BigInt("0x" + chargingSession.signature.s),
-                                                                            [ BigInt("0x" + publicKey.value.substr(2,  56)),
-                                                                              BigInt("0x" + publicKey.value.substr(58, 56)) ])
+                                                                            BigInt("0x" + (chargingSession.signature.r ?? "00")),
+                                                                            BigInt("0x" + (chargingSession.signature.s ?? "00")),
+                                                                          [ BigInt("0x" + publicKey.value.slice( 2,  58)),
+                                                                            BigInt("0x" + publicKey.value.slice(58, 114)) ])
                                                        ? chargyInterfaces.SessionVerificationResult.ValidSignature
                                                        : chargyInterfaces.SessionVerificationResult.InvalidSignature;
                             break;
@@ -886,136 +892,131 @@ export class ChargePointCrypt01 extends ACrypt {
 
             //#region Validate measurements
 
-            if (chargingSession.measurements)
+            for (const measurement of chargingSession.measurements)
             {
-                for (const measurement of chargingSession.measurements)
+
+                measurement.chargingSession = chargingSession;
+
+                // Must include at least two measurements (start & stop)
+                if (measurement.values.length > 1)
                 {
 
-                    measurement.chargingSession = chargingSession;
+                    //#region Validate measurements...
 
-                    // Must include at least two measurements (start & stop)
-                    if (measurement.values && measurement.values.length > 1)
+                    for (const measurementValue of measurement.values)
+                    {
+                        measurementValue.measurement = measurement;
+                        await this.VerifyMeasurement(measurementValue as IChargepointMeasurementValue);
+                    }
+
+                    //#endregion
+
+                    //#region Find an overall result...
+
+                    for (const measurementValue of measurement.values)
+                    {
+                        if (measurementValue.result?.status !== chargyInterfaces.VerificationResult.ValidSignature &&
+                            measurementValue.result?.status !== chargyInterfaces.VerificationResult.NoOperation)
+                        {
+                            return {
+                                status:    chargyInterfaces.SessionVerificationResult.InvalidSignature,
+                                message:   this.chargy.GetLocalizedMessage("InvalidSignature"),
+                                certainty: 0
+                            }
+                        }
+                    }
+
+                    //#endregion
+
+                    for (let i = 0; i < measurement.values.length; i++)
                     {
 
-                        //#region Validate measurements...
+                        const currentResult = measurement.values[i]?.result;
 
-                        for (const measurementValue of measurement.values)
-                        {
-                            measurementValue.measurement = measurement;
-                            await this.VerifyMeasurement(measurementValue as IChargepointMeasurementValue);
-                        }
+                        if (currentResult !== undefined) {
 
-                        //#endregion
+                            //#region Adapt start value
 
-                        //#region Find an overall result...
-
-                        for (const measurementValue of measurement.values)
-                        {
-                            if (measurementValue.result?.status !== chargyInterfaces.VerificationResult.ValidSignature &&
-                                measurementValue.result?.status !== chargyInterfaces.VerificationResult.NoOperation)
+                            if (i == 0)
                             {
-                                return {
-                                    status:    chargyInterfaces.SessionVerificationResult.InvalidSignature,
-                                    message:   this.chargy.GetLocalizedMessage("InvalidSignature"),
-                                    certainty: 0
+                                switch (currentResult.status)
+                                {
+
+                                    case chargyInterfaces.VerificationResult.ValidSignature:
+                                        currentResult.status = chargyInterfaces.VerificationResult.ValidStartValue;
+                                        break;
+
+                                    case chargyInterfaces.VerificationResult.NoOperation:
+                                        currentResult.status = chargyInterfaces.VerificationResult.StartValue;
+                                        break;
+
+                                    case chargyInterfaces.VerificationResult.InvalidSignature:
+                                        currentResult.status = chargyInterfaces.VerificationResult.InvalidStartValue;
+                                        break;
+
                                 }
                             }
-                        }
 
-                        //#endregion
+                            //#endregion
 
-                        for (let i = 0; i < measurement.values.length; i++)
-                        {
+                            //#region Adapt stop value
 
-                            const currentResult = measurement.values[i]?.result;
-
-                            if (currentResult !== undefined) {
-
-                                //#region Adapt start value
-
-                                if (i == 0)
+                            else if (i == measurement.values.length-1)
+                            {
+                                switch (currentResult.status)
                                 {
-                                    switch (currentResult.status)
-                                    {
 
-                                        case chargyInterfaces.VerificationResult.ValidSignature:
-                                            currentResult.status = chargyInterfaces.VerificationResult.ValidStartValue;
-                                            break;
+                                    case chargyInterfaces.VerificationResult.ValidSignature:
+                                        currentResult.status = chargyInterfaces.VerificationResult.ValidStopValue;
+                                        break;
 
-                                        case chargyInterfaces.VerificationResult.NoOperation:
-                                            currentResult.status = chargyInterfaces.VerificationResult.StartValue;
-                                            break;
+                                    case chargyInterfaces.VerificationResult.NoOperation:
+                                        currentResult.status = chargyInterfaces.VerificationResult.StopValue;
+                                        break;
 
-                                        case chargyInterfaces.VerificationResult.InvalidSignature:
-                                            currentResult.status = chargyInterfaces.VerificationResult.InvalidStartValue;
-                                            break;
-
-                                    }
-                                }
-
-                                //#endregion
-
-                                //#region Adapt stop value
-
-                                else if (i == measurement.values.length-1)
-                                {
-                                    switch (currentResult.status)
-                                    {
-
-                                        case chargyInterfaces.VerificationResult.ValidSignature:
-                                            currentResult.status = chargyInterfaces.VerificationResult.ValidStopValue;
-                                            break;
-
-                                        case chargyInterfaces.VerificationResult.NoOperation:
-                                            currentResult.status = chargyInterfaces.VerificationResult.StopValue;
-                                            break;
-
-                                        case chargyInterfaces.VerificationResult.InvalidSignature:
-                                            currentResult.status = chargyInterfaces.VerificationResult.InvalidStopValue;
-                                            break;
-
-                                    }
-                                }
-
-                                //#endregion
-
-                                //#region Adapt intermediate values
-
-                                else
-                                {
-                                    switch (currentResult.status)
-                                    {
-
-                                        case chargyInterfaces.VerificationResult.ValidSignature:
-                                            currentResult.status = chargyInterfaces.VerificationResult.ValidIntermediateValue;
-                                            break;
-
-                                        case chargyInterfaces.VerificationResult.NoOperation:
-                                            currentResult.status = chargyInterfaces.VerificationResult.IntermediateValue;
-                                            break;
-
-                                        case chargyInterfaces.VerificationResult.InvalidSignature:
-                                            currentResult.status = chargyInterfaces.VerificationResult.InvalidStopValue;
-                                            break;
-
-                                    }
+                                    case chargyInterfaces.VerificationResult.InvalidSignature:
+                                        currentResult.status = chargyInterfaces.VerificationResult.InvalidStopValue;
+                                        break;
 
                                 }
+                            }
 
-                                //#endregion
+                            //#endregion
+
+                            //#region Adapt intermediate values
+
+                            else
+                            {
+                                switch (currentResult.status)
+                                {
+
+                                    case chargyInterfaces.VerificationResult.ValidSignature:
+                                        currentResult.status = chargyInterfaces.VerificationResult.ValidIntermediateValue;
+                                        break;
+
+                                    case chargyInterfaces.VerificationResult.NoOperation:
+                                        currentResult.status = chargyInterfaces.VerificationResult.IntermediateValue;
+                                        break;
+
+                                    case chargyInterfaces.VerificationResult.InvalidSignature:
+                                        currentResult.status = chargyInterfaces.VerificationResult.InvalidStopValue;
+                                        break;
+
+                                }
 
                             }
+
+                            //#endregion
 
                         }
 
                     }
-                    else
-                        sessionResult = chargyInterfaces.SessionVerificationResult.AtLeastTwoMeasurementsRequired;
 
                 }
+                else
+                    sessionResult = chargyInterfaces.SessionVerificationResult.AtLeastTwoMeasurementsRequired;
+
             }
-            else
-                sessionResult = chargyInterfaces.SessionVerificationResult.InvalidSessionFormat;
 
             //#endregion
 
@@ -1050,11 +1051,11 @@ export class ChargePointCrypt01 extends ACrypt {
 
         measurementValue.method = this;
 
-        var cryptoResult:IChargePointCrypt01Result = {
+        const cryptoResult:IChargePointCrypt01Result = {
             status: chargyInterfaces.VerificationResult.NoOperation,
         };
 
-        return setResult(chargyInterfaces.VerificationResult.NoOperation);
+        return await Promise.resolve(setResult(chargyInterfaces.VerificationResult.NoOperation));
 
     }
 
@@ -1066,116 +1067,91 @@ export class ChargePointCrypt01 extends ACrypt {
                           HashedPlainTextDiv:    HTMLDivElement,
                           PublicKeyDiv:          HTMLDivElement,
                           SignatureExpectedDiv:  HTMLDivElement,
-                          SignatureCheckDiv:     HTMLDivElement)
+                          SignatureCheckDiv:     HTMLDivElement) : Promise<Error | undefined>
 
     {
 
-        if (measurementValue.measurement                                    === undefined ||
-            measurementValue.measurement.chargingSession                    === undefined ||
-            measurementValue.measurement.chargingSession.authorizationStart === undefined)
-        {
-            return {
-                status: chargyInterfaces.VerificationResult.InvalidMeasurement
-            }
-        }
+        if (measurementValue.measurement?.chargingSession === undefined)
+            return new Error("Invalid measurement!");
 
 
-        const chargingSession    = measurementValue?.measurement?.chargingSession;
+        const chargingSession    = measurementValue.measurement.chargingSession;
         const result             = measurementValue.result as IChargePointCrypt01Result;
-        const algorithmName      = (typeof chargingSession?.publicKey?.algorithm === "object")
-                                        ? chargingSession?.publicKey?.algorithm.name ?? ""
-                                        : chargingSession?.publicKey?.algorithm      ?? "";
-        const algorithmType      = (typeof chargingSession?.publicKey?.type      === "object")
-                                        ? chargingSession?.publicKey?.type.name
-                                        : chargingSession?.publicKey?.type;
+        const algorithmName      = (typeof chargingSession.publicKey?.algorithm === "object")
+                                         ? chargingSession.publicKey.algorithm.name 
+                                         : chargingSession.publicKey?.algorithm      ?? "";
+        const algorithmType      = (typeof chargingSession.publicKey?.type      === "object")
+                                         ? chargingSession.publicKey.type.name
+                                         : chargingSession.publicKey?.type;
 
         //#region Headline / Introduction
 
-        if (introDiv)
-        {
-            introDiv.innerHTML = this.chargy.GetLocalizedMessage("The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature").
-                                            replace("{methodName}",       "ChargePointCrypt01").
-                                            replace("{cryptoAlgorithm}",   algorithmName);
-        }
+        introDiv.innerHTML = this.chargy.GetLocalizedMessage("The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature").
+                                        replace("{methodName}",       "ChargePointCrypt01").
+                                        replace("{cryptoAlgorithm}",   algorithmName);
 
         //#endregion
 
 
         //#region Plain text
 
-        if (PlainTextDiv != null)
+        if (PlainTextDiv.parentElement             != undefined &&
+            PlainTextDiv.parentElement.children[0] != undefined)
         {
-
-            if (PlainTextDiv                           != undefined &&
-                PlainTextDiv.parentElement             != undefined &&
-                PlainTextDiv.parentElement             != undefined &&
-                PlainTextDiv.parentElement.children[0] != undefined)
-            {
-                PlainTextDiv.parentElement.children[0].innerHTML  = "Plain text (secrrct)";
-            }
-
-            PlainTextDiv.innerText                                = atob(chargingSession.original ?? "");
-
-            PlainTextDiv.style.fontFamily  = "monospace";
-            PlainTextDiv.style.whiteSpace  = "pre";
-            PlainTextDiv.style.maxHeight   = "25vh";
-            PlainTextDiv.style.overflowY   = "scroll";
-
+            PlainTextDiv.parentElement.children[0].innerHTML  = "Plain text (secrrct)";
         }
+
+        PlainTextDiv.innerText                                = atob(chargingSession.original ?? "");
+
+        PlainTextDiv.style.fontFamily  = "monospace";
+        PlainTextDiv.style.whiteSpace  = "pre";
+        PlainTextDiv.style.maxHeight   = "25vh";
+        PlainTextDiv.style.overflowY   = "scroll";
 
         //#endregion
 
         //#region Hashed plain text
 
-        if (HashedPlainTextDiv != null)
+        let hashInfo = "";
+
+        switch (algorithmName)
         {
 
-            let hashInfo = "";
+            case "secp224k1":
+                hashInfo  = "(SHA256, 225 Bits, hex)";
+                break;
 
-            switch (algorithmName)
-            {
+            case "secp256r1":
+                hashInfo  = "(SHA256, 256 Bits, hex)";
+                break;
 
-                case "secp224k1":
-                    hashInfo  = "(SHA256, 225 Bits, hex)";
-                    break;
+            case "secp384r1":
+                hashInfo  = "(SHA384, 384 Bits, hex)";
+                break;
 
-                case "secp256r1":
-                    hashInfo  = "(SHA256, 256 Bits, hex)";
-                    break;
-
-                case "secp384r1":
-                    hashInfo  = "(SHA384, 384 Bits, hex)";
-                    break;
-
-                case "secp512r1":
-                    hashInfo  = "(SHA512, 512 Bits, hex)";
-                    break;
-
-            }
-
-            if (HashedPlainTextDiv                           != undefined &&
-                HashedPlainTextDiv.parentElement             != undefined &&
-                HashedPlainTextDiv.parentElement             != undefined &&
-                HashedPlainTextDiv.parentElement.children[0] != undefined)
-            {
-                HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text " + hashInfo;
-            }
-
-            HashedPlainTextDiv.innerHTML  = chargingSession.hashValue?.match(/.{1,8}/g)?.join(" ")
-                                                ?? "0x00000000000000000000000000000000000";
+            case "secp512r1":
+                hashInfo  = "(SHA512, 512 Bits, hex)";
+                break;
 
         }
+
+        if (HashedPlainTextDiv.parentElement             != undefined &&
+            HashedPlainTextDiv.parentElement.children[0] != undefined)
+        {
+            HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text " + hashInfo;
+        }
+
+        HashedPlainTextDiv.innerHTML  = chargingSession.hashValue?.match(/.{1,8}/g)?.join(" ")
+                                            ?? "0x00000000000000000000000000000000000";
 
         //#endregion
 
         //#region Public Key
 
-        if (PublicKeyDiv != null && chargingSession.publicKey != null)
+        if (chargingSession.publicKey != null)
         {
 
-            if (PublicKeyDiv                           != undefined &&
-                PublicKeyDiv.parentElement             != undefined &&
-                PublicKeyDiv.parentElement             != undefined &&
+            if (PublicKeyDiv.parentElement             != undefined &&
                 PublicKeyDiv.parentElement.children[0] != undefined)
             {
                 PublicKeyDiv.parentElement.children[0].innerHTML  = "Public Key (" +
@@ -1190,15 +1166,13 @@ export class ChargePointCrypt01 extends ACrypt {
 
             PublicKeyDiv.innerHTML  = chargingSession.publicKey.value.startsWith("04") // Add some space after '04' to avoid confused customers
                                           ? "<span class=\"leadingFour\">04</span> "
-                                            + chargingSession.publicKey.value.substring(2).match(/.{1,8}/g)!.join(" ")
-                                          :   chargingSession.publicKey.value.match(/.{1,8}/g)!.join(" ");
+                                            + (chargingSession.publicKey.value.substring(2).match(/.{1,8}/g)?.join(" ") ?? "")
+                                          :   (chargingSession.publicKey.value.             match(/.{1,8}/g)?.join(" ") ?? "");
 
 
             //#region Public key signatures
 
-            if (PublicKeyDiv                           != undefined &&
-                PublicKeyDiv.parentElement             != undefined &&
-                PublicKeyDiv.parentElement             != undefined &&
+            if (PublicKeyDiv.parentElement             != undefined &&
                 PublicKeyDiv.parentElement.children[3] != undefined)
             {
                 PublicKeyDiv.parentElement.children[3].innerHTML = "";
@@ -1212,7 +1186,7 @@ export class ChargePointCrypt01 extends ACrypt {
                     try
                     {
 
-                        const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
+                        const signatureDiv = PublicKeyDiv.parentElement?.children[3]?.appendChild(document.createElement('div'));
 
                         if (signatureDiv != null)
                             signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
@@ -1237,20 +1211,18 @@ export class ChargePointCrypt01 extends ACrypt {
 
         //#region Signature expected
 
-        if (SignatureExpectedDiv != null && chargingSession.signature != null)
+        if (chargingSession.signature != null)
         {
 
-            if (SignatureExpectedDiv                           != undefined &&
-                SignatureExpectedDiv.parentElement             != undefined &&
-                SignatureExpectedDiv.parentElement             != undefined &&
+            if (SignatureExpectedDiv.parentElement             != undefined &&
                 SignatureExpectedDiv.parentElement.children[0] != undefined)
             {
                 SignatureExpectedDiv.parentElement.children[0].innerHTML  = "Erwartete Signatur (secrrct.sign, rs, hex)";// " + (result.signature?.format ?? "") + ", hex)";
             }
 
             if (typeof chargingSession.signature != 'string')
-                SignatureExpectedDiv.innerHTML                            = "r: " + chargingSession.signature.r?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") + "<br />" +
-                                                                            "s: " + chargingSession.signature.s?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ");
+                SignatureExpectedDiv.innerHTML                            = "r: " + (chargingSession.signature.r?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") ?? "") + "<br />" +
+                                                                            "s: " + (chargingSession.signature.s?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") ?? "");
 
             else if (chargingSession.signature)
                 SignatureExpectedDiv.innerHTML                            = chargingSession.signature.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "-";
@@ -1262,7 +1234,7 @@ export class ChargePointCrypt01 extends ACrypt {
 
         //#region Signature check
 
-        if (SignatureCheckDiv != null && chargingSession.verificationResult != null)
+        if (chargingSession.verificationResult != null)
         {
             switch (chargingSession.verificationResult.status)
             {

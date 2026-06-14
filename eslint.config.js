@@ -54,7 +54,13 @@ export default tseslint.config(
             '@typescript-eslint/restrict-template-expressions':        'error',
             '@typescript-eslint/no-empty-object-type':                 'error',
             '@typescript-eslint/no-useless-constructor':               'error',
-            '@typescript-eslint/only-throw-error':                     'error'
+            '@typescript-eslint/only-throw-error':                     'error',
+            '@typescript-eslint/restrict-template-expressions': [
+                'error',
+                {
+                    allowNumber: true
+                }
+            ]
         }
     },
 

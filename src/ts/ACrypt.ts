@@ -130,6 +130,9 @@ export abstract class ACrypt {
 
     abstract VerifyMeasurement    (measurementValue:        chargeTransparencyRecord.IMeasurementValue): Promise<chargyInterfaces.ICryptoResult>;
 
+    // The caller (chargyApp) guarantees that the given DOM elements exist.
+    // Returns an Error when the measurement itself could not be rendered,
+    // so that the caller can display it; otherwise nothing.
     abstract ViewMeasurement      (measurementValue:        chargeTransparencyRecord.IMeasurementValue,
                                    errorDiv:                HTMLDivElement,
                                    introDiv:                HTMLDivElement,
@@ -138,6 +141,6 @@ export abstract class ACrypt {
                                    hashedBufferValue:       HTMLDivElement,
                                    publicKeyValue:          HTMLDivElement,
                                    signatureExpectedValue:  HTMLDivElement,
-                                   signatureCheckValue:     HTMLDivElement) : void;
+                                   signatureCheckValue:     HTMLDivElement) : Promise<Error | undefined>;
 
 }

@@ -416,6 +416,7 @@ export async function verifyPCDFDocument(document: IPCDFDocument,
 
     try
     {
+
         const curve     = new chargy.elliptic.ec('p256');
         const publicKey = curve.keyFromPublic(document.publicKeyHex, 'hex');
 
@@ -424,6 +425,7 @@ export async function verifyPCDFDocument(document: IPCDFDocument,
         return publicKey.verify(document.hashValue, document.data.signature)
                    ? chargyInterfaces.VerificationResult.ValidSignature
                    : chargyInterfaces.VerificationResult.InvalidSignature;
+
     }
     catch
     {
@@ -445,11 +447,11 @@ export class PCDFCrypt01 extends ACrypt {
         let sessionResult = chargyInterfaces.SessionVerificationResult.ValidSignature;
         let valueCount    = 0;
 
-        for (const measurement of chargingSession.measurements ?? [])
+        for (const measurement of chargingSession.measurements)
         {
             measurement.chargingSession = chargingSession;
 
-            for (const measurementValue of measurement.values ?? [])
+            for (const measurementValue of measurement.values)
             {
                 valueCount++;
                 measurementValue.measurement = measurement;
@@ -493,41 +495,41 @@ export class PCDFCrypt01 extends ACrypt {
 
         measurementValue.result = result;
 
-        return result;
+        return Promise.resolve(result);
 
     }
 
-    ViewMeasurement(measurementValue:      IPCDFMeasurementValue,
-                    errorDiv:              HTMLDivElement,
-                    introDiv:              HTMLDivElement,
-                    infoDiv:               HTMLDivElement,
-                    PlainTextDiv:          HTMLDivElement,
-                    HashedPlainTextDiv:    HTMLDivElement,
-                    PublicKeyDiv:          HTMLDivElement,
-                    SignatureExpectedDiv:  HTMLDivElement,
-                    SignatureCheckDiv:     HTMLDivElement)
+    async ViewMeasurement(measurementValue:      IPCDFMeasurementValue,
+                          errorDiv:              HTMLDivElement,
+                          introDiv:              HTMLDivElement,
+                          infoDiv:               HTMLDivElement,
+                          PlainTextDiv:          HTMLDivElement,
+                          HashedPlainTextDiv:    HTMLDivElement,
+                          PublicKeyDiv:          HTMLDivElement,
+                          SignatureExpectedDiv:  HTMLDivElement,
+                          SignatureCheckDiv:     HTMLDivElement) : Promise<Error | undefined>
     {
 
         void errorDiv;
         void infoDiv;
         void SignatureCheckDiv;
 
-        if (introDiv)
-            introDiv.innerHTML = this.chargy.GetLocalizedMessage("The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature").
-                                             replace("{methodName}",      "PCDF").
-                                             replace("{cryptoAlgorithm}", "ECDSA secp256r1 SHA256");
+        if (measurementValue.measurement === undefined)
+            return new Error("Invalid measurement!");
 
-        if (PlainTextDiv)
-            PlainTextDiv.innerText = measurementValue.pcdfDocument?.signedPayload ?? "";
+        introDiv.innerHTML              = this.chargy.GetLocalizedMessage("The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature").
+                                                      replace("{methodName}",      "PCDF").
+                                                      replace("{cryptoAlgorithm}", "ECDSA secp256r1 SHA256");
 
-        if (HashedPlainTextDiv)
-            HashedPlainTextDiv.innerHTML = measurementValue.pcdfDocument?.hashValue.match(/.{1,8}/g)?.join(" ") ?? "";
+        PlainTextDiv.innerText          = measurementValue.pcdfDocument?.signedPayload ?? "";
 
-        if (PublicKeyDiv)
-            PublicKeyDiv.innerHTML = measurementValue.pcdfDocument?.publicKeyHex.match(/.{1,8}/g)?.join(" ") ?? "";
+        HashedPlainTextDiv.innerHTML    = measurementValue.pcdfDocument?.hashValue.match(/.{1,8}/g)?.join(" ") ?? "";
 
-        if (SignatureExpectedDiv)
-            SignatureExpectedDiv.innerHTML = measurementValue.pcdfDocument?.signatureHex.match(/.{1,8}/g)?.join(" ") ?? "";
+        PublicKeyDiv.innerHTML          = measurementValue.pcdfDocument?.publicKeyHex.match(/.{1,8}/g)?.join(" ") ?? "";
+
+        SignatureExpectedDiv.innerHTML  = measurementValue.pcdfDocument?.signatureHex.match(/.{1,8}/g)?.join(" ") ?? "";
+
+        return Promise.resolve(undefined);
 
     }
 
@@ -705,9 +707,9 @@ export class PCDF {
 
 }
 
-function parsePCDFTimestamp(value:  string,
-                            field:  string,
-                            errors: Array<string>): Date | undefined {
+function parsePCDFTimestamp(value:   string,
+                            field:   string,
+                            errors:  Array<string>): Date | undefined {
 
     if (!/^\d{12}$/.test(value))
     {
@@ -722,10 +724,10 @@ function parsePCDFTimestamp(value:  string,
     const minute = Number.parseInt(value.substring( 8, 10), 10);
     const second = Number.parseInt(value.substring(10, 12), 10);
 
-    if (year < 19 ||
-        month < 1 || month > 12 ||
-        day < 1 || day > 31 ||
-        hour > 23 ||
+    if (year   < 19 ||
+        month  <  1 || month > 12 ||
+        day    <  1 || day   > 31 ||
+        hour   > 23 ||
         minute > 59 ||
         second > 59)
     {
@@ -750,8 +752,8 @@ function parsePCDFTimestamp(value:  string,
 
 }
 
-function parsePCDFDuration(value: string,
-                           errors: Array<string>): number | undefined {
+function parsePCDFDuration(value:   string,
+                           errors:  Array<string>): number | undefined {
 
     if (!/^\d{6}$/.test(value))
     {
@@ -773,9 +775,9 @@ function parsePCDFDuration(value: string,
 
 }
 
-function parsePCDFFlag(value:  string,
-                       field:  string,
-                       errors: Array<string>): boolean | undefined {
+function parsePCDFFlag(value:   string,
+                       field:   string,
+                       errors:  Array<string>): boolean | undefined {
 
     if (value === "0")
         return false;
@@ -784,13 +786,14 @@ function parsePCDFFlag(value:  string,
         return true;
 
     errors.push(field + " must be 0 or 1");
+
     return undefined;
 
 }
 
-function parsePCDFInteger(value:  string,
-                          field:  string,
-                          errors: Array<string>): number | undefined {
+function parsePCDFInteger(value:   string,
+                          field:   string,
+                          errors:  Array<string>): number | undefined {
 
     if (!/^\d+$/.test(value))
     {
@@ -802,8 +805,8 @@ function parsePCDFInteger(value:  string,
 
 }
 
-function parsePCDFReadingValue(value:  string,
-                               errors: Array<string>): { value: Decimal; unit: string } | undefined {
+function parsePCDFReadingValue(value:   string,
+                               errors:  Array<string>): { value: Decimal; unit: string } | undefined {
 
     const match = value.match(/^(\d{4})\.(\d{3})\*kWh$/);
 
@@ -814,14 +817,14 @@ function parsePCDFReadingValue(value:  string,
     }
 
     return {
-        value: new Decimal(match[1] + "." + match[2]),
+        value: new Decimal(String(match[1]) + "." + String(match[2])),
         unit:  "kWh"
     };
 
 }
 
-function parsePCDFSessionInfo(value:  string,
-                              errors: Array<string>): IPCDFSessionInfo | undefined {
+function parsePCDFSessionInfo(value:   string,
+                              errors:  Array<string>): IPCDFSessionInfo | undefined {
 
     const parts = value.split("*");
 
@@ -856,8 +859,8 @@ function parsePCDFSessionInfo(value:  string,
 
 }
 
-function hexToBytes(hex: string,
-                    errorMessage: string): Uint8Array {
+function hexToBytes(hex:           string,
+                    errorMessage:  string): Uint8Array {
 
     const normalized = hex.replace(/\s+/g, "").toLowerCase();
 

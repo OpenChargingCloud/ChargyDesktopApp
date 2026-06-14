@@ -159,12 +159,8 @@ export class Alfen  {
                     };
                 }
 
-                switch (PublicKey.byteLength)
-                {
-                    case 25:
-                        common.PublicKeyFormat   = "secp192r1";
-                        break;
-                }
+                // The public key byte length is guaranteed to be 25 by the check above.
+                common.PublicKeyFormat = "secp192r1";
 
                 // Everything is Little Endian
                 const AdapterId            = this.bufferToHex(DataSet.slice( 0, 10));                                                              // 0a 54 65 73 74 44 65 76 00 09
@@ -431,7 +427,7 @@ export class Alfen  {
 
             for (const dataSet of common.dataSets)
             {
-                _CTR.chargingSessions?.[0]?.measurements?.[0]?.values.push(
+                _CTR.chargingSessions?.[0]?.measurements[0]?.values.push(
                     {
                         "timestamp":      dataSet.Timestamp,
                         "value":          dataSet.Value,
@@ -544,7 +540,6 @@ export class AlfenCrypt01 extends ACrypt {
 
         let sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
 
-        if (chargingSession.measurements)
         {
             for (const measurement of chargingSession.measurements)
             {
@@ -552,7 +547,7 @@ export class AlfenCrypt01 extends ACrypt {
                 measurement.chargingSession = chargingSession;
 
                 // Must include at least two measurements (start & stop)
-                if (measurement.values && measurement.values.length > 1)
+                if (measurement.values.length > 1)
                 {
 
                     // Validate...
@@ -625,9 +620,11 @@ export class AlfenCrypt01 extends ACrypt {
         };
 
 
-        const signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
-        if (signatureExpected)
+        const firstSignature = measurementValue.signatures?.[0];
+        if (firstSignature)
         {
+
+            const signatureExpected = firstSignature as chargyInterfaces.ISignatureRS;
 
             try
             {
@@ -661,7 +658,7 @@ export class AlfenCrypt01 extends ACrypt {
                                 const publicKey  = chargyLib.buf2hex(this.chargy.base32Decode(cryptoResult.publicKey ?? "", 'RFC4648'));
                                 let   result     = false;
 
-                                switch (meter?.publicKeys[0]?.algorithm ?? "")
+                                switch (meter.publicKeys[0]?.algorithm ?? "")
                                 {
 
                                     case "secp192r1":
@@ -752,15 +749,14 @@ export class AlfenCrypt01 extends ACrypt {
                           HashedPlainTextDiv:    HTMLDivElement,
                           PublicKeyDiv:          HTMLDivElement,
                           SignatureExpectedDiv:  HTMLDivElement,
-                          SignatureCheckDiv:     HTMLDivElement)
+                          SignatureCheckDiv:     HTMLDivElement) : Promise<Error | undefined>
     {
 
         const result     = measurementValue.result as IAlfenCrypt01Result;
 
         //#region Headline / Introduction
 
-        if (introDiv)
-        {
+                {
             introDiv.innerHTML = this.chargy.GetLocalizedMessage("The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature").
                                              replace("{methodName}",       "AlfenCrypt01").
                                              replace("{cryptoAlgorithm}",   this.description);
@@ -771,11 +767,9 @@ export class AlfenCrypt01 extends ACrypt {
 
         //#region Plain text
 
-        if (PlainTextDiv)
         {
 
-            if (PlainTextDiv &&
-                PlainTextDiv.parentElement &&
+            if (PlainTextDiv.parentElement &&
                 PlainTextDiv.parentElement.children[0])
             {
                 PlainTextDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Plain text") + " (320 Bytes, hex)";
@@ -812,7 +806,6 @@ export class AlfenCrypt01 extends ACrypt {
 
         //#region Hashed plain text
 
-        if (HashedPlainTextDiv)
         {
 
             if (HashedPlainTextDiv.parentElement &&
@@ -830,13 +823,11 @@ export class AlfenCrypt01 extends ACrypt {
 
         //#region Public key
 
-        if (PublicKeyDiv &&
-            result.publicKey &&
+        if (result.publicKey &&
             result.publicKey != "")
         {
 
             if (PublicKeyDiv.parentElement &&
-                PublicKeyDiv.parentElement &&
                 PublicKeyDiv.parentElement.children[0])
             {
                 PublicKeyDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Public Key") + " (" +
@@ -855,8 +846,7 @@ export class AlfenCrypt01 extends ACrypt {
 
         //#region Public key signatures (optional)
 
-        if (PublicKeyDiv &&
-            PublicKeyDiv.parentElement &&
+        if (PublicKeyDiv.parentElement &&
             PublicKeyDiv.parentElement.children[3])
         {
 
@@ -872,8 +862,7 @@ export class AlfenCrypt01 extends ACrypt {
 
                         const signatureDiv = PublicKeyDiv.parentElement.children[3].appendChild(document.createElement('div'));
 
-                        if (signatureDiv)
-                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(
+                        signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(
                                                                measurementValue.measurement.chargingSession?.chargingStation,
                                                                measurementValue.measurement.chargingSession?.EVSE,
                                                                measurementValue.measurement.chargingSession?.EVSE?.meters[0],
@@ -895,11 +884,10 @@ export class AlfenCrypt01 extends ACrypt {
 
         //#region Signature expected
 
-        if (SignatureExpectedDiv != null && result.signature != null)
+        if (result.signature != null)
         {
 
-            if (SignatureExpectedDiv &&
-                SignatureExpectedDiv.parentElement &&
+            if (SignatureExpectedDiv.parentElement &&
                 SignatureExpectedDiv.parentElement.children[0])
             {
                 SignatureExpectedDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Expected signature") + " (" + (result.signature.format ?? "") + ", hex)";
@@ -919,7 +907,6 @@ export class AlfenCrypt01 extends ACrypt {
 
         //#region Signature check
 
-        if (SignatureCheckDiv)
         {
             switch (result.status)
             {
@@ -957,6 +944,8 @@ export class AlfenCrypt01 extends ACrypt {
         }
 
         //#endregion
+
+        return undefined;
 
     }
 

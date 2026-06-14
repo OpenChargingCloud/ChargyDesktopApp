@@ -691,21 +691,28 @@ ipcMain.handle('readClipboardText', async () => {
 });
 
 ipcMain.handle('readClipboardImage', async () => {
+
     const image = clipboard.readImage();
+   
     if (image == null || image.isEmpty())
         return null;
 
     const data = image.toPNG();
+
     return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+
 });
 
 ipcMain.handle('calculateApplicationHash', async () => {
+
     if (applicationFileName === "" || appAsarFileName === "")
         return "";
 
     const sha512a = await sha512File(applicationFileName);
     const sha512b = await sha512File(appAsarFileName);
+
     return crypto.createHash('sha512').update(sha512a).update(sha512b).digest('hex');
+
 });
 
 ipcMain.handle('openExternal', async (_event, url) => {

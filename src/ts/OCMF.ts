@@ -74,7 +74,6 @@ export class OCMFv1_x extends ACrypt {
 
         let sessionResult:chargyInterfaces.SessionVerificationResult = chargyInterfaces.SessionVerificationResult.Unvalidated;
 
-        if (chargingSession.measurements)
         {
             for (const measurement of chargingSession.measurements)
             {
@@ -82,7 +81,7 @@ export class OCMFv1_x extends ACrypt {
                 measurement.chargingSession = chargingSession;
 
                 // Must include at least two measurements (start & stop)
-                if (measurement.values && measurement.values.length > 1)
+                if (measurement.values.length > 1)
                 {
 
                     //#region Verify measurements...
@@ -336,21 +335,18 @@ export class OCMFv1_x extends ACrypt {
                           HashedPlainTextDiv:    HTMLDivElement,
                           PublicKeyDiv:          HTMLDivElement,
                           SignatureExpectedDiv:  HTMLDivElement,
-                          SignatureCheckDiv:     HTMLDivElement)
+                          SignatureCheckDiv:     HTMLDivElement) : Promise<Error | undefined>
     {
 
         if (!measurementValue.measurement  ||
             !measurementValue.ocmfDocument ||
             !measurementValue.measurement.chargingSession)
         {
-            return {
-                status: chargyInterfaces.VerificationResult.InvalidMeasurement
-            }
+            return new Error("Invalid measurement!");
         }
 
         //#region Headline / Introduction
 
-        if (introDiv)
         {
             introDiv.innerHTML = this.chargy.GetLocalizedMessage("The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature").
                                              replace("{methodName}",       "OCMFCrypt01").
@@ -363,7 +359,6 @@ export class OCMFv1_x extends ACrypt {
 
         //#region Plain text
 
-        if (PlainTextDiv)
         {
 
             if (PlainTextDiv.parentElement &&
@@ -426,7 +421,6 @@ export class OCMFv1_x extends ACrypt {
 
         //#region Hashed plain text
 
-        if (HashedPlainTextDiv)
         {
 
             if (HashedPlainTextDiv.parentElement &&
@@ -435,7 +429,7 @@ export class OCMFv1_x extends ACrypt {
                 HashedPlainTextDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Hashed payload") + " (" + measurementValue.ocmfDocument.hashAlgorithm + ")";
             }
 
-            HashedPlainTextDiv.innerHTML  = measurementValue.ocmfDocument.hashValue?.match(/.{1,8}/g)?.join(" ")
+            HashedPlainTextDiv.innerHTML  = measurementValue.ocmfDocument.hashValue.match(/.{1,8}/g)?.join(" ")
                                                 ?? "0x00000000000000000000000000000000000";
 
         }
@@ -444,14 +438,14 @@ export class OCMFv1_x extends ACrypt {
 
         //#region Public key
 
-        if (PublicKeyDiv && measurementValue.ocmfDocument.publicKey)
+        if (measurementValue.ocmfDocument.publicKey)
         {
 
             if (PublicKeyDiv.parentElement &&
                 PublicKeyDiv.parentElement.children[0])
             {
 
-                PublicKeyDiv.parentElement.children[0].innerHTML = typeof measurementValue.ocmfDocument?.publicKey === 'string'
+                PublicKeyDiv.parentElement.children[0].innerHTML = typeof measurementValue.ocmfDocument.publicKey === 'string'
                                                                        ? this.chargy.GetLocalizedMessage("Public Key")
                                                                        : this.chargy.GetLocalizedMessage("Public Key") + " (" + measurementValue.ocmfDocument.publicKey.algorithm + ", " +
                                                                                                                                 measurementValue.ocmfDocument.publicKey.encoding + ")";
@@ -470,8 +464,7 @@ export class OCMFv1_x extends ACrypt {
 
         //#region Public key signatures (optional)
 
-        if (PublicKeyDiv &&
-            PublicKeyDiv.parentElement &&
+        if (PublicKeyDiv.parentElement &&
             PublicKeyDiv.parentElement.children[3])
         {
 
@@ -489,12 +482,11 @@ export class OCMFv1_x extends ACrypt {
 
                         const signatureDiv = PublicKeyDiv.parentElement.children[3].appendChild(document.createElement('div'));
 
-                        if (signatureDiv)
-                            signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(
-                                                               measurementValue.measurement.chargingSession?.chargingStation,
-                                                               measurementValue.measurement.chargingSession?.EVSE,
-                                                               measurementValue.measurement.chargingSession?.EVSE?.meters[0],
-                                                               measurementValue.measurement.chargingSession?.EVSE?.meters[0]?.publicKeys?.[0],
+                        signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(
+                                                               measurementValue.measurement.chargingSession.chargingStation,
+                                                               measurementValue.measurement.chargingSession.EVSE,
+                                                               measurementValue.measurement.chargingSession.EVSE?.meters[0],
+                                                               measurementValue.measurement.chargingSession.EVSE?.meters[0]?.publicKeys?.[0],
                                                                signature
                                                            );
 
@@ -512,7 +504,7 @@ export class OCMFv1_x extends ACrypt {
 
         //#region Signature expected
 
-        if (SignatureExpectedDiv && measurementValue.ocmfDocument?.signature.SD)
+        if (measurementValue.ocmfDocument.signature.SD)
         {
 
             if (SignatureExpectedDiv.parentElement &&
@@ -521,9 +513,9 @@ export class OCMFv1_x extends ACrypt {
                 SignatureExpectedDiv.parentElement.children[0].innerHTML  = this.chargy.GetLocalizedMessage("Expected signature") + " (rs, hex)";
             }
 
-            SignatureExpectedDiv.innerHTML = "der: "           +  measurementValue.ocmfDocument?.signature.SD.                                   match(/.{1,8}/g)?.join(" ") + "<br /><br />" +
-                                             "r:&nbsp;&nbsp; " + (measurementValue.ocmfDocument?.signatureRS?.r?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") ?? "-") + "<br />" +
-                                             "s:&nbsp;&nbsp; " + (measurementValue.ocmfDocument?.signatureRS?.s?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") ?? "-");
+            SignatureExpectedDiv.innerHTML = "der: "           +  measurementValue.ocmfDocument.signature.SD.                                   match(/.{1,8}/g)?.join(" ") + "<br /><br />" +
+                                             "r:&nbsp;&nbsp; " + (measurementValue.ocmfDocument.signatureRS?.r?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") ?? "-") + "<br />" +
+                                             "s:&nbsp;&nbsp; " + (measurementValue.ocmfDocument.signatureRS?.s?.toLowerCase().padStart(56, '0').match(/.{1,8}/g)?.join(" ") ?? "-");
 
         }
 
@@ -531,7 +523,7 @@ export class OCMFv1_x extends ACrypt {
 
         //#region Signature check
 
-        if (SignatureCheckDiv && measurementValue.measurement.chargingSession.verificationResult)
+        if (measurementValue.measurement.chargingSession.verificationResult)
         {
             switch (measurementValue.measurement.chargingSession.verificationResult.status)
             {
@@ -1073,51 +1065,51 @@ export class OCMF {
 
                 //#region General Information
 
-                const formatVersion                 = firstOCMDJSONDocument.payload?.FV;
-                const gatewayInformation            = firstOCMDJSONDocument.payload?.GI ?? firstOCMDJSONDocument.payload?.VI;
-                const gatewaySerial                 = firstOCMDJSONDocument.payload?.GS;
-                const gatewayVersion                = firstOCMDJSONDocument.payload?.GV ?? firstOCMDJSONDocument.payload?.VV;
+                const formatVersion                 = firstOCMDJSONDocument.payload.FV;
+                const gatewayInformation            = firstOCMDJSONDocument.payload.GI ?? firstOCMDJSONDocument.payload.VI;
+                const gatewaySerial                 = firstOCMDJSONDocument.payload.GS;
+                const gatewayVersion                = firstOCMDJSONDocument.payload.GV ?? firstOCMDJSONDocument.payload.VV;
 
                 //#endregion
 
                 //#region Pagination
 
-                const paging                        = firstOCMDJSONDocument.payload?.PG;
+                const paging                        = firstOCMDJSONDocument.payload.PG;
 
                 //#endregion
 
                 //#region Meter Identification
 
-                const meterVendor                   = firstOCMDJSONDocument.payload?.MV;
-                const meterModel                    = firstOCMDJSONDocument.payload?.MM;
-                const meterSerial                   = firstOCMDJSONDocument.payload?.MS;
+                const meterVendor                   = firstOCMDJSONDocument.payload.MV;
+                const meterModel                    = firstOCMDJSONDocument.payload.MM;
+                const meterSerial                   = firstOCMDJSONDocument.payload.MS;
                 const effectiveMeterSerial          = meterSerial ?? gatewaySerial;
-                const meterFirmware                 = firstOCMDJSONDocument.payload?.MF;
+                const meterFirmware                 = firstOCMDJSONDocument.payload.MF;
 
                 //#endregion
 
                 //#region User Assignment
 
-                const identificationStatus          = firstOCMDJSONDocument.payload?.IS;
-                const identificationLevel           = firstOCMDJSONDocument.payload?.IL;
-                const identificationFlags           = firstOCMDJSONDocument.payload?.IF;
-                const identificationType            = firstOCMDJSONDocument.payload?.IT;
-                const identificationData            = firstOCMDJSONDocument.payload?.ID;
-                const tariffText                    = firstOCMDJSONDocument.payload?.TT;
+                const identificationStatus          = firstOCMDJSONDocument.payload.IS;
+                const identificationLevel           = firstOCMDJSONDocument.payload.IL;
+                const identificationFlags           = firstOCMDJSONDocument.payload.IF;
+                const identificationType            = firstOCMDJSONDocument.payload.IT;
+                const identificationData            = firstOCMDJSONDocument.payload.ID;
+                const tariffText                    = firstOCMDJSONDocument.payload.TT;
 
                 //#endregion
 
                 //#region EVSE Metrologic parameters
 
-                const controlerFirmwareVersion      = firstOCMDJSONDocument.payload?.CF;
-                const lossCompensation              = firstOCMDJSONDocument.payload?.LC;
+                const controlerFirmwareVersion      = firstOCMDJSONDocument.payload.CF;
+                const lossCompensation              = firstOCMDJSONDocument.payload.LC;
 
                 //#endregion
 
                 //#region Assignment of the Charge Point
 
-                const chargePointIdType             = firstOCMDJSONDocument.payload?.CT;
-                const chargePointId                 = firstOCMDJSONDocument.payload?.CI;
+                const chargePointIdType             = firstOCMDJSONDocument.payload.CT;
+                const chargePointId                 = firstOCMDJSONDocument.payload.CI;
 
                 //#endregion
 
@@ -1187,7 +1179,7 @@ export class OCMF {
 
                     //#endregion
 
-                    if (!firstOCMDJSONDocument.payload.RD || firstOCMDJSONDocument.payload.RD.length == 0) return {
+                    if (firstOCMDJSONDocument.payload.RD.length == 0) return {
                         status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
                         message:   this.chargy.GetLocalizedMessage("Each OCMF data set must have at least one meter reading!"),
                         certainty: 0
@@ -1499,7 +1491,7 @@ export class OCMF {
         {
             return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:   "Invalid OCMF data: " + (exception instanceof Error ? exception.message : exception),
+                message:   "Invalid OCMF data: " + (exception instanceof Error ? exception.message : String(exception)),
                 certainty: 0
             }
         }
@@ -1918,7 +1910,7 @@ export class OCMF {
                                                         ? chargyInterfaces.VerificationResult.ValidSignature
                                                         : chargyInterfaces.VerificationResult.InvalidSignature;
 
-                return OCMFJSONDocument.validationStatus;
+                return await Promise.resolve(OCMFJSONDocument.validationStatus);
 
             }
             catch
@@ -2073,7 +2065,7 @@ export class OCMF {
                                     let hashValue:         string                                     = "?";
                                     let validationStatus:  chargyInterfaces.VerificationResult|null   = null;
 
-                                    const plaintext = ocmfRAWPayload ?? JSON.stringify(ocmfPayload);
+                                    const plaintext = ocmfRAWPayload;
 
                                     try
                                     {
@@ -2347,14 +2339,14 @@ export class OCMF {
                     if (!ocmfJSONDocumentGroups.has(groupingKey))
                         ocmfJSONDocumentGroups.set(groupingKey, new Array<IOCMFJSONDocument>());
 
-                    ocmfJSONDocumentGroups.get(groupingKey)!.push(ocmfJSONDocument);
+                    ocmfJSONDocumentGroups.get(groupingKey)?.push(ocmfJSONDocument);
 
                 }
                 catch (exception)
                 {
                     return {
                         status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                        message:   this.chargy.GetLocalizedMessage("The given OCMF data could not be parsed") + ": " + exception,
+                        message:   this.chargy.GetLocalizedMessage("The given OCMF data could not be parsed") + ": " + (exception instanceof Error ? exception.message : String(exception)),
                         certainty: 0
                     }
                 }

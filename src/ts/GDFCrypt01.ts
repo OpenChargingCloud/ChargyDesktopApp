@@ -59,7 +59,6 @@ export class GDFCrypt01 extends ACrypt {
 
         let sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
 
-        if (chargingSession.measurements)
         {
             for (const measurement of chargingSession.measurements)
             {
@@ -67,7 +66,7 @@ export class GDFCrypt01 extends ACrypt {
                 measurement.chargingSession = chargingSession;
 
                 // Must include at least two measurements (start & stop)
-                if (measurement.values && measurement.values.length > 1)
+                if (measurement.values.length > 1)
                 {
 
                     // Validate...
@@ -140,9 +139,11 @@ export class GDFCrypt01 extends ACrypt {
             authorizationStartTimestamp:  chargyLib.SetTimestamp(cryptoBuffer, measurementValue.measurement.chargingSession.authorizationStart.timestamp,  169)
         };
 
-        const signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
-        if (signatureExpected != null)
+        const firstSignature = measurementValue.signatures?.[0];
+        if (firstSignature != null)
         {
+
+            const signatureExpected = firstSignature as chargyInterfaces.ISignatureRS;
 
             try
             {
@@ -169,9 +170,9 @@ export class GDFCrypt01 extends ACrypt {
                         try
                         {
 
-                            cryptoResult.publicKey            = meter?.publicKeys[0]?.value?.toLowerCase();
-                            cryptoResult.publicKeyFormat      = meter?.publicKeys[0]?.format;
-                            cryptoResult.publicKeySignatures  = meter?.publicKeys[0]?.signatures;
+                            cryptoResult.publicKey            = meter.publicKeys[0]?.value?.toLowerCase();
+                            cryptoResult.publicKeyFormat      = meter.publicKeys[0]?.format;
+                            cryptoResult.publicKeySignatures  = meter.publicKeys[0]?.signatures;
 
                             try
                             {
@@ -227,41 +228,32 @@ export class GDFCrypt01 extends ACrypt {
                           HashedPlainTextDiv:    HTMLDivElement,
                           PublicKeyDiv:          HTMLDivElement,
                           SignatureExpectedDiv:  HTMLDivElement,
-                          SignatureCheckDiv:     HTMLDivElement)
+                          SignatureCheckDiv:     HTMLDivElement) : Promise<Error | undefined>
     {
 
-        if (measurementValue.measurement                                              === undefined ||
-            measurementValue.measurement.chargingSession                              === undefined ||
-            measurementValue.measurement.chargingSession.authorizationStart           === undefined ||
+        if (measurementValue.measurement                              === undefined ||
+            measurementValue.measurement.chargingSession              === undefined ||
             measurementValue.measurement.chargingSession.authorizationStart.timestamp === undefined)
         {
-            return {
-                status: chargyInterfaces.VerificationResult.InvalidMeasurement
-            }
+            return new Error("Invalid measurement!");
         }
 
         const result = measurementValue.result as IGDFCrypt01Result;
 
         //#region Headline / Introduction
 
-        if (introDiv)
-        {
-            introDiv.innerHTML = this.chargy.GetLocalizedMessage("The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature").
-                                            replace("{methodName}",       "GDFCrypt01").
-                                            replace("{cryptoAlgorithm}",   this.description);
-        }
+        introDiv.innerHTML = this.chargy.GetLocalizedMessage("The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature").
+                                        replace("{methodName}",       "GDFCrypt01").
+                                        replace("{cryptoAlgorithm}",   this.description);
 
         //#endregion
 
 
         //#region Plain text
 
-        if (PlainTextDiv != null)
         {
 
-            if (PlainTextDiv                           != undefined &&
-                PlainTextDiv.parentElement             != undefined &&
-                PlainTextDiv.parentElement             != undefined &&
+            if (PlainTextDiv.parentElement             != undefined &&
                 PlainTextDiv.parentElement.children[0] != undefined)
             {
                 PlainTextDiv.parentElement.children[0].innerHTML = "Plain text (320 Bytes, hex)";
@@ -292,12 +284,9 @@ export class GDFCrypt01 extends ACrypt {
 
         //#region Hashed plain text
 
-        if (HashedPlainTextDiv != null)
         {
 
-            if (HashedPlainTextDiv                           != undefined &&
-                HashedPlainTextDiv.parentElement             != undefined &&
-                HashedPlainTextDiv.parentElement             != undefined &&
+            if (HashedPlainTextDiv.parentElement             != undefined &&
                 HashedPlainTextDiv.parentElement.children[0] != undefined)
             {
                 HashedPlainTextDiv.parentElement.children[0].innerHTML   = "Hashed plain text (SHA256, 24 bytes, hex)";
@@ -311,14 +300,11 @@ export class GDFCrypt01 extends ACrypt {
 
         //#region Public Key
 
-        if (PublicKeyDiv     != null &&
-            result.publicKey != null &&
+        if (result.publicKey != null &&
             result.publicKey != "")
         {
 
-            if (PublicKeyDiv                           != undefined &&
-                PublicKeyDiv.parentElement             != undefined &&
-                PublicKeyDiv.parentElement             != undefined &&
+            if (PublicKeyDiv.parentElement             != undefined &&
                 PublicKeyDiv.parentElement.children[0] != undefined)
             {
                 PublicKeyDiv.parentElement.children[0].innerHTML       = "Public Key (" +
@@ -337,9 +323,7 @@ export class GDFCrypt01 extends ACrypt {
 
             //#region Public key signatures
 
-            if (PublicKeyDiv                           != undefined &&
-                PublicKeyDiv.parentElement             != undefined &&
-                PublicKeyDiv.parentElement             != undefined &&
+            if (PublicKeyDiv.parentElement             != undefined &&
                 PublicKeyDiv.parentElement.children[3] != undefined)
             {
                 PublicKeyDiv.parentElement.children[3].innerHTML = "";
@@ -353,7 +337,7 @@ export class GDFCrypt01 extends ACrypt {
                     try
                     {
 
-                        const signatureDiv = PublicKeyDiv?.parentElement?.children[3]?.appendChild(document.createElement('div'));
+                        const signatureDiv = PublicKeyDiv.parentElement?.children[3]?.appendChild(document.createElement('div'));
 
                         if (signatureDiv != null)
                             signatureDiv.innerHTML = await this.chargy.CheckMeterPublicKeySignature(measurementValue.measurement.chargingSession.chargingStation,
@@ -378,12 +362,10 @@ export class GDFCrypt01 extends ACrypt {
 
         //#region Signature expected
 
-        if (SignatureExpectedDiv != null && result.signature != null)
+        if (result.signature != null)
         {
 
-            if (SignatureExpectedDiv                           != undefined &&
-                SignatureExpectedDiv.parentElement             != undefined &&
-                SignatureExpectedDiv.parentElement             != undefined &&
+            if (SignatureExpectedDiv.parentElement             != undefined &&
                 SignatureExpectedDiv.parentElement.children[0] != undefined)
             {
                 SignatureExpectedDiv.parentElement.children[0].innerHTML  = "Erwartete Signatur (" + (result.signature.format || "") + ", hex)";
@@ -403,7 +385,6 @@ export class GDFCrypt01 extends ACrypt {
 
         //#region Signature check
 
-        if (SignatureCheckDiv != null)
         {
             switch (result.status)
             {

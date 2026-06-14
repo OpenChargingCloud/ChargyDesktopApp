@@ -114,14 +114,14 @@ export class Mennekes {
                     certainty: 0
                 };
 
-            return this.toChargeTransparencyRecord(chargingProcesses);
+            return await Promise.resolve(this.toChargeTransparencyRecord(chargingProcesses));
 
         }
         catch (exception)
         {
             return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                message:   "Exception occured: " + (exception instanceof Error ? exception.message : String(exception)),
                 certainty: 0
             }
         }
@@ -276,53 +276,50 @@ export class MennekesCrypt01 extends ACrypt {
 
         let sessionResult = chargyInterfaces.SessionVerificationResult.UnknownSessionFormat;
 
-        if (chargingSession.measurements)
+        for (const measurement of chargingSession.measurements)
         {
-            for (const measurement of chargingSession.measurements)
+
+            measurement.chargingSession = chargingSession;
+
+            if (measurement.values.length >= 2)
             {
 
-                measurement.chargingSession = chargingSession;
+                sessionResult = chargyInterfaces.SessionVerificationResult.ValidSignature;
 
-                if (measurement.values && measurement.values.length >= 2)
+                for (const measurementValue of measurement.values)
                 {
+                    measurementValue.measurement = measurement;
+                    await this.VerifyMeasurement(measurementValue as IMennekesMeasurementValue);
 
-                    sessionResult = chargyInterfaces.SessionVerificationResult.ValidSignature;
-
-                    for (const measurementValue of measurement.values)
-                    {
-                        measurementValue.measurement = measurement;
-                        await this.VerifyMeasurement(measurementValue as IMennekesMeasurementValue);
-
-                        if (measurementValue.result?.status !== chargyInterfaces.VerificationResult.ValidSignature)
-                            sessionResult = chargyInterfaces.SessionVerificationResult.InvalidSignature;
-                    }
-
-                    if (sessionResult === chargyInterfaces.SessionVerificationResult.ValidSignature)
-                    {
-                        const lawErrors = validateMennekesLawConformity(measurement.values as IMennekesMeasurementValue[]);
-
-                        if (lawErrors.length > 0)
-                        {
-                            measurement.verificationResult = {
-                                status:  chargyInterfaces.VerificationResult.InvalidMeasurement,
-                                errors:  lawErrors
-                            };
-
-                            sessionResult = chargyInterfaces.SessionVerificationResult.InvalidMeasurement;
-                        }
-                        else
-                        {
-                            measurement.verificationResult = {
-                                status: chargyInterfaces.VerificationResult.ValidSignature
-                            };
-                        }
-                    }
-
+                    if (measurementValue.result?.status !== chargyInterfaces.VerificationResult.ValidSignature)
+                        sessionResult = chargyInterfaces.SessionVerificationResult.InvalidSignature;
                 }
-                else
-                    sessionResult = chargyInterfaces.SessionVerificationResult.AtLeastTwoMeasurementsRequired;
+
+                if (sessionResult === chargyInterfaces.SessionVerificationResult.ValidSignature)
+                {
+                    const lawErrors = validateMennekesLawConformity(measurement.values as IMennekesMeasurementValue[]);
+
+                    if (lawErrors.length > 0)
+                    {
+                        measurement.verificationResult = {
+                            status:  chargyInterfaces.VerificationResult.InvalidMeasurement,
+                            errors:  lawErrors
+                        };
+
+                        sessionResult = chargyInterfaces.SessionVerificationResult.InvalidMeasurement;
+                    }
+                    else
+                    {
+                        measurement.verificationResult = {
+                            status: chargyInterfaces.VerificationResult.ValidSignature
+                        };
+                    }
+                }
 
             }
+            else
+                sessionResult = chargyInterfaces.SessionVerificationResult.AtLeastTwoMeasurementsRequired;
+
         }
 
         return {
@@ -351,7 +348,7 @@ export class MennekesCrypt01 extends ACrypt {
                   serverId:              measurement.serverId,
                   publicKey:             measurement.publicKey,
                   publicKeyFormat:       chargyInterfaces.PublicKeyFormats.XY,
-                  signature:             measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS,
+                  signature:             measurementValue.signatures?.[0],
                   timestamp:             measurementValue.timestamp,
                   meterStatus:           String(measurementValue.meterStatusNumber),
                   secondsIndex:          String(measurementValue.secondsIndex ?? ""),
@@ -374,8 +371,8 @@ export class MennekesCrypt01 extends ACrypt {
             if (meter.publicKeys == null || meter.publicKeys.length === 0)
                 return setResult(chargyInterfaces.VerificationResult.PublicKeyNotFound);
 
-            const signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS | undefined;
-            if (signatureExpected?.r == null || signatureExpected.s == null)
+            const signatureExpected = measurementValue.signatures?.[0] as chargyInterfaces.ISignatureRS;
+            if (signatureExpected.r == null || signatureExpected.s == null)
                 return setResult(chargyInterfaces.VerificationResult.InvalidSignature);
 
             const signedData = buildMennekesSignatureData(
@@ -445,58 +442,46 @@ export class MennekesCrypt01 extends ACrypt {
                           HashedPlainTextDiv:    HTMLDivElement,
                           PublicKeyDiv:          HTMLDivElement,
                           SignatureExpectedDiv:  HTMLDivElement,
-                          SignatureCheckDiv:     HTMLDivElement)
+                          SignatureCheckDiv:     HTMLDivElement) : Promise<Error | undefined>
     {
-
-        const result = measurementValue.result as IMennekesCrypt01Result;
-
-        if (introDiv)
-            introDiv.innerHTML = this.chargy.GetLocalizedMessage("The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature").
-                                             replace("{methodName}",       "MennekesCrypt01").
-                                             replace("{cryptoAlgorithm}",   this.description);
-
-        if (PlainTextDiv)
-        {
-            if (PlainTextDiv.parentElement?.children[0])
-                PlainTextDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Plain text") + " (320 Bytes, hex)";
-
-            PlainTextDiv.innerHTML = result.signedData?.match(/.{1,8}/g)?.join(" ") ?? "";
-        }
-
-        if (HashedPlainTextDiv)
-        {
-            if (HashedPlainTextDiv.parentElement?.children[0])
-                HashedPlainTextDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Hashed plain text") + " (SHA256 cropped to 24 Bytes, hex)";
-
-            HashedPlainTextDiv.innerHTML = result.hashValue?.match(/.{1,8}/g)?.join(" ") ?? "";
-        }
-
-        if (PublicKeyDiv)
-        {
-            if (PublicKeyDiv.parentElement?.children[0])
-                PublicKeyDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Public Key") + " (secp192r1, xy, hex)";
-
-            PublicKeyDiv.innerHTML = result.publicKey?.match(/.{1,8}/g)?.join(" ") ?? "";
-        }
-
-        if (SignatureExpectedDiv)
-        {
-            if (SignatureExpectedDiv.parentElement?.children[0])
-                SignatureExpectedDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Expected signature") + " (rs, hex)";
-
-            SignatureExpectedDiv.innerHTML = result.signature?.r && result.signature.s
-                                                 ? "r: " + result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") + "<br />" +
-                                                   "s: " + result.signature.s.toLowerCase().match(/.{1,8}/g)?.join(" ")
-                                                 : "";
-        }
-
-        if (SignatureCheckDiv)
-            SignatureCheckDiv.innerHTML = result.status === chargyInterfaces.VerificationResult.ValidSignature
-                                              ? '<i class="fas fa-check-circle"></i><div id="description">' + this.chargy.GetLocalizedMessage("Valid signature") + '</div>'
-                                              : '<i class="fas fa-times-circle"></i><div id="description">' + this.chargy.GetLocalizedMessage("Invalid signature") + '</div>';
 
         void errorDiv;
         void infoDiv;
+
+        const result = measurementValue.result as IMennekesCrypt01Result;
+
+        introDiv.innerHTML = this.chargy.GetLocalizedMessage("The following data of the charging session is relevant for metrological and legal metrological purposes and therefore part of the digital signature").
+                                         replace("{methodName}",       "MennekesCrypt01").
+                                         replace("{cryptoAlgorithm}",   this.description);
+
+        if (PlainTextDiv.parentElement?.children[0])
+            PlainTextDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Plain text") + " (320 Bytes, hex)";
+
+        PlainTextDiv.innerHTML = result.signedData?.match(/.{1,8}/g)?.join(" ") ?? "";
+
+        if (HashedPlainTextDiv.parentElement?.children[0])
+            HashedPlainTextDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Hashed plain text") + " (SHA256 cropped to 24 Bytes, hex)";
+
+        HashedPlainTextDiv.innerHTML = result.hashValue?.match(/.{1,8}/g)?.join(" ") ?? "";
+
+        if (PublicKeyDiv.parentElement?.children[0])
+            PublicKeyDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Public Key") + " (secp192r1, xy, hex)";
+
+        PublicKeyDiv.innerHTML = result.publicKey?.match(/.{1,8}/g)?.join(" ") ?? "";
+
+        if (SignatureExpectedDiv.parentElement?.children[0])
+            SignatureExpectedDiv.parentElement.children[0].innerHTML = this.chargy.GetLocalizedMessage("Expected signature") + " (rs, hex)";
+
+        SignatureExpectedDiv.innerHTML = result.signature?.r && result.signature.s
+                                             ? "r: " + (result.signature.r.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "") + "<br />" +
+                                               "s: " + (result.signature.s.toLowerCase().match(/.{1,8}/g)?.join(" ") ?? "")
+                                             : "";
+
+        SignatureCheckDiv.innerHTML = result.status === chargyInterfaces.VerificationResult.ValidSignature
+                                          ? '<i class="fas fa-check-circle"></i><div id="description">' + this.chargy.GetLocalizedMessage("Valid signature") + '</div>'
+                                          : '<i class="fas fa-times-circle"></i><div id="description">' + this.chargy.GetLocalizedMessage("Invalid signature") + '</div>';
+
+        return Promise.resolve(undefined);
 
     }
 
@@ -505,9 +490,6 @@ export class MennekesCrypt01 extends ACrypt {
 export function extractMennekesChargingProcesses(XMLDocument: Document): IMennekesChargingProcess[] {
 
     const root = XMLDocument.documentElement;
-
-    if (root == null)
-        return [];
 
     if (isLocalName(root, "ChargingProcess"))
         return [ parseChargingProcessElement(root) ];
@@ -528,7 +510,19 @@ export function parseMennekesXMLDocument(XMLDocument: Document): IMennekesBillin
         throw new Error("No Mennekes ChargingProcess element found!");
 
     if (isLocalName(XMLDocument.documentElement, "ChargingProcess"))
-        return chargingProcesses[0]!;
+    {
+        if (chargingProcesses.length > 1)
+        {
+
+            const chargingProcess = chargingProcesses[0];
+
+            if (chargingProcess != undefined)
+                return chargingProcess;
+
+            throw new Error("No Mennekes ChargingProcess found!");
+
+        }
+    }
 
     return {
         chargingProcesses

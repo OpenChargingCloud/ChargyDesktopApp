@@ -15,23 +15,9 @@
  * limitations under the License.
  */
 
-import Decimal  from 'decimal.js';
+import Decimal         from 'decimal.js';
+import * as chargyLib  from '../chargyLib'
 
-
-export function IsAPublicKeyInfo(data: unknown): data is IPublicKeyInfo
-{
-
-    if (data == null || data == undefined)
-        return false;
-
-    const publicKeyInfo = data as IPublicKeyInfo;
-
-    return publicKeyInfo["@context"]  !== undefined &&
-           publicKeyInfo.subject      !== undefined &&
-           publicKeyInfo.algorithm    !== undefined &&
-           publicKeyInfo.value        !== undefined;
-
-}
 
 export function isObject(data: unknown): data is Record<string, unknown> {
     return typeof data === "object" && data !== null;
@@ -89,31 +75,18 @@ export interface IContract
     email?:                     string;
 }
 
-export interface IPublicKeyLookup
-{
-    publicKeys:                 Array<IPublicKeyInfo>;
-    status?:                    SessionVerificationResult;
+export function isString(value: unknown): value is string {
+    return typeof value === "string";
 }
 
-export interface IPublicKeyInfo
-{
-    "@id":                      string; // Just for merging with IChargeTransparencyRecord!
-    "@context":                 string;
-    subject:                    string;
-    type?:                      string|IOIDInfo;
-    algorithm:                  string|IOIDInfo;
-    value:                      string;
-    encoding?:                  string;
-    signatures?:                Array<IPublicKeysignature>;
-    certainty:                  number;
+export function isStringArray(value: unknown): value is string[] {
+    return Array.isArray(value) &&
+           value.every(item => typeof item === "string");
 }
 
-export interface IPublicKeysignature
-{
-    "@id":                      string;
-    "@context"?:                string;
-    timestamp:                  string;
-    keyUsage:                   Array<string>;
+export function isStringOrStringArray(value: unknown): value is string | string[] {
+    return typeof value === "string" ||
+           isStringArray(value);
 }
 
 export interface IOIDInfo
@@ -122,16 +95,20 @@ export interface IOIDInfo
     name:                       string;
 }
 
-export function ISOIDInfo(data: unknown): data is IOIDInfo
+export function isOIDInfo(data: unknown): data is IOIDInfo
 {
 
-    if (data == null || data == undefined)
+    if (!isObject(data))
         return false;
 
-    const OIDInfo = data as IOIDInfo;
+    return typeof data["oid"]  === "string" &&
+           typeof data["name"] === "string";
 
-    return OIDInfo.oid !== undefined;
+}
 
+export function isStringOrOIDInfo(value: unknown): value is string | IOIDInfo {
+    return typeof value === "string" ||
+           isOIDInfo(value);
 }
 
 
@@ -184,6 +161,53 @@ export interface IPrivacy {
     email:                      string;
     web:                        string;
     publicKeys?:                Array<IPublicKey>
+}
+
+export interface IPublicKey
+{
+    algorithm:                  string;
+    format:                     string;            // e.g. "DER" | "rs"
+    encoding:                   IEncoding|string;  // e.g. "hex" | "base64"
+    value?:                     string;
+    previousValue?:             string;
+    signatures?:                Array<unknown>;
+}
+
+export function isIPublicKeyXY(obj: unknown): obj is IPublicKeyXY {
+    return typeof obj === 'object' && obj !== null   &&
+           typeof (obj as IPublicKeyXY).x === "string" &&
+           typeof (obj as IPublicKeyXY).y === "string";
+}
+
+export interface IPublicKeyXY extends IPublicKey
+{
+    x:                          string;
+    y:                          string;
+}
+
+export interface ISignature
+{
+    algorithm?:                 CryptoAlgorithms|string;
+    format?:                    SignatureFormats|string;
+    previousValue?:             string;
+    value?:                     string;
+}
+
+// export interface IECCSignature extends ISignature
+// {
+//     //algorithm:                  CryptoAlgorithms|string;
+//     //format:                     SignatureFormats|string;
+//     //previousValue?:             string;
+//     //value?:                     string;
+//     r?:                         string;
+//     s?:                         string;
+// }
+
+
+export interface ISignatureRS extends ISignature
+{
+    r?:                         string;
+    s?:                         string;
 }
 
 export interface IChargingPool
@@ -429,7 +453,7 @@ export enum DisplayPrefixes {
 }
 
 
-export interface ISessionCryptoResult
+export interface ISessionCryptoResult extends chargyLib.JSONObject
 {
 
     status:                     SessionVerificationResult;
@@ -468,53 +492,6 @@ export interface ICryptoResult
 export function isICryptoResult(obj: unknown): obj is ICryptoResult {
     return typeof obj === 'object' && obj !== null &&
            (obj as ICryptoResult).status !== undefined
-}
-
-export function isIPublicKeyXY(obj: unknown): obj is IPublicKeyXY {
-    return typeof obj === 'object' && obj !== null   &&
-           typeof (obj as IPublicKeyXY).x === "string" &&
-           typeof (obj as IPublicKeyXY).y === "string";
-}
-
-export interface IPublicKeyXY extends IPublicKey
-{
-    x:                          string;
-    y:                          string;
-}
-
-export interface IPublicKey
-{
-    algorithm:                  string;
-    format:                     string;            // e.g. "DER" | "rs"
-    encoding:                   IEncoding|string;  // e.g. "hex" | "base64"
-    value?:                     string;
-    previousValue?:             string;
-    signatures?:                Array<unknown>;
-}
-
-export interface ISignature
-{
-    algorithm?:                 CryptoAlgorithms|string;
-    format?:                    SignatureFormats|string;
-    previousValue?:             string;
-    value?:                     string;
-}
-
-// export interface IECCSignature extends ISignature
-// {
-//     //algorithm:                  CryptoAlgorithms|string;
-//     //format:                     SignatureFormats|string;
-//     //previousValue?:             string;
-//     //value?:                     string;
-//     r?:                         string;
-//     s?:                         string;
-// }
-
-
-export interface ISignatureRS extends ISignature
-{
-    r?:                         string;
-    s?:                         string;
 }
 
 export interface IAddress {
@@ -781,3 +758,21 @@ export interface IParkingTariff {
 }
 
 export type ShowPKIDetailsFunction = (pkiData: unknown) => void;
+
+export type IssueReportPayload = {
+    timestamp:                  string;
+    chargyVersion:              string;
+    platform:                   string;
+    invalidCTR:                 boolean;
+    InvalidStationData:         boolean;
+    invalidSignatures:          boolean;
+    invalidCertificates:        boolean;
+    transparencenySoftwareBug:  boolean;
+    DSGVO:                      boolean;
+    BITV:                       boolean;
+    description:                string;
+    chargeTransparencyRecord?:  string;
+    name:                       string;
+    phone:                      string;
+    eMail:                      string;
+};
