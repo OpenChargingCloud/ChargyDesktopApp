@@ -23,6 +23,12 @@ import * as chargyLib                 from './chargyLib'
 import Decimal                        from 'decimal.js'
 
 
+interface IASN1Signature
+{
+    r: { toString(base: number): string };
+    s: { toString(base: number): string };
+}
+
 export interface IBSMMeasurementValue extends chargeTransparencyRecord.IMeasurementValue
 {
 
@@ -863,12 +869,12 @@ export class BSMCrypt01 extends ACrypt {
             for (const dataSet of common.dataSets)
             {
 
-                let ASN1Signature:any = {};
+                let ASN1Signature: IASN1Signature | undefined;
 
                 try
                 {
 
-                    ASN1Signature = ASN1_SignatureSchema.decode(Buffer.from(dataSet.signature, 'hex'), 'der');
+                    ASN1Signature = ASN1_SignatureSchema.decode<IASN1Signature>(Buffer.from(dataSet.signature, 'hex'), 'der');
 
                 }
                 catch (exception)
@@ -922,8 +928,8 @@ export class BSMCrypt01 extends ACrypt {
                     warnings:                                  dataSet.warnings,
 
                     signatures: [{
-                        r:  ASN1Signature?.r?.toString(16) ?? "-",
-                        s:  ASN1Signature?.s?.toString(16) ?? "-"
+                        r:  ASN1Signature?.r.toString(16) ?? "-",
+                        s:  ASN1Signature?.s.toString(16) ?? "-"
                     }]
 
                 };
@@ -942,14 +948,19 @@ export class BSMCrypt01 extends ACrypt {
 
             {
 
-                if (CTR.begin == undefined || CTR.begin === "" || CTR.begin > CTR.chargingSessions[0]!["begin"])
-                    CTR.begin =   CTR.chargingSessions[0]?.begin;
+                const firstChargingSession = CTR.chargingSessions[0];
+                const lastChargingSession  = CTR.chargingSessions[CTR.chargingSessions.length - 1];
 
-                const end = CTR.chargingSessions[CTR.chargingSessions.length - 1]?.end;
-                if (end !== undefined)
+                if (firstChargingSession !== undefined &&
+                    (CTR.begin == undefined || CTR.begin === "" || CTR.begin > firstChargingSession.begin))
                 {
-                    if (CTR.end == undefined || CTR.end === "" || CTR.end < end)
-                        CTR.end = CTR.chargingSessions[CTR.chargingSessions.length - 1]?.end;
+                    CTR.begin = firstChargingSession.begin;
+                }
+
+                if (lastChargingSession?.end !== undefined)
+                {
+                    if (CTR.end == undefined || CTR.end === "" || CTR.end < lastChargingSession.end)
+                        CTR.end = lastChargingSession.end;
                 }
 
             }
@@ -1471,40 +1482,38 @@ export class BSMCrypt01 extends ACrypt {
 
         //#region Signature check
 
-                {
-            switch (result.status)
-            {
+        switch (result.status)
+        {
 
-                case chargyInterfaces.VerificationResult.UnknownCTRFormat:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
-                    break;
+            case chargyInterfaces.VerificationResult.UnknownCTRFormat:
+                SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Unbekanntes Transparenzdatenformat</div>';
+                break;
 
-                case chargyInterfaces.VerificationResult.EnergyMeterNotFound:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
-                    break;
+            case chargyInterfaces.VerificationResult.EnergyMeterNotFound:
+                SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Energiezähler</div>';
+                break;
 
-                case chargyInterfaces.VerificationResult.PublicKeyNotFound:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
-                    break;
+            case chargyInterfaces.VerificationResult.PublicKeyNotFound:
+                SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
+                break;
 
-                case chargyInterfaces.VerificationResult.InvalidPublicKey:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
-                    break;
+            case chargyInterfaces.VerificationResult.InvalidPublicKey:
+                SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültiger Public Key</div>';
+                break;
 
-                case chargyInterfaces.VerificationResult.InvalidSignature:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
-                    break;
+            case chargyInterfaces.VerificationResult.InvalidSignature:
+                SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
+                break;
 
-                case chargyInterfaces.VerificationResult.ValidSignature:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
-                    break;
+            case chargyInterfaces.VerificationResult.ValidSignature:
+                SignatureCheckDiv.innerHTML = '<i class="fas fa-check-circle"></i><div id="description">Gültige Signatur</div>';
+                break;
 
 
-                default:
-                    SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
-                    break;
+            default:
+                SignatureCheckDiv.innerHTML = '<i class="fas fa-times-circle"></i><div id="description">Ungültige Signatur</div>';
+                break;
 
-            }
         }
 
         //#endregion
@@ -1516,17 +1525,17 @@ export class BSMCrypt01 extends ACrypt {
 
     private PrefixConverter(input: string): chargyInterfaces.DisplayPrefixes {
         switch(input.toLowerCase()) {
-            case "kilo":  return chargyInterfaces.DisplayPrefixes.KILO; break;
-            case "mega":  return chargyInterfaces.DisplayPrefixes.MEGA; break;
-            case "giga":  return chargyInterfaces.DisplayPrefixes.GIGA; break;
+            case "kilo":  return chargyInterfaces.DisplayPrefixes.KILO;
+            case "mega":  return chargyInterfaces.DisplayPrefixes.MEGA;
+            case "giga":  return chargyInterfaces.DisplayPrefixes.GIGA;
             default:      return chargyInterfaces.DisplayPrefixes.NULL;
         }
     }
 
     private UnitConverter(input: string): string{
         switch(input.toUpperCase()) {
-            case "WATT_HOUR":  return "Wh"; break;
-            case "WATT":       return "W";  break;
+            case "WATT_HOUR":  return "Wh";
+            case "WATT":       return "W";
             default:           return "";
         }
     }
@@ -1535,12 +1544,12 @@ export class BSMCrypt01 extends ACrypt {
     {
         switch (value)
         {
-            case 0: return "CURRENT";       // Signed snapshot of the current meter data at the time of its creation.
-            case 1: return "TURN ON";       // Signed snapshot created during executing the turn-on sequence for an external contactor.
-            case 2: return "TURN OFF";      // Signed snapshot created during the execution of the turn-off sequence for an external contactor.
-            case 3: return "START";         // Signed snapshot marking the start of a charging process without executing the turn-on sequence for an external contactor.
-            case 4: return "END";           // Signed snapshot marking the end of a charging process without executing the turn-off sequence for an external contactor.
-            default: return "<unknown>";
+            case 0:   return "CURRENT";    // Signed snapshot of the current meter data at the time of its creation.
+            case 1:   return "TURN ON";    // Signed snapshot created during executing the turn-on sequence for an external contactor.
+            case 2:   return "TURN OFF";   // Signed snapshot created during the execution of the turn-off sequence for an external contactor.
+            case 3:   return "START";      // Signed snapshot marking the start of a charging process without executing the turn-on sequence for an external contactor.
+            case 4:   return "END";        // Signed snapshot marking the end of a charging process without executing the turn-off sequence for an external contactor.
+            default:  return "<unknown>";
         }
     }
 
