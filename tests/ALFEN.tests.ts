@@ -1,7 +1,7 @@
 import { describe, expect, test }                                    from 'vitest';
 import { expectVerificationReport, expectBinaryVerificationReport }  from './testHelper';
 import { readFileSync }                                              from "node:fs";
-import { readQRCodeTextFromImage }                                   from '../src/ts/qrReader';
+import { readQRCodeTextFromImage }                                   from '../src/ts/qrCodeReader';
 import { normalizeXMLText }                                          from '../src/ts/chargyLib';
 
 

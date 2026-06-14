@@ -16,7 +16,7 @@
  */
 
 import { Chargy }                       from './chargy'
-import { readQRCodeTextFromImageData }  from './qrReader'
+import { readQRCodeTextFromImageData }  from './qrCodeReader'
 import * as chargyInterfaces            from './interfaces/chargyInterfaces'
 import * as chargeTransparencyRecord    from './interfaces/IChargeTransparencyRecord'
 import * as chargeTransparencyLiveLink  from './interfaces/IChargeTransparencyLiveLink'

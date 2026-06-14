@@ -81,6 +81,7 @@ function isCanvasModule(value: unknown): value is CanvasModule {
 }
 
 function isPNGModule(value: unknown): value is PNGModule {
+
     if (!isRecord(value))
         return false;
 
@@ -93,6 +94,7 @@ function isPNGModule(value: unknown): value is PNGModule {
     return isRecord(value) &&
            isRecord(sync) &&
            typeof sync["read"] === "function";
+
 }
 
 function isJPEGModule(value: unknown): value is JPEGModule {
@@ -101,7 +103,11 @@ function isJPEGModule(value: unknown): value is JPEGModule {
 }
 
 async function imageDataFromBrowserCanvas(data:       ArrayBuffer | Uint8Array,
-                                          mimeType?:  string): Promise<QRImageData | undefined> {
+                                          mimeType?:  string)
+
+    : Promise<QRImageData | undefined>
+
+{
 
     if (typeof Blob              === "undefined" ||
         typeof createImageBitmap !== "function")
@@ -156,7 +162,11 @@ async function imageDataFromBrowserCanvas(data:       ArrayBuffer | Uint8Array,
 }
 
 async function imageDataFromBrowserImageElement(data:       ArrayBuffer | Uint8Array,
-                                                mimeType?:  string): Promise<QRImageData | undefined> {
+                                                mimeType?:  string)
+
+    : Promise<QRImageData | undefined>
+
+{
 
     if (typeof Blob      === "undefined" ||
         typeof URL       === "undefined" ||
@@ -212,7 +222,8 @@ async function imageDataFromBrowserImageElement(data:       ArrayBuffer | Uint8A
 
 }
 
-async function imageDataFromNodeCanvas(data: ArrayBuffer | Uint8Array): Promise<QRImageData | undefined> {
+async function imageDataFromNodeCanvas(data: ArrayBuffer | Uint8Array): Promise<QRImageData | undefined>
+{
 
     try
     {
@@ -252,7 +263,11 @@ async function imageDataFromNodeCanvas(data: ArrayBuffer | Uint8Array): Promise<
 }
 
 async function imageDataFromPNGOrJPEG(data:       ArrayBuffer | Uint8Array,
-                                      mimeType?:  string): Promise<QRImageData | undefined> {
+                                      mimeType?:  string)
+
+    : Promise<QRImageData | undefined>
+
+{
 
     try
     {
@@ -261,6 +276,7 @@ async function imageDataFromPNGOrJPEG(data:       ArrayBuffer | Uint8Array,
 
         if (mimeType === "image/png")
         {
+
             const pngJS = moduleDefault(await importOptionalNodeModule("pngjs"));
 
             if (!isPNGModule(pngJS))
@@ -277,6 +293,7 @@ async function imageDataFromPNGOrJPEG(data:       ArrayBuffer | Uint8Array,
 
         if (mimeType === "image/jpeg")
         {
+
             const jpegJS = moduleDefault(await importOptionalNodeModule("jpeg-js"));
 
             if (!isJPEGModule(jpegJS))
@@ -290,15 +307,19 @@ async function imageDataFromPNGOrJPEG(data:       ArrayBuffer | Uint8Array,
                 height: jpeg.height
             };
         }
+
     }
-    catch
-    { }
+    catch (exception)
+    {
+        console.error("Error decoding image with PNG or JPEG module:", exception);
+    }
 
     return undefined;
 
 }
 
-async function importOptionalNodeModule(moduleName: string): Promise<unknown> {
+async function importOptionalNodeModule(moduleName: string): Promise<unknown>
+{
 
     try
     {
@@ -332,7 +353,8 @@ async function importOptionalNodeModule(moduleName: string): Promise<unknown> {
 }
 
 export async function readQRCodeTextFromImage(data:       ArrayBuffer | Uint8Array,
-                                              mimeType?:  string): Promise<string | undefined> {
+                                              mimeType?:  string): Promise<string | undefined>
+{
 
     const imageDataSources = typeof document === "undefined"
                                  ? [
@@ -365,7 +387,8 @@ export async function readQRCodeTextFromImage(data:       ArrayBuffer | Uint8Arr
 
 }
 
-export function readQRCodeTextFromImageData(imageData: QRImageData): string | undefined {
+export function readQRCodeTextFromImageData(imageData: QRImageData): string | undefined
+{
 
     const qrCode = jsQR(
         imageData.data,

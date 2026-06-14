@@ -287,8 +287,8 @@ export function validatePCDFFields(fields: IPCDFRawFields): IPCDFValidatedData {
     if (fields.HW.length !== 11)
         errors.push("HW must be exactly 11 characters");
 
-    let publicKey: chargyInterfaces.IPublicKeyXY | undefined;
-    let publicKeyHex = "";
+    let publicKey:    chargyInterfaces.IPublicKeyXY | undefined;
+    let publicKeyHex: string;
 
     try
     {

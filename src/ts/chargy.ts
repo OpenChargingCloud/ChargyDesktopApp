@@ -39,7 +39,7 @@ import * as chargeTransparencyLiveLink      from './interfaces/IChargeTransparen
 import * as publicKeyInfo                   from './interfaces/IPublicKeyInfo'
 import * as chargyLib                       from './chargyLib'
 import * as pdfjsLib                        from 'pdfjs-dist';
-import { readQRCodeTextFromImage }          from './qrReader'
+import { readQRCodeTextFromImage }          from './qrCodeReader'
 
 type DERPublicKey = {
     oids:      [number[], number[]];

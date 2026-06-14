@@ -46,14 +46,22 @@ export class secp224k1 {
 
     public Sign(hash:          bigint,
                 RandomNumber:  bigint,
-                privateKey:    bigint)
+                privateKey:    bigint) : Array<bigint> | null
     {
 
-        const RandSignPoint  = this.ECmultiply(this.GPoint, RandomNumber);
-        const r              = this.modulo(RandSignPoint[0]!, this.N);
-        const s              = this.modulo((hash + r*privateKey) * (this.modInv(RandomNumber, this.N)), this.N);
+        const RandSignPoint = this.ECmultiply(this.GPoint, RandomNumber);
 
-        return [ r, s ];
+        if (RandSignPoint.length >= 1 && RandSignPoint[0] != null)
+        {
+
+            const r = this.modulo(RandSignPoint[0], this.N);
+            const s = this.modulo((hash + r*privateKey) * (this.modInv(RandomNumber, this.N)), this.N);
+
+            return [ r, s ];
+
+        }
+
+        return null;
 
     }
 
@@ -63,10 +71,10 @@ export class secp224k1 {
                     PublicKey:   Array<bigint>) : boolean
     {
 
-        if (signatureR==this.Zero || signatureR>=this.N)
+        if (signatureR == this.Zero || signatureR >= this.N)
             throw new Error("Invalid R");
 
-        if (signatureS==this.Zero || signatureS>=this.N)
+        if (signatureS == this.Zero || signatureS >= this.N)
             throw new Error("Invalid S");
 
         const w           = this.modInv(signatureS, this.N);
@@ -117,27 +125,48 @@ export class secp224k1 {
 
     }
 
-    public ECadd(a: Array<bigint>, b: Array<bigint>) {
+    public ECadd(a: Array<bigint>,
+                 b: Array<bigint>) : Array<bigint>
+    {
 
-        const LamAdd  = this.modulo((b[1]!-a[1]!)*( this.modInv( b[0]!-a[0]! ) ), this.Pcurve);
-        const x       = this.modulo((LamAdd*LamAdd)-a[0]!-b[0]!, this.Pcurve);
-        const y       = this.modulo((LamAdd*( a[0]!-x )-a[1]!),  this.Pcurve);
+        if (a[0] != undefined && b[0] != undefined &&
+            a[1] != undefined && b[1] != undefined)
+        {
 
-        return [x, y];
+            const LamAdd  = this.modulo((b[1]-a[1])*( this.modInv( b[0]-a[0] ) ), this.Pcurve);
+            const x       = this.modulo((LamAdd*LamAdd)-a[0]-b[0], this.Pcurve);
+            const y       = this.modulo((LamAdd*( a[0]-x )-a[1]),  this.Pcurve);
+
+            return [x, y];
+
+        }
+
+        throw new Error("Invalid EC Point Addition!");
 
     }
 
-    public ECdouble(a: Array<bigint>) {
+    public ECdouble(a: Array<bigint>) : Array<bigint>
+    {
 
-        const Lam  = this.modulo((((a[0]!*a[0]!)*this.Three) + this.Acurve)*( this.modInv( a[1]!*this.Two )), this.Pcurve);
-        const x    = this.modulo((Lam*Lam)-(a[0]!*this.Two),  this.Pcurve);
-        const y    = this.modulo( Lam*( a[0]!-x )-a[1]!,       this.Pcurve);
+        if (a[0] != undefined &&
+            a[1] != undefined)
+        {
 
-        return [x, y];
+            const Lam  = this.modulo((((a[0]*a[0])*this.Three) + this.Acurve)*( this.modInv( a[1]*this.Two )), this.Pcurve);
+            const x    = this.modulo((Lam*Lam)-(a[0]*this.Two),  this.Pcurve);
+            const y    = this.modulo( Lam*( a[0]-x )-a[1],       this.Pcurve);
+
+            return [x, y];
+
+        }
+
+        throw new Error("Invalid EC Point Doubling!");
 
     }
 
-    public ECmultiply(GenPoint: Array<bigint>, ScalarHex: bigint) {
+    public ECmultiply(GenPoint:   Array<bigint>,
+                      ScalarHex:  bigint) : Array<bigint>
+    {
 
         if (ScalarHex == this.Zero || ScalarHex >= this.N)
              throw new Error("Invalid Scalar/Private Key");
@@ -162,7 +191,17 @@ export class secp224k1 {
     // uncompressed is the accumulation of both the x and y points
     // compressed is the public key to share in transactions
     // address is the public address tho whom someone can send coin
-    public PublicKeyGenerate(PrivateKey: string | number | bigint) : bigint[] {
+    public PublicKeyGenerate(PrivateKey: string | number | bigint)
+        : {
+              x:             bigint,
+              y:             bigint,
+              xy:            Array<string>,
+              uncompressed:  string,
+              compressed:    string,
+              address:       string
+          } |
+          undefined
+    {
 
         if (typeof PrivateKey === 'number')
             PrivateKey = BigInt(PrivateKey);
@@ -170,18 +209,27 @@ export class secp224k1 {
         if (typeof PrivateKey === 'string')
             PrivateKey = BigInt(PrivateKey);
 
-        const PublicKey     = this.ECmultiply(this.GPoint, PrivateKey);
-        // let Px            = this.zfill(PublicKey[0].toString(16));
-        // let Py            = this.zfill(PublicKey[1].toString(16));
+        const PublicKey = this.ECmultiply(this.GPoint, PrivateKey);
 
-        // let uncompressed  = PublicKey[0].toString(16) + PublicKey[1].toString(16);
-        // let compressed    = "04" + Px + Py;
-        // let address       = (this.modulo(PublicKey[1], this.Two) == this.One)
-        //                         ? "03" + Px
-        //                         : "02" + Px;
-        // let xy            = [ Px, Py ];
+        if (PublicKey[0] !== undefined &&
+            PublicKey[1] !== undefined)
+        {
 
-        return [ PublicKey[0]!, PublicKey[1]! ];
+            const Px = this.zfill(PublicKey[0].toString(16));
+            const Py = this.zfill(PublicKey[1].toString(16));
+
+            return {
+                x:             PublicKey[0],
+                y:             PublicKey[1],
+                xy:            [Px, Py],
+                uncompressed:  PublicKey[0].toString(16) + PublicKey[1].toString(16),
+                compressed:    "04" + Px + Py,
+                address:       (this.modulo(PublicKey[1], this.Two) == this.One)
+                                      ? "03" + Px
+                                      : "02" + Px
+            };
+
+        }
 
     }
 

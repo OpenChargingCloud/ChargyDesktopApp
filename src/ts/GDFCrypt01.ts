@@ -347,8 +347,10 @@ export class GDFCrypt01 extends ACrypt {
                                                                                                     signature);
 
                     }
-                    catch
-                    { }
+                    catch (exception)
+                    {
+                        console.error("Error while checking public key signature: " + (exception instanceof Error ? exception.message : String(exception)));
+                    }
 
                 }
 

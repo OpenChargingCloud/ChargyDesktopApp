@@ -99,7 +99,12 @@ export function parseDescription(parent: Element): chargyInterfaces.IMultilangua
 
 }
 
-export function getElementsByLocalName(parent: Document | Element, localName: string): Element[] {
+export function getElementsByLocalName(parent:     Document | Element,
+                                       localName:  string)
+
+    : Element[]
+
+{
 
     const elements = new Set<Element>();
 
@@ -108,16 +113,20 @@ export function getElementsByLocalName(parent: Document | Element, localName: st
         for (const element of Array.from(parent.getElementsByTagName(localName)))
             elements.add(element);
     }
-    catch
-    { }
+    catch (exception)
+    {
+        console.error("Error while getting elements by tag name: " + (exception instanceof Error ? exception.message : String(exception)));
+    }
 
     try
     {
         for (const element of Array.from(parent.getElementsByTagNameNS("*", localName)))
             elements.add(element);
     }
-    catch
-    { }
+    catch (exception)
+    {
+        console.error("Error while getting elements by tag name with namespace: " + (exception instanceof Error ? exception.message : String(exception)));
+    }
 
     try
     {
@@ -125,8 +134,10 @@ export function getElementsByLocalName(parent: Document | Element, localName: st
             if (element.localName === localName)
                 elements.add(element);
     }
-    catch
-    { }
+    catch (exception)
+    {
+        console.error("Error while getting elements from parent and filtering by local name: " + (exception instanceof Error ? exception.message : String(exception)));
+    }
 
     return Array.from(elements);
 
@@ -1108,6 +1119,7 @@ export function isMandatoryDecimal(value: unknown): value is Decimal {
             return true;
         }
         catch {
+            console.error(`Value "${value}" is not a valid decimal number!`);
         }
     }
 
@@ -1137,6 +1149,7 @@ export function isOptionalDecimal(value: unknown): value is Decimal | undefined 
             return true;
         }
         catch {
+            console.error(`Value "${value}" is not a valid decimal number!`);
         }
     }
 

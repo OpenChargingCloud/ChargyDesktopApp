@@ -175,8 +175,8 @@ export class SAFEXML {
             //
             // </values>
 
-            if (XMLDocument.documentElement?.nodeName  === "values" ||
-                XMLDocument.documentElement?.localName === "values")
+            if (XMLDocument.documentElement.nodeName  === "values" ||
+                XMLDocument.documentElement.localName === "values")
             {
 
                 const safeXMLContext = SAFEXML.ParseChargingStationContext(XMLDocument);
@@ -202,7 +202,7 @@ export class SAFEXML {
                             certainty:  0
                         }
 
-                    const signedDataFormat = signedData.attributes.getNamedItem("format")?.  value?.trim()?.toLowerCase() ?? "";
+                    const signedDataFormat = signedData.attributes.getNamedItem("format")?.  value.trim().toLowerCase() ?? "";
 
                     if (commonSignedDataFormat === "" && signedDataFormat !== "")
                         commonSignedDataFormat = signedDataFormat;
@@ -214,7 +214,7 @@ export class SAFEXML {
                         }
 
 
-                    const signedDataEncoding = signedData.attributes.getNamedItem("encoding")?.value?.trim()?.toLowerCase() ?? "";
+                    const signedDataEncoding = signedData.attributes.getNamedItem("encoding")?.value.trim().toLowerCase() ?? "";
 
                     if (commonSignedDataEncoding === "" && signedDataEncoding !== "")
                         commonSignedDataEncoding = signedDataEncoding;
@@ -226,7 +226,7 @@ export class SAFEXML {
                         }
 
 
-                    const signedDataValue = signedData.textContent?.trim() ?? "";
+                    const signedDataValue = signedData.textContent.trim();
 
                     if (chargyLib.IsNullOrEmpty(signedDataValue))
                         return {
@@ -236,7 +236,7 @@ export class SAFEXML {
                         }
 
 
-                    const publicKeyEncoding  = publicKey?.attributes.getNamedItem("encoding")?.value?.trim()?.toLowerCase() ?? "";
+                    const publicKeyEncoding  = publicKey?.attributes.getNamedItem("encoding")?.value.trim().toLowerCase() ?? "";
 
                     if (commonPublicKeyEncoding === "" && publicKeyEncoding !== "")
                         commonPublicKeyEncoding = publicKeyEncoding;
@@ -257,7 +257,7 @@ export class SAFEXML {
                     //     }
 
 
-                    const publicKeyValue  = publicKey?.textContent?.trim()?.replace(/\s+/g, "") ?? "";
+                    const publicKeyValue  = publicKey?.textContent.trim().replace(/\s+/g, "") ?? "";
 
                     if (commonPublicKey === "" && publicKeyValue !== "")
                         commonPublicKey = publicKeyValue;
@@ -306,11 +306,11 @@ export class SAFEXML {
                     {
 
                         case "alfen":
-                            return await new Alfen(this.chargy).
-                                             TryToParseALFENFormat(
-                                                 signedDataValues,
-                                                 safeXMLContext
-                                             );
+                            return new Alfen(this.chargy).
+                                       TryToParseALFENFormat(
+                                           signedDataValues,
+                                           safeXMLContext
+                                       );
 
                         case "ocmf":
                             return await new OCMF(this.chargy).
@@ -338,7 +338,7 @@ export class SAFEXML {
         {
             return {
                 status:    chargyInterfaces.SessionVerificationResult.InvalidSessionFormat,
-                message:   "Exception occured: " + (exception instanceof Error ? exception.message : exception),
+                message:   "Exception occured: " + (exception instanceof Error ? exception.message : String(exception)),
                 certainty:  0
             }
         }

@@ -374,8 +374,10 @@ export class EMHCrypt01 extends ACrypt {
                         }
 
                     }
-                    catch
-                    { }
+                    catch (exception)
+                    {
+                        console.error("Error while checking public key signature: " + (exception instanceof Error ? exception.message : String(exception)));
+                    }
 
                 }
 
