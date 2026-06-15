@@ -3,14 +3,24 @@ const { app, BrowserWindow, clipboard, dialog, ipcMain, shell }  = require('elec
 const path                                                       = require('path');
 const fs                                                         = require('fs');
 const crypto                                                     = require('crypto');
-const http                                                       = require('http');
-const stringify                                                  = require('safe-stable-stringify');
+const {
+    parseCliArguments,
+    createMainHelpText,
+    createOutputHelpText
+}                                                                = require('./cliArguments.cjs');
+const {
+    startChargyHttpServer
+}                                                                = require('./httpApi.cjs');
+const {
+    applicationEdition,
+    copyright,
+    packageJson
+}                                                                = require('./applicationMetadata.cjs');
+const cliI18N                                                    = require('./i18n_CLI.json');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let   mainWindow;
-const applicationEdition         = "Community Edition";
-const copyright                  = "&copy; 2018-2026 GraphDefined GmbH";
 let   applicationFileName        = "";
 let   appAsarFileName            = "";
 let   fileToOpen                 = "";
@@ -23,7 +33,6 @@ const mapboxAccessToken          = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iG
 const mapboxStartGeoCoordinates  = [50.9279287, 11.5731785];
 const mapboxStartMapZoom         = 12;
 
-const httpApiMaxContentSize      = 20*1024*1024;
 const httpApiRequestTimeoutMs    = 30000;
 
 const allowedReadPaths           = new Set();
@@ -94,72 +103,6 @@ function sha512File(fileName) {
     });
 }
 
-function normalizeListenHost(host) {
-
-    if (host.startsWith("[") && host.endsWith("]"))
-        return host.substring(1, host.length - 1);
-
-    return host;
-
-}
-
-function sessionVerificationResultToText(status) {
-
-    switch (status)
-    {
-
-        case "NoChargeTransparencyRecordsFound":
-            return "No charge transparency records found";
-
-        case "UnknownSessionFormat":
-            return "Unknown session format";
-
-        case "InvalidSessionFormat":
-            return "Invalid session format";
-
-        case "PublicKeyNotFound":
-            return "Public key not found";
-
-        case "InvalidPublicKey":
-            return "Invalid public key";
-
-        case "InvalidSignature":
-            return "Invalid signature";
-
-        case "Unvalidated":
-            return "Unvalidated";
-
-        case "ValidSignature":
-            return "Valid signature";
-
-        case "InconsistentTimestamps":
-            return "Inconsistent timestamps";
-
-        case "AtLeastTwoMeasurementsRequired":
-            return "At least two measurements required";
-
-        default:
-            return status || "Unknown session format";
-
-    }
-
-}
-
-function isChargeTransparencyRecord(result) {
-    return result != null &&
-           Array.isArray(result.chargingSessions);
-}
-
-function sendPlainText(response, statusCode, text) {
-    response.writeHead(statusCode, { "Content-Type": "text/plain; charset=utf-8" });
-    response.end(text);
-}
-
-function sendJson(response, statusCode, value, pretty = false) {
-    response.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8" });
-    response.end(stringify(value, null, pretty ? 2 : 0));
-}
-
 function dispatchHttpRequestToRenderer(httpRequest) {
 
     if (mainWindow == null || mainWindow.webContents == null || mainWindow.webContents.isDestroyed())
@@ -192,143 +135,22 @@ function dispatchHttpRequestToRenderer(httpRequest) {
 
 }
 
-async function handleChargyHttpRequest(request, response) {
-
-    const requestUrl = new URL(request.url || "/", "http://localhost");
-
-    if (request.method !== "POST" ||
-        (requestUrl.pathname !== "/verify" && requestUrl.pathname !== "/convert"))
-    {
-        sendPlainText(response, 400, "Please use POST /verify for the verification of transparency records or POST /convert for conversion.");
-        return;
-    }
-
-    const contentLengthHeader = Array.isArray(request.headers["content-length"])
-                                    ? request.headers["content-length"][0]
-                                    : request.headers["content-length"];
-
-    if (contentLengthHeader != null)
-    {
-        const contentLength = parseInt(contentLengthHeader, 10);
-
-        if (isNaN(contentLength))
-        {
-            sendPlainText(response, 400, "The size of the transmitted transparency record is invalid!");
-            return;
-        }
-
-        if (contentLength > httpApiMaxContentSize)
-        {
-            sendPlainText(response, 413, "The size of the transmitted transparency record is too large!");
-            return;
-        }
-    }
-
-    const binaryData = [];
-    let contentSize  = 0;
-    let rejected     = false;
-
-    request.on("data", binaryDataChunk => {
-
-        if (rejected)
-            return;
-
-        contentSize += binaryDataChunk.length;
-
-        if (contentSize > httpApiMaxContentSize)
-        {
-            rejected = true;
-            sendPlainText(response, 413, "The size of the transmitted transparency record is too large!");
-            request.destroy();
-            return;
-        }
-
-        binaryData.push(binaryDataChunk);
-
-    });
-
-    request.on("error", exception => {
-        if (!response.headersSent)
-            sendPlainText(response, 400, "Could not read the transmitted transparency record: " + exception.message);
-    });
-
-    request.on("end", async () => {
-
-        if (rejected)
-            return;
-
-        if (contentSize === 0)
-        {
-            sendPlainText(response, 400, "Please upload any kind of transparency record(s) for verification.");
-            return;
-        }
-
-        try
-        {
-            const rendererResponse = await dispatchHttpRequestToRenderer({
-                operation:    requestUrl.pathname.substring(1),
-                pretty:       requestUrl.searchParams.has("pretty"),
-                contentType:  Array.isArray(request.headers["content-type"])
-                                  ? request.headers["content-type"][0]
-                                  : request.headers["content-type"],
-                data:         Buffer.concat(binaryData)
-            });
-
-            if (!rendererResponse.ok)
-            {
-                sendJson(response, 400, { message: rendererResponse.message ?? "Invalid transparency format!" });
-                return;
-            }
-
-            const result = rendererResponse.result;
-
-            if (!isChargeTransparencyRecord(result))
-            {
-                sendJson(response, 400, { message: result?.message ?? "Invalid transparency format!" });
-                return;
-            }
-
-            if (requestUrl.pathname === "/verify")
-            {
-                const results = result.chargingSessions
-                                      .map(session => session.verificationResult)
-                                      .filter(singleResult => singleResult != null)
-                                      .map(singleResult => sessionVerificationResultToText(singleResult.status));
-
-                sendJson(response, 200, results.length > 1 ? results : results[0]);
-                return;
-            }
-
-            sendJson(response, 200, result, requestUrl.searchParams.has("pretty"));
-
-        }
-        catch (exception)
-        {
-            sendJson(response, 500, { message: exception.message ?? "Could not process transparency record!" });
-        }
-
-    });
-
-}
-
 function startHttpAPI() {
 
     if (httpPort === 0 || httpServer != null)
         return;
 
-    const listenHost = httpHost !== ""
-                           ? normalizeListenHost(httpHost)
-                           : undefined;
-
-    httpServer = http.createServer(handleChargyHttpRequest);
-
-    httpServer.on("error", exception => {
-        console.log("Could not start HTTP API: " + exception);
-        httpServer = null;
+    httpServer = startChargyHttpServer({
+        host: httpHost,
+        port: httpPort,
+        dispatchHttpRequest: dispatchHttpRequestToRenderer,
+        language: cliArguments.language,
+        i18n: cliI18N,
+        log: console.log
     });
 
-    httpServer.listen(httpPort, listenHost, () => {
-        console.log("Chargy HTTP API listening on " + (httpHost !== "" ? httpHost : "*") + ":" + httpPort);
+    httpServer.on("error", () => {
+        httpServer = null;
     });
 
 }
@@ -351,10 +173,10 @@ const commandLineArguments = process.argv.length >= 2 &&
                                  // ]
                                  : process.argv.slice(1);
 
-for (const commandLineArgument of commandLineArguments) {
-    if (typeof commandLineArgument === "string" && !commandLineArgument.startsWith("-"))
-        allowReadPath(commandLineArgument);
-}
+const cliArguments = parseCliArguments(commandLineArguments);
+
+for (const commandLineFile of cliArguments.files)
+    allowReadPath(commandLineFile);
 
 
 function createWindow () {
@@ -472,7 +294,7 @@ app.whenReady().then(() => {
 
     }
 
-    if (app.commandLine.hasSwitch('help'))
+    if (cliArguments.help)
     {
 
         //#region Init stuff
@@ -485,93 +307,56 @@ app.whenReady().then(() => {
             appAsarFileName     = path.join('resources', 'app.asar');
 
 
-        let helpTopic = "";
-
-        for (let i=0; i<commandLineArguments.length; i++)
-        {
-            if (commandLineArguments[i] === "--help" && i+1 <= commandLineArguments.length && commandLineArguments[i+1] === "output")
-                helpTopic = "output";
-        }
-
         //#endregion
 
-        console.log("Chargy E-Mobility Transparency Software " + applicationEdition + " v" + app.getVersion());
-        console.log(copyright.replace("&copy;", "(c)"));
-        console.log("");
-
-        switch (helpTopic)
+        switch (cliArguments.helpTopic)
         {
 
             case "output":
-                console.log("Usage: " + applicationFileName + " --output=[text (default)|csv|json|xml|chargy] file1, file2, ...");
-                console.log("");
-                console.log("Set the verification result output format in cli/debug mode");
-                console.log("");
-                console.log(" text               The default human readable output format.");
-                console.log(" csv                Use the CSV (comma seperated values) format.");
-                console.log(" json               Use the JSON format.");
-                console.log(" xml                Use the XML format.");
-                console.log(" chargy             In combination with '--export' include the verification results into the charge transpary file.");
+                console.log(createOutputHelpText(applicationFileName,
+                                                 app.getVersion(),
+                                                 applicationEdition,
+                                                 copyright,
+                                                 cliArguments.language,
+                                                 cliI18N));
                 break;
 
             default:
-                console.log("Usage: " + applicationFileName + " [switches] file1, file2, ...");
-                console.log("");
-                console.log("Switches:");
-                console.log(" --help             Show this information");
-              //console.log(" --help topic       Show information on the given topic");
-                console.log(" --inspect          Run in debug mode, enable inspector and open development tools");
-                console.log(" --nogui            Run in command line mode (cli mode)");
-              //console.log(" --output=format    Set the verification result output format in cli/debug mode [text (default)|csv|json|xml|chargy]");
-              //console.log(" --export filename  Convert all input files into the Chargy Transparency Format and save the result to the given file");
+                console.log(createMainHelpText(applicationFileName,
+                                               app.getVersion(),
+                                               applicationEdition,
+                                               copyright,
+                                               cliArguments.language,
+                                               cliI18N));
                 break;
 
         }
 
         console.log("");
         app.quit();
+        return;
 
     }
 
-    if (app.commandLine.hasSwitch('version'))
+    if (cliArguments.version)
     {
         console.log(app.getVersion());
         app.quit();
+        return;
     }
 
-    if (app.commandLine.hasSwitch('http'))
+    if (cliArguments.http.enabled)
     {
 
-        let httpConfig = app.commandLine.getSwitchValue("http");
-
-        if (httpConfig !== "")
+        if (cliArguments.http.error !== undefined)
         {
-
-            const lastIndex = httpConfig.lastIndexOf(":");
-
-            if (lastIndex > -1)
-            {
-                httpHost =          httpConfig.substring(0, lastIndex);
-                httpPort = parseInt(httpConfig.substring(lastIndex + 1));
-            }
-            else
-            {
-                httpHost = "localhost";
-                httpPort = parseInt(httpConfig);
-            }
-
-            if (isNaN(httpPort))
-            {
-                console.log("Invalid TCP port for chargy HTTP API: " + httpConfig);
-                app.exit(1); // Will not exit at once!
-            }
-
+            console.log(cliArguments.http.error);
+            app.exit(1); // Will not exit at once!
+            return;
         }
-        else
-        {
-            httpHost = "localhost";
-            httpPort = 8080;
-        }
+
+        httpHost = cliArguments.http.host;
+        httpPort = cliArguments.http.port;
 
     }
 
@@ -635,7 +420,7 @@ ipcMain.on('getAppContext', (event) => {
         appEdition:  applicationEdition,
         copyright,
         commandLineArguments,
-        packageJson:  require('../package.json'),
+        packageJson,
         i18n:         require('./i18n.json'),
         httpConfig:   [ httpHost, httpPort ],
         mapbox: {

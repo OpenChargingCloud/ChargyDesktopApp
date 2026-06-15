@@ -1,0 +1,553 @@
+import { createRequire }          from "node:module";
+import { readFileSync }           from "node:fs";
+import type { AddressInfo }       from "node:net";
+import type { Server }            from "node:http";
+import { describe, expect, test } from "vitest";
+import './testHelper';
+import { Chargy }                 from '../src/ts/chargy';
+
+const require = createRequire(import.meta.url);
+
+type HttpDispatchRequest = {
+    operation:    string;
+    pretty:       boolean;
+    contentType?: string;
+    data:         Buffer;
+};
+
+type HttpDispatchResponse = {
+    ok:       boolean;
+    message?: string;
+    result?:  unknown;
+};
+
+type HttpApiModule = {
+    negotiateContentType(acceptHeader: string | string[] | undefined, supportedMediaTypes: string[], defaultMediaType: string): string | null;
+    parseAcceptLanguage(acceptLanguageHeader?: string | string[]): string | null;
+    startChargyHttpServer(options: {
+        host?:               string;
+        port:                number;
+        dispatchHttpRequest: (request: HttpDispatchRequest) => Promise<HttpDispatchResponse> | HttpDispatchResponse;
+        language?:           string;
+        i18n?:               Record<string, Record<string, string>>;
+        maxContentSize?:     number;
+        log?:                (message: string) => void;
+    }): Server;
+};
+
+const {
+    negotiateContentType,
+    parseAcceptLanguage,
+    startChargyHttpServer
+} = require("../src/httpApi.cjs") as HttpApiModule;
+
+const cliI18N = require("../src/i18n_CLI.json") as Record<string, Record<string, string>>;
+
+const chargeTransparencyRecord = {
+    chargingSessions: [
+        {
+            verificationResult: {
+                status: "ValidSignature"
+            }
+        }
+    ]
+};
+
+function createChargy(): Chargy {
+
+    return new Chargy(
+        {},
+        "en",
+        require("elliptic"),
+        require("moment"),
+        require("asn1.js"),
+        require("base32-decode"),
+        () => ""
+    );
+
+}
+
+async function dispatchToChargyCore(request: HttpDispatchRequest): Promise<HttpDispatchResponse> {
+
+    const result = await createChargy().DetectAndConvertContentFormat([
+        {
+            name: "uploaded-transparency-record.png",
+            type: request.contentType ?? "application/octet-stream",
+            data: new Uint8Array(request.data)
+        }
+    ]);
+
+    return {
+        ok: true,
+        result
+    };
+
+}
+
+async function withHttpServer(
+    dispatchHttpRequest: (request: HttpDispatchRequest) => Promise<HttpDispatchResponse> | HttpDispatchResponse,
+    testCase: (baseUrl: string) => Promise<void>,
+    options: {
+        language?:       string;
+        i18n?:           Record<string, Record<string, string>>;
+        maxContentSize?: number;
+    } = {}
+): Promise<void> {
+
+    const server = startChargyHttpServer({
+        host: "127.0.0.1",
+        port: 0,
+        dispatchHttpRequest,
+        language: options.language,
+        i18n: options.i18n,
+        maxContentSize: options.maxContentSize,
+        log: () => {}
+    });
+
+    await new Promise<void>(resolve => server.once("listening", resolve));
+
+    const address = server.address() as AddressInfo;
+
+    try
+    {
+        await testCase(`http://127.0.0.1:${address.port}`);
+    }
+    finally
+    {
+        await new Promise<void>((resolve, reject) => {
+            server.close(exception => exception != null ? reject(exception) : resolve());
+        });
+    }
+
+}
+
+describe("Chargy HTTP API", () => {
+
+    test("negotiates the best supported Accept content type", () => {
+
+        expect(negotiateContentType(
+            "application/xml;q=0.4, text/plain;q=0.9, application/json;q=0.8",
+            [ "application/json", "text/plain", "application/xml" ],
+            "application/json"
+        )).toBe("text/plain");
+
+        expect(negotiateContentType(
+            "application/*;q=0.7",
+            [ "application/json" ],
+            "application/json"
+        )).toBe("application/json");
+
+        expect(negotiateContentType(
+            "image/png",
+            [ "application/json" ],
+            "application/json"
+        )).toBeNull();
+
+    });
+
+    test("parses the best supported Accept-Language value", () => {
+
+        expect(parseAcceptLanguage("fr-CH, de-DE;q=0.9, en;q=0.8")).toBe("de");
+        expect(parseAcceptLanguage("en-US;q=0.4, de;q=0.8")).toBe("de");
+        expect(parseAcceptLanguage("fr, *;q=0.5")).toBeNull();
+
+    });
+
+    test("serves HTTP help via GET / without dispatching to the renderer", async () => {
+
+        let dispatchCount = 0;
+
+        await withHttpServer(
+            () => {
+                dispatchCount++;
+                return {
+                    ok:     true,
+                    result: chargeTransparencyRecord
+                };
+            },
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/`);
+
+                expect(response.status).toBe(200);
+                expect(response.headers.get("content-type")).toContain("text/plain");
+
+                const text = await response.text();
+
+                expect(text).toContain("This is a Chargy HTTP service");
+                expect(text).toContain("POST /verify");
+                expect(text).toContain("POST /convert");
+            }
+        );
+
+        expect(dispatchCount).toBe(0);
+
+    });
+
+    test("starts an HTTP server and routes POST /verify to the renderer dispatcher", async () => {
+
+        const dispatchedRequests: HttpDispatchRequest[] = [];
+
+        await withHttpServer(
+            request => {
+                dispatchedRequests.push(request);
+                return {
+                    ok:     true,
+                    result: chargeTransparencyRecord
+                };
+            },
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method: "POST",
+                    body:   Buffer.from("transparency-record")
+                });
+
+                expect(response.status).toBe(200);
+                expect(await response.json()).toBe("Valid signature");
+            }
+        );
+
+        expect(dispatchedRequests).toHaveLength(1);
+        expect(dispatchedRequests[0]).toMatchObject({
+            operation: "verify",
+            pretty:    false
+        });
+        expect(dispatchedRequests[0]?.data.toString("utf-8")).toBe("transparency-record");
+
+    });
+
+    test("returns POST /verify as text/plain when requested via Accept", async () => {
+
+        await withHttpServer(
+            () => ({
+                ok:     true,
+                result: chargeTransparencyRecord
+            }),
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method:  "POST",
+                    headers: {
+                        "Accept": "text/plain"
+                    },
+                    body:    Buffer.from("transparency-record")
+                });
+
+                expect(response.status).toBe(200);
+                expect(response.headers.get("content-type")).toContain("text/plain");
+                expect(await response.text()).toBe("Valid signature\n");
+            }
+        );
+
+    });
+
+    test("returns POST /verify as CSV when requested via Accept", async () => {
+
+        await withHttpServer(
+            () => ({
+                ok:     true,
+                result: chargeTransparencyRecord
+            }),
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method:  "POST",
+                    headers: {
+                        "Accept": "text/csv"
+                    },
+                    body:    Buffer.from("transparency-record")
+                });
+
+                expect(response.status).toBe(200);
+                expect(response.headers.get("content-type")).toContain("text/csv");
+                expect(await response.text()).toBe("session,status\n1,Valid signature\n");
+            }
+        );
+
+    });
+
+    test("returns POST /verify as XML when requested via Accept", async () => {
+
+        await withHttpServer(
+            () => ({
+                ok:     true,
+                result: chargeTransparencyRecord
+            }),
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method:  "POST",
+                    headers: {
+                        "Accept": "application/xml"
+                    },
+                    body:    Buffer.from("transparency-record")
+                });
+
+                expect(response.status).toBe(200);
+                expect(response.headers.get("content-type")).toContain("application/xml");
+                expect(await response.text()).toContain("<result session=\"1\">Valid signature</result>");
+            }
+        );
+
+    });
+
+    test("verifies an uploaded QR-code PNG transparency record through the real Chargy core", async () => {
+
+        const pngFixture = readFileSync(new URL("fixtures/ALFEN/ALFEN-Testdata-03_SAFEXMLContainer_asQRCode.png", import.meta.url));
+
+        await withHttpServer(
+            dispatchToChargyCore,
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method:  "POST",
+                    headers: {
+                        "Accept":       "text/plain",
+                        "Content-Type": "image/png"
+                    },
+                    body:    pngFixture
+                });
+
+                expect(response.status).toBe(200);
+                expect(await response.text()).toBe("Valid signature\n");
+            }
+        );
+
+    });
+
+    test("converts an uploaded QR-code PNG transparency record through the real Chargy core", async () => {
+
+        const pngFixture = readFileSync(new URL("fixtures/ALFEN/ALFEN-Testdata-03_SAFEXMLContainer_asQRCode.png", import.meta.url));
+
+        await withHttpServer(
+            dispatchToChargyCore,
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/convert?pretty`, {
+                    method:  "POST",
+                    headers: {
+                        "Accept":       "application/json",
+                        "Content-Type": "image/png"
+                    },
+                    body:    pngFixture
+                });
+
+                expect(response.status).toBe(200);
+
+                const result = await response.json();
+
+                expect(result.chargingSessions).toHaveLength(1);
+                expect(result.chargingSessions[0].verificationResult.status).toBe("ValidSignature");
+                expect(result.chargingSessions[0].EVSEId).toBe("DE*GEF*EVSE*CHARGY*1");
+            }
+        );
+
+    });
+
+    test("rejects POST /verify when no requested response content type is supported", async () => {
+
+        await withHttpServer(
+            () => ({
+                ok:     true,
+                result: chargeTransparencyRecord
+            }),
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method:  "POST",
+                    headers: {
+                        "Accept": "image/png"
+                    },
+                    body:    Buffer.from("transparency-record")
+                });
+
+                expect(response.status).toBe(406);
+                expect(await response.text()).toContain("No acceptable response content type found for /verify");
+            }
+        );
+
+    });
+
+    test("localizes POST /verify status text with the configured CLI language", async () => {
+
+        await withHttpServer(
+            () => ({
+                ok:     true,
+                result: chargeTransparencyRecord
+            }),
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method: "POST",
+                    body:   Buffer.from("transparency-record")
+                });
+
+                expect(response.status).toBe(200);
+                expect(await response.json()).toBe("Gültige Signatur");
+            },
+            {
+                language: "de",
+                i18n:     cliI18N
+            }
+        );
+
+    });
+
+    test("uses Accept-Language as per-request override for POST /verify status text", async () => {
+
+        await withHttpServer(
+            () => ({
+                ok:     true,
+                result: chargeTransparencyRecord
+            }),
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method:  "POST",
+                    headers: {
+                        "Accept-Language": "fr-CH, de-DE;q=0.9, en;q=0.8"
+                    },
+                    body:    Buffer.from("transparency-record")
+                });
+
+                expect(response.status).toBe(200);
+                expect(await response.json()).toBe("Gültige Signatur");
+            },
+            {
+                language: "en",
+                i18n:     cliI18N
+            }
+        );
+
+    });
+
+    test("falls back to the configured CLI language when Accept-Language is unsupported", async () => {
+
+        await withHttpServer(
+            () => ({
+                ok:     true,
+                result: chargeTransparencyRecord
+            }),
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method:  "POST",
+                    headers: {
+                        "Accept-Language": "fr-CH, es;q=0.9"
+                    },
+                    body:    Buffer.from("transparency-record")
+                });
+
+                expect(response.status).toBe(200);
+                expect(await response.json()).toBe("Gültige Signatur");
+            },
+            {
+                language: "de",
+                i18n:     cliI18N
+            }
+        );
+
+    });
+
+    test("rejects POST /convert when JSON is not accepted", async () => {
+
+        await withHttpServer(
+            () => ({
+                ok:     true,
+                result: chargeTransparencyRecord
+            }),
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/convert`, {
+                    method:  "POST",
+                    headers: {
+                        "Accept": "text/plain"
+                    },
+                    body:    Buffer.from("transparency-record")
+                });
+
+                expect(response.status).toBe(406);
+                expect(await response.text()).toContain("No acceptable response content type found for /convert");
+            }
+        );
+
+    });
+
+    test("routes POST /convert to the renderer dispatcher and returns the converted record", async () => {
+
+        let dispatchedRequest: HttpDispatchRequest | undefined;
+
+        await withHttpServer(
+            request => {
+                dispatchedRequest = request;
+                return {
+                    ok:     true,
+                    result: chargeTransparencyRecord
+                };
+            },
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/convert?pretty`, {
+                    method:  "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body:    Buffer.from("{\"payload\":true}")
+                });
+
+                expect(response.status).toBe(200);
+                expect(response.headers.get("content-type")).toContain("application/json");
+                expect(await response.json()).toEqual(chargeTransparencyRecord);
+            }
+        );
+
+        expect(dispatchedRequest).toMatchObject({
+            operation:   "convert",
+            pretty:      true,
+            contentType: "application/json"
+        });
+        expect(dispatchedRequest?.data.toString("utf-8")).toBe("{\"payload\":true}");
+
+    });
+
+    test("rejects unsupported methods and endpoints before dispatching to the renderer", async () => {
+
+        let dispatchCount = 0;
+
+        await withHttpServer(
+            () => {
+                dispatchCount++;
+                return {
+                    ok:     true,
+                    result: chargeTransparencyRecord
+                };
+            },
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method: "GET"
+                });
+
+                expect(response.status).toBe(400);
+                expect(await response.text()).toContain("Please use POST /verify");
+            }
+        );
+
+        expect(dispatchCount).toBe(0);
+
+    });
+
+    test("rejects empty request bodies before dispatching to the renderer", async () => {
+
+        let dispatchCount = 0;
+
+        await withHttpServer(
+            () => {
+                dispatchCount++;
+                return {
+                    ok:     true,
+                    result: chargeTransparencyRecord
+                };
+            },
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/convert`, {
+                    method: "POST"
+                });
+
+                expect(response.status).toBe(400);
+                expect(await response.text()).toContain("Please upload any kind of transparency record");
+            }
+        );
+
+        expect(dispatchCount).toBe(0);
+
+    });
+
+});

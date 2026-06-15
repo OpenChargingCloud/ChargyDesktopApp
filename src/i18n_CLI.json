@@ -1,0 +1,123 @@
+{
+
+    "CLIUsagePrefix": {
+        "de": "Aufruf:",
+        "en": "Usage:"
+    },
+
+    "CLISwitchesHeading": {
+        "de": "Optionen:",
+        "en": "Switches:"
+    },
+
+    "CLIHelpDescription": {
+        "de": "Diese Hilfe anzeigen",
+        "en": "Show this information"
+    },
+
+    "CLILanguageDescription": {
+        "de": "CLI-Sprache setzen",
+        "en": "Set the CLI language"
+    },
+
+    "CLIInspectDescription": {
+        "de": "Im Debug-Modus starten, Inspector aktivieren und DevTools öffnen",
+        "en": "Run in debug mode, enable inspector and open development tools"
+    },
+
+    "CLINoGUIDescription": {
+        "de": "Im Kommandozeilenmodus starten (CLI mode)",
+        "en": "Run in command line mode (cli mode)"
+    },
+
+    "CLIHTTPDescription": {
+        "de": "HTTP API auf localhost:8080 oder dem angegebenen Endpunkt starten",
+        "en": "Start the HTTP API on localhost:8080 or the given endpoint"
+    },
+
+    "CLIOutputHelpIntro": {
+        "de": "Ausgabeformat für Verifikationsergebnisse im CLI-/Debug-Modus setzen",
+        "en": "Set the verification result output format in cli/debug mode"
+    },
+
+    "CLIOutputTextDescription": {
+        "de": "Das voreingestellte menschenlesbare Ausgabeformat.",
+        "en": "The default human readable output format."
+    },
+
+    "CLIOutputCSVDescription": {
+        "de": "Das CSV-Format (comma separated values) verwenden.",
+        "en": "Use the CSV (comma separated values) format."
+    },
+
+    "CLIOutputJSONDescription": {
+        "de": "Das JSON-Format verwenden.",
+        "en": "Use the JSON format."
+    },
+
+    "CLIOutputXMLDescription": {
+        "de": "Das XML-Format verwenden.",
+        "en": "Use the XML format."
+    },
+
+    "CLIOutputChargyDescription": {
+        "de": "Zusammen mit '--export' die Verifikationsergebnisse in die Chargy-Transparenzdatei schreiben.",
+        "en": "In combination with '--export' include the verification results into the charge transparency file."
+    },
+
+    "CLIOutputNotImplementedNote": {
+        "de": "Hinweis: Diese Ausgabeformate sind als CLI-Vertrag dokumentiert, aber noch nicht implementiert.",
+        "en": "Note: These output formats are documented as CLI contract, but are not implemented yet."
+    },
+
+    "CLISessionVerificationNoChargeTransparencyRecordsFound": {
+        "de": "Keine Transparenzdatensätze gefunden",
+        "en": "No charge transparency records found"
+    },
+
+    "CLISessionVerificationUnknownSessionFormat": {
+        "de": "Unbekanntes Sitzungsformat",
+        "en": "Unknown session format"
+    },
+
+    "CLISessionVerificationInvalidSessionFormat": {
+        "de": "Ungültiges Sitzungsformat",
+        "en": "Invalid session format"
+    },
+
+    "CLISessionVerificationPublicKeyNotFound": {
+        "de": "Öffentlicher Schlüssel nicht gefunden",
+        "en": "Public key not found"
+    },
+
+    "CLISessionVerificationInvalidPublicKey": {
+        "de": "Ungültiger öffentlicher Schlüssel",
+        "en": "Invalid public key"
+    },
+
+    "CLISessionVerificationInvalidSignature": {
+        "de": "Ungültige Signatur",
+        "en": "Invalid signature"
+    },
+
+    "CLISessionVerificationUnvalidated": {
+        "de": "Nicht validiert",
+        "en": "Unvalidated"
+    },
+
+    "CLISessionVerificationValidSignature": {
+        "de": "Gültige Signatur",
+        "en": "Valid signature"
+    },
+
+    "CLISessionVerificationInconsistentTimestamps": {
+        "de": "Inkonsistente Zeitstempel",
+        "en": "Inconsistent timestamps"
+    },
+
+    "CLISessionVerificationAtLeastTwoMeasurementsRequired": {
+        "de": "Mindestens zwei Messwerte erforderlich",
+        "en": "At least two measurements required"
+    }
+
+}

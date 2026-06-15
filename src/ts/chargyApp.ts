@@ -2085,16 +2085,22 @@ export class ChargyApp {
         if (chargeTransparencyRecord.IsAChargeTransparencyRecord(result))
         {
 
+            if (this.appContext.noGUI)
+            {
+                this.publishVerificationResult(result);
+                return true;
+            }
+
             if (options?.prepareUI === false)
             {
                 this.inputInfosDiv.style.display = 'none';
                 this.errorTextDiv.style.display  = 'none';
             }
 
-            // if (!this.ipcRenderer.sendSync('noGUI'))
-                 await this.showChargeTransparencyRecord(result);
+            await this.showChargeTransparencyRecord(result);
 
-            // this.ipcRenderer.sendSync('setVerificationResult', result.chargingSessions?.map(session => session.verificationResult));
+            if (this.appContext.isDebug)
+                this.publishVerificationResult(result);
 
             return true;
 
@@ -2140,6 +2146,26 @@ export class ChargyApp {
     }
 
     //#endregion
+
+
+    private publishVerificationResult(CTR: chargeTransparencyRecord.IChargeTransparencyRecord): void {
+
+        const verificationResults = (CTR.chargingSessions ?? [])
+                                        .map(session => session.verificationResult)
+                                        .filter(chargyInterfaces.isISessionCryptoResult1);
+
+        this.electron.setVerificationResult(
+            verificationResults != null && verificationResults.length > 0
+                ? verificationResults
+                : {
+                      status:     chargyInterfaces.SessionVerificationResult.Unvalidated,
+                      message:    this.getLocalizedText("No charge transparency records found!"),
+                      certainty:  0
+                  }
+        );
+
+    }
+
 
 //#region showChargeTransparencyLiveLink(LiveLink)
 
