@@ -22,6 +22,7 @@ import * as chargeTransparencyRecord    from './interfaces/IChargeTransparencyRe
 import * as chargeTransparencyLiveLink  from './interfaces/IChargeTransparencyLiveLink'
 import * as publicKeyInfo               from './interfaces/IPublicKeyInfo'
 import * as chargyLib                   from './chargyLib'
+import { toSessionVerificationResults } from './verificationResults'
 
 import stringify                        from 'safe-stable-stringify';
 import Decimal                          from 'decimal.js';
@@ -2150,18 +2151,11 @@ export class ChargyApp {
 
     private publishVerificationResult(CTR: chargeTransparencyRecord.IChargeTransparencyRecord): void {
 
-        const verificationResults = (CTR.chargingSessions ?? [])
-                                        .map(session => session.verificationResult)
-                                        .filter(chargyInterfaces.isISessionCryptoResult1);
-
         this.electron.setVerificationResult(
-            verificationResults != null && verificationResults.length > 0
-                ? verificationResults
-                : {
-                      status:     chargyInterfaces.SessionVerificationResult.Unvalidated,
-                      message:    this.getLocalizedText("No charge transparency records found!"),
-                      certainty:  0
-                  }
+            toSessionVerificationResults(
+                CTR,
+                this.getLocalizedText("No charge transparency records found!")
+            )
         );
 
     }

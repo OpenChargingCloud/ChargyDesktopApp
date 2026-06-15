@@ -322,6 +322,7 @@ tests/httpApi.test.ts             # src/httpApi.cjs (routing, negotiation, 413/5
 tests/verificationService.test.ts # src/verificationService.cjs (output formats, exit codes)
 tests/mainSecurity.test.ts        # src/mainSecurity.cjs (path allow-list, URL/permission filters)
 tests/cliVerificationFlow.test.ts # real Chargy core -> CLI service: --nogui file flow, output + exit codes
+tests/verificationResults.test.ts # src/ts/verificationResults.ts (CTR -> session results extraction + fallback)
 ```
 
 They run without Electron and cover the pure modules that `src/main.cjs` is built from. They also import `src/applicationMetadata.cjs`, so expected version, edition, and copyright values come from the same metadata source as the Electron main process instead of being duplicated in the test file.
@@ -428,7 +429,9 @@ Parsing, help text, HTTP routing/negotiation, output rendering, exit codes and t
 
 ### CLI Verification Service Tests (done)
 
-`tests/cliVerificationFlow.test.ts` now exercises the full `--nogui` file path without Electron: it reads a real fixture, runs it through `Chargy.DetectAndConvertContentFormat(...)` in Node, mirrors the renderer's `publishVerificationResult(...)` extraction (CTR sessions → verification results), and feeds the result into `verificationService.renderCliVerification(...)`. It covers a valid record (text/CSV/JSON, exit `0`) and an invalid-signature record (exit `2`). The only remaining gap is the renderer's own extraction logic, which is still defined in `src/ts/chargyApp.ts` (untested UI) and mirrored in the test; extracting it into a shared helper would close that last seam.
+`tests/cliVerificationFlow.test.ts` exercises the full `--nogui` success path without Electron: it reads a real fixture, runs it through `Chargy.DetectAndConvertContentFormat(...)` in Node, extracts the per-session results, and feeds them into `verificationService.renderCliVerification(...)`, asserting text/CSV/JSON output and exit code `0`.
+
+The extraction step (CTR → session verification results, plus the "no records" fallback) is no longer mirrored in the test: it now lives in the shared pure function `toSessionVerificationResults(...)` in `src/ts/verificationResults.ts`, which `src/ts/chargyApp.ts -> publishVerificationResult(...)` and the tests both use. Its own branches (per-session results, dropping sessions without a result, the localized/default fallback, and an invalid-signature session mapping to exit code `2`) are covered directly in `tests/verificationResults.test.ts`. Non-CTR / unparseable inputs never reach this path in production — the renderer routes them through `doGlobalError(...)` instead.
 
 ### Electron Smoke Tests
 
