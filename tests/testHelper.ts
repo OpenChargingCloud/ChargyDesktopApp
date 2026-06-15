@@ -26,6 +26,7 @@ import type {
 } from '../src/ts/interfaces/IPublicKeyInfo';
 
 export {
+    createChargy,
     expectVerificationReport,
     expectVerificationReportInline,
     expectBinaryVerificationReport,

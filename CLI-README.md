@@ -321,6 +321,7 @@ tests/cliArguments.test.ts        # src/cliArguments.cjs (parsing, language, hel
 tests/httpApi.test.ts             # src/httpApi.cjs (routing, negotiation, 413/500, serialization, timeout)
 tests/verificationService.test.ts # src/verificationService.cjs (output formats, exit codes)
 tests/mainSecurity.test.ts        # src/mainSecurity.cjs (path allow-list, URL/permission filters)
+tests/cliVerificationFlow.test.ts # real Chargy core -> CLI service: --nogui file flow, output + exit codes
 ```
 
 They run without Electron and cover the pure modules that `src/main.cjs` is built from. They also import `src/applicationMetadata.cjs`, so expected version, edition, and copyright values come from the same metadata source as the Electron main process instead of being duplicated in the test file.
@@ -425,15 +426,9 @@ The important improvement is that `--help` and `--version` now return before `cr
 
 Parsing, help text, HTTP routing/negotiation, output rendering, exit codes and the `main.cjs` security helpers are now covered without Electron. The remaining layers are:
 
-### CLI Verification Service Tests (partially done)
+### CLI Verification Service Tests (done)
 
-`src/verificationService.cjs` already renders text/CSV/JSON/XML output and decides exit codes from verification results, and is covered by `tests/verificationService.test.ts`. What is still missing is an end-to-end path that:
-
-- reads input bytes or accepts already loaded file data,
-- calls `Chargy.DetectAndConvertContentFormat(...)` directly in Node (as `tests/httpApi.test.ts` already does for the HTTP path),
-- feeds the result into the service.
-
-This would let the full `--nogui` file path be tested against the existing fixtures without starting Electron.
+`tests/cliVerificationFlow.test.ts` now exercises the full `--nogui` file path without Electron: it reads a real fixture, runs it through `Chargy.DetectAndConvertContentFormat(...)` in Node, mirrors the renderer's `publishVerificationResult(...)` extraction (CTR sessions → verification results), and feeds the result into `verificationService.renderCliVerification(...)`. It covers a valid record (text/CSV/JSON, exit `0`) and an invalid-signature record (exit `2`). The only remaining gap is the renderer's own extraction logic, which is still defined in `src/ts/chargyApp.ts` (untested UI) and mirrored in the test; extracting it into a shared helper would close that last seam.
 
 ### Electron Smoke Tests
 

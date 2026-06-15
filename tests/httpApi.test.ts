@@ -4,8 +4,7 @@ import type { AddressInfo }       from "node:net";
 import { request as httpClientRequest } from "node:http";
 import type { Server }            from "node:http";
 import { describe, expect, test } from "vitest";
-import './testHelper';
-import { Chargy }                 from '../src/ts/chargy';
+import { createChargy }           from './testHelper';
 
 const require = createRequire(import.meta.url);
 
@@ -55,20 +54,6 @@ const chargeTransparencyRecord = {
         }
     ]
 };
-
-function createChargy(): Chargy {
-
-    return new Chargy(
-        {},
-        "en",
-        require("elliptic"),
-        require("moment"),
-        require("asn1.js"),
-        require("base32-decode"),
-        () => ""
-    );
-
-}
 
 async function dispatchToChargyCore(request: HttpDispatchRequest): Promise<HttpDispatchResponse> {
 
