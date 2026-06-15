@@ -10,6 +10,10 @@ const {
     createOutputHelpText
 }                                                                = require('./cliArguments.cjs');
 const {
+    createApiKeyAuthenticator,
+    loadApiKeysFromFile
+}                                                                = require('./apiKeys.cjs');
+const {
     startChargyHttpServer
 }                                                                = require('./httpApi.cjs');
 const {
@@ -38,6 +42,8 @@ let   httpHost                   = "";
 let   httpPort                   = 0;
 let   httpServer                 = null;
 let   nextHttpRequestId          = 0;
+let   apiKeyAuthenticator        = null;
+let   apiKeyEntries              = [];
 
 const mapboxAccessToken          = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
 const mapboxStartGeoCoordinates  = [50.9279287, 11.5731785];
@@ -119,6 +125,8 @@ function startHttpAPI() {
         dispatchHttpRequest: dispatchHttpRequestToRenderer,
         language: cliArguments.language,
         i18n: cliI18N,
+        apiKeyAuthenticator,
+        apiKeyEntries,
         log: console.log
     });
 
@@ -351,6 +359,28 @@ app.whenReady().then(() => {
 
         httpHost = cliArguments.http.host;
         httpPort = cliArguments.http.port;
+
+        if (cliArguments.apiKeys === "")
+        {
+            console.log("--apiKeys requires a JSON file name.");
+            app.exit(1); // Will not exit at once!
+            return;
+        }
+
+        if (cliArguments.apiKeys != null && cliArguments.apiKeys !== "")
+        {
+            try
+            {
+                apiKeyEntries       = loadApiKeysFromFile(cliArguments.apiKeys);
+                apiKeyAuthenticator = createApiKeyAuthenticator(apiKeyEntries);
+            }
+            catch (exception)
+            {
+                console.log("Could not load HTTP API keys from " + cliArguments.apiKeys + ": " + (exception.message ?? exception));
+                app.exit(1); // Will not exit at once!
+                return;
+            }
+        }
 
     }
 

@@ -35,6 +35,11 @@
         "en": "Start the HTTP API on localhost:8080 or the given endpoint"
     },
 
+    "CLIAPIKeysDescription": {
+        "de": "HTTP API Clients auf API-Key Header aus der JSON-Datei beschränken",
+        "en": "Require HTTP API clients to send an API-Key request header listed in the JSON file"
+    },
+
     "CLIOutputHelpIntro": {
         "de": "Ausgabeformat für Verifikationsergebnisse im CLI-/Debug-Modus setzen",
         "en": "Set the verification result output format in cli/debug mode"

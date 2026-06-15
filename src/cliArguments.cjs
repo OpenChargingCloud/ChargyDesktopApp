@@ -200,6 +200,16 @@ function parseCliArguments(args, environment = process.env) {
                 }
             }
 
+            if (parsed.name === "apikeys") {
+                if (parsed.value == null) {
+                    const nextArgument = args[i + 1];
+                    if (typeof nextArgument === "string" && !nextArgument.startsWith("-")) {
+                        switches.set(parsed.name, nextArgument);
+                        i++;
+                    }
+                }
+            }
+
             continue;
         }
 
@@ -222,6 +232,7 @@ function parseCliArguments(args, environment = process.env) {
         inspect:   switches.has("inspect"),
         noGUI:     switches.has("nogui"),
         output:    switches.has("output") ? (switches.get("output") ?? "") : null,
+        apiKeys:   switches.has("apikeys") ? (switches.get("apikeys") ?? "") : null,
         http:      httpValue !== undefined
                        ? parseHttpSwitch(httpValue)
                        : {
@@ -257,7 +268,8 @@ function createMainHelpText(applicationFileName, version, applicationEdition, co
         " --lang=de|en       " + getLocalizedText(i18n, lang, "CLILanguageDescription", "Set the CLI language"),
         " --inspect          " + getLocalizedText(i18n, lang, "CLIInspectDescription", "Run in debug mode, enable inspector and open development tools"),
         " --nogui            " + getLocalizedText(i18n, lang, "CLINoGUIDescription", "Run in command line mode (cli mode)"),
-        " --http[=host:port] " + getLocalizedText(i18n, lang, "CLIHTTPDescription", "Start the HTTP API on localhost:8080 or the given endpoint")
+        " --http[=host:port] " + getLocalizedText(i18n, lang, "CLIHTTPDescription", "Start the HTTP API on localhost:8080 or the given endpoint"),
+        " --apiKeys=file     " + getLocalizedText(i18n, lang, "CLIAPIKeysDescription", "Require HTTP API clients to send an API-Key request header listed in the JSON file")
     ].join("\n");
 }
 

@@ -20,6 +20,8 @@ type ParsedCliArguments = {
     version:   boolean;
     inspect:   boolean;
     noGUI:     boolean;
+    output:    string | null;
+    apiKeys:   string | null;
     http:      ParsedHttpArguments;
 };
 
@@ -157,6 +159,24 @@ describe("CLI argument parsing", () => {
 
     });
 
+    test("parses --apiKeys values without treating the key file as an input file", () => {
+
+        const parsed = parseCliArguments(["--http", "--apiKeys", "api-keys.json", "session.chargy"]);
+
+        expect(parsed.apiKeys).toBe("api-keys.json");
+        expect(parsed.files).toEqual(["session.chargy"]);
+
+    });
+
+    test("parses --apiKeys=value values", () => {
+
+        const parsed = parseCliArguments(["--http", "--apiKeys=api-keys.json"]);
+
+        expect(parsed.apiKeys).toBe("api-keys.json");
+        expect(parsed.files).toEqual([]);
+
+    });
+
     test("parses --lang values", () => {
 
         const parsed = parseCliArguments(["--lang=de"], {});
@@ -246,6 +266,7 @@ describe("CLI help text", () => {
         expect(helpText).toContain("--inspect");
         expect(helpText).toContain("--nogui");
         expect(helpText).toContain("--http[=host:port]");
+        expect(helpText).toContain("--apiKeys=file");
 
     });
 

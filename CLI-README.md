@@ -1,6 +1,6 @@
 # Chargy CLI Mode
 
-Status: 2026-06-15. This document describes the current CLI-related code paths in `src/main.cjs`, `src/cliArguments.cjs`, `src/httpApi.cjs`, `src/applicationMetadata.cjs`, `src/ts/chargyApp.ts`, and the CLI/HTTP tests in `tests/cliArguments.test.ts` and `tests/httpApi.test.ts`.
+Status: 2026-06-15. This document describes the current CLI-related code paths in `src/main.cjs`, `src/cliArguments.cjs`, `src/apiKeys.cjs`, `src/httpApi.cjs`, `src/applicationMetadata.cjs`, `src/ts/chargyApp.ts`, and the CLI/HTTP tests in `tests/cliArguments.test.ts`, `tests/apiKeys.test.ts`, and `tests/httpApi.test.ts`.
 
 Chargy can be started with `--nogui` and used as a small CLI-oriented test tool. This does not create a second application. The certified entry point remains the same Electron binary. The cleanup work separates only pure, testable CLI building blocks from the Electron startup code so that the GUI app and CLI mode still share one executable and one verification implementation.
 
@@ -37,16 +37,18 @@ The first extracted CLI building blocks are:
 
 ```text
 src/cliArguments.cjs
+src/apiKeys.cjs
 src/httpApi.cjs
 src/applicationMetadata.cjs
 ```
 
-`src/cliArguments.cjs` contains the side-effect-free argument parser and help text rendering. `src/httpApi.cjs` contains the Node HTTP handler and server startup wrapper for the CLI HTTP API. `src/applicationMetadata.cjs` contains shared application metadata such as edition, copyright, package version, and `package.json`. These modules are used by `src/main.cjs`; the tests read the same metadata module so the expected help output does not duplicate the version, edition, or copyright strings.
+`src/cliArguments.cjs` contains the side-effect-free argument parser and help text rendering. `src/apiKeys.cjs` contains API-key JSON parsing and validity checks. `src/httpApi.cjs` contains the Node HTTP handler and server startup wrapper for the CLI HTTP API. `src/applicationMetadata.cjs` contains shared application metadata such as edition, copyright, package version, and `package.json`. These modules are used by `src/main.cjs`; the tests read the same metadata module so the expected help output does not duplicate the version, edition, or copyright strings.
 
-The parser, help contract, and HTTP routing contract are covered by:
+The parser, help contract, API-key contract, and HTTP routing contract are covered by:
 
 ```text
 tests/cliArguments.test.ts
+tests/apiKeys.test.ts
 tests/httpApi.test.ts
 ```
 
@@ -69,6 +71,7 @@ The help text currently documents:
 - `--inspect`
 - `--nogui`
 - `--http[=host:port]`
+- `--apiKeys=file`
 
 This path is now covered by parser/help text tests and by a local Electron smoke check.
 
@@ -188,6 +191,7 @@ npm run start -- --http
 npm run start -- --http=8080
 npm run start -- --http=127.0.0.1:8080
 npm run start -- --nogui --http=127.0.0.1:8080
+npm run start -- --nogui --http=127.0.0.1:8080 --apiKeys=api-keys.json
 ```
 
 Parsing:
@@ -200,10 +204,13 @@ Parsing:
 The HTTP server starts after the renderer has loaded. It currently supports:
 
 - `GET /`
+- `GET /apiKeys`
 - `POST /verify`
 - `POST /convert`
 
-`GET /` returns a small `text/plain` help text for the HTTP service. It lists the known endpoints and the request headers relevant for content and language negotiation.
+`GET /` returns a small `text/plain` help text for the HTTP service. It lists the known endpoints and the request headers relevant for authentication, content negotiation and language negotiation. It intentionally stays reachable without an `API-Key` header, even when API-key authentication is enabled.
+
+`GET /apiKeys` returns the configured API-key JSON array. It always requires a valid `API-Key` request header and that key must have the `root` role. Missing, unknown, not-yet-valid, or expired keys return `401`; valid keys without `root` return `403`.
 
 `POST /verify` returns only session verification results. A single session returns one JSON string; multiple sessions return a JSON array.
 
@@ -247,6 +254,7 @@ Examples:
 
 ```bash
 curl "http://127.0.0.1:8080/"
+curl -H "API-Key: root-secret" "http://127.0.0.1:8080/apiKeys"
 curl -X POST --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/verify"
 curl -H "Accept: text/plain" -X POST --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/verify"
 curl -H "Accept: text/csv" -X POST --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/verify"
@@ -254,10 +262,67 @@ curl -H "Accept: application/xml" -X POST --data-binary "@tests/fixtures/OCMF/OC
 curl -X POST --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/convert?pretty"
 ```
 
+### `--apiKeys`
+
+`--apiKeys` enables API-key authentication for the HTTP API and expects a JSON file name.
+
+```bash
+npm run start -- --nogui --http=127.0.0.1:8080 --apiKeys=api-keys.json
+npm run start -- --nogui --http=127.0.0.1:8080 --apiKeys api-keys.json
+```
+
+When `--apiKeys` is configured:
+
+- `GET /` stays open without authentication.
+- `GET /apiKeys` requires a valid `API-Key` with the `root` role and returns the configured API-key array.
+- `POST /verify` and `POST /convert` require the `API-Key` request header.
+- Missing, unknown, not-yet-valid, or expired keys return `401`.
+- Valid keys without the required `root` role for `/apiKeys` return `403`.
+- Empty API-key files are valid JSON but allow no protected request through.
+- Roles are parsed and validated now, but currently do not change endpoint permissions.
+
+API-key file format:
+
+```json
+[
+  {
+    "apiKey": "driver-secret",
+    "roles": [ "evDriver" ],
+    "notBefore": "2026-01-01T00:00:00Z",
+    "notAfter": "2026-12-31T23:59:59Z"
+  },
+  {
+    "apiKey": "root-secret",
+    "roles": [ "evDriver", "root" ],
+    "notBefore": "2026-01-01T00:00:00Z",
+    "notAfter": "2026-12-31T23:59:59Z"
+  }
+]
+```
+
+Fields:
+
+- `apiKey`: required non-empty string.
+- `roles`: optional array of enum values. Supported values are `evDriver` and `root`; the default is `[ "evDriver" ]`.
+- `notBefore`: required ISO 8601 timestamp.
+- `notAfter`: required ISO 8601 timestamp.
+
+For compatibility with earlier test configurations, `role` is still accepted as a string or as an array and converted to `roles`. New files should use `roles`.
+
+Authenticated request example:
+
+```bash
+curl -H "API-Key: driver-secret" \
+     -X POST \
+     --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" \
+     "http://127.0.0.1:8080/verify"
+```
+
 HTTP limits:
 
-- Only `POST` is accepted.
-- Only `/verify` and `/convert` are accepted.
+- `GET /` and `GET /apiKeys` are accepted for service/admin metadata.
+- Verification and conversion use `POST` only.
+- Only `/`, `/apiKeys`, `/verify`, and `/convert` are accepted.
 - Maximum request size is 20 MiB.
 - Main-to-renderer request timeout is 30 seconds.
 - Per-request socket read timeout is 30 seconds (slow clients receive `408` and are disconnected).
@@ -271,7 +336,7 @@ HTTP limits:
 > npm run start -- --http=192.168.1.10:8080 # reachable from the local network
 > ```
 >
-> The HTTP API has **no authentication, authorization, or TLS**. Anyone who can reach the bound address can submit transparency records for verification and conversion and read the results. Only bind to a non-loopback address on a trusted, isolated network, and prefer placing a reverse proxy with TLS and access control in front of it. When the server is started on a non-loopback address it logs a warning to make this explicit.
+> The HTTP API has **no TLS**. If `--apiKeys` is not configured, anyone who can reach the bound address can submit transparency records for verification and conversion and read the results. `--apiKeys` restricts protected endpoints to callers that know a currently valid key, but the key still travels as a plain HTTP header unless TLS is provided by a reverse proxy or another trusted transport layer. Only bind to a non-loopback address on a trusted, isolated network, and prefer placing a reverse proxy with TLS and access control in front of it. When the server is started on a non-loopback address it logs a warning to make this explicit.
 
 `src/httpApi.cjs` is intentionally renderer-agnostic. `src/main.cjs` injects `dispatchHttpRequestToRenderer(...)`, while tests inject a stub dispatcher and exercise the real Node HTTP server on an OS-assigned port.
 
@@ -318,6 +383,7 @@ The CLI and HTTP tests are in:
 
 ```text
 tests/cliArguments.test.ts        # src/cliArguments.cjs (parsing, language, help text, IPv6)
+tests/apiKeys.test.ts             # src/apiKeys.cjs (JSON parsing, roles, timestamps, authentication)
 tests/httpApi.test.ts             # src/httpApi.cjs (routing, negotiation, 413/500, serialization, timeout)
 tests/verificationService.test.ts # src/verificationService.cjs (output formats, exit codes)
 tests/mainSecurity.test.ts        # src/mainSecurity.cjs (path allow-list, URL/permission filters)
@@ -330,9 +396,10 @@ They run without Electron and cover the pure modules that `src/main.cjs` is buil
 The Electron-free module layout extracted from `src/main.cjs` is:
 
 - `src/cliArguments.cjs` - argument parsing, language detection, help text.
+- `src/apiKeys.cjs` - parsing API-key JSON files and validating `API-Key` request headers.
 - `src/outputFormats.cjs` - shared CSV/XML/JSON/text rendering and localized status text (used by HTTP and CLI).
 - `src/verificationService.cjs` - CLI `--output` rendering and exit-code mapping.
-- `src/httpApi.cjs` - the Node HTTP server, content negotiation, size/timeout guards, dispatch serialization.
+- `src/httpApi.cjs` - the Node HTTP server, optional API-key authentication, content negotiation, size/timeout guards, dispatch serialization.
 - `src/asyncMutex.cjs` - the serialization primitive shared-renderer dispatch runs through.
 - `src/mainSecurity.cjs` - file path allow-list plus external-URL and camera-permission filters.
 
@@ -346,6 +413,12 @@ Run the CLI argument and HTTP API tests:
 
 ```bash
 npx vitest run --config tests/vitest.config.ts tests/cliArguments.test.ts tests/httpApi.test.ts
+```
+
+Run the CLI argument, API-key and HTTP API tests:
+
+```bash
+npx vitest run --config tests/vitest.config.ts tests/cliArguments.test.ts tests/apiKeys.test.ts tests/httpApi.test.ts
 ```
 
 Run the test TypeScript typecheck:
@@ -368,6 +441,7 @@ Current covered cases:
 - `--http=18080` parses as `localhost:18080`.
 - `--http=127.0.0.1:18080` parses host and port.
 - Invalid HTTP ports report a parser error.
+- `--apiKeys file` and `--apiKeys=file` parse the API-key JSON file path.
 - Main help text contains the currently implemented switches.
 - Main help text is rendered in German when requested.
 - Output help text marks the output formats as not implemented yet.
@@ -375,6 +449,13 @@ Current covered cases:
 - Help text expectations use `src/applicationMetadata.cjs` for application version, edition, and copyright.
 - The HTTP API starts a real Node server on a free port.
 - `GET /` returns HTTP service help without renderer dispatch.
+- `GET /` stays reachable without `API-Key` when API-key authentication is enabled.
+- `GET /apiKeys` rejects missing API keys with `401`.
+- `GET /apiKeys` rejects valid non-root API keys with `403`.
+- `GET /apiKeys` returns the configured API-key array for valid root API keys.
+- `POST /verify` rejects missing, expired or unknown API keys with `401`.
+- `POST /verify` accepts valid API keys from the `API-Key` request header.
+- `POST /convert` also rejects missing API keys with `401`.
 - `POST /verify` dispatches to the renderer bridge and returns verification text.
 - `POST /verify` honors `Accept` for JSON, text, CSV, and XML responses.
 - `POST /verify` localizes verification text with the configured CLI language.
@@ -384,18 +465,22 @@ Current covered cases:
 - `POST /convert?pretty` can upload a QR-code PNG transparency record and convert it through the real Chargy core.
 - Unsupported `Accept` content types are rejected with `406`.
 - Unsupported methods and empty bodies are rejected before renderer dispatch.
+- API-key JSON files are parsed, roles default to `[ "evDriver" ]`, multiple roles such as `[ "evDriver", "root" ]` are accepted, the legacy singular `role` field is accepted, duplicate keys and invalid timestamps are rejected.
 
 Local verification after the first extraction:
 
 ```text
 npx vitest run --config tests/vitest.config.ts tests/cliArguments.test.ts tests/httpApi.test.ts
-33 passed
+51 passed
+
+npx vitest run --config tests/vitest.config.ts tests/cliArguments.test.ts tests/apiKeys.test.ts tests/httpApi.test.ts
+63 passed
 
 npm run test:typecheck
 passed
 
 npm test
-124 passed, 2 skipped
+184 passed, 2 skipped
 
 npm run start -- --help
 exit 0, clean help output

@@ -7,6 +7,9 @@ const {
     createMutex
 }               = require('./asyncMutex.cjs');
 const {
+    ApiKeyRole
+}               = require('./apiKeys.cjs');
+const {
     sessionVerificationResultToText,
     verificationRowsToText,
     verificationRowsToCsv,
@@ -183,10 +186,12 @@ function createHttpHelpText() {
     return [
         "This is a Chargy HTTP service",
         "GET / - Show this help text.",
+        "GET /apiKeys - Return configured API keys as JSON when authenticated with a root API key.",
         "POST /verify - Verify a transparency record and return session verification results.",
         "POST /convert - Convert a transparency record and return the Charge Transparency Record as JSON.",
         "",
         "Request headers:",
+        "API-Key: required for /apiKeys, and for /verify and /convert when the server was started with --apiKeys.",
         "Accept: application/json, text/plain, text/csv, application/xml for /verify; application/json for /convert.",
         "Accept-Language: de or en for localized /verify status text.",
         ""
@@ -238,7 +243,9 @@ function createChargyHttpRequestHandler({
     i18n = {},
     maxContentSize   = DEFAULT_HTTP_API_MAX_CONTENT_SIZE,
     requestTimeoutMs = DEFAULT_HTTP_API_REQUEST_TIMEOUT,
-    serializeDispatch = true
+    serializeDispatch = true,
+    apiKeyAuthenticator = null,
+    apiKeyEntries = []
 }) {
 
     if (typeof dispatchHttpRequest !== "function")
@@ -272,6 +279,42 @@ function createChargyHttpRequestHandler({
         if (request.method === "GET" && requestUrl.pathname === "/")
         {
             sendPlainText(response, 200, createHttpHelpText());
+            return;
+        }
+
+        const isApiKeysRequest = request.method === "GET" && requestUrl.pathname === "/apiKeys";
+        let authentication = null;
+
+        if (typeof apiKeyAuthenticator === "function" || isApiKeysRequest)
+        {
+            authentication = typeof apiKeyAuthenticator === "function"
+                                 ? apiKeyAuthenticator(request.headers["api-key"])
+                                 : null;
+
+            if (authentication == null || authentication.ok !== true)
+            {
+                response.writeHead(401, {
+                    "Content-Type": "text/plain; charset=utf-8",
+                    "WWW-Authenticate": "API-Key"
+                });
+                response.end("Missing, unknown or expired API key.\n");
+                return;
+            }
+        }
+
+        if (isApiKeysRequest)
+        {
+            const roles = Array.isArray(authentication?.credential?.roles)
+                              ? authentication.credential.roles
+                              : [];
+
+            if (!roles.includes(ApiKeyRole.Root))
+            {
+                sendPlainText(response, 403, "The API key does not have the required root role.\n");
+                return;
+            }
+
+            sendJson(response, 200, Array.isArray(apiKeyEntries) ? apiKeyEntries : []);
             return;
         }
 
@@ -420,6 +463,8 @@ function startChargyHttpServer({
     maxContentSize,
     requestTimeoutMs = DEFAULT_HTTP_API_REQUEST_TIMEOUT,
     serializeDispatch,
+    apiKeyAuthenticator,
+    apiKeyEntries,
     log = console.log
 }) {
 
@@ -434,7 +479,9 @@ function startChargyHttpServer({
             i18n,
             maxContentSize,
             requestTimeoutMs,
-            serializeDispatch
+            serializeDispatch,
+            apiKeyAuthenticator,
+            apiKeyEntries
         })
     );
 
