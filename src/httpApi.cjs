@@ -3,8 +3,19 @@ const stringify = require('safe-stable-stringify');
 const {
     normalizeLanguage
 }               = require('./cliArguments.cjs');
+const {
+    createMutex
+}               = require('./asyncMutex.cjs');
+const {
+    sessionVerificationResultToText,
+    verificationRowsToText,
+    verificationRowsToCsv,
+    verificationRowsToXml,
+    verificationRowsToJsonValue
+}               = require('./outputFormats.cjs');
 
-const DEFAULT_HTTP_API_MAX_CONTENT_SIZE = 20*1024*1024;
+const DEFAULT_HTTP_API_MAX_CONTENT_SIZE  = 20*1024*1024;
+const DEFAULT_HTTP_API_REQUEST_TIMEOUT   = 30*1000;
 
 function normalizeListenHost(host) {
 
@@ -12,24 +23,6 @@ function normalizeListenHost(host) {
         return host.substring(1, host.length - 1);
 
     return host;
-
-}
-
-function getLocalizedText(i18n, language, key, fallback) {
-
-    const translations = i18n?.[key];
-
-    if (translations != null) {
-        const localized = translations[language];
-        if (typeof localized === "string")
-            return localized;
-
-        const english = translations["en"];
-        if (typeof english === "string")
-            return english;
-    }
-
-    return fallback;
 
 }
 
@@ -160,48 +153,6 @@ function parseAcceptLanguage(acceptLanguageHeader) {
 
 }
 
-function sessionVerificationResultToText(status, language = "en", i18n = {}) {
-
-    switch (status)
-    {
-
-        case "NoChargeTransparencyRecordsFound":
-            return getLocalizedText(i18n, language, "CLISessionVerificationNoChargeTransparencyRecordsFound", "No charge transparency records found");
-
-        case "UnknownSessionFormat":
-            return getLocalizedText(i18n, language, "CLISessionVerificationUnknownSessionFormat", "Unknown session format");
-
-        case "InvalidSessionFormat":
-            return getLocalizedText(i18n, language, "CLISessionVerificationInvalidSessionFormat", "Invalid session format");
-
-        case "PublicKeyNotFound":
-            return getLocalizedText(i18n, language, "CLISessionVerificationPublicKeyNotFound", "Public key not found");
-
-        case "InvalidPublicKey":
-            return getLocalizedText(i18n, language, "CLISessionVerificationInvalidPublicKey", "Invalid public key");
-
-        case "InvalidSignature":
-            return getLocalizedText(i18n, language, "CLISessionVerificationInvalidSignature", "Invalid signature");
-
-        case "Unvalidated":
-            return getLocalizedText(i18n, language, "CLISessionVerificationUnvalidated", "Unvalidated");
-
-        case "ValidSignature":
-            return getLocalizedText(i18n, language, "CLISessionVerificationValidSignature", "Valid signature");
-
-        case "InconsistentTimestamps":
-            return getLocalizedText(i18n, language, "CLISessionVerificationInconsistentTimestamps", "Inconsistent timestamps");
-
-        case "AtLeastTwoMeasurementsRequired":
-            return getLocalizedText(i18n, language, "CLISessionVerificationAtLeastTwoMeasurementsRequired", "At least two measurements required");
-
-        default:
-            return status || getLocalizedText(i18n, language, "CLISessionVerificationUnknownSessionFormat", "Unknown session format");
-
-    }
-
-}
-
 function isChargeTransparencyRecord(result) {
     return result != null &&
            Array.isArray(result.chargingSessions);
@@ -225,30 +176,6 @@ function sendXml(response, statusCode, text) {
 function sendJson(response, statusCode, value, pretty = false) {
     response.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8" });
     response.end(stringify(value, null, pretty ? 2 : 0));
-}
-
-function escapeCsvValue(value) {
-
-    const text = value == null
-                     ? ""
-                     : String(value);
-
-    if (/[",\r\n]/.test(text))
-        return "\"" + text.replace(/"/g, "\"\"") + "\"";
-
-    return text;
-
-}
-
-function escapeXmlValue(value) {
-
-    return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&apos;");
-
 }
 
 function createHttpHelpText() {
@@ -286,28 +213,19 @@ function sendVerificationResults(response, contentType, rows) {
     {
 
         case "text/plain":
-            sendPlainText(response, 200, rows.map(row => row.status).join("\n") + "\n");
+            sendPlainText(response, 200, verificationRowsToText(rows));
             return;
 
         case "text/csv":
-            sendCsv(response, 200, [
-                "session,status",
-                ...rows.map(row => escapeCsvValue(row.session) + "," + escapeCsvValue(row.status))
-            ].join("\n") + "\n");
+            sendCsv(response, 200, verificationRowsToCsv(rows));
             return;
 
         case "application/xml":
-            sendXml(response, 200, [
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-                "<verificationResults>",
-                ...rows.map(row => "  <result session=\"" + escapeXmlValue(row.session) + "\">" + escapeXmlValue(row.status) + "</result>"),
-                "</verificationResults>",
-                ""
-            ].join("\n"));
+            sendXml(response, 200, verificationRowsToXml(rows));
             return;
 
         default:
-            sendJson(response, 200, rows.length > 1 ? rows.map(row => row.status) : rows[0]?.status);
+            sendJson(response, 200, verificationRowsToJsonValue(rows));
             return;
 
     }
@@ -318,13 +236,33 @@ function createChargyHttpRequestHandler({
     dispatchHttpRequest,
     language = "en",
     i18n = {},
-    maxContentSize = DEFAULT_HTTP_API_MAX_CONTENT_SIZE
+    maxContentSize   = DEFAULT_HTTP_API_MAX_CONTENT_SIZE,
+    requestTimeoutMs = DEFAULT_HTTP_API_REQUEST_TIMEOUT,
+    serializeDispatch = true
 }) {
 
     if (typeof dispatchHttpRequest !== "function")
         throw new Error("dispatchHttpRequest must be a function.");
 
+    // Serialize all verification/conversion dispatches against the single shared
+    // Chargy renderer, so concurrent requests cannot interleave on shared state.
+    const dispatchMutex = createMutex();
+
+    const dispatch = serializeDispatch
+                         ? httpRequest => dispatchMutex.runExclusive(() => dispatchHttpRequest(httpRequest))
+                         : dispatchHttpRequest;
+
     return async function handleChargyHttpRequest(request, response) {
+
+        // Bound the time a single connection may occupy, independent of its size,
+        // to guard against slow-loris style clients holding the request open.
+        if (requestTimeoutMs > 0) {
+            request.setTimeout(requestTimeoutMs, () => {
+                if (!response.headersSent)
+                    sendPlainText(response, 408, "The transparency record was not transmitted in time.");
+                request.destroy();
+            });
+        }
 
         const requestUrl = new URL(request.url || "/", "http://localhost");
         const requestLanguage = parseAcceptLanguage(request.headers["accept-language"]) ??
@@ -406,7 +344,7 @@ function createChargyHttpRequestHandler({
 
             try
             {
-                const rendererResponse = await dispatchHttpRequest({
+                const rendererResponse = await dispatch({
                     operation:    requestUrl.pathname.substring(1),
                     pretty:       requestUrl.searchParams.has("pretty"),
                     contentType:  Array.isArray(request.headers["content-type"])
@@ -480,6 +418,8 @@ function startChargyHttpServer({
     language,
     i18n,
     maxContentSize,
+    requestTimeoutMs = DEFAULT_HTTP_API_REQUEST_TIMEOUT,
+    serializeDispatch,
     log = console.log
 }) {
 
@@ -492,13 +432,25 @@ function startChargyHttpServer({
             dispatchHttpRequest,
             language,
             i18n,
-            maxContentSize
+            maxContentSize,
+            requestTimeoutMs,
+            serializeDispatch
         })
     );
+
+    // Bound how long the server waits for a complete request, as a second line of
+    // defence behind the per-request socket timeout above.
+    if (requestTimeoutMs > 0)
+        server.requestTimeout = requestTimeoutMs;
 
     server.on("error", exception => {
         log("Could not start HTTP API: " + exception);
     });
+
+    // A bound-but-network-exposed endpoint (e.g. --http=0.0.0.0:8080) makes the
+    // verification API reachable from the network. Warn so this is never silent.
+    if (host !== "" && host !== "localhost" && host !== "127.0.0.1" && host !== "::1" && host !== "[::1]")
+        log("Warning: The Chargy HTTP API is bound to " + host + " and may be reachable from the network. Use localhost to restrict access to this machine.");
 
     server.listen(port, listenHost, () => {
         log("Chargy HTTP API listening on " + (host !== "" ? host : "*") + ":" + port);
@@ -510,6 +462,7 @@ function startChargyHttpServer({
 
 module.exports = {
     DEFAULT_HTTP_API_MAX_CONTENT_SIZE,
+    DEFAULT_HTTP_API_REQUEST_TIMEOUT,
     createChargyHttpRequestHandler,
     createHttpHelpText,
     negotiateContentType,

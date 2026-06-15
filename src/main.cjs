@@ -5,12 +5,22 @@ const fs                                                         = require('fs')
 const crypto                                                     = require('crypto');
 const {
     parseCliArguments,
+    hasNoActionableInput,
     createMainHelpText,
     createOutputHelpText
 }                                                                = require('./cliArguments.cjs');
 const {
     startChargyHttpServer
 }                                                                = require('./httpApi.cjs');
+const {
+    renderCliVerification
+}                                                                = require('./verificationService.cjs');
+const {
+    normalizePath,
+    isAllowedWebUrl,
+    createPathAllowList,
+    isVideoOnlyMediaPermission
+}                                                                = require('./mainSecurity.cjs');
 const {
     applicationEdition,
     copyright,
@@ -35,42 +45,15 @@ const mapboxStartMapZoom         = 12;
 
 const httpApiRequestTimeoutMs    = 30000;
 
-const allowedReadPaths           = new Set();
-const allowedSavePaths           = new Set();
+const readPaths                  = createPathAllowList();
+const savePaths                  = createPathAllowList();
 const pendingHttpRequests        = new Map();
 
-function normalizePath(fileName) {
-
-    if (typeof fileName !== "string" || fileName.trim() === "")
-        return "";
-
-    return path.resolve(fileName.replace(/^file:\/\//i, ""));
-
-}
-
 function allowReadPath(fileName) {
-    const normalizedPath = normalizePath(fileName);
-    if (normalizedPath !== "")
-        allowedReadPaths.add(normalizedPath);
-    return normalizedPath;
-}
-
-function isAllowedWebUrl(url) {
-    try {
-        const parsedUrl = new URL(url);
-        return parsedUrl.protocol === "https:" ||
-               parsedUrl.protocol === "mailto:" ||
-               parsedUrl.protocol === "tel:";
-    }
-    catch {
-        return false;
-    }
+    return readPaths.allow(fileName);
 }
 
 function isAllowedCameraPermissionRequest(webContents, permission, details) {
-
-    if (permission !== "media")
-        return false;
 
     if (mainWindow == null ||
         mainWindow.webContents == null ||
@@ -79,17 +62,7 @@ function isAllowedCameraPermissionRequest(webContents, permission, details) {
         return false;
     }
 
-    if (details?.isMainFrame === false)
-        return false;
-
-    const mediaTypes = Array.isArray(details?.mediaTypes)
-                           ? details.mediaTypes
-                           : typeof details?.mediaType === "string"
-                                 ? [ details.mediaType ]
-                                 : [];
-
-    return mediaTypes.includes("video") &&
-          !mediaTypes.includes("audio");
+    return isVideoOnlyMediaPermission(permission, details);
 
 }
 
@@ -345,6 +318,27 @@ app.whenReady().then(() => {
         return;
     }
 
+    // --nogui with neither a file to verify nor the HTTP API enabled has nothing
+    // to do. Show the usage help and exit cleanly instead of starting an invisible
+    // renderer window that would never receive a verification result.
+    if (hasNoActionableInput(cliArguments))
+    {
+
+        if (applicationFileName === "")
+            applicationFileName = "Chargy Transparenzsoftware.exe";
+
+        console.log(createMainHelpText(applicationFileName,
+                                       app.getVersion(),
+                                       applicationEdition,
+                                       copyright,
+                                       cliArguments.language,
+                                       cliI18N));
+        console.log("");
+        app.quit();
+        return;
+
+    }
+
     if (cliArguments.http.enabled)
     {
 
@@ -448,14 +442,14 @@ ipcMain.handle('showSaveDialog', async () => {
                                                    defaultPath:  app.getPath('documents') + '/Ladevorgaenge.chargy',
                                                });
     if (fileName != null)
-        allowedSavePaths.add(normalizePath(fileName));
+        savePaths.allow(fileName);
 
     return fileName;
 });
 
 ipcMain.handle('writeTextFile', async (_event, fileName, content) => {
     const normalizedPath = normalizePath(fileName);
-    if (!allowedSavePaths.has(normalizedPath))
+    if (!savePaths.has(normalizedPath))
         throw new Error('Saving to this path was not approved by the user.');
 
     await fs.promises.writeFile(normalizedPath, content, 'utf-8');
@@ -464,7 +458,7 @@ ipcMain.handle('writeTextFile', async (_event, fileName, content) => {
 
 ipcMain.handle('readFile', async (_event, fileName) => {
     const normalizedPath = normalizePath(fileName);
-    if (!allowedReadPaths.has(normalizedPath))
+    if (!readPaths.has(normalizedPath))
         throw new Error('Reading this path was not approved by the application.');
 
     const data = await fs.promises.readFile(normalizedPath);
@@ -531,83 +525,25 @@ ipcMain.on('setVerificationResult', (event, result) => {
 
     event.returnValue = true;
 
-    //console.log(result);
+    const noGUI = app.commandLine.hasSwitch('nogui');
 
-    if (app.commandLine.hasSwitch('nogui') || app.commandLine.hasSwitch('inspect'))
+    if (noGUI || app.commandLine.hasSwitch('inspect'))
     {
 
-        if (!Array.isArray(result))
-            result = [ result ];
+        const { output, exitCode } = renderCliVerification(result, {
+            output:    cliArguments.output,
+            language:  cliArguments.language,
+            i18n:      cliI18N
+        });
 
-        for (let singleResult of result)
+        process.stdout.write(output);
+
+        if (noGUI)
         {
-
-            //#region Convert status enum to text
-
-            let status = "";
-
-            status = singleResult.status;
-            // switch (singleResult.status)
-            // {
-
-            //     case 0:
-            //         status = "No charge transparency records found";
-            //         break;
-
-            //     case 1:
-            //         status = "Unknown session format";
-            //         break;
-
-            //     case 2:
-            //         status = "Invalid session format";
-            //         break;
-
-            //     case 3:
-            //         status = "Public key not found";
-            //         break;
-
-            //     case 4:
-            //         status = "Invalid public key";
-            //         break;
-
-            //     case 5:
-            //         status = "Invalid signature";
-            //         break;
-
-            //     case 6:
-            //         status = "Unvalidated";
-            //         break;
-
-            //     case 7:
-            //         status = "Valid signature";
-            //         break;
-
-            //     case 8:
-            //         status = "Inconsistent timestamps";
-            //         break;
-
-            //     case 9:
-            //         status = "At least two measurements required";
-            //         break;
-
-            //     default:
-            //         status = "Unknown session format";
-            //         break;
-
-            // }
-
-            //#endregion
-
-            console.log(status + (singleResult.message ? " - " + singleResult.message : ""));
-
+            mainWindow = null;
+            app.exit(exitCode);
         }
 
-    }
-
-    if (app.commandLine.hasSwitch('nogui'))
-    {
-        mainWindow = null;
-        app.exit(0);
     }
 
 });

@@ -1,6 +1,7 @@
 import { createRequire }          from "node:module";
 import { readFileSync }           from "node:fs";
 import type { AddressInfo }       from "node:net";
+import { request as httpClientRequest } from "node:http";
 import type { Server }            from "node:http";
 import { describe, expect, test } from "vitest";
 import './testHelper';
@@ -22,17 +23,19 @@ type HttpDispatchResponse = {
 };
 
 type HttpApiModule = {
-    negotiateContentType(acceptHeader: string | string[] | undefined, supportedMediaTypes: string[], defaultMediaType: string): string | null;
-    parseAcceptLanguage(acceptLanguageHeader?: string | string[]): string | null;
-    startChargyHttpServer(options: {
+    negotiateContentType: (acceptHeader: string | string[] | undefined, supportedMediaTypes: string[], defaultMediaType: string) => string | null;
+    parseAcceptLanguage: (acceptLanguageHeader?: string | string[]) => string | null;
+    startChargyHttpServer: (options: {
         host?:               string;
         port:                number;
         dispatchHttpRequest: (request: HttpDispatchRequest) => Promise<HttpDispatchResponse> | HttpDispatchResponse;
         language?:           string;
         i18n?:               Record<string, Record<string, string>>;
         maxContentSize?:     number;
+        requestTimeoutMs?:   number;
+        serializeDispatch?:  boolean;
         log?:                (message: string) => void;
-    }): Server;
+    }) => Server;
 };
 
 const {
@@ -543,6 +546,217 @@ describe("Chargy HTTP API", () => {
 
                 expect(response.status).toBe(400);
                 expect(await response.text()).toContain("Please upload any kind of transparency record");
+            }
+        );
+
+        expect(dispatchCount).toBe(0);
+
+    });
+
+    test("rejects oversized requests via the Content-Length header with 413", async () => {
+
+        let dispatchCount = 0;
+
+        await withHttpServer(
+            () => {
+                dispatchCount++;
+                return {
+                    ok:     true,
+                    result: chargeTransparencyRecord
+                };
+            },
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method: "POST",
+                    body:   Buffer.alloc(64, 0x41)
+                });
+
+                expect(response.status).toBe(413);
+                expect(await response.text()).toContain("too large");
+            },
+            { maxContentSize: 16 }
+        );
+
+        expect(dispatchCount).toBe(0);
+
+    });
+
+    test("returns 500 when the renderer dispatcher throws", async () => {
+
+        await withHttpServer(
+            () => {
+                throw new Error("renderer exploded");
+            },
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method: "POST",
+                    body:   Buffer.from("transparency-record")
+                });
+
+                expect(response.status).toBe(500);
+                expect((await response.json() as { message: string }).message).toBe("renderer exploded");
+            }
+        );
+
+    });
+
+    test("serializes concurrent dispatches against the shared renderer", async () => {
+
+        const events: string[]  = [];
+        let   active            = 0;
+        let   maxActive         = 0;
+
+        await withHttpServer(
+            async request => {
+                active++;
+                maxActive = Math.max(maxActive, active);
+                events.push("start:" + request.data.toString("utf-8"));
+                await new Promise<void>(resolve => setTimeout(resolve, 25));
+                events.push("end:" + request.data.toString("utf-8"));
+                active--;
+                return {
+                    ok:     true,
+                    result: chargeTransparencyRecord
+                };
+            },
+            async baseUrl => {
+                await Promise.all([
+                    fetch(`${baseUrl}/convert`, { method: "POST", body: Buffer.from("A") }),
+                    fetch(`${baseUrl}/convert`, { method: "POST", body: Buffer.from("B") })
+                ]);
+            }
+        );
+
+        // Never two verifications in flight at the same time...
+        expect(maxActive).toBe(1);
+        // ...and every start is immediately followed by its own end (no interleaving).
+        expect(events).toHaveLength(4);
+
+        const [ firstStart, firstEnd, secondStart, secondEnd ] = events;
+
+        expect(firstStart?.startsWith("start:")).toBe(true);
+        expect(firstEnd).toBe("end:" + String(firstStart).slice("start:".length));
+        expect(secondStart?.startsWith("start:")).toBe(true);
+        expect(secondEnd).toBe("end:" + String(secondStart).slice("start:".length));
+
+    });
+
+});
+
+describe("Chargy HTTP API - robustness via raw sockets", () => {
+
+    function withDirectServer(
+        options: {
+            maxContentSize?:   number;
+            requestTimeoutMs?: number;
+        },
+        dispatchHttpRequest: (request: HttpDispatchRequest) => Promise<HttpDispatchResponse> | HttpDispatchResponse,
+        testCase: (port: number) => Promise<void>
+    ): Promise<void> {
+
+        const server = startChargyHttpServer({
+            host: "127.0.0.1",
+            port: 0,
+            dispatchHttpRequest,
+            log:  () => {},
+            ...options
+        });
+
+        return new Promise<void>(resolve => server.once("listening", resolve))
+            .then(async () => {
+                const address = server.address() as AddressInfo;
+                try
+                {
+                    await testCase(address.port);
+                }
+                finally
+                {
+                    await new Promise<void>(resolve => {
+                        server.close(() => { resolve(); });
+                    });
+                }
+            });
+
+    }
+
+    test("rejects oversized streamed bodies without a Content-Length", async () => {
+
+        let dispatchCount = 0;
+
+        await withDirectServer(
+            { maxContentSize: 16 },
+            () => {
+                dispatchCount++;
+                return { ok: true, result: chargeTransparencyRecord };
+            },
+            async port => {
+
+                const outcome = await new Promise<string>(resolve => {
+
+                    const clientRequest = httpClientRequest(
+                        { host: "127.0.0.1", port, method: "POST", path: "/verify" },
+                        response => {
+                            response.resume();
+                            resolve("status:" + String(response.statusCode));
+                        }
+                    );
+
+                    clientRequest.on("error", () => { resolve("error"); });
+
+                    // No Content-Length -> Node uses chunked transfer encoding, so the
+                    // server must reject via the streaming size guard.
+                    clientRequest.write(Buffer.alloc(64, 0x41));
+                    clientRequest.end();
+
+                });
+
+                // Either the 413 response is received, or the connection is reset mid-stream.
+                expect(outcome === "status:413" || outcome === "error").toBe(true);
+
+            }
+        );
+
+        expect(dispatchCount).toBe(0);
+
+    });
+
+    test("disconnects slow clients via the request timeout", async () => {
+
+        let dispatchCount = 0;
+
+        await withDirectServer(
+            { requestTimeoutMs: 120 },
+            () => {
+                dispatchCount++;
+                return { ok: true, result: chargeTransparencyRecord };
+            },
+            async port => {
+
+                const outcome = await new Promise<string>(resolve => {
+
+                    const clientRequest = httpClientRequest(
+                        {
+                            host:    "127.0.0.1",
+                            port,
+                            method:  "POST",
+                            path:    "/verify",
+                            headers: { "Content-Length": "1000" }
+                        },
+                        response => {
+                            response.resume();
+                            response.on("end", () => { resolve("status:" + String(response.statusCode)); });
+                        }
+                    );
+
+                    clientRequest.on("error", () => { resolve("error"); });
+
+                    // Announce 1000 bytes but only ever send a few and never finish.
+                    clientRequest.write("partial");
+
+                });
+
+                expect(outcome === "status:408" || outcome === "error").toBe(true);
+
             }
         );
 

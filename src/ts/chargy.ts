@@ -1308,7 +1308,7 @@ export class Chargy {
                                     processedFile.result.status !== chargyInterfaces.SessionVerificationResult.Unvalidated &&
                                     chargyLib.getElementsByLocalName(XMLDocument, "chargingStation").length === 0)
                                 {
-                                    processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
+                                    processedFile.result = new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
                                 }
 
                                 break;
@@ -1336,7 +1336,7 @@ export class Chargy {
                         if (processedFile.result.status === chargyInterfaces.SessionVerificationResult.InvalidSessionFormat &&
                             chargyLib.getElementsByLocalName(XMLDocument, "chargingStation").length === 0)
                         {
-                            processedFile.result = await new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
+                            processedFile.result = new XMLContainer(this).tryToParseXMLContainer(XMLDocument);
                         }
 
                     }

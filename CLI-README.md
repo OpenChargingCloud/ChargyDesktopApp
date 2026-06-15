@@ -76,9 +76,12 @@ This path is now covered by parser/help text tests and by a local Electron smoke
 
 Sets the CLI language for early CLI output such as `--help` and `--help output`.
 
+Both `--lang=de` and the space-separated `--lang de` form are accepted:
+
 ```bash
 npm run start -- --help --lang=de
-npm run start -- --help --lang=en
+npm run start -- --help --lang en
+npm run start -- --nogui --lang de session.chargy
 npm run start -- --help output --lang=de
 ```
 
@@ -87,7 +90,9 @@ npm run start -- --help output --lang=de
 - `de`
 - `en`
 
-The explicit CLI parameter wins over environment defaults. Unsupported explicit values fall back to `en`. When no CLI language is set, the CLI parser checks the usual process locale variables in this order:
+The explicit CLI parameter wins over environment defaults. Unsupported explicit values fall back to `en`.
+
+The space-separated `--lang de` form only consumes the following token when it is a recognized language, so a file argument such as `--lang session.chargy` is never swallowed as a language value: the file stays a file and the unusable `--lang` falls back to `en`. (An unsupported bare token like `--lang fr` is consequently treated as a file argument; use `--lang=fr` if you really mean a language value.) When no CLI language is set, the CLI parser checks the usual process locale variables in this order:
 
 1. `LC_ALL`
 2. `LC_MESSAGES`
@@ -152,6 +157,8 @@ Current flow:
 6. The main process should print results through `setVerificationResult` and exit in `--nogui` mode.
 
 Successful Charge Transparency Record verification now reports session verification results back to the main process again. In `--nogui` mode this happens before GUI rendering, so the CLI path does not depend on rendering `showChargeTransparencyRecord(...)` before it can print and exit. In debug/inspect mode the GUI is still rendered and the verification result is also sent to stdout.
+
+`--nogui` with neither a file to verify nor `--http` has nothing to do. Instead of starting an invisible renderer that would never receive a verification result, the main process prints the usage help and exits with `0`. The decision is the pure predicate `hasNoActionableInput(cliArguments)` in `src/cliArguments.cjs` (covered by `tests/cliArguments.test.ts`).
 
 ### File Arguments
 
@@ -253,49 +260,79 @@ HTTP limits:
 - Only `/verify` and `/convert` are accepted.
 - Maximum request size is 20 MiB.
 - Main-to-renderer request timeout is 30 seconds.
+- Per-request socket read timeout is 30 seconds (slow clients receive `408` and are disconnected).
+- Verification and conversion requests are serialized against the single shared renderer, so concurrent requests cannot interleave on shared state. Throughput is therefore one verification at a time.
+
+> **Security note — network binding.**
+> By default `--http` binds to `localhost`, so the verification API is only reachable from the same machine. Binding to a non-loopback address exposes it to the network:
+>
+> ```bash
+> npm run start -- --http=0.0.0.0:8080      # reachable from ANY host on the network
+> npm run start -- --http=192.168.1.10:8080 # reachable from the local network
+> ```
+>
+> The HTTP API has **no authentication, authorization, or TLS**. Anyone who can reach the bound address can submit transparency records for verification and conversion and read the results. Only bind to a non-loopback address on a trusted, isolated network, and prefer placing a reverse proxy with TLS and access control in front of it. When the server is started on a non-loopback address it logs a warning to make this explicit.
 
 `src/httpApi.cjs` is intentionally renderer-agnostic. `src/main.cjs` injects `dispatchHttpRequestToRenderer(...)`, while tests inject a stub dispatcher and exercise the real Node HTTP server on an OS-assigned port.
 
-## Not Implemented Yet
+## CLI Output Formats
 
-### `--output=...`
+`--output` selects the stdout format for file verification in `--nogui` / `--inspect` mode. The format selection, rendering and exit-code mapping live in `src/verificationService.cjs`, a pure, Electron-free module shared with the HTTP API's rendering (`src/outputFormats.cjs`).
 
-`--help output` documents output formats, but `--output` is not evaluated by the current code. The only implemented stdout format for file verification is the simple main-process status line:
-
-```text
-status + optional " - message"
+```bash
+npm run start -- --nogui --output=text  record.chargy   # default
+npm run start -- --nogui --output=csv   record.chargy
+npm run start -- --nogui --output=json  record.chargy
+npm run start -- --nogui --output=xml   record.chargy
 ```
 
-Successful Charge Transparency Record verification sends session verification results through `setVerificationResult(...)` again. Rich output formats such as JSON, CSV, XML, or updated Chargy exports are still not implemented.
+- `text` (default): one localized status line per session, with ` - <message>` appended when present.
+- `csv`: a `session,status` table with the localized status text (same renderer as `POST /verify`).
+- `xml`: a `<verificationResults>` document (same renderer as `POST /verify`).
+- `json`: an array of `{ session, status, text, message }` objects.
 
-### `--export filename`
+Status texts honor `--lang=de|en`. An unsupported `--output` value is a technical error (exit code `1`).
 
-The old help text hinted at `--export`, and the output help topic still mentions `chargy` together with `--export`. There is no CLI implementation for it yet.
+### Exit Codes
 
-Export currently exists only in the GUI path through the export button, `showSaveDialog()`, and `writeTextFile(...)`.
+The verification service maps results to a stable contract (`src/verificationService.cjs`):
 
-### Stable Exit Codes
+| Code | Meaning |
+| ---- | ------- |
+| `0`  | Technically successful verification, every session has a valid signature. |
+| `1`  | Technical error: invalid arguments (e.g. invalid `--http` port or unsupported `--output`), unreadable file, renderer not ready. |
+| `2`  | Technically successful verification, but at least one session is not valid. |
+| `3`  | Unknown or unsupported transparency data format (no parseable record). |
 
-There is no full documented exit-code contract yet. Current behavior:
+`--help` and `--version` exit with `0`. In `--nogui` mode the process now exits with the mapped code from `setVerificationResult`.
 
-- `--help` exits with `0`.
-- `--version` exits with `0`.
-- Invalid HTTP port configuration exits with `1`.
-- `setVerificationResult` currently exits with `0` in `--nogui`, regardless of the verification result.
-- Successful file verification in `--nogui` now sends session verification results through `setVerificationResult`.
+## Not Implemented Yet
 
-A future contract should likely distinguish technical failures from successful verification with invalid signatures.
+### `--output=chargy` and `--export filename`
+
+The `chargy` output format and `--export` are documented in the output help topic but not implemented. They require the full Charge Transparency Record plus a CLI export path; export currently exists only in the GUI through the export button, `showSaveDialog()`, and `writeTextFile(...)`.
 
 ## CLI and HTTP Tests
 
 The CLI and HTTP tests are in:
 
 ```text
-tests/cliArguments.test.ts
-tests/httpApi.test.ts
+tests/cliArguments.test.ts        # src/cliArguments.cjs (parsing, language, help text, IPv6)
+tests/httpApi.test.ts             # src/httpApi.cjs (routing, negotiation, 413/500, serialization, timeout)
+tests/verificationService.test.ts # src/verificationService.cjs (output formats, exit codes)
+tests/mainSecurity.test.ts        # src/mainSecurity.cjs (path allow-list, URL/permission filters)
 ```
 
-They run without Electron and cover `src/cliArguments.cjs` plus `src/httpApi.cjs`, the modules that are also used by `src/main.cjs`. They also import `src/applicationMetadata.cjs`, so expected version, edition, and copyright values come from the same metadata source as the Electron main process instead of being duplicated in the test file.
+They run without Electron and cover the pure modules that `src/main.cjs` is built from. They also import `src/applicationMetadata.cjs`, so expected version, edition, and copyright values come from the same metadata source as the Electron main process instead of being duplicated in the test file.
+
+The Electron-free module layout extracted from `src/main.cjs` is:
+
+- `src/cliArguments.cjs` - argument parsing, language detection, help text.
+- `src/outputFormats.cjs` - shared CSV/XML/JSON/text rendering and localized status text (used by HTTP and CLI).
+- `src/verificationService.cjs` - CLI `--output` rendering and exit-code mapping.
+- `src/httpApi.cjs` - the Node HTTP server, content negotiation, size/timeout guards, dispatch serialization.
+- `src/asyncMutex.cjs` - the serialization primitive shared-renderer dispatch runs through.
+- `src/mainSecurity.cjs` - file path allow-list plus external-URL and camera-permission filters.
 
 Run only the CLI argument tests:
 
@@ -373,33 +410,30 @@ The important improvement is that `--help` and `--version` now return before `cr
 ## Remaining Risks From Refactoring
 
 1. CLI documentation and implementation drifted apart.
-   The old `documentation/CLI.md` mentions `--debug`; the current code uses `--inspect`. `--output` and `--export` are documented historically but not implemented.
+   The old `documentation/CLI.md` mentions `--debug`; the current code uses `--inspect`. `--output` is now implemented for `text/csv/json/xml`; `--output=chargy` and `--export` remain documented but unimplemented.
 
 2. File verification in CLI mode is still too coupled to Electron renderer startup.
-   `--nogui` file verification still needs BrowserWindow, DOM, CSS, the renderer bundle, and a working Electron renderer startup. The HTTP request handling layer is now testable without Electron, but the real verification implementation still lives behind the renderer bridge.
+   `--nogui` file verification still needs BrowserWindow, DOM, CSS, the renderer bundle, and a working Electron renderer startup. The output rendering and exit-code mapping are now a pure, tested module (`src/verificationService.cjs`), but the real verification still lives behind the renderer bridge because the Chargy core is only built into the webpack renderer bundle.
 
-3. `SessionVerificationResult` values are not fully mapped in `main.cjs`.
-   Unknown values fall back to their raw string.
+3. `SessionVerificationResult` values are now mapped in `src/outputFormats.cjs` for localized text and in `src/verificationService.cjs` for exit codes. Unknown values still fall back to their raw string for display and to exit code `2`.
 
-4. `--nogui` without files and without HTTP mode has no clear completion path.
+4. ~~`--nogui` without files and without HTTP mode has no clear completion path.~~ Resolved: it now prints the usage help and exits with `0` via `hasNoActionableInput(...)`.
 
 5. Local `--nogui` end-to-end smoke tests are currently blocked in this Windows environment by Electron failing before renderer startup with `GPU process isn't usable`. The callback regression is fixed in source, but this separate Electron startup issue still needs investigation for reliable E2E coverage.
 
 ## Next Test Layers
 
-The current tests cover only parsing and help text. The next layers should be:
+Parsing, help text, HTTP routing/negotiation, output rendering, exit codes and the `main.cjs` security helpers are now covered without Electron. The remaining layers are:
 
-### CLI Verification Service Tests
+### CLI Verification Service Tests (partially done)
 
-Extract a pure service that can:
+`src/verificationService.cjs` already renders text/CSV/JSON/XML output and decides exit codes from verification results, and is covered by `tests/verificationService.test.ts`. What is still missing is an end-to-end path that:
 
-- receive parsed CLI options,
-- read input bytes or accept already loaded file data,
-- call `Chargy.DetectAndConvertContentFormat(...)`,
-- serialize text/JSON/XML/CSV output,
-- decide exit codes.
+- reads input bytes or accepts already loaded file data,
+- calls `Chargy.DetectAndConvertContentFormat(...)` directly in Node (as `tests/httpApi.test.ts` already does for the HTTP path),
+- feeds the result into the service.
 
-This can be tested with the existing fixtures without starting Electron.
+This would let the full `--nogui` file path be tested against the existing fixtures without starting Electron.
 
 ### Electron Smoke Tests
 
@@ -411,9 +445,9 @@ Keep these few and focused:
 - `--nogui missing-file` exits with a defined technical error.
 - `--http=127.0.0.1:PORT` starts the Electron-backed API, answers `/verify`, and shuts down.
 
-### Suggested Exit-Code Contract
+### Exit-Code Contract (implemented)
 
-Proposed future contract:
+Implemented in `src/verificationService.cjs` and applied by `src/main.cjs` in `--nogui` mode (see the [Exit Codes](#exit-codes) table above):
 
 - `0`: technically successful verification and all sessions valid.
 - `1`: technical error, for example invalid arguments, unreadable file, renderer not ready.
@@ -422,4 +456,4 @@ Proposed future contract:
 
 ## Summary
 
-The CLI mode remains part of the same Electron application and binary. The first cleanup step extracts and tests the CLI parameter contract without splitting the app. `--help` and `--version` are now clean early-exit paths. The next meaningful step is to move file verification and output formatting behind a similarly pure service, while keeping `src/main.cjs` as the single binary entry point.
+The CLI mode remains part of the same Electron application and binary. The CLI parameter contract, output formatting (`--output`), exit-code mapping, HTTP routing/negotiation, request serialization and timeouts, and the `main.cjs` security helpers are now extracted into pure, Electron-free modules and tested without starting Electron. The remaining step is to run the Chargy verification core directly in Node for the `--nogui` file path, so the only part still requiring a renderer is the GUI itself, while keeping `src/main.cjs` as the single binary entry point.

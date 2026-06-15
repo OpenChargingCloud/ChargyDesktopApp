@@ -24,9 +24,10 @@ type ParsedCliArguments = {
 };
 
 type CliArgumentsModule = {
-    parseCliArguments(args: string[], environment?: Record<string, string | undefined>): ParsedCliArguments;
-    createMainHelpText(applicationFileName: string, version: string, applicationEdition: string, copyright: string, language?: string, i18n?: Record<string, Record<string, string>>): string;
-    createOutputHelpText(applicationFileName: string, version: string, applicationEdition: string, copyright: string, language?: string, i18n?: Record<string, Record<string, string>>): string;
+    parseCliArguments: (args: string[], environment?: Record<string, string | undefined>) => ParsedCliArguments;
+    hasNoActionableInput: (cliArguments: ParsedCliArguments) => boolean;
+    createMainHelpText: (applicationFileName: string, version: string, applicationEdition: string, copyright: string, language?: string, i18n?: Record<string, Record<string, string>>) => string;
+    createOutputHelpText: (applicationFileName: string, version: string, applicationEdition: string, copyright: string, language?: string, i18n?: Record<string, Record<string, string>>) => string;
 };
 
 type ApplicationMetadataModule = {
@@ -37,6 +38,7 @@ type ApplicationMetadataModule = {
 
 const {
     parseCliArguments,
+    hasNoActionableInput,
     createMainHelpText,
     createOutputHelpText
 } = require("../src/cliArguments.cjs") as CliArgumentsModule;
@@ -163,6 +165,26 @@ describe("CLI argument parsing", () => {
 
     });
 
+    test("parses the space-separated --lang form", () => {
+
+        const parsed = parseCliArguments(["--lang", "de", "session.chargy"], {});
+
+        expect(parsed.language).toBe("de");
+        expect(parsed.files).toEqual(["session.chargy"]);
+
+    });
+
+    test("--lang does not swallow a following file argument", () => {
+
+        const parsed = parseCliArguments(["--nogui", "--lang", "session.chargy"], {});
+
+        // "session.chargy" is not a language, so it must stay a file...
+        expect(parsed.files).toEqual(["session.chargy"]);
+        // ...and the unusable --lang falls back to English.
+        expect(parsed.language).toBe("en");
+
+    });
+
     test("uses LANG as default language when no CLI language is set", () => {
 
         const parsed = parseCliArguments([], {
@@ -181,6 +203,27 @@ describe("CLI argument parsing", () => {
 
         expect(parsed.language).toBe("en");
 
+    });
+
+});
+
+describe("CLI no-actionable-input detection", () => {
+
+    test("--nogui without a file and without --http has nothing to do", () => {
+        expect(hasNoActionableInput(parseCliArguments(["--nogui"], {}))).toBe(true);
+    });
+
+    test("--nogui with a file to verify is actionable", () => {
+        expect(hasNoActionableInput(parseCliArguments(["--nogui", "session.chargy"], {}))).toBe(false);
+    });
+
+    test("--nogui with the HTTP API is actionable", () => {
+        expect(hasNoActionableInput(parseCliArguments(["--nogui", "--http"], {}))).toBe(false);
+    });
+
+    test("a GUI start (no --nogui) is never treated as no-actionable-input", () => {
+        expect(hasNoActionableInput(parseCliArguments([], {}))).toBe(false);
+        expect(hasNoActionableInput(parseCliArguments(["--inspect"], {}))).toBe(false);
     });
 
 });
@@ -250,7 +293,7 @@ describe("CLI help text", () => {
         );
 
         expect(helpText).toContain("Aufruf: Chargy Transparenzsoftware.exe --output=[text (default)|csv|json|xml|chargy]");
-        expect(helpText).toContain("Hinweis: Diese Ausgabeformate sind als CLI-Vertrag dokumentiert, aber noch nicht implementiert.");
+        expect(helpText).toContain("noch nicht implementiert");
 
     });
 

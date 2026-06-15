@@ -66,8 +66,8 @@
     },
 
     "CLIOutputNotImplementedNote": {
-        "de": "Hinweis: Diese Ausgabeformate sind als CLI-Vertrag dokumentiert, aber noch nicht implementiert.",
-        "en": "Note: These output formats are documented as CLI contract, but are not implemented yet."
+        "de": "Hinweis: text, csv, json und xml sind implementiert. Das Format 'chargy' (zusammen mit --export) ist dokumentiert, aber noch nicht implementiert.",
+        "en": "Note: text, csv, json and xml are implemented. The 'chargy' format (together with --export) is documented but not implemented yet."
     },
 
     "CLISessionVerificationNoChargeTransparencyRecordsFound": {
