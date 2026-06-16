@@ -3,52 +3,42 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir }                 from "node:os";
 import { join }                   from "node:path";
 import { describe, expect, test } from "vitest";
+import {
+    ApiKeyRole,
+    isParsedApiKeyEntry,
+    isParsedApiKeyEntryArray,
+    isRawApiKeyEntry,
+    isRawApiKeyEntryArray,
+    type ApiKeyAuthenticationResult,
+    type ParsedApiKeyEntry
+}                                  from "../src/ts/apiKeys";
 
 const require = createRequire(import.meta.url);
 
-type ParsedApiKeyEntry = {
-    apiKey:    string;
-    roles:     string[];
-    notBefore: Date;
-    notAfter:  Date;
-};
-
-type ApiKeyAuthResult = {
-    ok:          boolean;
-    reason?:     string;
-    credential?: {
-        apiKey: string;
-        roles:  string[];
-    } | null;
-};
-
 type ApiKeysModule = {
-    ApiKeyRole: {
-        EVDriver: string;
-        Root:     string;
-    };
-    authenticateApiKeyHeader: (headerValue: string | string[] | undefined, apiKeyEntries: ParsedApiKeyEntry[], now?: Date) => ApiKeyAuthResult;
-    createApiKeyAuthenticator: (apiKeyEntries: ParsedApiKeyEntry[], nowProvider?: () => Date) => ((headerValue: string | string[] | undefined) => ApiKeyAuthResult) | null;
-    loadApiKeysFromFile: (fileName: string) => ParsedApiKeyEntry[];
-    parseApiKeyEntries: (rawEntries: unknown) => ParsedApiKeyEntry[];
+    authenticateApiKeyHeader:  (headerValue:   string | string[] | undefined, apiKeyEntries: ParsedApiKeyEntry[], now?: Date)                   => ApiKeyAuthenticationResult;
+    createApiKeyAuthenticator: (apiKeyEntries: ParsedApiKeyEntry[], nowProvider?: () => Date) => ((headerValue: string | string[] | undefined)  => ApiKeyAuthenticationResult) | null;
+    findApiKeyEntriesByHeader: (headerValue:   string | string[] | undefined, apiKeyEntries: ParsedApiKeyEntry[])                               => ParsedApiKeyEntry[];
+    loadApiKeysFromFile:       (fileName:      string)                                                                                          => ParsedApiKeyEntry[];
+    parseApiKeyEntries:        (rawEntries:    unknown)                                                                                         => ParsedApiKeyEntry[];
 };
 
 const {
-    ApiKeyRole,
     authenticateApiKeyHeader,
     createApiKeyAuthenticator,
+    findApiKeyEntriesByHeader,
     loadApiKeysFromFile,
     parseApiKeyEntries
 } = require("../src/apiKeys.cjs") as ApiKeysModule;
 
 const rawApiKeys = [
     {
-        apiKey:    "driver-secret",
+        token:     "driver-secret",
         notBefore: "2026-01-01T00:00:00Z",
         notAfter:  "2026-12-31T23:59:59Z"
     },
     {
-        apiKey:    "root-secret",
+        token:     "root-secret",
         roles:     [ "evDriver", "root" ],
         notBefore: "2026-01-01T00:00:00Z",
         notAfter:  "2026-12-31T23:59:59Z"
@@ -57,47 +47,84 @@ const rawApiKeys = [
 
 describe("API key parsing", () => {
 
+    test("exposes TypeScript type guards for raw and parsed API key entries", () => {
+
+        const rawEntry: unknown = {
+            token:     "guarded-secret",
+            roles:     [ ApiKeyRole.Root ],
+            notBefore: "2026-01-01T00:00:00Z"
+        };
+
+        expect(isRawApiKeyEntry(rawEntry)).toBe(true);
+
+        if (isRawApiKeyEntry(rawEntry))
+        {
+            const token: string = rawEntry.token;
+            const role:  ApiKeyRole | undefined = rawEntry.roles?.[0];
+
+            expect(token).toBe("guarded-secret");
+            expect(role).toBe(ApiKeyRole.Root);
+        }
+
+        expect(isRawApiKeyEntryArray([ rawEntry ])).toBe(true);
+        expect(isRawApiKeyEntry({ token: "invalid-role", roles: [ "admin" ] })).toBe(false);
+        expect(isRawApiKeyEntry({ token: "bad-time", notBefore: "2026-01-01" })).toBe(false);
+
+        const parsedEntries = parseApiKeyEntries([ rawEntry ]);
+
+        expect(isParsedApiKeyEntry(parsedEntries[0])).toBe(true);
+        expect(isParsedApiKeyEntryArray(parsedEntries)).toBe(true);
+        expect(isParsedApiKeyEntry({ token: "raw-time", roles: [ ApiKeyRole.Root ], notBefore: "2026-01-01T00:00:00Z" })).toBe(false);
+
+    });
+
     test("parses API key entries and defaults roles to evDriver", () => {
 
         const entries = parseApiKeyEntries(rawApiKeys);
 
         expect(entries).toHaveLength(2);
         expect(entries[0]).toMatchObject({
-            apiKey: "driver-secret",
-            roles:  [ ApiKeyRole.EVDriver ]
+            token: "driver-secret",
+            roles: [ ApiKeyRole.EVDriver ]
         });
         expect(entries[1]).toMatchObject({
-            apiKey: "root-secret",
-            roles:  [ ApiKeyRole.EVDriver, ApiKeyRole.Root ]
+            token: "root-secret",
+            roles: [ ApiKeyRole.EVDriver, ApiKeyRole.Root ]
         });
 
     });
 
-    test("accepts the legacy role field as string or array", () => {
+    test("parses entries without validity timestamps", () => {
 
         const entries = parseApiKeyEntries([
             {
-                apiKey:    "root-secret",
-                role:      "root",
-                notBefore: "2026-01-01T00:00:00Z",
-                notAfter:  "2026-12-31T23:59:59Z"
-            },
-            {
-                apiKey:    "legacy-multi-role-secret",
-                role:      [ "evDriver", "root" ],
-                notBefore: "2026-01-01T00:00:00Z",
-                notAfter:  "2026-12-31T23:59:59Z"
+                token: "unbounded-secret"
             }
         ]);
 
         expect(entries[0]).toMatchObject({
-            apiKey: "root-secret",
-            roles:  [ ApiKeyRole.Root ]
+            token: "unbounded-secret",
+            roles: [ ApiKeyRole.EVDriver ]
         });
-        expect(entries[1]).toMatchObject({
-            apiKey: "legacy-multi-role-secret",
-            roles:  [ ApiKeyRole.EVDriver, ApiKeyRole.Root ]
-        });
+        expect(entries[0]?.notBefore).toBeUndefined();
+        expect(entries[0]?.notAfter).toBeUndefined();
+
+    });
+
+    test("rejects legacy apiKey and role fields", () => {
+
+        expect(() => parseApiKeyEntries([
+            {
+                apiKey: "legacy-secret"
+            }
+        ])).toThrow("must use token, not apiKey");
+
+        expect(() => parseApiKeyEntries([
+            {
+                token: "secret",
+                role:  "root"
+            }
+        ])).toThrow("must use roles, not role");
 
     });
 
@@ -105,7 +132,7 @@ describe("API key parsing", () => {
 
         expect(() => parseApiKeyEntries([
             {
-                apiKey:    "secret",
+                token:     "secret",
                 roles:     [ "admin" ],
                 notBefore: "2026-01-01T00:00:00Z",
                 notAfter:  "2026-12-31T23:59:59Z"
@@ -114,7 +141,7 @@ describe("API key parsing", () => {
 
         expect(() => parseApiKeyEntries([
             {
-                apiKey:    "secret",
+                token:     "secret",
                 notBefore: "2026-01-01",
                 notAfter:  "2026-12-31T23:59:59Z"
             }
@@ -126,7 +153,7 @@ describe("API key parsing", () => {
 
         expect(() => parseApiKeyEntries([
             {
-                apiKey:    "secret",
+                token:     "secret",
                 roles:     [],
                 notBefore: "2026-01-01T00:00:00Z",
                 notAfter:  "2026-12-31T23:59:59Z"
@@ -135,24 +162,27 @@ describe("API key parsing", () => {
 
     });
 
-    test("rejects duplicate keys and inverted validity windows", () => {
+    test("allows repeated tokens and rejects inverted validity windows", () => {
 
-        expect(() => parseApiKeyEntries([
+        const entries = parseApiKeyEntries([
             {
-                apiKey:    "secret",
+                token:     "secret",
                 notBefore: "2026-01-01T00:00:00Z",
                 notAfter:  "2026-12-31T23:59:59Z"
             },
             {
-                apiKey:    "secret",
+                token:     "secret",
                 notBefore: "2026-01-01T00:00:00Z",
                 notAfter:  "2026-12-31T23:59:59Z"
             }
-        ])).toThrow("Duplicate API key entry");
+        ]);
+
+        expect(entries).toHaveLength(2);
+        expect(findApiKeyEntriesByHeader("secret", entries)).toHaveLength(2);
 
         expect(() => parseApiKeyEntries([
             {
-                apiKey:    "secret",
+                token:     "secret",
                 notBefore: "2026-12-31T23:59:59Z",
                 notAfter:  "2026-01-01T00:00:00Z"
             }
@@ -173,8 +203,8 @@ describe("API key parsing", () => {
 
             expect(entries).toHaveLength(2);
             expect(entries[0]).toMatchObject({
-                apiKey: "driver-secret",
-                roles:  [ ApiKeyRole.EVDriver ]
+                token: "driver-secret",
+                roles: [ ApiKeyRole.EVDriver ]
             });
         }
         finally
@@ -195,8 +225,50 @@ describe("API key authentication", () => {
         expect(authenticateApiKeyHeader("driver-secret", entries, new Date("2026-06-15T12:00:00Z"))).toMatchObject({
             ok: true,
             credential: {
-                apiKey: "driver-secret",
-                roles:  [ ApiKeyRole.EVDriver ]
+                token: "driver-secret",
+                roles: [ ApiKeyRole.EVDriver ]
+            }
+        });
+
+    });
+
+    test("accepts known API keys without validity timestamps", () => {
+
+        const unboundedEntries = parseApiKeyEntries([
+            {
+                token: "unbounded-secret"
+            }
+        ]);
+
+        expect(authenticateApiKeyHeader("unbounded-secret", unboundedEntries, new Date("2035-01-01T00:00:00Z"))).toMatchObject({
+            ok: true,
+            credential: {
+                token: "unbounded-secret",
+                roles: [ ApiKeyRole.EVDriver ]
+            }
+        });
+
+    });
+
+    test("accepts a repeated token when any matching entry is active", () => {
+
+        const repeatedEntries = parseApiKeyEntries([
+            {
+                token:    "rotating-secret",
+                notAfter: "2025-12-31T23:59:59Z"
+            },
+            {
+                token:     "rotating-secret",
+                notBefore: "2026-01-01T00:00:00Z",
+                notAfter:  "2026-12-31T23:59:59Z"
+            }
+        ]);
+
+        expect(authenticateApiKeyHeader("rotating-secret", repeatedEntries, new Date("2026-06-15T12:00:00Z"))).toMatchObject({
+            ok: true,
+            credential: {
+                token: "rotating-secret",
+                roles: [ ApiKeyRole.EVDriver ]
             }
         });
 

@@ -1,6 +1,6 @@
 # Chargy CLI Mode
 
-Status: 2026-06-15. This document describes the current CLI-related code paths in `src/main.cjs`, `src/cliArguments.cjs`, `src/apiKeys.cjs`, `src/httpApi.cjs`, `src/applicationMetadata.cjs`, `src/ts/chargyApp.ts`, and the CLI/HTTP tests in `tests/cliArguments.test.ts`, `tests/apiKeys.test.ts`, and `tests/httpApi.test.ts`.
+Status: 2026-06-16. This document describes the current CLI-related code paths in `src/main.cjs`, `src/cliArguments.cjs`, `src/apiKeys.cjs`, `src/ts/apiKeys.ts`, `src/httpApi.cjs`, `src/applicationMetadata.cjs`, `src/ts/chargyApp.ts`, and the CLI/HTTP tests in `tests/cliArguments.test.ts`, `tests/apiKeys.test.ts`, and `tests/httpApi.test.ts`.
 
 Chargy can be started with `--nogui` and used as a small CLI-oriented test tool. This does not create a second application. The certified entry point remains the same Electron binary. The cleanup work separates only pure, testable CLI building blocks from the Electron startup code so that the GUI app and CLI mode still share one executable and one verification implementation.
 
@@ -38,11 +38,12 @@ The first extracted CLI building blocks are:
 ```text
 src/cliArguments.cjs
 src/apiKeys.cjs
+src/ts/apiKeys.ts
 src/httpApi.cjs
 src/applicationMetadata.cjs
 ```
 
-`src/cliArguments.cjs` contains the side-effect-free argument parser and help text rendering. `src/apiKeys.cjs` contains API-key JSON parsing and validity checks. `src/httpApi.cjs` contains the Node HTTP handler and server startup wrapper for the CLI HTTP API. `src/applicationMetadata.cjs` contains shared application metadata such as edition, copyright, package version, and `package.json`. These modules are used by `src/main.cjs`; the tests read the same metadata module so the expected help output does not duplicate the version, edition, or copyright strings.
+`src/cliArguments.cjs` contains the side-effect-free argument parser and help text rendering. `src/apiKeys.cjs` contains API-key JSON parsing and validity checks. `src/ts/apiKeys.ts` contains the TypeScript API-key enum, interfaces, authentication-result union, and TypeGuards used by tests and future typed code. `src/httpApi.cjs` contains the Node HTTP handler and server startup wrapper for the CLI HTTP API. `src/applicationMetadata.cjs` contains shared application metadata such as edition, copyright, package version, and `package.json`. These modules are used by `src/main.cjs`; the tests read the same metadata module so the expected help output does not duplicate the version, edition, or copyright strings.
 
 The parser, help contract, API-key contract, and HTTP routing contract are covered by:
 
@@ -210,7 +211,7 @@ The HTTP server starts after the renderer has loaded. It currently supports:
 
 `GET /` returns a small `text/plain` help text for the HTTP service. It lists the known endpoints and the request headers relevant for authentication, content negotiation and language negotiation. It intentionally stays reachable without an `API-Key` header, even when API-key authentication is enabled.
 
-`GET /apiKeys` returns the configured API-key JSON array. It always requires a valid `API-Key` request header and that key must have the `root` role. Missing, unknown, not-yet-valid, or expired keys return `401`; valid keys without `root` return `403`.
+`GET /apiKeys` returns API-key metadata as JSON. It requires a known `API-Key` request header, but it does not require that token to be inside its `notBefore`/`notAfter` validity window. A non-root token returns all configured entries using the same token, which can be multiple entries when validity windows differ. A token with the `root` role returns the complete configured API-key array. Missing or unknown tokens return `401`.
 
 `POST /verify` returns only session verification results. A single session returns one JSON string; multiple sessions return a JSON array.
 
@@ -243,6 +244,7 @@ The `Accept` request header selects the response content type. Standard `q` weig
 Supported response content types:
 
 - `GET /`: `text/plain`
+- `GET /apiKeys`: `application/json`
 - `POST /verify`: `application/json`, `text/plain`, `text/csv`, `application/xml`
 - `POST /convert`: `application/json`
 
@@ -274,10 +276,12 @@ npm run start -- --nogui --http=127.0.0.1:8080 --apiKeys api-keys.json
 When `--apiKeys` is configured:
 
 - `GET /` stays open without authentication.
-- `GET /apiKeys` requires a valid `API-Key` with the `root` role and returns the configured API-key array.
+- `GET /apiKeys` requires a known `API-Key`.
+- `GET /apiKeys` returns all entries using the request token for non-root tokens, even when that token is not yet valid or already expired.
+- `GET /apiKeys` returns the complete configured API-key array when the request token has the `root` role.
 - `POST /verify` and `POST /convert` require the `API-Key` request header.
 - Missing, unknown, not-yet-valid, or expired keys return `401`.
-- Valid keys without the required `root` role for `/apiKeys` return `403`.
+- The validity-window checks apply to `POST /verify` and `POST /convert`, not to `GET /apiKeys`.
 - Empty API-key files are valid JSON but allow no protected request through.
 - Roles are parsed and validated now, but currently do not change endpoint permissions.
 
@@ -286,13 +290,17 @@ API-key file format:
 ```json
 [
   {
-    "apiKey": "driver-secret",
+    "token": "driver-secret",
     "roles": [ "evDriver" ],
-    "notBefore": "2026-01-01T00:00:00Z",
-    "notAfter": "2026-12-31T23:59:59Z"
+    "notAfter": "2026-06-30T23:59:59Z"
   },
   {
-    "apiKey": "root-secret",
+    "token": "driver-secret",
+    "roles": [ "evDriver" ],
+    "notBefore": "2026-07-01T00:00:00Z"
+  },
+  {
+    "token": "root-secret",
     "roles": [ "evDriver", "root" ],
     "notBefore": "2026-01-01T00:00:00Z",
     "notAfter": "2026-12-31T23:59:59Z"
@@ -302,12 +310,10 @@ API-key file format:
 
 Fields:
 
-- `apiKey`: required non-empty string.
+- `token`: required non-empty string used as the value of the HTTP `API-Key` request header.
 - `roles`: optional array of enum values. Supported values are `evDriver` and `root`; the default is `[ "evDriver" ]`.
-- `notBefore`: required ISO 8601 timestamp.
-- `notAfter`: required ISO 8601 timestamp.
-
-For compatibility with earlier test configurations, `role` is still accepted as a string or as an array and converted to `roles`. New files should use `roles`.
+- `notBefore`: optional ISO 8601 timestamp. When absent, the token is valid immediately.
+- `notAfter`: optional ISO 8601 timestamp. When absent, the token does not expire by time.
 
 Authenticated request example:
 
@@ -383,7 +389,7 @@ The CLI and HTTP tests are in:
 
 ```text
 tests/cliArguments.test.ts        # src/cliArguments.cjs (parsing, language, help text, IPv6)
-tests/apiKeys.test.ts             # src/apiKeys.cjs (JSON parsing, roles, timestamps, authentication)
+tests/apiKeys.test.ts             # src/apiKeys.cjs and src/ts/apiKeys.ts (JSON parsing, roles, timestamps, authentication, TypeGuards)
 tests/httpApi.test.ts             # src/httpApi.cjs (routing, negotiation, 413/500, serialization, timeout)
 tests/verificationService.test.ts # src/verificationService.cjs (output formats, exit codes)
 tests/mainSecurity.test.ts        # src/mainSecurity.cjs (path allow-list, URL/permission filters)
@@ -397,6 +403,7 @@ The Electron-free module layout extracted from `src/main.cjs` is:
 
 - `src/cliArguments.cjs` - argument parsing, language detection, help text.
 - `src/apiKeys.cjs` - parsing API-key JSON files and validating `API-Key` request headers.
+- `src/ts/apiKeys.ts` - TypeScript API-key enum, interfaces, authentication-result union and TypeGuards.
 - `src/outputFormats.cjs` - shared CSV/XML/JSON/text rendering and localized status text (used by HTTP and CLI).
 - `src/verificationService.cjs` - CLI `--output` rendering and exit-code mapping.
 - `src/httpApi.cjs` - the Node HTTP server, optional API-key authentication, content negotiation, size/timeout guards, dispatch serialization.
@@ -451,8 +458,8 @@ Current covered cases:
 - `GET /` returns HTTP service help without renderer dispatch.
 - `GET /` stays reachable without `API-Key` when API-key authentication is enabled.
 - `GET /apiKeys` rejects missing API keys with `401`.
-- `GET /apiKeys` rejects valid non-root API keys with `403`.
-- `GET /apiKeys` returns the configured API-key array for valid root API keys.
+- `GET /apiKeys` returns entries matching the request token for known non-root tokens, even outside the validity window.
+- `GET /apiKeys` returns the complete configured API-key array for root tokens.
 - `POST /verify` rejects missing, expired or unknown API keys with `401`.
 - `POST /verify` accepts valid API keys from the `API-Key` request header.
 - `POST /convert` also rejects missing API keys with `401`.
@@ -465,7 +472,8 @@ Current covered cases:
 - `POST /convert?pretty` can upload a QR-code PNG transparency record and convert it through the real Chargy core.
 - Unsupported `Accept` content types are rejected with `406`.
 - Unsupported methods and empty bodies are rejected before renderer dispatch.
-- API-key JSON files are parsed, roles default to `[ "evDriver" ]`, multiple roles such as `[ "evDriver", "root" ]` are accepted, the legacy singular `role` field is accepted, duplicate keys and invalid timestamps are rejected.
+- API-key TypeScript interfaces and TypeGuards validate raw JSON entries, parsed entries, role enums, timestamp windows, and rejected legacy fields.
+- API-key JSON files are parsed, `token` is the required secret field, repeated tokens are allowed, `notBefore` and `notAfter` are optional, roles default to `[ "evDriver" ]`, multiple roles such as `[ "evDriver", "root" ]` are accepted, legacy `apiKey` and singular `role` fields are rejected, and invalid timestamps are rejected.
 
 Local verification after the first extraction:
 
@@ -474,13 +482,13 @@ npx vitest run --config tests/vitest.config.ts tests/cliArguments.test.ts tests/
 51 passed
 
 npx vitest run --config tests/vitest.config.ts tests/cliArguments.test.ts tests/apiKeys.test.ts tests/httpApi.test.ts
-63 passed
+67 passed
 
 npm run test:typecheck
 passed
 
 npm test
-184 passed, 2 skipped
+188 passed, 2 skipped
 
 npm run start -- --help
 exit 0, clean help output

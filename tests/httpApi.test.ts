@@ -5,6 +5,11 @@ import { request as httpClientRequest } from "node:http";
 import type { Server }            from "node:http";
 import { describe, expect, test } from "vitest";
 import { createChargy }           from './testHelper';
+import {
+    ApiKeyRole,
+    type ApiKeyAuthenticationResult,
+    type ParsedApiKeyEntry
+}                                  from "../src/ts/apiKeys";
 
 const require = createRequire(import.meta.url);
 
@@ -33,37 +38,17 @@ type HttpApiModule = {
         maxContentSize?:     number;
         requestTimeoutMs?:   number;
         serializeDispatch?:  boolean;
-        apiKeyAuthenticator?: (headerValue: string | string[] | undefined) => ApiKeyAuthResult;
+        apiKeyAuthenticator?: (headerValue: string | string[] | undefined) => ApiKeyAuthenticationResult;
         apiKeyEntries?:      ParsedApiKeyEntry[];
         log?:                (message: string) => void;
     }) => Server;
 };
 
-type ParsedApiKeyEntry = {
-    apiKey:    string;
-    roles:     string[];
-    notBefore: Date;
-    notAfter:  Date;
-};
-
-type ApiKeyAuthResult = {
-    ok:          boolean;
-    reason?:     string;
-    credential?: {
-        apiKey: string;
-        roles:  string[];
-    } | null;
-};
-
 type ApiKeysModule = {
-    ApiKeyRole: {
-        EVDriver: string;
-        Root:     string;
-    };
     createApiKeyAuthenticator: (
         apiKeyEntries: ParsedApiKeyEntry[],
         nowProvider?: () => Date
-    ) => ((headerValue: string | string[] | undefined) => ApiKeyAuthResult) | null;
+    ) => ((headerValue: string | string[] | undefined) => ApiKeyAuthenticationResult) | null;
     parseApiKeyEntries: (rawEntries: unknown) => ParsedApiKeyEntry[];
 };
 
@@ -74,7 +59,6 @@ const {
 } = require("../src/httpApi.cjs") as HttpApiModule;
 
 const {
-    ApiKeyRole,
     createApiKeyAuthenticator,
     parseApiKeyEntries
 } = require("../src/apiKeys.cjs") as ApiKeysModule;
@@ -93,12 +77,15 @@ const chargeTransparencyRecord = {
 
 const rawApiKeys = [
     {
-        apiKey:    "driver-secret",
-        notBefore: "2026-01-01T00:00:00Z",
-        notAfter:  "2026-12-31T23:59:59Z"
+        token:    "driver-secret",
+        notAfter: "2025-12-31T23:59:59Z"
     },
     {
-        apiKey:    "root-secret",
+        token:     "driver-secret",
+        notBefore: "2027-01-01T00:00:00Z"
+    },
+    {
+        token:     "root-secret",
         roles:     [ "root" ],
         notBefore: "2026-01-01T00:00:00Z",
         notAfter:  "2026-12-31T23:59:59Z"
@@ -129,7 +116,7 @@ async function withHttpServer(
         language?:       string;
         i18n?:           Record<string, Record<string, string>>;
         maxContentSize?: number;
-        apiKeyAuthenticator?: (headerValue: string | string[] | undefined) => ApiKeyAuthResult;
+        apiKeyAuthenticator?: (headerValue: string | string[] | undefined) => ApiKeyAuthenticationResult;
         apiKeyEntries?:      ParsedApiKeyEntry[];
     } = {}
 ): Promise<void> {
@@ -261,7 +248,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("rejects GET /apiKeys for API keys without the root role", async () => {
+    test("returns matching API keys via GET /apiKeys for known non-root tokens outside their validity window", async () => {
 
         const apiKeyEntries       = parseApiKeyEntries(rawApiKeys);
         const apiKeyAuthenticator = createApiKeyAuthenticator(
@@ -286,8 +273,27 @@ describe("Chargy HTTP API", () => {
                     }
                 });
 
-                expect(response.status).toBe(403);
-                expect(await response.text()).toContain("root role");
+                expect(response.status).toBe(200);
+
+                const apiKeys = await response.json() as Array<{
+                    token:      string;
+                    roles:      string[];
+                    notBefore?: string;
+                    notAfter?:  string;
+                }>;
+
+                expect(apiKeys).toEqual([
+                    {
+                        token:    "driver-secret",
+                        roles:    [ ApiKeyRole.EVDriver ],
+                        notAfter: "2025-12-31T23:59:59.000Z"
+                    },
+                    {
+                        token:     "driver-secret",
+                        roles:     [ ApiKeyRole.EVDriver ],
+                        notBefore: "2027-01-01T00:00:00.000Z"
+                    }
+                ]);
             },
             {
                 apiKeyAuthenticator: apiKeyAuthenticator ?? undefined,
@@ -328,21 +334,25 @@ describe("Chargy HTTP API", () => {
                 expect(response.headers.get("content-type")).toContain("application/json");
 
                 const apiKeys = await response.json() as Array<{
-                    apiKey:    string;
+                    token:     string;
                     roles:     string[];
-                    notBefore: string;
-                    notAfter:  string;
+                    notBefore?: string;
+                    notAfter?:  string;
                 }>;
 
                 expect(apiKeys).toEqual([
                     {
-                        apiKey:    "driver-secret",
-                        roles:     [ ApiKeyRole.EVDriver ],
-                        notBefore: "2026-01-01T00:00:00.000Z",
-                        notAfter:  "2026-12-31T23:59:59.000Z"
+                        token:    "driver-secret",
+                        roles:    [ ApiKeyRole.EVDriver ],
+                        notAfter: "2025-12-31T23:59:59.000Z"
                     },
                     {
-                        apiKey:    "root-secret",
+                        token:     "driver-secret",
+                        roles:     [ ApiKeyRole.EVDriver ],
+                        notBefore: "2027-01-01T00:00:00.000Z"
+                    },
+                    {
+                        token:     "root-secret",
                         roles:     [ ApiKeyRole.Root ],
                         notBefore: "2026-01-01T00:00:00.000Z",
                         notAfter:  "2026-12-31T23:59:59.000Z"
@@ -364,7 +374,7 @@ describe("Chargy HTTP API", () => {
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
                 {
-                    apiKey:    "driver-secret",
+                    token:     "driver-secret",
                     notBefore: "2026-01-01T00:00:00Z",
                     notAfter:  "2026-12-31T23:59:59Z"
                 }
@@ -400,7 +410,7 @@ describe("Chargy HTTP API", () => {
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
                 {
-                    apiKey:    "driver-secret",
+                    token:     "driver-secret",
                     notBefore: "2026-01-01T00:00:00Z",
                     notAfter:  "2026-12-31T23:59:59Z"
                 }
@@ -440,7 +450,7 @@ describe("Chargy HTTP API", () => {
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
                 {
-                    apiKey:    "driver-secret",
+                    token:     "driver-secret",
                     notBefore: "2026-01-01T00:00:00Z",
                     notAfter:  "2026-12-31T23:59:59Z"
                 }
@@ -479,7 +489,7 @@ describe("Chargy HTTP API", () => {
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
                 {
-                    apiKey:    "driver-secret",
+                    token:     "driver-secret",
                     notBefore: "2026-01-01T00:00:00Z",
                     notAfter:  "2026-12-31T23:59:59Z"
                 }
@@ -514,7 +524,7 @@ describe("Chargy HTTP API", () => {
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
                 {
-                    apiKey:    "driver-secret",
+                    token:     "driver-secret",
                     notBefore: "2026-01-01T00:00:00Z",
                     notAfter:  "2026-12-31T23:59:59Z"
                 }

@@ -18,23 +18,20 @@ function parseApiKeyRole(value) {
 
 function parseApiKeyRoles(rawEntry) {
 
-    const rawRoles = rawEntry.roles != null
-                         ? rawEntry.roles
-                         : rawEntry.role;
+    if (Object.prototype.hasOwnProperty.call(rawEntry, "role"))
+        throw new Error("API key entry must use roles, not role.");
+
+    const rawRoles = rawEntry.roles;
 
     if (rawRoles == null)
         return [ ApiKeyRole.EVDriver ];
 
-    const roleValues = Array.isArray(rawRoles)
-                           ? rawRoles
-                           : [ rawRoles ];
-
-    if (roleValues.length === 0)
+    if (!Array.isArray(rawRoles) || rawRoles.length === 0)
         throw new Error("API key roles must not be empty.");
 
     const parsedRoles = [];
 
-    for (const roleValue of roleValues)
+    for (const roleValue of rawRoles)
     {
         const role = parseApiKeyRole(roleValue);
 
@@ -60,36 +57,41 @@ function parseIsoTimestamp(value, fieldName) {
 
 }
 
+function parseOptionalIsoTimestamp(value, fieldName) {
+
+    if (value == null)
+        return undefined;
+
+    return parseIsoTimestamp(value, fieldName);
+
+}
+
 function parseApiKeyEntries(rawEntries) {
 
     if (!Array.isArray(rawEntries))
         throw new Error("API key file must contain a JSON array.");
-
-    const seenApiKeys = new Set();
 
     return rawEntries.map((rawEntry, index) => {
 
         if (rawEntry == null || typeof rawEntry !== "object" || Array.isArray(rawEntry))
             throw new Error("API key entry " + (index + 1).toString() + " must be a JSON object.");
 
-        const apiKey = rawEntry.apiKey;
+        if (Object.prototype.hasOwnProperty.call(rawEntry, "apiKey"))
+            throw new Error("API key entry " + (index + 1).toString() + " must use token, not apiKey.");
 
-        if (typeof apiKey !== "string" || apiKey.trim() === "")
-            throw new Error("API key entry " + (index + 1).toString() + " must contain a non-empty apiKey.");
+        const token = rawEntry.token;
 
-        if (seenApiKeys.has(apiKey))
-            throw new Error("Duplicate API key entry.");
+        if (typeof token !== "string" || token.trim() === "")
+            throw new Error("API key entry " + (index + 1).toString() + " must contain a non-empty token.");
 
-        seenApiKeys.add(apiKey);
+        const notBefore = parseOptionalIsoTimestamp(rawEntry.notBefore, "notBefore");
+        const notAfter  = parseOptionalIsoTimestamp(rawEntry.notAfter,  "notAfter");
 
-        const notBefore = parseIsoTimestamp(rawEntry.notBefore, "notBefore");
-        const notAfter  = parseIsoTimestamp(rawEntry.notAfter,  "notAfter");
-
-        if (notAfter.getTime() < notBefore.getTime())
+        if (notBefore != null && notAfter != null && notAfter.getTime() < notBefore.getTime())
             throw new Error("API key entry " + (index + 1).toString() + " has notAfter before notBefore.");
 
         return {
-            apiKey,
+            token,
             roles: parseApiKeyRoles(rawEntry),
             notBefore,
             notAfter
@@ -117,19 +119,42 @@ function normalizeApiKeyHeader(headerValue) {
 
 }
 
+function findApiKeyEntriesByHeader(headerValue, apiKeyEntries) {
+
+    const token = normalizeApiKeyHeader(headerValue);
+
+    if (token === "" || !Array.isArray(apiKeyEntries))
+        return [];
+
+    return apiKeyEntries.filter(candidate => candidate.token === token);
+
+}
+
+function isApiKeyEntryActiveAt(entry, nowMs) {
+
+    if (entry.notBefore != null && nowMs < entry.notBefore.getTime())
+        return false;
+
+    if (entry.notAfter != null && nowMs > entry.notAfter.getTime())
+        return false;
+
+    return true;
+
+}
+
 function authenticateApiKeyHeader(headerValue, apiKeyEntries, now = new Date()) {
 
-    const apiKey = normalizeApiKeyHeader(headerValue);
+    const token = normalizeApiKeyHeader(headerValue);
 
-    if (apiKey === "")
+    if (token === "")
         return { ok: false, reason: "missing" };
 
     if (!Array.isArray(apiKeyEntries) || apiKeyEntries.length === 0)
         return { ok: false, reason: "unknown" };
 
-    const entry = apiKeyEntries.find(candidate => candidate.apiKey === apiKey);
+    const matchingEntries = findApiKeyEntriesByHeader(headerValue, apiKeyEntries);
 
-    if (entry == null)
+    if (matchingEntries.length === 0)
         return { ok: false, reason: "unknown" };
 
     const nowMs = now instanceof Date
@@ -139,17 +164,26 @@ function authenticateApiKeyHeader(headerValue, apiKeyEntries, now = new Date()) 
     if (Number.isNaN(nowMs))
         return { ok: false, reason: "invalid-now" };
 
-    if (nowMs < entry.notBefore.getTime())
-        return { ok: false, reason: "not-before" };
+    const activeEntry = matchingEntries.find(entry => isApiKeyEntryActiveAt(entry, nowMs));
 
-    if (nowMs > entry.notAfter.getTime())
-        return { ok: false, reason: "not-after" };
+    if (activeEntry == null)
+    {
+        const hasNotYetValidEntry = matchingEntries.some(entry => entry.notBefore != null && nowMs < entry.notBefore.getTime());
+        const hasExpiredEntry     = matchingEntries.some(entry => entry.notAfter  != null && nowMs > entry.notAfter.getTime());
+
+        return {
+            ok:     false,
+            reason: hasNotYetValidEntry && !hasExpiredEntry
+                        ? "not-before"
+                        : "not-after"
+        };
+    }
 
     return {
         ok: true,
         credential: {
-            apiKey: entry.apiKey,
-            roles:  entry.roles
+            token: activeEntry.token,
+            roles:  activeEntry.roles
         }
     };
 
@@ -168,6 +202,7 @@ module.exports = {
     ApiKeyRole,
     authenticateApiKeyHeader,
     createApiKeyAuthenticator,
+    findApiKeyEntriesByHeader,
     loadApiKeysFromFile,
     parseApiKeyEntries,
     parseApiKeyRole,
