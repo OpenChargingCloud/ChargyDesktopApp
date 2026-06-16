@@ -1095,6 +1095,56 @@
         "en": "Report issue"
     },
 
+    "imprintLabel": {
+        "de": "Impressum",
+        "en": "Imprint"
+    },
+
+    "imprintInformationAccordingToTMG": {
+        "de": "Angaben gemäß § 5 TMG",
+        "en": "Information according to Section 5 TMG"
+    },
+
+    "phoneLabel": {
+        "de": "Telefon",
+        "en": "Phone"
+    },
+
+    "imprintRepresentedBy": {
+        "de": "Vertreten durch",
+        "en": "Represented by"
+    },
+
+    "imprintCommercialRegister": {
+        "de": "Registereintrag / Commercial Register",
+        "en": "Commercial Register"
+    },
+
+    "imprintRegisteredAt": {
+        "de": "Eintragung im Handelsregister",
+        "en": "Registered at the commercial register"
+    },
+
+    "imprintRegisterCourt": {
+        "de": "Registergericht",
+        "en": "Register court"
+    },
+
+    "imprintRegisterNumber": {
+        "de": "Registernummer",
+        "en": "Registration number"
+    },
+
+    "imprintVatId": {
+        "de": "Umsatzsteuer-Identifikationsnummer / Tax Identification Number gemäß § 27a UStG",
+        "en": "VAT identification number according to Section 27a UStG"
+    },
+
+    "imprintResponsibleForContent": {
+        "de": "Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV",
+        "en": "Responsible for content according to Section 55 paragraph 2 RStV"
+    },
+
     "tariffInformations": {
         "de": "Tarifinformationen:",
         "en": "Tariff information:"
