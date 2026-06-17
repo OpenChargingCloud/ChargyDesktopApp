@@ -1,13 +1,16 @@
 import { createRequire }          from "node:module";
-import { readFileSync }           from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import type { AddressInfo }       from "node:net";
 import { request as httpClientRequest } from "node:http";
+import { tmpdir }                 from "node:os";
+import { join }                   from "node:path";
 import type { Server }            from "node:http";
 import { describe, expect, test } from "vitest";
 import { createChargy }           from './testHelper';
 import {
     ApiKeyRole,
     type ApiKeyAuthenticationResult,
+    type ITOTPApiKeyConfiguration,
     type ParsedApiKeyEntry
 }                                  from "../src/ts/apiKeys";
 
@@ -40,6 +43,7 @@ type HttpApiModule = {
         serializeDispatch?:  boolean;
         apiKeyAuthenticator?: (headerValue: string | string[] | undefined) => ApiKeyAuthenticationResult;
         apiKeyEntries?:      ParsedApiKeyEntry[];
+        apiKeysFileName?:    string | null;
         log?:                (message: string) => void;
     }) => Server;
 };
@@ -49,6 +53,7 @@ type ApiKeysModule = {
         apiKeyEntries: ParsedApiKeyEntry[],
         nowProvider?: () => Date
     ) => ((headerValue: string | string[] | undefined) => ApiKeyAuthenticationResult) | null;
+    generateTOTPApiKeyValue: (totpConfiguration: ITOTPApiKeyConfiguration, now?: Date, slotOffset?: number) => string;
     parseApiKeyEntries: (rawEntries: unknown) => ParsedApiKeyEntry[];
 };
 
@@ -60,6 +65,7 @@ const {
 
 const {
     createApiKeyAuthenticator,
+    generateTOTPApiKeyValue,
     parseApiKeyEntries
 } = require("../src/apiKeys.cjs") as ApiKeysModule;
 
@@ -118,6 +124,7 @@ async function withHttpServer(
         maxContentSize?: number;
         apiKeyAuthenticator?: (headerValue: string | string[] | undefined) => ApiKeyAuthenticationResult;
         apiKeyEntries?:      ParsedApiKeyEntry[];
+        apiKeysFileName?:    string | null;
     } = {}
 ): Promise<void> {
 
@@ -130,6 +137,7 @@ async function withHttpServer(
         maxContentSize: options.maxContentSize,
         apiKeyAuthenticator: options.apiKeyAuthenticator,
         apiKeyEntries: options.apiKeyEntries,
+        apiKeysFileName: options.apiKeysFileName,
         log: () => {}
     });
 
@@ -206,6 +214,7 @@ describe("Chargy HTTP API", () => {
                 expect(text).toContain("POST /verify");
                 expect(text).toContain("POST /convert");
                 expect(text).toContain("GET /apiKeys");
+                expect(text).toContain("ADD /apiKeys");
             }
         );
 
@@ -213,7 +222,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("rejects GET /apiKeys without API-Key", async () => {
+    test("rejects GET /apiKeys without Authorization", async () => {
 
         const apiKeyEntries       = parseApiKeyEntries(rawApiKeys);
         const apiKeyAuthenticator = createApiKeyAuthenticator(
@@ -235,8 +244,8 @@ describe("Chargy HTTP API", () => {
                 const response = await fetch(`${baseUrl}/apiKeys`);
 
                 expect(response.status).toBe(401);
-                expect(response.headers.get("www-authenticate")).toBe("API-Key");
-                expect(await response.text()).toContain("API key");
+                expect(response.headers.get("www-authenticate")).toContain("Bearer");
+                expect(await response.text()).toContain("Authorization");
             },
             {
                 apiKeyAuthenticator: apiKeyAuthenticator ?? undefined,
@@ -269,7 +278,7 @@ describe("Chargy HTTP API", () => {
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/apiKeys`, {
                     headers: {
-                        "API-Key": "driver-secret"
+                        "Authorization": "Bearer driver-secret"
                     }
                 });
 
@@ -326,7 +335,7 @@ describe("Chargy HTTP API", () => {
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/apiKeys`, {
                     headers: {
-                        "API-Key": "root-secret"
+                        "Authorization": "Bearer root-secret"
                     }
                 });
 
@@ -369,7 +378,461 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("keeps GET / reachable without API-Key when API key authentication is enabled", async () => {
+    test("adds a new API key via ADD /apiKeys with root Authorization", async () => {
+
+        const apiKeyEntries       = parseApiKeyEntries(rawApiKeys);
+        const apiKeyAuthenticator = createApiKeyAuthenticator(
+            apiKeyEntries,
+            () => new Date("2026-06-15T12:00:00Z")
+        );
+
+        let dispatchCount = 0;
+
+        await withHttpServer(
+            () => {
+                dispatchCount++;
+                return {
+                    ok:     true,
+                    result: chargeTransparencyRecord
+                };
+            },
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/apiKeys`, {
+                    method:  "ADD",
+                    headers: {
+                        "Authorization": "Bearer root-secret",
+                        "Content-Type":  "application/json"
+                    },
+                    body:    JSON.stringify({
+                        token:     "new-driver-secret",
+                        roles:     [ "evDriver" ],
+                        notBefore: "2026-06-01T00:00:00Z",
+                        notAfter:  "2026-06-30T23:59:59Z"
+                    })
+                });
+
+                expect(response.status).toBe(201);
+
+                const addedApiKey = await response.json() as {
+                    token:     string;
+                    roles:     string[];
+                    notBefore: string;
+                    notAfter:  string;
+                };
+
+                expect(addedApiKey).toEqual({
+                    token:     "new-driver-secret",
+                    roles:     [ ApiKeyRole.EVDriver ],
+                    notBefore: "2026-06-01T00:00:00.000Z",
+                    notAfter:  "2026-06-30T23:59:59.000Z"
+                });
+
+                const lookupResponse = await fetch(`${baseUrl}/apiKeys`, {
+                    headers: {
+                        "Authorization": "Bearer new-driver-secret"
+                    }
+                });
+
+                expect(lookupResponse.status).toBe(200);
+                expect(await lookupResponse.json()).toEqual([ addedApiKey ]);
+            },
+            {
+                apiKeyAuthenticator: apiKeyAuthenticator ?? undefined,
+                apiKeyEntries
+            }
+        );
+
+        expect(apiKeyEntries).toHaveLength(4);
+        expect(dispatchCount).toBe(0);
+
+    });
+
+    test("persists newly added API keys to the configured JSON file", async () => {
+
+        const directory       = mkdtempSync(join(tmpdir(), "chargy-http-api-keys-"));
+        const apiKeysFileName = join(directory, "api-keys.json");
+
+        try
+        {
+            writeFileSync(apiKeysFileName, JSON.stringify(rawApiKeys), "utf8");
+
+            const apiKeyEntries       = parseApiKeyEntries(rawApiKeys);
+            const apiKeyAuthenticator = createApiKeyAuthenticator(
+                apiKeyEntries,
+                () => new Date("2026-06-15T12:00:00Z")
+            );
+
+            await withHttpServer(
+                () => ({
+                    ok:     true,
+                    result: chargeTransparencyRecord
+                }),
+                async baseUrl => {
+                    const response = await fetch(`${baseUrl}/apiKeys`, {
+                        method:  "ADD",
+                        headers: {
+                            "Authorization": "Bearer root-secret",
+                            "Content-Type":  "application/json"
+                        },
+                        body:    JSON.stringify({
+                            token: "persisted-driver-secret"
+                        })
+                    });
+
+                    expect(response.status).toBe(201);
+                },
+                {
+                    apiKeyAuthenticator: apiKeyAuthenticator ?? undefined,
+                    apiKeyEntries,
+                    apiKeysFileName
+                }
+            );
+
+            const persistedApiKeys = JSON.parse(readFileSync(apiKeysFileName, "utf8")) as Array<{
+                token: string;
+                roles: string[];
+            }>;
+
+            expect(persistedApiKeys).toHaveLength(4);
+            expect(persistedApiKeys[3]).toEqual({
+                token: "persisted-driver-secret",
+                roles: [ ApiKeyRole.EVDriver ]
+            });
+        }
+        finally
+        {
+            rmSync(directory, { recursive: true, force: true });
+        }
+
+    });
+
+    test("rejects duplicate ADD /apiKeys entries with HTTP conflict", async () => {
+
+        const apiKeyEntries       = parseApiKeyEntries(rawApiKeys);
+        const apiKeyAuthenticator = createApiKeyAuthenticator(
+            apiKeyEntries,
+            () => new Date("2026-06-15T12:00:00Z")
+        );
+
+        await withHttpServer(
+            () => ({
+                ok:     true,
+                result: chargeTransparencyRecord
+            }),
+            async baseUrl => {
+
+                const differentWindowResponse = await fetch(`${baseUrl}/apiKeys`, {
+                    method:  "ADD",
+                    headers: {
+                        "Authorization": "Bearer root-secret",
+                        "Content-Type":  "application/json"
+                    },
+                    body:    JSON.stringify({
+                        token:    "driver-secret",
+                        roles:    [ "evDriver" ],
+                        notAfter: "2026-06-30T23:59:59Z"
+                    })
+                });
+
+                expect(differentWindowResponse.status).toBe(201);
+
+                const duplicateResponse = await fetch(`${baseUrl}/apiKeys`, {
+                    method:  "ADD",
+                    headers: {
+                        "Authorization": "Bearer root-secret",
+                        "Content-Type":  "application/json"
+                    },
+                    body:    JSON.stringify({
+                        token:    "driver-secret",
+                        roles:    [ "evDriver" ],
+                        notAfter: "2025-12-31T23:59:59Z"
+                    })
+                });
+
+                expect(duplicateResponse.status).toBe(409);
+                expect(await duplicateResponse.json()).toEqual({
+                    message: "The API key already exists."
+                });
+
+            },
+            {
+                apiKeyAuthenticator: apiKeyAuthenticator ?? undefined,
+                apiKeyEntries
+            }
+        );
+
+        expect(apiKeyEntries).toHaveLength(4);
+
+    });
+
+    test("rejects ADD /apiKeys without root Authorization", async () => {
+
+        const apiKeyEntries       = parseApiKeyEntries([
+            {
+                token:     "driver-secret",
+                notBefore: "2026-01-01T00:00:00Z",
+                notAfter:  "2026-12-31T23:59:59Z"
+            },
+            {
+                token:     "root-secret",
+                roles:     [ "root" ],
+                notBefore: "2026-01-01T00:00:00Z",
+                notAfter:  "2026-12-31T23:59:59Z"
+            }
+        ]);
+        const apiKeyAuthenticator = createApiKeyAuthenticator(
+            apiKeyEntries,
+            () => new Date("2026-06-15T12:00:00Z")
+        );
+
+        await withHttpServer(
+            () => ({
+                ok:     true,
+                result: chargeTransparencyRecord
+            }),
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/apiKeys`, {
+                    method:  "ADD",
+                    headers: {
+                        "Authorization": "Bearer driver-secret",
+                        "Content-Type":  "application/json"
+                    },
+                    body:    JSON.stringify({
+                        token: "should-not-be-added"
+                    })
+                });
+
+                expect(response.status).toBe(403);
+                expect(await response.text()).toContain("Root authorization");
+            },
+            {
+                apiKeyAuthenticator: apiKeyAuthenticator ?? undefined,
+                apiKeyEntries
+            }
+        );
+
+        expect(apiKeyEntries).toHaveLength(2);
+
+    });
+
+    test("deletes exactly one API key via DELETE /apiKeys with root Authorization", async () => {
+
+        const apiKeyEntries       = parseApiKeyEntries(rawApiKeys);
+        const apiKeyAuthenticator = createApiKeyAuthenticator(
+            apiKeyEntries,
+            () => new Date("2026-06-15T12:00:00Z")
+        );
+
+        await withHttpServer(
+            () => ({
+                ok:     true,
+                result: chargeTransparencyRecord
+            }),
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/apiKeys`, {
+                    method:  "DELETE",
+                    headers: {
+                        "Authorization": "Bearer root-secret",
+                        "Content-Type":  "application/json"
+                    },
+                    body:    JSON.stringify({
+                        token:    "driver-secret",
+                        roles:    [ "evDriver" ],
+                        notAfter: "2025-12-31T23:59:59Z"
+                    })
+                });
+
+                expect(response.status).toBe(200);
+
+                const deletedApiKey = await response.json() as {
+                    token:    string;
+                    roles:    string[];
+                    notAfter: string;
+                };
+
+                expect(deletedApiKey).toEqual({
+                    token:    "driver-secret",
+                    roles:    [ ApiKeyRole.EVDriver ],
+                    notAfter: "2025-12-31T23:59:59.000Z"
+                });
+
+                const lookupResponse = await fetch(`${baseUrl}/apiKeys`, {
+                    headers: {
+                        "Authorization": "Bearer driver-secret"
+                    }
+                });
+
+                expect(lookupResponse.status).toBe(200);
+                expect(await lookupResponse.json()).toEqual([
+                    {
+                        token:     "driver-secret",
+                        roles:     [ ApiKeyRole.EVDriver ],
+                        notBefore: "2027-01-01T00:00:00.000Z"
+                    }
+                ]);
+            },
+            {
+                apiKeyAuthenticator: apiKeyAuthenticator ?? undefined,
+                apiKeyEntries
+            }
+        );
+
+        expect(apiKeyEntries).toHaveLength(2);
+
+    });
+
+    test("persists deleted API keys to the configured JSON file", async () => {
+
+        const directory       = mkdtempSync(join(tmpdir(), "chargy-http-api-keys-"));
+        const apiKeysFileName = join(directory, "api-keys.json");
+
+        try
+        {
+            writeFileSync(apiKeysFileName, JSON.stringify(rawApiKeys), "utf8");
+
+            const apiKeyEntries       = parseApiKeyEntries(rawApiKeys);
+            const apiKeyAuthenticator = createApiKeyAuthenticator(
+                apiKeyEntries,
+                () => new Date("2026-06-15T12:00:00Z")
+            );
+
+            await withHttpServer(
+                () => ({
+                    ok:     true,
+                    result: chargeTransparencyRecord
+                }),
+                async baseUrl => {
+                    const response = await fetch(`${baseUrl}/apiKeys`, {
+                        method:  "DELETE",
+                        headers: {
+                            "Authorization": "Bearer root-secret",
+                            "Content-Type":  "application/json"
+                        },
+                        body:    JSON.stringify({
+                            token:    "driver-secret",
+                            roles:    [ "evDriver" ],
+                            notAfter: "2025-12-31T23:59:59Z"
+                        })
+                    });
+
+                    expect(response.status).toBe(200);
+                },
+                {
+                    apiKeyAuthenticator: apiKeyAuthenticator ?? undefined,
+                    apiKeyEntries,
+                    apiKeysFileName
+                }
+            );
+
+            const persistedApiKeys = JSON.parse(readFileSync(apiKeysFileName, "utf8")) as Array<{
+                token: string;
+            }>;
+
+            expect(persistedApiKeys).toHaveLength(2);
+            expect(persistedApiKeys.some(apiKey => apiKey.token === "root-secret")).toBe(true);
+            expect(persistedApiKeys.filter(apiKey => apiKey.token === "driver-secret")).toHaveLength(1);
+        }
+        finally
+        {
+            rmSync(directory, { recursive: true, force: true });
+        }
+
+    });
+
+    test("rejects DELETE /apiKeys when no API key matches", async () => {
+
+        const apiKeyEntries       = parseApiKeyEntries(rawApiKeys);
+        const apiKeyAuthenticator = createApiKeyAuthenticator(
+            apiKeyEntries,
+            () => new Date("2026-06-15T12:00:00Z")
+        );
+
+        await withHttpServer(
+            () => ({
+                ok:     true,
+                result: chargeTransparencyRecord
+            }),
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/apiKeys`, {
+                    method:  "DELETE",
+                    headers: {
+                        "Authorization": "Bearer root-secret",
+                        "Content-Type":  "application/json"
+                    },
+                    body:    JSON.stringify({
+                        token: "not-configured"
+                    })
+                });
+
+                expect(response.status).toBe(404);
+                expect(await response.json()).toEqual({
+                    message: "The API key does not exist."
+                });
+            },
+            {
+                apiKeyAuthenticator: apiKeyAuthenticator ?? undefined,
+                apiKeyEntries
+            }
+        );
+
+        expect(apiKeyEntries).toHaveLength(3);
+
+    });
+
+    test("rejects DELETE /apiKeys when the uploaded API key is not unique", async () => {
+
+        const apiKeyEntries       = parseApiKeyEntries([
+            {
+                token:     "root-secret",
+                roles:     [ "root" ],
+                notBefore: "2026-01-01T00:00:00Z",
+                notAfter:  "2026-12-31T23:59:59Z"
+            },
+            {
+                token: "duplicate-secret"
+            },
+            {
+                token: "duplicate-secret"
+            }
+        ]);
+        const apiKeyAuthenticator = createApiKeyAuthenticator(
+            apiKeyEntries,
+            () => new Date("2026-06-15T12:00:00Z")
+        );
+
+        await withHttpServer(
+            () => ({
+                ok:     true,
+                result: chargeTransparencyRecord
+            }),
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/apiKeys`, {
+                    method:  "DELETE",
+                    headers: {
+                        "Authorization": "Bearer root-secret",
+                        "Content-Type":  "application/json"
+                    },
+                    body:    JSON.stringify({
+                        token: "duplicate-secret"
+                    })
+                });
+
+                expect(response.status).toBe(409);
+                expect(await response.json()).toEqual({
+                    message: "The API key is not unique."
+                });
+            },
+            {
+                apiKeyAuthenticator: apiKeyAuthenticator ?? undefined,
+                apiKeyEntries
+            }
+        );
+
+        expect(apiKeyEntries).toHaveLength(3);
+
+    });
+
+    test("keeps GET / reachable without Authorization when API key authentication is enabled", async () => {
 
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
@@ -405,7 +868,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("rejects POST /verify without API-Key when API key authentication is enabled", async () => {
+    test("rejects POST /verify without Authorization when API key authentication is enabled", async () => {
 
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
@@ -435,8 +898,8 @@ describe("Chargy HTTP API", () => {
                 });
 
                 expect(response.status).toBe(401);
-                expect(response.headers.get("www-authenticate")).toBe("API-Key");
-                expect(await response.text()).toContain("API key");
+                expect(response.headers.get("www-authenticate")).toContain("Bearer");
+                expect(await response.text()).toContain("Authorization");
             },
             { apiKeyAuthenticator: apiKeyAuthenticator ?? undefined }
         );
@@ -445,7 +908,49 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("rejects POST /convert without API-Key when API key authentication is enabled", async () => {
+    test("rejects POST /verify with the legacy API-Key header", async () => {
+
+        const apiKeyAuthenticator = createApiKeyAuthenticator(
+            parseApiKeyEntries([
+                {
+                    token:     "driver-secret",
+                    notBefore: "2026-01-01T00:00:00Z",
+                    notAfter:  "2026-12-31T23:59:59Z"
+                }
+            ]),
+            () => new Date("2026-06-15T12:00:00Z")
+        );
+
+        let dispatchCount = 0;
+
+        await withHttpServer(
+            () => {
+                dispatchCount++;
+                return {
+                    ok:     true,
+                    result: chargeTransparencyRecord
+                };
+            },
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method:  "POST",
+                    headers: {
+                        "API-Key": "driver-secret"
+                    },
+                    body:    Buffer.from("transparency-record")
+                });
+
+                expect(response.status).toBe(401);
+                expect(await response.text()).toContain("Authorization");
+            },
+            { apiKeyAuthenticator: apiKeyAuthenticator ?? undefined }
+        );
+
+        expect(dispatchCount).toBe(0);
+
+    });
+
+    test("rejects POST /convert without Authorization when API key authentication is enabled", async () => {
 
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
@@ -475,7 +980,7 @@ describe("Chargy HTTP API", () => {
                 });
 
                 expect(response.status).toBe(401);
-                expect(await response.text()).toContain("API key");
+                expect(await response.text()).toContain("Authorization");
             },
             { apiKeyAuthenticator: apiKeyAuthenticator ?? undefined }
         );
@@ -484,7 +989,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("accepts POST /verify with a valid API-Key", async () => {
+    test("accepts POST /verify with a valid Bearer Authorization", async () => {
 
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
@@ -506,7 +1011,7 @@ describe("Chargy HTTP API", () => {
                 const response = await fetch(`${baseUrl}/verify`, {
                     method:  "POST",
                     headers: {
-                        "API-Key": "driver-secret"
+                        "Authorization": "Bearer driver-secret"
                     },
                     body:    Buffer.from("transparency-record")
                 });
@@ -519,7 +1024,51 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("rejects POST /verify with an expired API-Key", async () => {
+    test("accepts POST /verify with a valid TOTP Authorization", async () => {
+
+        const now           = new Date("2026-06-15T12:00:05Z");
+        const apiKeyEntries = parseApiKeyEntries([
+            {
+                token: "totp-driver",
+                totp:  {
+                    sharedSecrect: "secureChargingSecret2026",
+                    validityTime:  10,
+                    length:        24
+                }
+            }
+        ]);
+        const totp = apiKeyEntries[0]?.totp;
+
+        expect(totp).toBeDefined();
+
+        if (totp == null)
+            throw new Error("Missing parsed TOTP configuration.");
+
+        const apiKeyAuthenticator = createApiKeyAuthenticator(apiKeyEntries, () => now);
+
+        await withHttpServer(
+            () => ({
+                ok:     true,
+                result: chargeTransparencyRecord
+            }),
+            async baseUrl => {
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method:  "POST",
+                    headers: {
+                        "Authorization": "TOTP totp-driver " + generateTOTPApiKeyValue(totp, now)
+                    },
+                    body:    Buffer.from("transparency-record")
+                });
+
+                expect(response.status).toBe(200);
+                expect(await response.json()).toBe("Valid signature");
+            },
+            { apiKeyAuthenticator: apiKeyAuthenticator ?? undefined }
+        );
+
+    });
+
+    test("rejects POST /verify with an expired Bearer Authorization", async () => {
 
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
@@ -546,7 +1095,7 @@ describe("Chargy HTTP API", () => {
                 const response = await fetch(`${baseUrl}/verify`, {
                     method:  "POST",
                     headers: {
-                        "API-Key": "driver-secret"
+                        "Authorization": "Bearer driver-secret"
                     },
                     body:    Buffer.from("transparency-record")
                 });

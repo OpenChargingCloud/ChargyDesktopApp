@@ -8,7 +8,11 @@ const {
 }               = require('./asyncMutex.cjs');
 const {
     ApiKeyRole,
-    findApiKeyEntriesByHeader
+    apiKeyEntriesEqual,
+    findApiKeyEntriesByAuthorization,
+    hasApiKeyEntry,
+    parseApiKeyEntry,
+    saveApiKeysToFile
 }               = require('./apiKeys.cjs');
 const {
     sessionVerificationResultToText,
@@ -182,17 +186,388 @@ function sendJson(response, statusCode, value, pretty = false) {
     response.end(stringify(value, null, pretty ? 2 : 0));
 }
 
+function jsonBuffer(value) {
+    return Buffer.from(stringify(value, null, 0), "utf8");
+}
+
+function sendAuthorizationRequired(response, message = "Missing, malformed, unknown or expired Authorization header.\n") {
+    response.writeHead(401, {
+        "Content-Type": "text/plain; charset=utf-8",
+        "WWW-Authenticate": "Bearer realm=\"Chargy\", TOTP realm=\"Chargy\""
+    });
+    response.end(message);
+}
+
+function getContentLengthHeader(request) {
+    return Array.isArray(request.headers["content-length"])
+               ? request.headers["content-length"][0]
+               : request.headers["content-length"];
+}
+
+function validateContentLengthHeader(contentLengthHeader, maxContentSize) {
+
+    if (contentLengthHeader == null)
+        return null;
+
+    const contentLength = parseInt(contentLengthHeader, 10);
+
+    if (isNaN(contentLength))
+        return {
+            statusCode: 400,
+            message:    "The size of the transmitted request body is invalid!"
+        };
+
+    if (contentLength > maxContentSize)
+        return {
+            statusCode: 413,
+            message:    "The transmitted request body is too large!"
+        };
+
+    return null;
+
+}
+
+function createAuthorizationRequiredResponse(message = "Missing, malformed, unknown or expired Authorization header.\n") {
+    return {
+        statusCode: 401,
+        headers:    {
+            "Content-Type":     "text/plain; charset=utf-8",
+            "WWW-Authenticate": "Bearer realm=\"Chargy\", TOTP realm=\"Chargy\""
+        },
+        body:       Buffer.from(message, "utf8")
+    };
+}
+
+function readRequestBody(request, maxContentSize) {
+
+    return new Promise((resolve, reject) => {
+
+        const binaryData = [];
+        let contentSize  = 0;
+        let rejected     = false;
+
+        request.on("data", binaryDataChunk => {
+
+            if (rejected)
+                return;
+
+            contentSize += binaryDataChunk.length;
+
+            if (contentSize > maxContentSize)
+            {
+                rejected = true;
+                reject({
+                    statusCode: 413,
+                    message:    "The transmitted request body is too large!"
+                });
+                request.destroy();
+                return;
+            }
+
+            binaryData.push(binaryDataChunk);
+
+        });
+
+        request.on("error", exception => {
+            if (!rejected)
+                reject({
+                    statusCode: 400,
+                    message:    "Could not read the transmitted request body: " + exception.message
+                });
+        });
+
+        request.on("end", () => {
+            if (!rejected)
+                resolve(Buffer.concat(binaryData));
+        });
+
+    });
+
+}
+
+function createAddApiKeyResponse({
+    authorizationHeader,
+    requestBody,
+    apiKeyAuthenticator,
+    apiKeyEntries,
+    apiKeysFileName
+}) {
+
+    if (typeof apiKeyAuthenticator !== "function")
+        return createAuthorizationRequiredResponse();
+
+    const authentication = apiKeyAuthenticator(authorizationHeader);
+
+    if (authentication == null || authentication.ok !== true)
+        return createAuthorizationRequiredResponse();
+
+    if (!Array.isArray(authentication.credential?.roles) ||
+        !authentication.credential.roles.includes(ApiKeyRole.Root))
+    {
+        return {
+            statusCode: 403,
+            headers:    { "Content-Type": "text/plain; charset=utf-8" },
+            body:       Buffer.from("Root authorization is required to add API keys.\n", "utf8")
+        };
+    }
+
+    if (requestBody.length === 0)
+    {
+        return {
+            statusCode: 400,
+            headers:    { "Content-Type": "text/plain; charset=utf-8" },
+            body:       Buffer.from("Please upload one API key JSON object.", "utf8")
+        };
+    }
+
+    let parsedApiKeyEntry;
+
+    try
+    {
+        parsedApiKeyEntry = parseApiKeyEntry(JSON.parse(requestBody.toString("utf8")));
+    }
+    catch (exception)
+    {
+        return {
+            statusCode: 400,
+            headers:    { "Content-Type": "application/json; charset=utf-8" },
+            body:       jsonBuffer({ message: exception.message ?? "Invalid API key JSON object." })
+        };
+    }
+
+    if (hasApiKeyEntry(apiKeyEntries, parsedApiKeyEntry))
+    {
+        return {
+            statusCode: 409,
+            headers:    { "Content-Type": "application/json; charset=utf-8" },
+            body:       jsonBuffer({ message: "The API key already exists." })
+        };
+    }
+
+    apiKeyEntries.push(parsedApiKeyEntry);
+
+    try
+    {
+        saveApiKeysToFile(apiKeysFileName, apiKeyEntries);
+    }
+    catch (exception)
+    {
+        apiKeyEntries.pop();
+        return {
+            statusCode: 500,
+            headers:    { "Content-Type": "application/json; charset=utf-8" },
+            body:       jsonBuffer({ message: exception.message ?? "Could not persist API keys." })
+        };
+    }
+
+    return {
+        statusCode: 201,
+        headers:    { "Content-Type": "application/json; charset=utf-8" },
+        body:       jsonBuffer(parsedApiKeyEntry)
+    };
+
+}
+
+function createDeleteApiKeyResponse({
+    authorizationHeader,
+    requestBody,
+    apiKeyAuthenticator,
+    apiKeyEntries,
+    apiKeysFileName
+}) {
+
+    if (typeof apiKeyAuthenticator !== "function")
+        return createAuthorizationRequiredResponse();
+
+    const authentication = apiKeyAuthenticator(authorizationHeader);
+
+    if (authentication == null || authentication.ok !== true)
+        return createAuthorizationRequiredResponse();
+
+    if (!Array.isArray(authentication.credential?.roles) ||
+        !authentication.credential.roles.includes(ApiKeyRole.Root))
+    {
+        return {
+            statusCode: 403,
+            headers:    { "Content-Type": "text/plain; charset=utf-8" },
+            body:       Buffer.from("Root authorization is required to delete API keys.\n", "utf8")
+        };
+    }
+
+    if (requestBody.length === 0)
+    {
+        return {
+            statusCode: 400,
+            headers:    { "Content-Type": "text/plain; charset=utf-8" },
+            body:       Buffer.from("Please upload one API key JSON object.", "utf8")
+        };
+    }
+
+    let parsedApiKeyEntry;
+
+    try
+    {
+        parsedApiKeyEntry = parseApiKeyEntry(JSON.parse(requestBody.toString("utf8")));
+    }
+    catch (exception)
+    {
+        return {
+            statusCode: 400,
+            headers:    { "Content-Type": "application/json; charset=utf-8" },
+            body:       jsonBuffer({ message: exception.message ?? "Invalid API key JSON object." })
+        };
+    }
+
+    const matchingIndexes = apiKeyEntries
+        .map((entry, index) => apiKeyEntriesEqual(entry, parsedApiKeyEntry) ? index : -1)
+        .filter(index => index >= 0);
+
+    if (matchingIndexes.length === 0)
+    {
+        return {
+            statusCode: 404,
+            headers:    { "Content-Type": "application/json; charset=utf-8" },
+            body:       jsonBuffer({ message: "The API key does not exist." })
+        };
+    }
+
+    if (matchingIndexes.length > 1)
+    {
+        return {
+            statusCode: 409,
+            headers:    { "Content-Type": "application/json; charset=utf-8" },
+            body:       jsonBuffer({ message: "The API key is not unique." })
+        };
+    }
+
+    const deletedApiKeyEntry = apiKeyEntries.splice(matchingIndexes[0], 1)[0];
+
+    try
+    {
+        saveApiKeysToFile(apiKeysFileName, apiKeyEntries);
+    }
+    catch (exception)
+    {
+        apiKeyEntries.splice(matchingIndexes[0], 0, deletedApiKeyEntry);
+        return {
+            statusCode: 500,
+            headers:    { "Content-Type": "application/json; charset=utf-8" },
+            body:       jsonBuffer({ message: exception.message ?? "Could not persist API keys." })
+        };
+    }
+
+    return {
+        statusCode: 200,
+        headers:    { "Content-Type": "application/json; charset=utf-8" },
+        body:       jsonBuffer(deletedApiKeyEntry)
+    };
+
+}
+
+function sendAddApiKeyResponse(response, addApiKeyResponse) {
+    response.writeHead(addApiKeyResponse.statusCode, addApiKeyResponse.headers);
+    response.end(addApiKeyResponse.body);
+}
+
+function writeRawHttpResponse(socket, addApiKeyResponse) {
+
+    const reasonPhrase = {
+        201: "Created",
+        400: "Bad Request",
+        401: "Unauthorized",
+        403: "Forbidden",
+        409: "Conflict",
+        413: "Payload Too Large",
+        500: "Internal Server Error"
+    }[addApiKeyResponse.statusCode] ?? "OK";
+    const headers = {
+        ...addApiKeyResponse.headers,
+        "Content-Length": Buffer.byteLength(addApiKeyResponse.body),
+        "Connection":     "close"
+    };
+    const headerText = Object.entries(headers)
+                             .map(([ name, value ]) => name + ": " + value)
+                             .join("\r\n");
+
+    socket.end(Buffer.concat([
+        Buffer.from(
+        "HTTP/1.1 " + addApiKeyResponse.statusCode.toString() + " " + reasonPhrase + "\r\n" +
+        headerText + "\r\n\r\n",
+        "utf8"
+        ),
+        addApiKeyResponse.body
+    ]));
+
+}
+
+function parseRawHttpRequest(rawRequest, maxContentSize) {
+
+    const headerEnd = rawRequest.indexOf("\r\n\r\n");
+
+    if (headerEnd < 0)
+        return { status: "incomplete" };
+
+    const headerText = rawRequest.subarray(0, headerEnd).toString("latin1");
+    const lines      = headerText.split("\r\n");
+    const [ method, path ] = (lines[0] ?? "").split(/\s+/u);
+    const headers = {};
+
+    for (const line of lines.slice(1))
+    {
+        const separatorIndex = line.indexOf(":");
+
+        if (separatorIndex <= 0)
+            continue;
+
+        headers[line.substring(0, separatorIndex).trim().toLowerCase()] = line.substring(separatorIndex + 1).trim();
+    }
+
+    const contentLengthValidation = validateContentLengthHeader(headers["content-length"], maxContentSize);
+
+    if (contentLengthValidation != null)
+        return {
+            status:   "error",
+            response: {
+                statusCode: contentLengthValidation.statusCode,
+                headers:    { "Content-Type": "text/plain; charset=utf-8" },
+                body:       Buffer.from(contentLengthValidation.message, "utf8")
+            }
+        };
+
+    const contentLength = headers["content-length"] != null
+                              ? parseInt(headers["content-length"], 10)
+                              : rawRequest.length - headerEnd - 4;
+    const bodyStart = headerEnd + 4;
+    const bodyEnd   = bodyStart + contentLength;
+
+    if (rawRequest.length < bodyEnd)
+        return { status: "incomplete" };
+
+    return {
+        status:  "ready",
+        request: {
+            method,
+            path,
+            headers,
+            body: rawRequest.subarray(bodyStart, bodyEnd)
+        }
+    };
+
+}
+
 function createHttpHelpText() {
 
     return [
         "This is a Chargy HTTP service",
         "GET / - Show this help text.",
         "GET /apiKeys - Return matching API keys as JSON; root tokens return all configured API keys.",
+        "ADD /apiKeys - Add one API key from a JSON request body; requires root authorization.",
+        "DELETE /apiKeys - Delete one exactly matching API key from a JSON request body; requires root authorization.",
         "POST /verify - Verify a transparency record and return session verification results.",
         "POST /convert - Convert a transparency record and return the Charge Transparency Record as JSON.",
         "",
         "Request headers:",
-        "API-Key: required for /apiKeys; required for /verify and /convert when the server was started with --apiKeys.",
+        "Authorization: Bearer <static-api-secret> or TOTP <token> <totp>; required for /apiKeys, /verify and /convert when the server was started with --apiKeys.",
         "Accept: application/json, text/plain, text/csv, application/xml for /verify; application/json for /convert.",
         "Accept-Language: de or en for localized /verify status text.",
         ""
@@ -246,7 +621,8 @@ function createChargyHttpRequestHandler({
     requestTimeoutMs = DEFAULT_HTTP_API_REQUEST_TIMEOUT,
     serializeDispatch = true,
     apiKeyAuthenticator = null,
-    apiKeyEntries = []
+    apiKeyEntries = [],
+    apiKeysFileName = null
 }) {
 
     if (typeof dispatchHttpRequest !== "function")
@@ -287,21 +663,91 @@ function createChargyHttpRequestHandler({
 
         if (isApiKeysRequest)
         {
-            const matchingApiKeyEntries = findApiKeyEntriesByHeader(request.headers["api-key"], apiKeyEntries);
+            const matchingApiKeyEntries = findApiKeyEntriesByAuthorization(request.headers["authorization"], apiKeyEntries);
 
             if (matchingApiKeyEntries.length === 0)
             {
-                response.writeHead(401, {
-                    "Content-Type": "text/plain; charset=utf-8",
-                    "WWW-Authenticate": "API-Key"
-                });
-                response.end("Missing or unknown API key.\n");
+                sendAuthorizationRequired(response, "Missing or unknown Authorization header.\n");
                 return;
             }
 
             const hasRootRole = matchingApiKeyEntries.some(entry => Array.isArray(entry.roles) && entry.roles.includes(ApiKeyRole.Root));
+            const matchingToken = matchingApiKeyEntries[0]?.token;
+            const visibleApiKeyEntries = hasRootRole
+                                             ? apiKeyEntries
+                                             : apiKeyEntries.filter(entry => entry.token === matchingToken);
 
-            sendJson(response, 200, hasRootRole ? apiKeyEntries : matchingApiKeyEntries);
+            sendJson(response, 200, visibleApiKeyEntries);
+            return;
+        }
+
+        const isAddApiKeyRequest = request.method === "ADD" && requestUrl.pathname === "/apiKeys";
+
+        if (isAddApiKeyRequest)
+        {
+            const contentLengthValidation = validateContentLengthHeader(getContentLengthHeader(request), maxContentSize);
+
+            if (contentLengthValidation != null)
+            {
+                sendPlainText(response, contentLengthValidation.statusCode, contentLengthValidation.message);
+                return;
+            }
+
+            let requestBody;
+
+            try
+            {
+                requestBody = await readRequestBody(request, maxContentSize);
+            }
+            catch (exception)
+            {
+                if (!response.headersSent)
+                    sendPlainText(response, exception.statusCode ?? 400, exception.message ?? "Could not read the transmitted request body.");
+                return;
+            }
+
+            sendAddApiKeyResponse(response, createAddApiKeyResponse({
+                authorizationHeader: request.headers["authorization"],
+                requestBody,
+                apiKeyAuthenticator,
+                apiKeyEntries,
+                apiKeysFileName
+            }));
+            return;
+        }
+
+        const isDeleteApiKeyRequest = request.method === "DELETE" && requestUrl.pathname === "/apiKeys";
+
+        if (isDeleteApiKeyRequest)
+        {
+            const contentLengthValidation = validateContentLengthHeader(getContentLengthHeader(request), maxContentSize);
+
+            if (contentLengthValidation != null)
+            {
+                sendPlainText(response, contentLengthValidation.statusCode, contentLengthValidation.message);
+                return;
+            }
+
+            let requestBody;
+
+            try
+            {
+                requestBody = await readRequestBody(request, maxContentSize);
+            }
+            catch (exception)
+            {
+                if (!response.headersSent)
+                    sendPlainText(response, exception.statusCode ?? 400, exception.message ?? "Could not read the transmitted request body.");
+                return;
+            }
+
+            sendAddApiKeyResponse(response, createDeleteApiKeyResponse({
+                authorizationHeader: request.headers["authorization"],
+                requestBody,
+                apiKeyAuthenticator,
+                apiKeyEntries,
+                apiKeysFileName
+            }));
             return;
         }
 
@@ -309,15 +755,11 @@ function createChargyHttpRequestHandler({
 
         if (typeof apiKeyAuthenticator === "function")
         {
-            authentication = apiKeyAuthenticator(request.headers["api-key"]);
+            authentication = apiKeyAuthenticator(request.headers["authorization"]);
 
             if (authentication == null || authentication.ok !== true)
             {
-                response.writeHead(401, {
-                    "Content-Type": "text/plain; charset=utf-8",
-                    "WWW-Authenticate": "API-Key"
-                });
-                response.end("Missing, unknown or expired API key.\n");
+                sendAuthorizationRequired(response);
                 return;
             }
         }
@@ -329,9 +771,7 @@ function createChargyHttpRequestHandler({
             return;
         }
 
-        const contentLengthHeader = Array.isArray(request.headers["content-length"])
-                                        ? request.headers["content-length"][0]
-                                        : request.headers["content-length"];
+        const contentLengthHeader = getContentLengthHeader(request);
 
         if (contentLengthHeader != null)
         {
@@ -458,6 +898,104 @@ function createChargyHttpRequestHandler({
 
 }
 
+function handleRawAddApiKeysClientError({
+    exception,
+    socket,
+    maxContentSize,
+    requestTimeoutMs,
+    apiKeyAuthenticator,
+    apiKeyEntries,
+    apiKeysFileName
+}) {
+
+    let rawRequest = exception.rawPacket != null
+                         ? Buffer.from(exception.rawPacket)
+                         : Buffer.alloc(0);
+    let completed = false;
+
+    const finish = addApiKeyResponse => {
+        if (completed)
+            return;
+
+        completed = true;
+        writeRawHttpResponse(socket, addApiKeyResponse);
+    };
+
+    const attempt = () => {
+
+        const parsedRequest = parseRawHttpRequest(rawRequest, maxContentSize);
+
+        if (parsedRequest.status === "incomplete")
+            return false;
+
+        if (parsedRequest.status === "error")
+        {
+            finish(parsedRequest.response);
+            return true;
+        }
+
+        if (parsedRequest.request.method !== "ADD" ||
+            parsedRequest.request.path   !== "/apiKeys")
+        {
+            finish({
+                statusCode: 400,
+                headers:    { "Content-Type": "text/plain; charset=utf-8" },
+                body:       Buffer.from("Unsupported HTTP method.\n", "utf8")
+            });
+            return true;
+        }
+
+        finish(createAddApiKeyResponse({
+            authorizationHeader: parsedRequest.request.headers["authorization"],
+            requestBody:         parsedRequest.request.body,
+            apiKeyAuthenticator,
+            apiKeyEntries,
+            apiKeysFileName
+        }));
+        return true;
+
+    };
+
+    if (attempt())
+        return;
+
+    if (requestTimeoutMs > 0)
+        socket.setTimeout(requestTimeoutMs, () => {
+            finish({
+                statusCode: 408,
+                headers:    { "Content-Type": "text/plain; charset=utf-8" },
+                body:       Buffer.from("The API key request was not transmitted in time.", "utf8")
+            });
+        });
+
+    socket.on("data", chunk => {
+
+        if (completed)
+            return;
+
+        rawRequest = Buffer.concat([ rawRequest, chunk ]);
+
+        if (rawRequest.length > maxContentSize + 16*1024)
+        {
+            finish({
+                statusCode: 413,
+                headers:    { "Content-Type": "text/plain; charset=utf-8" },
+                body:       Buffer.from("The transmitted request body is too large!", "utf8")
+            });
+            return;
+        }
+
+        attempt();
+
+    });
+
+    socket.on("end", () => {
+        if (!completed)
+            attempt();
+    });
+
+}
+
 function startChargyHttpServer({
     host = "",
     port,
@@ -469,33 +1007,55 @@ function startChargyHttpServer({
     serializeDispatch,
     apiKeyAuthenticator,
     apiKeyEntries,
+    apiKeysFileName,
     log = console.log
 }) {
 
     const listenHost = host !== ""
                            ? normalizeListenHost(host)
                            : undefined;
+    const effectiveMaxContentSize = maxContentSize ?? DEFAULT_HTTP_API_MAX_CONTENT_SIZE;
+    const effectiveRequestTimeout = requestTimeoutMs ?? DEFAULT_HTTP_API_REQUEST_TIMEOUT;
 
     const server = http.createServer(
         createChargyHttpRequestHandler({
             dispatchHttpRequest,
             language,
             i18n,
-            maxContentSize,
-            requestTimeoutMs,
+            maxContentSize:     effectiveMaxContentSize,
+            requestTimeoutMs:   effectiveRequestTimeout,
             serializeDispatch,
             apiKeyAuthenticator,
-            apiKeyEntries
+            apiKeyEntries,
+            apiKeysFileName
         })
     );
 
     // Bound how long the server waits for a complete request, as a second line of
     // defence behind the per-request socket timeout above.
-    if (requestTimeoutMs > 0)
-        server.requestTimeout = requestTimeoutMs;
+    if (effectiveRequestTimeout > 0)
+        server.requestTimeout = effectiveRequestTimeout;
 
     server.on("error", exception => {
         log("Could not start HTTP API: " + exception);
+    });
+
+    server.on("clientError", (exception, socket) => {
+        if (exception.code === "HPE_INVALID_METHOD")
+        {
+            handleRawAddApiKeysClientError({
+                exception,
+                socket,
+                maxContentSize:     effectiveMaxContentSize,
+                requestTimeoutMs:   effectiveRequestTimeout,
+                apiKeyAuthenticator,
+                apiKeyEntries,
+                apiKeysFileName
+            });
+            return;
+        }
+
+        socket.end("HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n");
     });
 
     // A bound-but-network-exposed endpoint (e.g. --http=0.0.0.0:8080) makes the

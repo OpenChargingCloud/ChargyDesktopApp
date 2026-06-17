@@ -206,12 +206,20 @@ The HTTP server starts after the renderer has loaded. It currently supports:
 
 - `GET /`
 - `GET /apiKeys`
+- `ADD /apiKeys`
+- `DELETE /apiKeys`
 - `POST /verify`
 - `POST /convert`
 
-`GET /` returns a small `text/plain` help text for the HTTP service. It lists the known endpoints and the request headers relevant for authentication, content negotiation and language negotiation. It intentionally stays reachable without an `API-Key` header, even when API-key authentication is enabled.
+`GET /` returns a small `text/plain` help text for the HTTP service. It lists the known endpoints and the request headers relevant for authentication, content negotiation and language negotiation. It intentionally stays reachable without an `Authorization` header, even when API-key authentication is enabled.
 
-`GET /apiKeys` returns API-key metadata as JSON. It requires a known `API-Key` request header, but it does not require that token to be inside its `notBefore`/`notAfter` validity window. A non-root token returns all configured entries using the same token, which can be multiple entries when validity windows differ. A token with the `root` role returns the complete configured API-key array. Missing or unknown tokens return `401`.
+`GET /apiKeys` returns API-key metadata as JSON. It requires a known `Authorization` request header, but it does not require that token to be inside its `notBefore`/`notAfter` validity window. A non-root token returns all configured entries using the same token, which can be multiple entries when validity windows differ. A token with the `root` role returns the complete configured API-key array. Missing, malformed or unknown authorization values return `401`.
+
+`ADD /apiKeys` adds one API-key entry from a JSON request body. It requires a valid, currently active `Authorization` value with the `root` role. The request body must be a single API-key JSON object, not an array. The new entry is parsed through the same validation and defaulting rules as the API-key file. If an identical canonical entry already exists, including configured optional fields such as `totp`, `roles`, `notBefore`, and `notAfter`, the server returns `409 Conflict`. Otherwise the entry is added to the running server configuration, persisted to the original `--apiKeys` JSON file, and returned as JSON with `201 Created`.
+
+`DELETE /apiKeys` deletes one API-key entry matching the uploaded JSON request body. It requires a valid, currently active `Authorization` value with the `root` role. The request body must be a single API-key JSON object. The object is parsed and canonicalized with the same rules as `ADD /apiKeys`; exactly one configured entry must match. If no entry matches, the server returns `404 Not Found`. If multiple configured entries match the uploaded object, the server returns `409 Conflict`. Otherwise the matching entry is removed from the running server configuration, persisted to the original `--apiKeys` JSON file, and returned as JSON with `200 OK`.
+
+Successful `ADD /apiKeys` and `DELETE /apiKeys` operations rewrite the complete canonical API-key array to the configured `--apiKeys` file using a temporary file followed by rename. If persistence fails, the in-memory change is rolled back and the server returns `500`.
 
 `POST /verify` returns only session verification results. A single session returns one JSON string; multiple sessions return a JSON array.
 
@@ -245,6 +253,8 @@ Supported response content types:
 
 - `GET /`: `text/plain`
 - `GET /apiKeys`: `application/json`
+- `ADD /apiKeys`: `application/json`
+- `DELETE /apiKeys`: `application/json`
 - `POST /verify`: `application/json`, `text/plain`, `text/csv`, `application/xml`
 - `POST /convert`: `application/json`
 
@@ -256,7 +266,9 @@ Examples:
 
 ```bash
 curl "http://127.0.0.1:8080/"
-curl -H "API-Key: root-secret" "http://127.0.0.1:8080/apiKeys"
+curl -H "Authorization: Bearer root-secret" "http://127.0.0.1:8080/apiKeys"
+curl -H "Authorization: Bearer root-secret" -H "Content-Type: application/json" -X ADD --data '{"token":"new-driver-secret"}' "http://127.0.0.1:8080/apiKeys"
+curl -H "Authorization: Bearer root-secret" -H "Content-Type: application/json" -X DELETE --data '{"token":"new-driver-secret"}' "http://127.0.0.1:8080/apiKeys"
 curl -X POST --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/verify"
 curl -H "Accept: text/plain" -X POST --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/verify"
 curl -H "Accept: text/csv" -X POST --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/verify"
@@ -276,14 +288,20 @@ npm run start -- --nogui --http=127.0.0.1:8080 --apiKeys api-keys.json
 When `--apiKeys` is configured:
 
 - `GET /` stays open without authentication.
-- `GET /apiKeys` requires a known `API-Key`.
+- `GET /apiKeys` requires a known `Authorization` value.
 - `GET /apiKeys` returns all entries using the request token for non-root tokens, even when that token is not yet valid or already expired.
 - `GET /apiKeys` returns the complete configured API-key array when the request token has the `root` role.
-- `POST /verify` and `POST /convert` require the `API-Key` request header.
+- `ADD /apiKeys` requires a valid active `root` authorization.
+- `ADD /apiKeys` accepts one API-key JSON object, persists the updated API-key list, returns `201` for new entries and `409` for duplicates.
+- `DELETE /apiKeys` requires a valid active `root` authorization.
+- `DELETE /apiKeys` accepts one API-key JSON object, persists the updated API-key list when exactly one entry matches, returns `404` when no entry matches, and returns `409` when multiple entries match.
+- `POST /verify` and `POST /convert` require the `Authorization` request header.
 - Missing, unknown, not-yet-valid, or expired keys return `401`.
 - The validity-window checks apply to `POST /verify` and `POST /convert`, not to `GET /apiKeys`.
 - Empty API-key files are valid JSON but allow no protected request through.
-- Roles are parsed and validated now, but currently do not change endpoint permissions.
+- Static API keys use `Authorization: Bearer <static-api-secret>` and compare the bearer secret directly with the configured `token`.
+- TOTP API keys use `Authorization: TOTP <token> <totp>` and compare the TOTP value with the generated one-time password for the previous, current, or next time slot.
+- Roles are parsed and validated. `root` expands `GET /apiKeys` from the entries matching the request token to the complete configured API-key array.
 
 API-key file format:
 
@@ -304,21 +322,52 @@ API-key file format:
     "roles": [ "evDriver", "root" ],
     "notBefore": "2026-01-01T00:00:00Z",
     "notAfter": "2026-12-31T23:59:59Z"
+  },
+  {
+    "token": "totp-driver",
+    "totp": {
+      "sharedSecrect": "secureChargingSecret2026",
+      "validityTime": 10,
+      "length": 24,
+      "hashAlgorithm": "HMACSHA256",
+      "encoding": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    },
+    "roles": [ "evDriver" ]
   }
 ]
 ```
 
 Fields:
 
-- `token`: required non-empty string used as the value of the HTTP `API-Key` request header.
+- `token`: required non-empty string. For static API keys this is the bearer secret in `Authorization: Bearer <static-api-secret>`. For TOTP entries it is the stable key identifier returned in metadata and authentication results and used as the first value in `Authorization: TOTP <token> <totp>`.
+- `totp`: optional object enabling a time-based one-time password API key for this entry.
 - `roles`: optional array of enum values. Supported values are `evDriver` and `root`; the default is `[ "evDriver" ]`.
 - `notBefore`: optional ISO 8601 timestamp. When absent, the token is valid immediately.
 - `notAfter`: optional ISO 8601 timestamp. When absent, the token does not expire by time.
 
+TOTP fields:
+
+- `sharedSecrect`: required shared secret string. The current field name follows the TypeScript interface spelling. It must contain at least 16 characters and no whitespace.
+- `validityTime`: optional time-slot length in seconds; default is `10`.
+- `length`: optional generated TOTP length; default is `32`, and configured values must be greater than `16`.
+- `hashAlgorithm`: optional HMAC algorithm. Supported values are `HMACSHA256`, `HMACSHA384`, and `HMACSHA512`; the default is `HMACSHA256`.
+- `encoding`: optional alphabet used for generated TOTP characters. The default alphabet is digits plus lower- and upper-case ASCII letters. Custom alphabets need at least 4 unique non-whitespace characters.
+
+The TOTP implementation uses the DynamicQRCodes algorithm: HMAC over the 8-byte big-endian time slot, an offset from the last hash byte, and character selection from the configured alphabet. The server accepts the generated values for the previous, current, and next slot to absorb small clock differences between client and server.
+
 Authenticated request example:
 
 ```bash
-curl -H "API-Key: driver-secret" \
+curl -H "Authorization: Bearer driver-secret" \
+     -X POST \
+     --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" \
+     "http://127.0.0.1:8080/verify"
+```
+
+TOTP request example, schematically:
+
+```bash
+curl -H "Authorization: TOTP totp-driver <generated-current-totp>" \
      -X POST \
      --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" \
      "http://127.0.0.1:8080/verify"
@@ -402,7 +451,7 @@ They run without Electron and cover the pure modules that `src/main.cjs` is buil
 The Electron-free module layout extracted from `src/main.cjs` is:
 
 - `src/cliArguments.cjs` - argument parsing, language detection, help text.
-- `src/apiKeys.cjs` - parsing API-key JSON files and validating `API-Key` request headers.
+- `src/apiKeys.cjs` - parsing API-key JSON files and validating `Authorization` request headers.
 - `src/ts/apiKeys.ts` - TypeScript API-key enum, interfaces, authentication-result union and TypeGuards.
 - `src/outputFormats.cjs` - shared CSV/XML/JSON/text rendering and localized status text (used by HTTP and CLI).
 - `src/verificationService.cjs` - CLI `--output` rendering and exit-code mapping.
@@ -456,12 +505,17 @@ Current covered cases:
 - Help text expectations use `src/applicationMetadata.cjs` for application version, edition, and copyright.
 - The HTTP API starts a real Node server on a free port.
 - `GET /` returns HTTP service help without renderer dispatch.
-- `GET /` stays reachable without `API-Key` when API-key authentication is enabled.
+- `GET /` stays reachable without `Authorization` when API-key authentication is enabled.
 - `GET /apiKeys` rejects missing API keys with `401`.
 - `GET /apiKeys` returns entries matching the request token for known non-root tokens, even outside the validity window.
 - `GET /apiKeys` returns the complete configured API-key array for root tokens.
+- `ADD /apiKeys` requires root authorization, adds and persists a new API key, and rejects canonical duplicates with `409`.
+- `ADD /apiKeys` rejects valid non-root authorization with `403`.
+- `DELETE /apiKeys` requires root authorization, deletes and persists exactly one matching API key, returns `404` for missing matches, and rejects ambiguous matches with `409`.
 - `POST /verify` rejects missing, expired or unknown API keys with `401`.
-- `POST /verify` accepts valid API keys from the `API-Key` request header.
+- `POST /verify` accepts valid Bearer authorizations from the `Authorization` request header.
+- `POST /verify` accepts valid TOTP authorizations from the `Authorization` request header.
+- The former `API-Key` request header is not accepted.
 - `POST /convert` also rejects missing API keys with `401`.
 - `POST /verify` dispatches to the renderer bridge and returns verification text.
 - `POST /verify` honors `Accept` for JSON, text, CSV, and XML responses.
@@ -473,6 +527,7 @@ Current covered cases:
 - Unsupported `Accept` content types are rejected with `406`.
 - Unsupported methods and empty bodies are rejected before renderer dispatch.
 - API-key TypeScript interfaces and TypeGuards validate raw JSON entries, parsed entries, role enums, timestamp windows, and rejected legacy fields.
+- TOTP API keys are parsed with defaults, reject weak malformed configuration, generate DynamicQRCodes-compatible slot values, accept previous/current/next slots, and do not allow the static `token` identifier as a request key.
 - API-key JSON files are parsed, `token` is the required secret field, repeated tokens are allowed, `notBefore` and `notAfter` are optional, roles default to `[ "evDriver" ]`, multiple roles such as `[ "evDriver", "root" ]` are accepted, legacy `apiKey` and singular `role` fields are rejected, and invalid timestamps are rejected.
 
 Local verification after the first extraction:
@@ -482,13 +537,13 @@ npx vitest run --config tests/vitest.config.ts tests/cliArguments.test.ts tests/
 51 passed
 
 npx vitest run --config tests/vitest.config.ts tests/cliArguments.test.ts tests/apiKeys.test.ts tests/httpApi.test.ts
-67 passed
+80 passed
 
 npm run test:typecheck
 passed
 
 npm test
-188 passed, 2 skipped
+201 passed, 2 skipped
 
 npm run start -- --help
 exit 0, clean help output

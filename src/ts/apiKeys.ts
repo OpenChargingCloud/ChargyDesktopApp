@@ -5,6 +5,7 @@ export enum ApiKeyRole {
 
 export interface RawApiKeyEntry {
     token:      string;
+    totp?:      IRawTOTPApiKeyConfiguration;
     roles?:     ApiKeyRole[];
     notBefore?: string;
     notAfter?:  string;
@@ -12,9 +13,26 @@ export interface RawApiKeyEntry {
 
 export interface ParsedApiKeyEntry {
     token:      string;
+    totp?:      ITOTPApiKeyConfiguration;
     roles:      ApiKeyRole[];
     notBefore?: Date;
     notAfter?:  Date;
+}
+
+export interface IRawTOTPApiKeyConfiguration {
+    sharedSecrect:  string;
+    validityTime?:  number;
+    length?:        number;
+    hashAlgorithm?: string;
+    encoding?:      string;
+}
+
+export interface ITOTPApiKeyConfiguration {
+    sharedSecrect:  string;
+    validityTime:   number;
+    length:         number;
+    hashAlgorithm?: string;
+    encoding?:      string;
 }
 
 export interface ApiKeyCredential {
@@ -24,6 +42,7 @@ export interface ApiKeyCredential {
 
 export type ApiKeyAuthenticationFailureReason =
     "missing" |
+    "malformed" |
     "unknown" |
     "invalid-now" |
     "not-before" |
@@ -50,6 +69,11 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
            !Array.isArray(value);
 }
 
+function hasRejectedLegacyFields(value: Record<string, unknown>): boolean {
+    return Object.prototype.hasOwnProperty.call(value, "apiKey") ||
+           Object.prototype.hasOwnProperty.call(value, "role");
+}
+
 function isNonEmptyString(value: unknown): value is string {
     return typeof value === "string" &&
            value.trim() !== "";
@@ -60,6 +84,87 @@ function isValidIsoTimestamp(value: string): boolean {
         return false;
 
     return !Number.isNaN(new Date(value).getTime());
+}
+
+function hasNoWhitespace(value: string): boolean {
+    return !/\s/u.test(value);
+}
+
+function hasUniqueCharacters(value: string): boolean {
+    return new Set(value).size === value.length;
+}
+
+function isSupportedTOTPHashAlgorithm(value: unknown): value is string {
+
+    if (value == null)
+        return true;
+
+    if (typeof value !== "string" || value.trim() === "")
+        return false;
+
+    const normalized = value.trim().toUpperCase().replace(/[-_]/g, "");
+
+    return normalized === "HMACSHA256" ||
+           normalized === "SHA256"     ||
+           normalized === "HMACSHA384" ||
+           normalized === "SHA384"     ||
+           normalized === "HMACSHA512" ||
+           normalized === "SHA512";
+
+}
+
+function isTOTPEncoding(value: unknown): value is string {
+
+    if (value == null)
+        return true;
+
+    return typeof value === "string" &&
+           value.trim().length >= 4 &&
+           hasNoWhitespace(value.trim()) &&
+           hasUniqueCharacters(value.trim());
+
+}
+
+function isRawTOTPApiKeyConfiguration(value: unknown): value is IRawTOTPApiKeyConfiguration {
+
+    if (!isPlainObject(value))
+        return false;
+
+    const sharedSecrect = value["sharedSecrect"];
+    const validityTime  = value["validityTime"];
+    const length        = value["length"];
+
+    return isNonEmptyString(sharedSecrect) &&
+           sharedSecrect.trim().length >= 16 &&
+           hasNoWhitespace(sharedSecrect.trim()) &&
+           (validityTime == null || (typeof validityTime === "number" && Number.isInteger(validityTime) && validityTime > 0)) &&
+           (length       == null || (typeof length       === "number" && Number.isInteger(length)       && length > 16)) &&
+           isSupportedTOTPHashAlgorithm(value["hashAlgorithm"]) &&
+           isTOTPEncoding(value["encoding"]);
+
+}
+
+function isParsedTOTPApiKeyConfiguration(value: unknown): value is ITOTPApiKeyConfiguration {
+
+    if (!isPlainObject(value))
+        return false;
+
+    const sharedSecrect = value["sharedSecrect"];
+    const validityTime  = value["validityTime"];
+    const length        = value["length"];
+
+    return isNonEmptyString(sharedSecrect) &&
+           sharedSecrect.trim().length >= 16 &&
+           hasNoWhitespace(sharedSecrect.trim()) &&
+           typeof validityTime === "number" &&
+           Number.isInteger(validityTime) &&
+           validityTime > 0 &&
+           typeof length === "number" &&
+           Number.isInteger(length) &&
+           length > 16 &&
+           isSupportedTOTPHashAlgorithm(value["hashAlgorithm"]) &&
+           isTOTPEncoding(value["encoding"]);
+
 }
 
 function hasValidTimestampWindow(notBefore: string | Date | undefined, notAfter: string | Date | undefined): boolean {
@@ -84,7 +189,7 @@ function isParsedApiKeyRoles(value: unknown): value is ApiKeyRole[] {
 
 export function isRawApiKeyEntry(value: unknown): value is RawApiKeyEntry {
 
-    if (!isPlainObject(value))
+    if (!isPlainObject(value) || hasRejectedLegacyFields(value))
         return false;
 
     const notBefore = value["notBefore"];
@@ -93,6 +198,7 @@ export function isRawApiKeyEntry(value: unknown): value is RawApiKeyEntry {
     const timestampWindowNotAfter  = typeof notAfter  === "string" ? notAfter  : undefined;
 
     return isNonEmptyString(value["token"]) &&
+           (value["totp"] == null || isRawTOTPApiKeyConfiguration(value["totp"])) &&
            isRawApiKeyRoles(value["roles"]) &&
            (notBefore == null || (typeof notBefore === "string" && isValidIsoTimestamp(notBefore))) &&
            (notAfter  == null || (typeof notAfter  === "string" && isValidIsoTimestamp(notAfter))) &&
@@ -107,7 +213,7 @@ export function isRawApiKeyEntryArray(value: unknown): value is RawApiKeyEntry[]
 
 export function isParsedApiKeyEntry(value: unknown): value is ParsedApiKeyEntry {
 
-    if (!isPlainObject(value))
+    if (!isPlainObject(value) || hasRejectedLegacyFields(value))
         return false;
 
     const notBefore = value["notBefore"];
@@ -116,6 +222,7 @@ export function isParsedApiKeyEntry(value: unknown): value is ParsedApiKeyEntry 
     const timestampWindowNotAfter  = notAfter  instanceof Date ? notAfter  : undefined;
 
     return isNonEmptyString(value["token"]) &&
+           (value["totp"] == null || isParsedTOTPApiKeyConfiguration(value["totp"])) &&
            isParsedApiKeyRoles(value["roles"]) &&
            (notBefore == null || (notBefore instanceof Date && !Number.isNaN(notBefore.getTime()))) &&
            (notAfter  == null || (notAfter  instanceof Date && !Number.isNaN(notAfter.getTime()))) &&

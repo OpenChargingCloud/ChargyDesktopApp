@@ -269,7 +269,7 @@ function createMainHelpText(applicationFileName, version, applicationEdition, co
         " --inspect          " + getLocalizedText(i18n, lang, "CLIInspectDescription", "Run in debug mode, enable inspector and open development tools"),
         " --nogui            " + getLocalizedText(i18n, lang, "CLINoGUIDescription", "Run in command line mode (cli mode)"),
         " --http[=host:port] " + getLocalizedText(i18n, lang, "CLIHTTPDescription", "Start the HTTP API on localhost:8080 or the given endpoint"),
-        " --apiKeys=file     " + getLocalizedText(i18n, lang, "CLIAPIKeysDescription", "Require HTTP API clients to send an API-Key request header listed in the JSON file")
+        " --apiKeys=file     " + getLocalizedText(i18n, lang, "CLIAPIKeysDescription", "Require HTTP API clients to send an Authorization request header accepted by the JSON file")
     ].join("\n");
 }
 

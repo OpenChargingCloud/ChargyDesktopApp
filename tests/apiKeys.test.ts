@@ -10,23 +10,26 @@ import {
     isRawApiKeyEntry,
     isRawApiKeyEntryArray,
     type ApiKeyAuthenticationResult,
+    type ITOTPApiKeyConfiguration,
     type ParsedApiKeyEntry
 }                                  from "../src/ts/apiKeys";
 
 const require = createRequire(import.meta.url);
 
 type ApiKeysModule = {
-    authenticateApiKeyHeader:  (headerValue:   string | string[] | undefined, apiKeyEntries: ParsedApiKeyEntry[], now?: Date)                   => ApiKeyAuthenticationResult;
-    createApiKeyAuthenticator: (apiKeyEntries: ParsedApiKeyEntry[], nowProvider?: () => Date) => ((headerValue: string | string[] | undefined)  => ApiKeyAuthenticationResult) | null;
-    findApiKeyEntriesByHeader: (headerValue:   string | string[] | undefined, apiKeyEntries: ParsedApiKeyEntry[])                               => ParsedApiKeyEntry[];
-    loadApiKeysFromFile:       (fileName:      string)                                                                                          => ParsedApiKeyEntry[];
-    parseApiKeyEntries:        (rawEntries:    unknown)                                                                                         => ParsedApiKeyEntry[];
+    authenticateAuthorizationHeader:  (headerValue:   string | string[] | undefined, apiKeyEntries: ParsedApiKeyEntry[], now?: Date)                  => ApiKeyAuthenticationResult;
+    createApiKeyAuthenticator:        (apiKeyEntries: ParsedApiKeyEntry[], nowProvider?: () => Date) => ((headerValue: string | string[] | undefined) => ApiKeyAuthenticationResult) | null;
+    findApiKeyEntriesByAuthorization: (headerValue:   string | string[] | undefined, apiKeyEntries: ParsedApiKeyEntry[], now?: Date)                  => ParsedApiKeyEntry[];
+    generateTOTPApiKeyValue:          (totpConfiguration: ITOTPApiKeyConfiguration, now?: Date, slotOffset?: number)                                   => string;
+    loadApiKeysFromFile:              (fileName:      string)                                                                                         => ParsedApiKeyEntry[];
+    parseApiKeyEntries:               (rawEntries:    unknown)                                                                                        => ParsedApiKeyEntry[];
 };
 
 const {
-    authenticateApiKeyHeader,
+    authenticateAuthorizationHeader,
     createApiKeyAuthenticator,
-    findApiKeyEntriesByHeader,
+    findApiKeyEntriesByAuthorization,
+    generateTOTPApiKeyValue,
     loadApiKeysFromFile,
     parseApiKeyEntries
 } = require("../src/apiKeys.cjs") as ApiKeysModule;
@@ -67,8 +70,19 @@ describe("API key parsing", () => {
         }
 
         expect(isRawApiKeyEntryArray([ rawEntry ])).toBe(true);
-        expect(isRawApiKeyEntry({ token: "invalid-role", roles: [ "admin" ] })).toBe(false);
-        expect(isRawApiKeyEntry({ token: "bad-time", notBefore: "2026-01-01" })).toBe(false);
+        expect(isRawApiKeyEntry({
+            token: "totp-guarded-secret",
+            totp:  {
+                sharedSecrect: "secureChargingSecret2026",
+                validityTime:  10,
+                length:        24,
+                encoding:      "0123456789abcdef"
+            }
+        })).toBe(true);
+        expect(isRawApiKeyEntry({ token: "legacy-secret", apiKey: "legacy-secret" })).toBe(false);
+        expect(isRawApiKeyEntry({ token: "legacy-secret", role: "root" })).toBe(false);
+        expect(isRawApiKeyEntry({ token: "invalid-role",  roles: [ "admin" ] })).toBe(false);
+        expect(isRawApiKeyEntry({ token: "bad-time",      notBefore: "2026-01-01" })).toBe(false);
 
         const parsedEntries = parseApiKeyEntries([ rawEntry ]);
 
@@ -108,6 +122,33 @@ describe("API key parsing", () => {
         });
         expect(entries[0]?.notBefore).toBeUndefined();
         expect(entries[0]?.notAfter).toBeUndefined();
+
+    });
+
+    test("parses TOTP API key entries with defaults", () => {
+
+        const entries = parseApiKeyEntries([
+            {
+                token: "totp-driver",
+                totp:  {
+                    sharedSecrect: "secureChargingSecret2026",
+                    length:        24
+                }
+            }
+        ]);
+
+        expect(entries[0]).toMatchObject({
+            token: "totp-driver",
+            totp:  {
+                sharedSecrect: "secureChargingSecret2026",
+                validityTime:  10,
+                length:        24,
+                hashAlgorithm: "HMACSHA256"
+            },
+            roles: [ ApiKeyRole.EVDriver ]
+        });
+        expect(entries[0]?.totp?.encoding).toContain("0123456789");
+        expect(isParsedApiKeyEntry(entries[0])).toBe(true);
 
     });
 
@@ -162,6 +203,51 @@ describe("API key parsing", () => {
 
     });
 
+    test("rejects invalid TOTP API key configurations", () => {
+
+        expect(() => parseApiKeyEntries([
+            {
+                token: "totp-driver",
+                totp:  {
+                    sharedSecrect: "too-short",
+                    length:        24
+                }
+            }
+        ])).toThrow("sharedSecrect must contain at least 16 characters");
+
+        expect(() => parseApiKeyEntries([
+            {
+                token: "totp-driver",
+                totp:  {
+                    sharedSecrect: "secure Charging Secret 2026",
+                    length:        24
+                }
+            }
+        ])).toThrow("sharedSecrect must not contain whitespace");
+
+        expect(() => parseApiKeyEntries([
+            {
+                token: "totp-driver",
+                totp:  {
+                    sharedSecrect: "secureChargingSecret2026",
+                    length:        16
+                }
+            }
+        ])).toThrow("TOTP length must be greater than 16");
+
+        expect(() => parseApiKeyEntries([
+            {
+                token: "totp-driver",
+                totp:  {
+                    sharedSecrect: "secureChargingSecret2026",
+                    length:        24,
+                    encoding:      "aabc"
+                }
+            }
+        ])).toThrow("must not contain duplicate characters");
+
+    });
+
     test("allows repeated tokens and rejects inverted validity windows", () => {
 
         const entries = parseApiKeyEntries([
@@ -178,7 +264,7 @@ describe("API key parsing", () => {
         ]);
 
         expect(entries).toHaveLength(2);
-        expect(findApiKeyEntriesByHeader("secret", entries)).toHaveLength(2);
+        expect(findApiKeyEntriesByAuthorization("Bearer secret", entries)).toHaveLength(2);
 
         expect(() => parseApiKeyEntries([
             {
@@ -222,7 +308,7 @@ describe("API key authentication", () => {
 
     test("accepts known API keys inside their validity window", () => {
 
-        expect(authenticateApiKeyHeader("driver-secret", entries, new Date("2026-06-15T12:00:00Z"))).toMatchObject({
+        expect(authenticateAuthorizationHeader("Bearer driver-secret", entries, new Date("2026-06-15T12:00:00Z"))).toMatchObject({
             ok: true,
             credential: {
                 token: "driver-secret",
@@ -240,7 +326,7 @@ describe("API key authentication", () => {
             }
         ]);
 
-        expect(authenticateApiKeyHeader("unbounded-secret", unboundedEntries, new Date("2035-01-01T00:00:00Z"))).toMatchObject({
+        expect(authenticateAuthorizationHeader("Bearer unbounded-secret", unboundedEntries, new Date("2035-01-01T00:00:00Z"))).toMatchObject({
             ok: true,
             credential: {
                 token: "unbounded-secret",
@@ -264,7 +350,7 @@ describe("API key authentication", () => {
             }
         ]);
 
-        expect(authenticateApiKeyHeader("rotating-secret", repeatedEntries, new Date("2026-06-15T12:00:00Z"))).toMatchObject({
+        expect(authenticateAuthorizationHeader("Bearer rotating-secret", repeatedEntries, new Date("2026-06-15T12:00:00Z"))).toMatchObject({
             ok: true,
             credential: {
                 token: "rotating-secret",
@@ -274,19 +360,79 @@ describe("API key authentication", () => {
 
     });
 
-    test("rejects missing, unknown and expired API keys", () => {
+    test("accepts TOTP API keys from the previous, current and next time slot", () => {
 
-        expect(authenticateApiKeyHeader(undefined, entries, new Date("2026-06-15T12:00:00Z"))).toMatchObject({
+        const now     = new Date("2026-06-15T12:00:05Z");
+        const entries = parseApiKeyEntries([
+            {
+                token: "totp-driver",
+                totp:  {
+                    sharedSecrect: "secureChargingSecret2026",
+                    validityTime:  10,
+                    length:        24,
+                    encoding:      "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                }
+            }
+        ]);
+
+        const totp = entries[0]?.totp;
+
+        expect(totp).toBeDefined();
+
+        if (totp == null)
+            throw new Error("Missing parsed TOTP configuration.");
+
+        const previousTOTP = generateTOTPApiKeyValue(totp, now, -1);
+        const currentTOTP  = generateTOTPApiKeyValue(totp, now);
+        const nextTOTP     = generateTOTPApiKeyValue(totp, now, 1);
+        const oldTOTP      = generateTOTPApiKeyValue(totp, now, -2);
+
+        expect(currentTOTP).toHaveLength(24);
+        expect(currentTOTP).not.toBe("totp-driver");
+
+        expect(findApiKeyEntriesByAuthorization("TOTP totp-driver " + currentTOTP, entries, now)).toHaveLength(1);
+        expect(findApiKeyEntriesByAuthorization("Bearer totp-driver", entries, now)).toHaveLength(0);
+
+        for (const acceptedTOTP of [ previousTOTP, currentTOTP, nextTOTP ])
+        {
+            expect(authenticateAuthorizationHeader("TOTP totp-driver " + acceptedTOTP, entries, now)).toMatchObject({
+                ok: true,
+                credential: {
+                    token: "totp-driver",
+                    roles: [ ApiKeyRole.EVDriver ]
+                }
+            });
+        }
+
+        expect(authenticateAuthorizationHeader("Bearer totp-driver", entries, now)).toMatchObject({
             ok:     false,
-            reason: "missing"
+            reason: "unknown"
         });
-
-        expect(authenticateApiKeyHeader("nope", entries, new Date("2026-06-15T12:00:00Z"))).toMatchObject({
+        expect(authenticateAuthorizationHeader("TOTP totp-driver " + oldTOTP, entries, now)).toMatchObject({
             ok:     false,
             reason: "unknown"
         });
 
-        expect(authenticateApiKeyHeader("driver-secret", entries, new Date("2027-01-01T00:00:00Z"))).toMatchObject({
+    });
+
+    test("rejects missing, unknown and expired API keys", () => {
+
+        expect(authenticateAuthorizationHeader(undefined, entries, new Date("2026-06-15T12:00:00Z"))).toMatchObject({
+            ok:     false,
+            reason: "missing"
+        });
+
+        expect(authenticateAuthorizationHeader("nope", entries, new Date("2026-06-15T12:00:00Z"))).toMatchObject({
+            ok:     false,
+            reason: "malformed"
+        });
+
+        expect(authenticateAuthorizationHeader("Bearer nope", entries, new Date("2026-06-15T12:00:00Z"))).toMatchObject({
+            ok:     false,
+            reason: "unknown"
+        });
+
+        expect(authenticateAuthorizationHeader("Bearer driver-secret", entries, new Date("2027-01-01T00:00:00Z"))).toMatchObject({
             ok:     false,
             reason: "not-after"
         });
@@ -298,7 +444,7 @@ describe("API key authentication", () => {
         const authenticator = createApiKeyAuthenticator([]);
 
         expect(authenticator).not.toBeNull();
-        expect(authenticator?.("anything")).toMatchObject({
+        expect(authenticator?.("Bearer anything")).toMatchObject({
             ok:     false,
             reason: "unknown"
         });

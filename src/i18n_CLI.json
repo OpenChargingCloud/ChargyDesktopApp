@@ -36,8 +36,8 @@
     },
 
     "CLIAPIKeysDescription": {
-        "de": "HTTP API Clients auf API-Key Header aus der JSON-Datei beschränken",
-        "en": "Require HTTP API clients to send an API-Key request header listed in the JSON file"
+        "de": "HTTP API Clients auf Authorization Header anhand der JSON-Datei beschränken",
+        "en": "Require HTTP API clients to send an Authorization request header accepted by the JSON file"
     },
 
     "CLIOutputHelpIntro": {

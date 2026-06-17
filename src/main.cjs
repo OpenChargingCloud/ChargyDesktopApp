@@ -44,6 +44,7 @@ let   httpServer                 = null;
 let   nextHttpRequestId          = 0;
 let   apiKeyAuthenticator        = null;
 let   apiKeyEntries              = [];
+let   apiKeysFileName            = null;
 
 const mapboxAccessToken          = "pk.eyJ1IjoiYWh6ZiIsImEiOiJOdEQtTkcwIn0.Cn0iGqUYyA6KPS8iVjN68w";
 const mapboxStartGeoCoordinates  = [50.9279287, 11.5731785];
@@ -127,6 +128,7 @@ function startHttpAPI() {
         i18n: cliI18N,
         apiKeyAuthenticator,
         apiKeyEntries,
+        apiKeysFileName,
         log: console.log
     });
 
@@ -371,6 +373,7 @@ app.whenReady().then(() => {
         {
             try
             {
+                apiKeysFileName     = cliArguments.apiKeys;
                 apiKeyEntries       = loadApiKeysFromFile(cliArguments.apiKeys);
                 apiKeyAuthenticator = createApiKeyAuthenticator(apiKeyEntries);
             }
