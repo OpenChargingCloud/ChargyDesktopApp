@@ -1,5 +1,19 @@
 const fs = require('fs');
 const crypto = require('crypto');
+const path = require('path');
+
+let generateTOTPs = null;
+
+try
+{
+    ({
+        generateTOTPs
+    } = require(path.join(__dirname, '..', 'node_modules', '@open-charging-cloud', 'totp', 'dist', 'index.js')));
+}
+catch
+{
+    // Older CJS runtimes need the explicit async initializer exported below.
+}
 
 const ApiKeyRole = Object.freeze({
     EVDriver: "evDriver",
@@ -7,10 +21,33 @@ const ApiKeyRole = Object.freeze({
 });
 
 const apiKeyRoles = new Set(Object.values(ApiKeyRole));
-const defaultTOTPValidityTime = 10;
-const defaultTOTPLength       = 32;
-const defaultTOTPHashAlgorithm = "HMACSHA256";
-const defaultTOTPEncoding      = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const defaultTOTPValidityTime   = 10;
+const defaultTOTPLength         = 32;
+const defaultTOTPHashAlgorithm  = "sha256";
+const defaultTOTPAlphabet       = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+async function initializeTOTPGenerator() {
+
+    if (typeof generateTOTPs === "function")
+        return;
+
+    const totpModule = await import('@open-charging-cloud/totp');
+
+    if (typeof totpModule.generateTOTPs !== "function")
+        throw new Error("@open-charging-cloud/totp does not export generateTOTPs.");
+
+    generateTOTPs = totpModule.generateTOTPs;
+
+}
+
+function getTOTPGenerator() {
+
+    if (typeof generateTOTPs !== "function")
+        throw new Error("@open-charging-cloud/totp has not been initialized.");
+
+    return generateTOTPs;
+
+}
 
 function parseApiKeyRole(value) {
 
@@ -79,58 +116,37 @@ function normalizeTOTPHashAlgorithm(value) {
     if (typeof value !== "string" || value.trim() === "")
         throw new Error("Invalid TOTP hashAlgorithm.");
 
-    const normalized = value.trim().toUpperCase().replace(/[-_]/g, "");
+    const normalized = value.trim();
 
-    if (normalized === "HMACSHA256" || normalized === "SHA256")
-        return "HMACSHA256";
-
-    if (normalized === "HMACSHA384" || normalized === "SHA384")
-        return "HMACSHA384";
-
-    if (normalized === "HMACSHA512" || normalized === "SHA512")
-        return "HMACSHA512";
+    if (normalized === "sha256" ||
+        normalized === "sha384" ||
+        normalized === "sha512")
+    {
+        return normalized;
+    }
 
     throw new Error("Unsupported TOTP hashAlgorithm: " + value);
 
 }
 
-function hashAlgorithmToNodeName(value) {
-
-    switch (normalizeTOTPHashAlgorithm(value))
-    {
-        case "HMACSHA256":
-            return "sha256";
-
-        case "HMACSHA384":
-            return "sha384";
-
-        case "HMACSHA512":
-            return "sha512";
-
-        default:
-            throw new Error("Unsupported TOTP hashAlgorithm: " + value);
-    }
-
-}
-
-function normalizeTOTPEncoding(value) {
+function normalizeTOTPAlphabet(value) {
 
     if (value == null)
-        return defaultTOTPEncoding;
+        return defaultTOTPAlphabet;
 
     if (typeof value !== "string" || value.trim() === "")
-        throw new Error("Invalid TOTP encoding.");
+        throw new Error("Invalid TOTP alphabet.");
 
     const normalized = value.trim();
 
     if (normalized.length < 4)
-        throw new Error("The given TOTP encoding must contain at least 4 characters.");
+        throw new Error("The given TOTP alphabet must contain at least 4 characters.");
 
     if (new Set(normalized).size !== normalized.length)
-        throw new Error("The given TOTP encoding must not contain duplicate characters.");
+        throw new Error("The given TOTP alphabet must not contain duplicate characters.");
 
     if (/\s/u.test(normalized))
-        throw new Error("The given TOTP encoding must not contain whitespace characters.");
+        throw new Error("The given TOTP alphabet must not contain whitespace characters.");
 
     return normalized;
 
@@ -143,6 +159,9 @@ function parseTOTPApiKeyConfiguration(value, entryIndex) {
 
     if (typeof value !== "object" || Array.isArray(value))
         throw new Error("API key entry " + (entryIndex + 1).toString() + " TOTP configuration must be a JSON object.");
+
+    if (Object.prototype.hasOwnProperty.call(value, "encoding"))
+        throw new Error("API key entry " + (entryIndex + 1).toString() + " TOTP configuration must use alphabet, not encoding.");
 
     if (typeof value.sharedSecrect !== "string" || value.sharedSecrect.trim() === "")
         throw new Error("API key entry " + (entryIndex + 1).toString() + " TOTP configuration must contain a non-empty sharedSecrect.");
@@ -170,14 +189,14 @@ function parseTOTPApiKeyConfiguration(value, entryIndex) {
         throw new Error("API key entry " + (entryIndex + 1).toString() + " TOTP length must be greater than 16.");
 
     const hashAlgorithm = normalizeTOTPHashAlgorithm(value.hashAlgorithm);
-    const encoding      = normalizeTOTPEncoding(value.encoding);
+    const alphabet      = normalizeTOTPAlphabet(value.alphabet);
 
     return {
         sharedSecrect,
         validityTime,
         length,
         hashAlgorithm,
-        encoding
+        alphabet
     };
 
 }
@@ -239,7 +258,7 @@ function serializeApiKeyEntry(entry) {
             validityTime:  entry.totp.validityTime,
             length:        entry.totp.length,
             hashAlgorithm: entry.totp.hashAlgorithm,
-            encoding:      entry.totp.encoding
+            alphabet:      entry.totp.alphabet
         };
 
     if (Array.isArray(entry.roles))
@@ -331,15 +350,6 @@ function dateToMilliseconds(value) {
 
 }
 
-function counterToBuffer(counter) {
-
-    const buffer = Buffer.alloc(8);
-    buffer.writeBigUInt64BE(BigInt(counter));
-
-    return buffer;
-
-}
-
 function generateTOTPApiKeyValue(totpConfiguration, now = new Date(), slotOffset = 0) {
 
     const nowMs = dateToMilliseconds(now);
@@ -348,25 +358,20 @@ function generateTOTPApiKeyValue(totpConfiguration, now = new Date(), slotOffset
         throw new Error("Invalid TOTP timestamp.");
 
     const validityTime = totpConfiguration.validityTime ?? defaultTOTPValidityTime;
-    const counter      = Math.floor(nowMs / 1000 / validityTime) + slotOffset;
+    const slotMs       = validityTime * 1000;
+    const timestamp    = nowMs + slotOffset * slotMs;
 
-    if (counter < 0)
-        throw new Error("Invalid TOTP counter.");
+    if (timestamp < 0)
+        throw new Error("Invalid TOTP timestamp.");
 
-    const alphabet = normalizeTOTPEncoding(totpConfiguration.encoding);
-    const digest   = crypto.createHmac(
-                                hashAlgorithmToNodeName(totpConfiguration.hashAlgorithm),
-                                Buffer.from(totpConfiguration.sharedSecrect, "utf8")
-                            )
-                            .update(counterToBuffer(counter))
-                            .digest();
-    const offset   = digest[digest.length - 1] & 0x0F;
-    let   result   = "";
-
-    for (let index = 0; index < (totpConfiguration.length ?? defaultTOTPLength); index++)
-        result += alphabet[digest[(offset + index) % digest.length] % alphabet.length];
-
-    return result;
+    return getTOTPGenerator()({
+        sharedSecret: totpConfiguration.sharedSecrect,
+        validityTime,
+        totpLength:   totpConfiguration.length ?? defaultTOTPLength,
+        alphabet:     normalizeTOTPAlphabet(totpConfiguration.alphabet),
+        timestamp,
+        hashAlgorithm: normalizeTOTPHashAlgorithm(totpConfiguration.hashAlgorithm)
+    }).current;
 
 }
 
@@ -512,7 +517,7 @@ function canonicalizeApiKeyEntry(entry) {
                              validityTime:   entry.totp.validityTime,
                              length:         entry.totp.length,
                              hashAlgorithm:  entry.totp.hashAlgorithm,
-                             encoding:       entry.totp.encoding
+                             alphabet:       entry.totp.alphabet
                          }
                        : undefined,
         roles:     Array.isArray(entry.roles) ? [ ...entry.roles ].sort() : [],
@@ -540,6 +545,7 @@ module.exports = {
     findApiKeyEntriesByAuthorization,
     generateTOTPApiKeyValue,
     hasApiKeyEntry,
+    initializeTOTPGenerator,
     loadApiKeysFromFile,
     parseAuthorizationHeader,
     parseApiKeyEntry,

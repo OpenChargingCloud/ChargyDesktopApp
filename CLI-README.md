@@ -329,8 +329,8 @@ API-key file format:
       "sharedSecrect": "secureChargingSecret2026",
       "validityTime": 10,
       "length": 24,
-      "hashAlgorithm": "HMACSHA256",
-      "encoding": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      "hashAlgorithm": "sha256",
+      "alphabet": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     },
     "roles": [ "evDriver" ]
   }
@@ -350,10 +350,10 @@ TOTP fields:
 - `sharedSecrect`: required shared secret string. The current field name follows the TypeScript interface spelling. It must contain at least 16 characters and no whitespace.
 - `validityTime`: optional time-slot length in seconds; default is `10`.
 - `length`: optional generated TOTP length; default is `32`, and configured values must be greater than `16`.
-- `hashAlgorithm`: optional HMAC algorithm. Supported values are `HMACSHA256`, `HMACSHA384`, and `HMACSHA512`; the default is `HMACSHA256`.
-- `encoding`: optional alphabet used for generated TOTP characters. The default alphabet is digits plus lower- and upper-case ASCII letters. Custom alphabets need at least 4 unique non-whitespace characters.
+- `hashAlgorithm`: optional HMAC algorithm. Accepted values are `sha256`, `sha384`, and `sha512`; the default is `sha256`.
+- `alphabet`: optional alphabet used for generated TOTP characters. The default alphabet is digits plus lower- and upper-case ASCII letters. Custom alphabets need at least 4 unique non-whitespace characters.
 
-The TOTP implementation uses the DynamicQRCodes algorithm: HMAC over the 8-byte big-endian time slot, an offset from the last hash byte, and character selection from the configured alphabet. The server accepts the generated values for the previous, current, and next slot to absorb small clock differences between client and server.
+The TOTP implementation uses the `@open-charging-cloud/totp` package, which implements the DynamicQRCodes algorithm: HMAC over the 8-byte big-endian time slot, an offset from the last hash byte, and character selection from the configured alphabet. The server accepts the generated values for the previous, current, and next slot to absorb small clock differences between client and server.
 
 Authenticated request example:
 
@@ -527,7 +527,7 @@ Current covered cases:
 - Unsupported `Accept` content types are rejected with `406`.
 - Unsupported methods and empty bodies are rejected before renderer dispatch.
 - API-key TypeScript interfaces and TypeGuards validate raw JSON entries, parsed entries, role enums, timestamp windows, and rejected legacy fields.
-- TOTP API keys are parsed with defaults, reject weak malformed configuration, generate DynamicQRCodes-compatible slot values, accept previous/current/next slots, and do not allow the static `token` identifier as a request key.
+- TOTP API keys are parsed with defaults, reject weak malformed configuration, generate `@open-charging-cloud/totp`/DynamicQRCodes-compatible slot values, accept previous/current/next slots, and do not allow the static `token` identifier as a request key.
 - API-key JSON files are parsed, `token` is the required secret field, repeated tokens are allowed, `notBefore` and `notAfter` are optional, roles default to `[ "evDriver" ]`, multiple roles such as `[ "evDriver", "root" ]` are accepted, legacy `apiKey` and singular `role` fields are rejected, and invalid timestamps are rejected.
 
 Local verification after the first extraction:

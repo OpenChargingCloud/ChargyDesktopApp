@@ -2,7 +2,8 @@ import { createRequire }          from "node:module";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir }                 from "node:os";
 import { join }                   from "node:path";
-import { describe, expect, test } from "vitest";
+import { beforeAll, describe, expect, test } from "vitest";
+import { generateTOTPs }          from "@open-charging-cloud/totp";
 import {
     ApiKeyRole,
     isParsedApiKeyEntry,
@@ -21,6 +22,7 @@ type ApiKeysModule = {
     createApiKeyAuthenticator:        (apiKeyEntries: ParsedApiKeyEntry[], nowProvider?: () => Date) => ((headerValue: string | string[] | undefined) => ApiKeyAuthenticationResult) | null;
     findApiKeyEntriesByAuthorization: (headerValue:   string | string[] | undefined, apiKeyEntries: ParsedApiKeyEntry[], now?: Date)                  => ParsedApiKeyEntry[];
     generateTOTPApiKeyValue:          (totpConfiguration: ITOTPApiKeyConfiguration, now?: Date, slotOffset?: number)                                   => string;
+    initializeTOTPGenerator:           () => Promise<void>;
     loadApiKeysFromFile:              (fileName:      string)                                                                                         => ParsedApiKeyEntry[];
     parseApiKeyEntries:               (rawEntries:    unknown)                                                                                        => ParsedApiKeyEntry[];
 };
@@ -30,9 +32,14 @@ const {
     createApiKeyAuthenticator,
     findApiKeyEntriesByAuthorization,
     generateTOTPApiKeyValue,
+    initializeTOTPGenerator,
     loadApiKeysFromFile,
     parseApiKeyEntries
 } = require("../src/apiKeys.cjs") as ApiKeysModule;
+
+beforeAll(async () => {
+    await initializeTOTPGenerator();
+});
 
 const rawApiKeys = [
     {
@@ -76,7 +83,7 @@ describe("API key parsing", () => {
                 sharedSecrect: "secureChargingSecret2026",
                 validityTime:  10,
                 length:        24,
-                encoding:      "0123456789abcdef"
+                alphabet:      "0123456789abcdef"
             }
         })).toBe(true);
         expect(isRawApiKeyEntry({ token: "legacy-secret", apiKey: "legacy-secret" })).toBe(false);
@@ -143,11 +150,11 @@ describe("API key parsing", () => {
                 sharedSecrect: "secureChargingSecret2026",
                 validityTime:  10,
                 length:        24,
-                hashAlgorithm: "HMACSHA256"
+                hashAlgorithm: "sha256"
             },
             roles: [ ApiKeyRole.EVDriver ]
         });
-        expect(entries[0]?.totp?.encoding).toContain("0123456789");
+        expect(entries[0]?.totp?.alphabet).toContain("0123456789");
         expect(isParsedApiKeyEntry(entries[0])).toBe(true);
 
     });
@@ -241,10 +248,32 @@ describe("API key parsing", () => {
                 totp:  {
                     sharedSecrect: "secureChargingSecret2026",
                     length:        24,
-                    encoding:      "aabc"
+                    alphabet:      "aabc"
                 }
             }
         ])).toThrow("must not contain duplicate characters");
+
+        expect(() => parseApiKeyEntries([
+            {
+                token: "totp-driver",
+                totp:  {
+                    sharedSecrect:  "secureChargingSecret2026",
+                    length:         24,
+                    encoding:       "0123456789abcdef"
+                }
+            }
+        ])).toThrow("must use alphabet, not encoding");
+
+        expect(() => parseApiKeyEntries([
+            {
+                token: "totp-driver",
+                totp:  {
+                    sharedSecrect:  "secureChargingSecret2026",
+                    length:         24,
+                    hashAlgorithm:  "HMACSHA512"
+                }
+            }
+        ])).toThrow("Unsupported TOTP hashAlgorithm");
 
     });
 
@@ -370,7 +399,7 @@ describe("API key authentication", () => {
                     sharedSecrect: "secureChargingSecret2026",
                     validityTime:  10,
                     length:        24,
-                    encoding:      "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                    alphabet:      "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 }
             }
         ]);
@@ -386,9 +415,19 @@ describe("API key authentication", () => {
         const currentTOTP  = generateTOTPApiKeyValue(totp, now);
         const nextTOTP     = generateTOTPApiKeyValue(totp, now, 1);
         const oldTOTP      = generateTOTPApiKeyValue(totp, now, -2);
+        const packageTOTPs = generateTOTPs({
+            sharedSecret: totp.sharedSecrect,
+            validityTime: totp.validityTime,
+            totpLength:   totp.length,
+            alphabet:     totp.alphabet,
+            timestamp:    now
+        });
 
         expect(currentTOTP).toHaveLength(24);
         expect(currentTOTP).not.toBe("totp-driver");
+        expect(previousTOTP).toBe(packageTOTPs.previous);
+        expect(currentTOTP).toBe(packageTOTPs.current);
+        expect(nextTOTP).toBe(packageTOTPs.next);
 
         expect(findApiKeyEntriesByAuthorization("TOTP totp-driver " + currentTOTP, entries, now)).toHaveLength(1);
         expect(findApiKeyEntriesByAuthorization("Bearer totp-driver", entries, now)).toHaveLength(0);
@@ -412,6 +451,61 @@ describe("API key authentication", () => {
             ok:     false,
             reason: "unknown"
         });
+
+    });
+
+    test("generates TOTP API keys with SHA-384 and SHA-512 when configured", () => {
+
+        const now = new Date("2026-06-15T12:00:05Z");
+        const entries = parseApiKeyEntries([
+            {
+                token: "totp-driver-sha384",
+                totp:  {
+                    sharedSecrect:  "secureChargingSecret2026",
+                    validityTime:   10,
+                    length:         24,
+                    hashAlgorithm:  "sha384",
+                    alphabet:       "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                }
+            },
+            {
+                token: "totp-driver-sha512",
+                totp:  {
+                    sharedSecrect:  "secureChargingSecret2026",
+                    validityTime:   10,
+                    length:         24,
+                    hashAlgorithm:  "sha512",
+                    alphabet:       "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                }
+            }
+        ]);
+
+        const sha384TOTP = entries[0]?.totp;
+        const sha512TOTP = entries[1]?.totp;
+
+        expect(sha384TOTP).toBeDefined();
+        expect(sha512TOTP).toBeDefined();
+
+        if (sha384TOTP == null || sha512TOTP == null)
+            throw new Error("Missing parsed TOTP configuration.");
+
+        expect(generateTOTPApiKeyValue(sha384TOTP, now)).toBe(generateTOTPs({
+            sharedSecret:   sha384TOTP.sharedSecrect,
+            validityTime:   sha384TOTP.validityTime,
+            totpLength:     sha384TOTP.length,
+            alphabet:       sha384TOTP.alphabet,
+            timestamp:      now,
+            hashAlgorithm:  "sha384"
+        }).current);
+
+        expect(generateTOTPApiKeyValue(sha512TOTP, now)).toBe(generateTOTPs({
+            sharedSecret:   sha512TOTP.sharedSecrect,
+            validityTime:   sha512TOTP.validityTime,
+            totpLength:     sha512TOTP.length,
+            alphabet:       sha512TOTP.alphabet,
+            timestamp:      now,
+            hashAlgorithm:  "sha512"
+        }).current);
 
     });
 

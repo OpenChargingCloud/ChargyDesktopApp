@@ -11,6 +11,7 @@ const {
 }                                                                = require('./cliArguments.cjs');
 const {
     createApiKeyAuthenticator,
+    initializeTOTPGenerator,
     loadApiKeysFromFile
 }                                                                = require('./apiKeys.cjs');
 const {
@@ -249,7 +250,18 @@ function createWindow () {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+
+    try
+    {
+        await initializeTOTPGenerator();
+    }
+    catch (exception)
+    {
+        console.log("Could not load the TOTP generator: " + (exception.message ?? exception));
+        app.exit(1); // Will not exit at once!
+        return;
+    }
 
     //console.log(process.env);
 

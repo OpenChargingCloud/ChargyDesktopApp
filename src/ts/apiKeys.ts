@@ -3,6 +3,8 @@ export enum ApiKeyRole {
     Root     = "root"
 }
 
+export type TOTPHashAlgorithm = "sha256" | "sha384" | "sha512";
+
 export interface RawApiKeyEntry {
     token:      string;
     totp?:      IRawTOTPApiKeyConfiguration;
@@ -23,16 +25,16 @@ export interface IRawTOTPApiKeyConfiguration {
     sharedSecrect:  string;
     validityTime?:  number;
     length?:        number;
-    hashAlgorithm?: string;
-    encoding?:      string;
+    hashAlgorithm?: TOTPHashAlgorithm;
+    alphabet?:      string;
 }
 
 export interface ITOTPApiKeyConfiguration {
     sharedSecrect:  string;
     validityTime:   number;
     length:         number;
-    hashAlgorithm?: string;
-    encoding?:      string;
+    hashAlgorithm?: TOTPHashAlgorithm;
+    alphabet?:      string;
 }
 
 export interface ApiKeyCredential {
@@ -102,18 +104,15 @@ function isSupportedTOTPHashAlgorithm(value: unknown): value is string {
     if (typeof value !== "string" || value.trim() === "")
         return false;
 
-    const normalized = value.trim().toUpperCase().replace(/[-_]/g, "");
+    const normalized = value.trim();
 
-    return normalized === "HMACSHA256" ||
-           normalized === "SHA256"     ||
-           normalized === "HMACSHA384" ||
-           normalized === "SHA384"     ||
-           normalized === "HMACSHA512" ||
-           normalized === "SHA512";
+    return normalized === "sha256" ||
+           normalized === "sha384" ||
+           normalized === "sha512";
 
 }
 
-function isTOTPEncoding(value: unknown): value is string {
+function isTOTPAlphabet(value: unknown): value is string {
 
     if (value == null)
         return true;
@@ -125,9 +124,13 @@ function isTOTPEncoding(value: unknown): value is string {
 
 }
 
+function hasRejectedLegacyTOTPFields(value: Record<string, unknown>): boolean {
+    return Object.prototype.hasOwnProperty.call(value, "encoding");
+}
+
 function isRawTOTPApiKeyConfiguration(value: unknown): value is IRawTOTPApiKeyConfiguration {
 
-    if (!isPlainObject(value))
+    if (!isPlainObject(value) || hasRejectedLegacyTOTPFields(value))
         return false;
 
     const sharedSecrect = value["sharedSecrect"];
@@ -140,13 +143,13 @@ function isRawTOTPApiKeyConfiguration(value: unknown): value is IRawTOTPApiKeyCo
            (validityTime == null || (typeof validityTime === "number" && Number.isInteger(validityTime) && validityTime > 0)) &&
            (length       == null || (typeof length       === "number" && Number.isInteger(length)       && length > 16)) &&
            isSupportedTOTPHashAlgorithm(value["hashAlgorithm"]) &&
-           isTOTPEncoding(value["encoding"]);
+           isTOTPAlphabet(value["alphabet"]);
 
 }
 
 function isParsedTOTPApiKeyConfiguration(value: unknown): value is ITOTPApiKeyConfiguration {
 
-    if (!isPlainObject(value))
+    if (!isPlainObject(value) || hasRejectedLegacyTOTPFields(value))
         return false;
 
     const sharedSecrect = value["sharedSecrect"];
@@ -163,7 +166,7 @@ function isParsedTOTPApiKeyConfiguration(value: unknown): value is ITOTPApiKeyCo
            Number.isInteger(length) &&
            length > 16 &&
            isSupportedTOTPHashAlgorithm(value["hashAlgorithm"]) &&
-           isTOTPEncoding(value["encoding"]);
+           isTOTPAlphabet(value["alphabet"]);
 
 }
 

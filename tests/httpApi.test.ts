@@ -5,7 +5,7 @@ import { request as httpClientRequest } from "node:http";
 import { tmpdir }                 from "node:os";
 import { join }                   from "node:path";
 import type { Server }            from "node:http";
-import { describe, expect, test } from "vitest";
+import { beforeAll, describe, expect, test } from "vitest";
 import { createChargy }           from './testHelper';
 import {
     ApiKeyRole,
@@ -54,6 +54,7 @@ type ApiKeysModule = {
         nowProvider?: () => Date
     ) => ((headerValue: string | string[] | undefined) => ApiKeyAuthenticationResult) | null;
     generateTOTPApiKeyValue: (totpConfiguration: ITOTPApiKeyConfiguration, now?: Date, slotOffset?: number) => string;
+    initializeTOTPGenerator:  () => Promise<void>;
     parseApiKeyEntries: (rawEntries: unknown) => ParsedApiKeyEntry[];
 };
 
@@ -66,8 +67,13 @@ const {
 const {
     createApiKeyAuthenticator,
     generateTOTPApiKeyValue,
+    initializeTOTPGenerator,
     parseApiKeyEntries
 } = require("../src/apiKeys.cjs") as ApiKeysModule;
+
+beforeAll(async () => {
+    await initializeTOTPGenerator();
+});
 
 const cliI18N = require("../src/i18n_CLI.json") as Record<string, Record<string, string>>;
 
