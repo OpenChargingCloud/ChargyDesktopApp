@@ -42,7 +42,7 @@ This software is also available as [WebApp](https://github.com/OpenChargingCloud
 
 ## Future
 
-The development of version **v1.5** already started and will focus on enhanced security concepts, more digital certificates and pricing information.
+The development of version **v2.x** already started and will focus on enhanced security concepts, more digital certificates and pricing information.
 
 
 ## Credits
