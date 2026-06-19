@@ -11,7 +11,7 @@ import {
     verifyJSONMessageSignatureResults,
     verifyJSONMessageSignatures,
     verifyJSONSignature
-} from "../src/ts/CryptoUtils";
+} from "@open-charging-cloud/chargy-core";
 
 describe("CryptoUtils", () => {
 

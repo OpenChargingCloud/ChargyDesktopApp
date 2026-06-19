@@ -1,8 +1,8 @@
 import { createRequire } from "node:module";
 import { describe, expect, test, vi } from 'vitest';
 import { expectVerificationReport, expectArchiveVerificationReport, expectVerificationReportInline } from './testHelper';
-import { Chargy } from '../src/ts/chargy';
-import { SAFEXML } from '../src/ts/SAFE_XML';
+import { Chargy } from '@open-charging-cloud/chargy-core';
+import { SAFEXML } from '@open-charging-cloud/chargy-core';
 
 const require = createRequire(import.meta.url);
 const { DOMParser } = require("@oozcitak/dom");

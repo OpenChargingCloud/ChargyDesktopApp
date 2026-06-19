@@ -2,17 +2,17 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { createSign, generateKeyPairSync } from "node:crypto";
 import { describe, expect, test, vi } from 'vitest';
-import { Chargy } from '../src/ts/chargy';
+import { Chargy } from '@open-charging-cloud/chargy-core';
 import {
     IsAChargeTransparencyRecord
-} from '../src/ts/interfaces/IChargeTransparencyRecord';
+} from '@open-charging-cloud/chargy-core';
 import {
     SessionVerificationResult,
     VerificationResult
-} from '../src/ts/interfaces/chargyInterfaces';
+} from '@open-charging-cloud/chargy-core';
 import type {
     IFileInfo
-} from '../src/ts/interfaces/chargyInterfaces';
+} from '@open-charging-cloud/chargy-core';
 import {
     PCDF_FIELD_ORDER,
     PCDF_PREFIX,
@@ -23,16 +23,10 @@ import {
     parsePCDFSignature,
     validatePCDFFields,
     verifyPCDFDocument
-} from '../src/ts/PCDF';
+} from '@open-charging-cloud/chargy-core';
 
 const require = createRequire(import.meta.url);
 const { DOMParser } = require("@oozcitak/dom");
-
-vi.mock('pdfjs-dist', async () => {
-    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
-    pdfjs.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/legacy/build/pdf.worker.mjs';
-    return pdfjs;
-});
 
 vi.stubGlobal('window', {
     navigator: {

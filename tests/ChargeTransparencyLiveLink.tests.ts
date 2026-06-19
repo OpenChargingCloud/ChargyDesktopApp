@@ -6,14 +6,10 @@ import { beforeAll, describe, expect, test, vi } from "vitest";
 
 import type {
     IFileInfo
-} from "../src/ts/interfaces/chargyInterfaces";
+} from "@open-charging-cloud/chargy-core";
 import {
     IsAChargeTransparencyLiveLink
-} from "../src/ts/interfaces/IChargeTransparencyLiveLink";
-
-vi.mock("pdfjs-dist", () => ({
-    GlobalWorkerOptions: {}
-}));
+} from "@open-charging-cloud/chargy-core";
 
 vi.stubGlobal("window", {
     navigator: {
@@ -28,12 +24,12 @@ const require          = createRequire(import.meta.url);
 const currentDirectory = fileURLToPath(new URL(".",  import.meta.url));
 const projectRoot      = fileURLToPath(new URL("..", import.meta.url));
 
-type ChargyConstructor = typeof import("../src/ts/chargy").Chargy;
+type ChargyConstructor = typeof import("@open-charging-cloud/chargy-core").Chargy;
 
 let Chargy: ChargyConstructor;
 
 beforeAll(async () => {
-    ({ Chargy } = await import("../src/ts/chargy"));
+    ({ Chargy } = await import("@open-charging-cloud/chargy-core"));
 });
 
 function readFixture(fileName: string): string {

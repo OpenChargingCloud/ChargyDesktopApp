@@ -4,7 +4,7 @@ import {
     CanonicalJSONError,
     canonicalJSONBytes,
     canonicalJSONStringify
-} from "../src/ts/CanonicalJSON";
+} from "@open-charging-cloud/chargy-core";
 
 describe("CanonicalJSON", () => {
 

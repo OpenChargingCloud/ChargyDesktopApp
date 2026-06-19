@@ -15,15 +15,15 @@ import {
     isISessionCryptoResult1,
     isISessionCryptoResult2,
     isIFileInfo
-} from '../src/ts/interfaces/chargyInterfaces';
+} from '@open-charging-cloud/chargy-core';
 import {
     IsAChargeTransparencyRecord,
     IsASessionCryptoResult
-} from '../src/ts/interfaces/IChargeTransparencyRecord';
+} from '@open-charging-cloud/chargy-core';
 import {
     IsAPublicKeyLookup,
     IsAPublicKeyInfo
-} from '../src/ts/interfaces/IPublicKeyInfo';
+} from '@open-charging-cloud/chargy-core';
 
 import {
   OBIS2Hex,
@@ -36,7 +36,7 @@ import {
   measurementName2human,
   parseHexString,
   parseOBIS
-} from "../src/ts/chargyLib";
+} from "@open-charging-cloud/chargy-core";
 
 import {
   sampleChargeTransparencyRecord,
@@ -46,10 +46,6 @@ import {
   samplePublicKeyLookup,
   sampleSessionCryptoResult
 } from "./fixtures/dataStructures";
-
-vi.mock("pdfjs-dist", () => ({
-  GlobalWorkerOptions: {}
-}));
 
 vi.stubGlobal("window", {
     navigator: {

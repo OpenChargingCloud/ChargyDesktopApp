@@ -2,9 +2,9 @@ import { createRequire }          from "node:module";
 import { readFileSync }           from "node:fs";
 import { describe, expect, test } from "vitest";
 import { createChargy }           from './testHelper';
-import { IsAChargeTransparencyRecord } from '../src/ts/interfaces/IChargeTransparencyRecord';
-import type { IChargeTransparencyRecord } from '../src/ts/interfaces/IChargeTransparencyRecord';
-import { toSessionVerificationResults }   from '../src/ts/verificationResults';
+import { IsAChargeTransparencyRecord } from '@open-charging-cloud/chargy-core';
+import type { IChargeTransparencyRecord } from '@open-charging-cloud/chargy-core';
+import { toSessionVerificationResults }   from '@open-charging-cloud/chargy-core';
 
 const require = createRequire(import.meta.url);
 

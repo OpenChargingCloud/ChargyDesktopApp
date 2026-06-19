@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2018-2026 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-import { Chargy }                       from './chargy'
-import { readQRCodeTextFromImageData }  from './qrCodeReader'
-import * as chargyInterfaces            from './interfaces/chargyInterfaces'
-import * as chargeTransparencyRecord    from './interfaces/IChargeTransparencyRecord'
-import * as chargeTransparencyLiveLink  from './interfaces/IChargeTransparencyLiveLink'
-import * as publicKeyInfo               from './interfaces/IPublicKeyInfo'
-import * as chargyLib                   from './chargyLib'
-import { toSessionVerificationResults } from './verificationResults'
+import { Chargy }                       from '@open-charging-cloud/chargy-core'
+import { readQRCodeTextFromImageData }  from '@open-charging-cloud/chargy-core'
+import * as chargyInterfaces            from '@open-charging-cloud/chargy-core'
+import * as chargeTransparencyRecord    from '@open-charging-cloud/chargy-core'
+import * as chargeTransparencyLiveLink  from '@open-charging-cloud/chargy-core'
+import * as publicKeyInfo               from '@open-charging-cloud/chargy-core'
+import * as chargyLib                   from '@open-charging-cloud/chargy-core'
+import { toSessionVerificationResults } from '@open-charging-cloud/chargy-core'
+import corePackageJson                  from '@open-charging-cloud/chargy-core/package.json'
 
 import stringify                        from 'safe-stable-stringify';
 import Decimal                          from 'decimal.js';
@@ -49,6 +50,14 @@ type DetectionOptions = {
 const supportedLanguages = [ "de", "en" ] as const;
 
 type SupportedLanguage = typeof supportedLanguages[number];
+
+type DependencyMap = Record<string, string | undefined>;
+
+const coreDependencies = corePackageJson.dependencies as DependencyMap | undefined;
+
+function dependencyVersion(dependencies: DependencyMap | undefined, dependencyName: string): string {
+    return (dependencies?.[dependencyName] ?? coreDependencies?.[dependencyName])?.replace(/[^\d.]/g, "") ?? "";
+}
 
 
 interface ChargyElectronAPI {
@@ -407,32 +416,36 @@ export class ChargyApp {
             (this.openSourceLibsDiv.querySelector("#nodeVersion")            as HTMLSpanElement).innerHTML = this.appContext.versions.node     ?? "";
             (this.openSourceLibsDiv.querySelector("#opensslVersion")         as HTMLSpanElement).innerHTML = this.appContext.versions.openssl  ?? "";
 
-        if (this.packageJson.devDependencies)
+        const devDependencies = this.packageJson.devDependencies as DependencyMap | undefined;
+        const dependencies    = this.packageJson.dependencies    as DependencyMap | undefined;
+
+        if (devDependencies)
         {
-            (this.openSourceLibsDiv.querySelector("#electronBuilder")        as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["electron-builder"]?.       replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#electronLocalShortcut")  as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["electron-localshortcut"]?. replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#SASS")                   as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["sass"]?.                   replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#typeScript")             as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["typescript"]?.             replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#webpack")                as HTMLSpanElement).innerHTML = this.packageJson.devDependencies["webpack"]?.                replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#electronBuilder")        as HTMLSpanElement).innerHTML = dependencyVersion(devDependencies, "electron-builder");
+            (this.openSourceLibsDiv.querySelector("#electronLocalShortcut")  as HTMLSpanElement).innerHTML = dependencyVersion(devDependencies, "electron-localshortcut");
+            (this.openSourceLibsDiv.querySelector("#SASS")                   as HTMLSpanElement).innerHTML = dependencyVersion(devDependencies, "sass");
+            (this.openSourceLibsDiv.querySelector("#typeScript")             as HTMLSpanElement).innerHTML = dependencyVersion(devDependencies, "typescript");
+            (this.openSourceLibsDiv.querySelector("#webpack")                as HTMLSpanElement).innerHTML = dependencyVersion(devDependencies, "webpack");
         }
 
-        if (this.packageJson.dependencies)
+        if (dependencies)
         {
-            (this.openSourceLibsDiv.querySelector("#elliptic")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["elliptic"]?.               replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#momentJS")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["moment"]?.                 replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#pdfjsdist")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["pdfjs-dist"]?.             replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#seekBzip")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["seek-bzip"]?.              replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#fileType")               as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["file-type"]?.              replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#jsQR")                   as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["jsqr"]?.                   replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#buffer")                 as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["buffer"]?.                 replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#fontAwesome")            as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["@fortawesome/fontawesome-free"]?.replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#asn1JS")                 as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["asn1.js"]?.                replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#base32Decode")           as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["base32-decode"]?.          replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#safeStableStringify")    as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["safe-stable-stringify"]?.  replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#leafletJS")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet"]?.                replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#leafletAwesomeMarkers")  as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["leaflet.awesome-markers"]?.replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#chartJS")                as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["chart.js"]?.               replace(/[^0-9\.]/g, "");
-            (this.openSourceLibsDiv.querySelector("#decimalJS")              as HTMLSpanElement).innerHTML = this.packageJson.dependencies   ["decimal.js"]?.             replace(/[^0-9\.]/g, "");
+            (this.openSourceLibsDiv.querySelector("#chargyCore")             as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "@open-charging-cloud/chargy-core");
+            (this.openSourceLibsDiv.querySelector("#openChargingCloudTOTP")  as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "@open-charging-cloud/totp");
+            (this.openSourceLibsDiv.querySelector("#elliptic")               as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "elliptic");
+            (this.openSourceLibsDiv.querySelector("#momentJS")               as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "moment");
+            (this.openSourceLibsDiv.querySelector("#pdfjsdist")              as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "pdfjs-dist");
+            (this.openSourceLibsDiv.querySelector("#seekBzip")               as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "seek-bzip");
+            (this.openSourceLibsDiv.querySelector("#fileType")               as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "file-type");
+            (this.openSourceLibsDiv.querySelector("#jsQR")                   as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "jsqr");
+            (this.openSourceLibsDiv.querySelector("#buffer")                 as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "buffer");
+            (this.openSourceLibsDiv.querySelector("#fontAwesome")            as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "@fortawesome/fontawesome-free");
+            (this.openSourceLibsDiv.querySelector("#asn1JS")                 as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "asn1.js");
+            (this.openSourceLibsDiv.querySelector("#base32Decode")           as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "base32-decode");
+            (this.openSourceLibsDiv.querySelector("#safeStableStringify")    as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "safe-stable-stringify");
+            (this.openSourceLibsDiv.querySelector("#leafletJS")              as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "leaflet");
+            (this.openSourceLibsDiv.querySelector("#leafletAwesomeMarkers")  as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "leaflet.awesome-markers");
+            (this.openSourceLibsDiv.querySelector("#decimalJS")              as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "decimal.js");
         }
 
         //#endregion

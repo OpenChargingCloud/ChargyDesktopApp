@@ -1,8 +1,8 @@
 import { createRequire } from "node:module";
 import { describe, expect, test } from 'vitest';
-import './testHelper';   // Mocks 'pdfjs-dist' and stubs 'window' before chargy.ts is imported!
-import { Chargy } from '../src/ts/chargy';
-import { OCPI } from '../src/ts/OCPI';
+import './testHelper';   // Stubs browser globals before chargy.ts is imported.
+import { Chargy } from '@open-charging-cloud/chargy-core';
+import { OCPI } from '@open-charging-cloud/chargy-core';
 
 const require = createRequire(import.meta.url);
 

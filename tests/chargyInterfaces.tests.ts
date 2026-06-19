@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
     isIFileInfo
-} from '../src/ts/interfaces/chargyInterfaces';
+} from '@open-charging-cloud/chargy-core';
 
 
 describe('IFileInfo', () => {

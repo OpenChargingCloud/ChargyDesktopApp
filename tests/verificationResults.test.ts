@@ -1,8 +1,8 @@
 import { createRequire }          from "node:module";
 import { describe, expect, test } from "vitest";
-import { toSessionVerificationResults } from '../src/ts/verificationResults';
-import type { ISessionCryptoResult }    from '../src/ts/interfaces/chargyInterfaces';
-import type { IChargeTransparencyRecord } from '../src/ts/interfaces/IChargeTransparencyRecord';
+import { toSessionVerificationResults } from '@open-charging-cloud/chargy-core';
+import type { ISessionCryptoResult }    from '@open-charging-cloud/chargy-core';
+import type { IChargeTransparencyRecord } from '@open-charging-cloud/chargy-core';
 
 const require = createRequire(import.meta.url);
 

@@ -5,22 +5,22 @@ import {
     SessionVerificationResult,
     SignatureFormats,
     VerificationResult
-} from '../../src/ts/interfaces/chargyInterfaces';
+} from '@open-charging-cloud/chargy-core';
 
 import type {
     IChargeTransparencyRecord,
     IMeasurement,
     IMeasurementValue
-} from '../../src/ts/interfaces/IChargeTransparencyRecord';
+} from '@open-charging-cloud/chargy-core';
 import type {
     IPublicKeyInfo,
     IPublicKeyLookup
-} from '../../src/ts/interfaces/IPublicKeyInfo';
+} from '@open-charging-cloud/chargy-core';
 import type {
     ICryptoResult,
     IFileInfo,
     ISessionCryptoResult
-} from '../../src/ts/interfaces/chargyInterfaces';
+} from '@open-charging-cloud/chargy-core';
 
 export function samplePublicKeyInfo(overrides: Partial<IPublicKeyInfo> = {}): IPublicKeyInfo {
   return {

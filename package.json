@@ -67,21 +67,17 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.2.0",
+    "@open-charging-cloud/chargy-core": "^0.4.0",
     "@open-charging-cloud/totp": "^0.2.0",
     "asn1.js": "^5.4.1",
     "base32-decode": "^1.0.0",
     "buffer": "^6.0.3",
-    "chart.js": "^4.5.1",
     "decimal.js": "^10.6.0",
     "elliptic": "^6.6.1",
-    "file-type": "^22.0.1",
-    "jsqr": "^1.4.0",
     "leaflet": "^1.9.4",
     "leaflet.awesome-markers": "^2.0.5",
     "moment": "^2.30.1",
-    "pdfjs-dist": "^6.0.227",
-    "safe-stable-stringify": "^2.5.0",
-    "seek-bzip": "^2.0.0"
+    "safe-stable-stringify": "^2.5.0"
   },
   "build": {
     "appId": "cloud.charging.open.chargy.desktop",
