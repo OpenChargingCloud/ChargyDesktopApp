@@ -1,0 +1,8 @@
+{
+  "chargingSession": {
+    "totalEnergy": {
+      "rule": [">", "5", "MWh"],
+      "level": "low"
+    }
+  }
+}

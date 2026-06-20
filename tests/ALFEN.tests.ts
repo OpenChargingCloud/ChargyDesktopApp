@@ -1,11 +1,14 @@
-import { describe, expect, test }                                    from 'vitest';
-import { expectVerificationReport, expectBinaryVerificationReport }  from './testHelper';
-import { readFileSync }                                              from "node:fs";
-import { readQRCodeTextFromImage }                                   from '@open-charging-cloud/chargy-core';
-import { normalizeXMLText }                                          from '@open-charging-cloud/chargy-core';
+import { describe, expect, test }                       from 'vitest';
+import { expectBinaryVerificationReport,
+         expectVerificationReport,
+         expectVerificationReportWithValidationRules }  from './testHelper';
+import { readFileSync }                                 from "node:fs";
+import { readQRCodeTextFromImage }                      from '@open-charging-cloud/chargy-core';
+import { normalizeXMLText }                             from '@open-charging-cloud/chargy-core';
 
 
 describe('ALFEN Tests', () => {
+
 
     test("ALFEN Testdata 03 - SAFE XML-Container", async () => {
         await expectVerificationReport(
@@ -62,6 +65,30 @@ describe('ALFEN Tests', () => {
 
         expect(normalizeXMLText(qrText)).toBe(normalizeXMLText(expectedXML));
 
+    });
+
+
+    // Signed, yet still implausible...
+    test("ALFEN Testdata 04 - SAFE XML-Container with 2.1 MWh signed delta", async () => {
+        await expectVerificationReport(
+            "ALFEN/ALFEN-Testdata-04_2_1MWh_SAFEXMLContainer.xml",
+            "ALFEN/ALFEN-Testdata-04_2_1MWh_SAFEXMLContainer.expected.txt"
+        );
+    });
+
+    test("ALFEN Testdata 04 - SAFE XML-Container with 2.1 MWh signed delta and relaxed validation rules", async () => {
+        await expectVerificationReportWithValidationRules(
+            "ALFEN/ALFEN-Testdata-04_2_1MWh_SAFEXMLContainer.xml",
+            "ALFEN/ALFEN-Testdata-04_2_1MWh_SAFEXMLContainer_relaxedValidationRules.expected.txt",
+            "validationRules/validationRules_5MWh.json"
+        );
+    });
+
+    test("ALFEN Testdata 05 - SAFE XML-Container with 1.9 MWh and 8 intermediate values", async () => {
+        await expectVerificationReport(
+            "ALFEN/ALFEN-Testdata-05_1_9MWh_8Intermediates_SAFEXMLContainer.xml",
+            "ALFEN/ALFEN-Testdata-05_1_9MWh_8Intermediates_SAFEXMLContainer.expected.txt"
+        );
     });
 
 });

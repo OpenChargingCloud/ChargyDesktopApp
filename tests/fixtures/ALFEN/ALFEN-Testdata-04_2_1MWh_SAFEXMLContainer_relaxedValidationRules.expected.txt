@@ -1,0 +1,19 @@
+format: ctr
+sessions: 1
+session 1: 2100000
+session 1 evseId: DE*GEF*EVSE*CHARGY*1
+session 1 meterId: 0a434841524759000001
+session 1 status: ValidSignature
+session 1 measurements: 1
+measurement 1.1 name: ENERGY_TOTAL
+measurement 1.1 obis: 1-0:1.8.0*255
+measurement 1.1 status: unknown
+measurement 1.1 values: 2
+value 1.1.1 timestamp: 2026-06-19T10:00:00.000Z
+value 1.1.1 value: 123456
+value 1.1.1 signatures: 1
+value 1.1.1 status: ValidSignature
+value 1.1.2 timestamp: 2026-06-19T10:30:00.000Z
+value 1.1.2 value: 2223456
+value 1.1.2 signatures: 1
+value 1.1.2 status: ValidSignature

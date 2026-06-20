@@ -1,0 +1,53 @@
+format: ctr
+sessions: 1
+warnings: 1
+warning 1: low: The charged energy amount is implausibly high.
+session 1: 1900000
+session 1 evseId: DE*GEF*EVSE*CHARGY*1
+session 1 meterId: 0a434841524759000002
+session 1 status: InplausibleMeasurement
+session 1 measurements: 1
+measurement 1.1 name: ENERGY_TOTAL
+measurement 1.1 obis: 1-0:1.8.0*255
+measurement 1.1 status: unknown
+measurement 1.1 values: 10
+value 1.1.1 timestamp: 2026-06-19T00:00:00.000Z
+value 1.1.1 value: 500000
+value 1.1.1 signatures: 1
+value 1.1.1 status: ValidSignature
+value 1.1.2 timestamp: 2026-06-19T08:00:00.000Z
+value 1.1.2 value: 540000
+value 1.1.2 signatures: 1
+value 1.1.2 status: ValidSignature
+value 1.1.3 timestamp: 2026-06-19T16:00:00.000Z
+value 1.1.3 value: 660000
+value 1.1.3 signatures: 1
+value 1.1.3 status: ValidSignature
+value 1.1.4 timestamp: 2026-06-20T00:00:00.000Z
+value 1.1.4 value: 940000
+value 1.1.4 signatures: 1
+value 1.1.4 status: ValidSignature
+value 1.1.5 timestamp: 2026-06-20T08:00:00.000Z
+value 1.1.5 value: 1340000
+value 1.1.5 signatures: 1
+value 1.1.5 status: ValidSignature
+value 1.1.6 timestamp: 2026-06-20T16:00:00.000Z
+value 1.1.6 value: 1740000
+value 1.1.6 signatures: 1
+value 1.1.6 status: ValidSignature
+value 1.1.7 timestamp: 2026-06-21T00:00:00.000Z
+value 1.1.7 value: 2100000
+value 1.1.7 signatures: 1
+value 1.1.7 status: ValidSignature
+value 1.1.8 timestamp: 2026-06-21T08:00:00.000Z
+value 1.1.8 value: 2356000
+value 1.1.8 signatures: 1
+value 1.1.8 status: ValidSignature
+value 1.1.9 timestamp: 2026-06-21T16:00:00.000Z
+value 1.1.9 value: 2380000
+value 1.1.9 signatures: 1
+value 1.1.9 status: ValidSignature
+value 1.1.10 timestamp: 2026-06-22T00:00:00.000Z
+value 1.1.10 value: 2400000
+value 1.1.10 signatures: 1
+value 1.1.10 status: ValidSignature
