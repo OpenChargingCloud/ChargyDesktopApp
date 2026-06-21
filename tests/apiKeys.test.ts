@@ -419,7 +419,7 @@ describe("API key authentication", () => {
             sharedSecret: totp.sharedSecrect,
             validityTime: totp.validityTime,
             totpLength:   totp.length,
-            alphabet:     totp.alphabet,
+            alphabet:     totp.alphabet ?? null,
             timestamp:    now
         });
 
@@ -493,7 +493,7 @@ describe("API key authentication", () => {
             sharedSecret:   sha384TOTP.sharedSecrect,
             validityTime:   sha384TOTP.validityTime,
             totpLength:     sha384TOTP.length,
-            alphabet:       sha384TOTP.alphabet,
+            alphabet:       sha384TOTP.alphabet ?? null,
             timestamp:      now,
             hashAlgorithm:  "sha384"
         }).current);
@@ -502,7 +502,7 @@ describe("API key authentication", () => {
             sharedSecret:   sha512TOTP.sharedSecrect,
             validityTime:   sha512TOTP.validityTime,
             totpLength:     sha512TOTP.length,
-            alphabet:       sha512TOTP.alphabet,
+            alphabet:       sha512TOTP.alphabet ?? null,
             timestamp:      now,
             hashAlgorithm:  "sha512"
         }).current);

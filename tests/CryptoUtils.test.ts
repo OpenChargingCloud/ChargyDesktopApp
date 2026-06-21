@@ -12,6 +12,7 @@ import {
     verifyJSONMessageSignatures,
     verifyJSONSignature
 } from "@open-charging-cloud/chargy-core";
+import { parseSignedJSONMessage } from "./chargyTestRuntime";
 
 describe("CryptoUtils", () => {
 
@@ -33,10 +34,21 @@ describe("CryptoUtils", () => {
         expect(message.signatures?.[0]?.publicKeyHEX).toBe(keyPair.getPublic(false, "hex"));
         expect(message.signatures?.[0]?.publicKey).toBe(Buffer.from(keyPair.getPublic(false, "array")).toString("base64"));
         expect(message.signatures?.[0]?.signatureHEX).toMatch(/^30[0-9a-f]+$/);
-        expect(message.signatures?.[0]?.signature).toBe(Buffer.from(message.signatures![0]!.signatureHEX, "hex").toString("base64"));
 
-        await expect(verifyJSONSignature(message, message.signatures![0]!)).resolves.toBe(true);
-        await expect(verifyJSONMessageSignatures(JSON.stringify(message))).resolves.toBe(true);
+        if (message.signatures && message.signatures.length > 0)
+        {
+
+            const signature0 = message.signatures.at(0);
+
+            if (signature0 === undefined)
+                throw new Error("Missing signature");
+
+            expect(signature0.signature).toBe(Buffer.from(signature0.signatureHEX, "hex").toString("base64"));
+
+            await expect(verifyJSONSignature(message, signature0)).resolves.toBe(true);
+            await expect(verifyJSONMessageSignatures(JSON.stringify(message))).resolves.toBe(true);
+
+        }
 
         await expect(verifyJSONMessageSignatureResults(JSON.stringify(message))).resolves.toMatchObject({
             status:     JSONSignatureVerificationStatus.True,
@@ -59,8 +71,17 @@ describe("CryptoUtils", () => {
         await expect(signJSONMessage(message, [keyPair1, keyPair2])).resolves.toBe(true);
 
         expect(message.signatures).toHaveLength(2);
-        await expect(verifyJSONSignature(message, message.signatures![0]!)).resolves.toBe(true);
-        await expect(verifyJSONSignature(message, message.signatures![1]!)).resolves.toBe(true);
+        if (message.signatures && message.signatures.length > 0)
+        {
+            const signature0 = message.signatures.at(0);
+            const signature1 = message.signatures.at(1);
+
+            if (signature0 === undefined || signature1 === undefined)
+                throw new Error("Missing signatures");
+
+            await expect(verifyJSONSignature(message, signature0)).resolves.toBe(true);
+            await expect(verifyJSONSignature(message, signature1)).resolves.toBe(true);
+        }
         await expect(parseAndVerifyJSONSignatures(JSON.stringify(message))).resolves.toBe(true);
 
     });
@@ -76,7 +97,7 @@ describe("CryptoUtils", () => {
 
         await expect(signMessage(message, keyPair)).resolves.toBe(true);
 
-        const tamperedMessage: SignedJSONMessage = JSON.parse(JSON.stringify(message));
+        const tamperedMessage = parseSignedJSONMessage(JSON.stringify(message));
         tamperedMessage["b"] = 3;
 
         await expect(verifyJSONMessageSignatures(tamperedMessage)).resolves.toBe(false);
@@ -114,8 +135,14 @@ describe("CryptoUtils", () => {
 
         await expect(signMessage(message, keyPair)).resolves.toBe(true);
 
-        const malformedSignatureMessage: SignedJSONMessage = JSON.parse(JSON.stringify(message));
-        malformedSignatureMessage.signatures![0]!.signature = "this-is-not-the-same-base64";
+        const malformedSignatureMessage = parseSignedJSONMessage(JSON.stringify(message));
+        if (malformedSignatureMessage.signatures && malformedSignatureMessage.signatures.length > 0)
+        {
+            const signature = malformedSignatureMessage.signatures.at(0);
+
+            if (signature !== undefined)
+                signature.signature = "this-is-not-the-same-base64";
+        }
 
         await expect(verifyJSONMessageSignatures(malformedSignatureMessage)).resolves.toBe(false);
         await expect(verifyJSONMessageSignatureResults(malformedSignatureMessage)).resolves.toMatchObject({
@@ -137,9 +164,17 @@ describe("CryptoUtils", () => {
 
         await expect(signMessage(message, keyPair)).resolves.toBe(true);
 
-        const invalidPublicKeyMessage: SignedJSONMessage = JSON.parse(JSON.stringify(message));
-        invalidPublicKeyMessage.signatures![0]!.publicKeyHEX = "04";
-        invalidPublicKeyMessage.signatures![0]!.publicKey    = Buffer.from("04", "hex").toString("base64");
+        const invalidPublicKeyMessage = parseSignedJSONMessage(JSON.stringify(message));
+        if (invalidPublicKeyMessage.signatures && invalidPublicKeyMessage.signatures.length > 0)
+        {
+            const signature = invalidPublicKeyMessage.signatures.at(0);
+
+            if (signature !== undefined)
+            {
+                signature.publicKeyHEX = "04";
+                signature.publicKey    = Buffer.from("04", "hex").toString("base64");
+            }
+        }
 
         await expect(verifyJSONMessageSignatureResults(invalidPublicKeyMessage)).resolves.toMatchObject({
             status:     JSONSignatureVerificationStatus.False,

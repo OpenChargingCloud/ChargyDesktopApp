@@ -904,6 +904,10 @@
                                         padding-bottom:     4px;
                                     }
 
+                                    &.warning {
+                                        color:              #7a5a00;
+                                    }
+
                                 }
 
                             }
@@ -1592,6 +1596,56 @@
                             .value2, .unit2 {
                                 color:            rgba(44, 74, 96, 0.5);
                             }
+                        }
+
+                    }
+
+                    .sessionValidationWarnings {
+
+                        margin-top:         1.2vh;
+                        width:              100%;
+
+                        .headline2 {
+                            margin-top:     0.6vh;
+                            font-weight:    bold;
+                        }
+
+                        .warningRows {
+                            display:        table;
+                            width:          100%;
+                            margin-top:     0.3vh;
+                        }
+
+                        .warningRow {
+                            display:        table-row;
+
+                            .level,
+                            .text {
+                                display:        table-cell;
+                                padding:        3px 8px 3px 8px;
+                                vertical-align: top;
+                            }
+
+                            .level {
+                                width:             1%;
+                                white-space:       nowrap;
+                                font-weight:       bold;
+                                color:             #af8613;
+                                background-color:  #f3c33c;
+                                border-radius:     6px;
+                                font-size:         90%;
+                                vertical-align:    middle;
+                            }
+
+                            .text {
+                                overflow-wrap:  anywhere;
+                            }
+
+                            &.header {
+                                color:          rgba(44, 74, 96, 0.65);
+                                font-size:      85%;
+                            }
+
                         }
 
                     }
@@ -2489,6 +2543,10 @@
 
 .fa-times-circle {
     color:          #CC0000;
+}
+
+.fa-exclamation-circle {
+    color:          #d59600;
 }
 
 .fa-question-circle-orange {

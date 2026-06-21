@@ -1,6 +1,4 @@
 import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
-import { DOMParser } from "@oozcitak/dom";
 import { describe, expect, test, vi } from 'vitest';
 import { Chargy } from '@open-charging-cloud/chargy-core';
 import {
@@ -19,8 +17,19 @@ import {
 import type {
     IFileInfo
 } from '@open-charging-cloud/chargy-core';
+import {
+    createTestChargy,
+    parseTestXML
+} from "./chargyTestRuntime";
 
-const require = createRequire(import.meta.url);
+
+type DetectionResult = ReturnType<Chargy["DetectAndConvertContentFormat"]>;
+
+vi.mock('pdfjs-dist', async () => {
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    pdfjs.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/legacy/build/pdf.worker.mjs';
+    return pdfjs;
+});
 
 vi.stubGlobal('window', {
     navigator: {
@@ -28,31 +37,15 @@ vi.stubGlobal('window', {
     }
 });
 
-vi.stubGlobal('DOMParser', DOMParser);
-
-function createChargy(): Chargy {
-
-    return new Chargy(
-        {},
-        "en",
-        require("elliptic"),
-        require("moment"),
-        require("asn1.js"),
-        require("base32-decode"),
-        () => ""
-    );
-
-}
-
 function readFixture(fileName: string): string {
     return readFileSync(new URL("fixtures/Mennekes/" + fileName, import.meta.url), "utf8").trim();
 }
 
 function parseXML(xml: string): Document {
-    return new DOMParser().parseFromString(xml, "text/xml") as unknown as Document;
+    return parseTestXML(xml);
 }
 
-async function verifyMennekesXML(fileName: string, xml: string) {
+async function verifyMennekesXML(fileName: string, xml: string): DetectionResult {
 
     const fileInfo: IFileInfo = {
         name:  fileName,
@@ -60,7 +53,7 @@ async function verifyMennekesXML(fileName: string, xml: string) {
         data:  new TextEncoder().encode(xml)
     };
 
-    return await createChargy().DetectAndConvertContentFormat([ fileInfo ]);
+    return createTestChargy(Chargy).DetectAndConvertContentFormat([ fileInfo ]);
 
 }
 
@@ -115,7 +108,11 @@ describe('Mennekes EDL40 Tests', () => {
 
     test("builds the 320 byte extended SML signature data at documented offsets", () => {
 
-        const chargingProcess = extractMennekesChargingProcesses(parseXML(readFixture("test1.xml")))[0]!;
+        const chargingProcess = extractMennekesChargingProcesses(parseXML(readFixture("test1.xml"))).at(0);
+
+        if (chargingProcess === undefined)
+            throw new Error("Missing Mennekes charging process");
+
         const signedData      = buildMennekesSignatureData(chargingProcess, chargingProcess.measurementStart);
 
         expect(signedData).toHaveLength(320);

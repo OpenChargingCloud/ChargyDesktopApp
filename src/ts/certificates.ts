@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-class certificates {
+export class certificates {
 
-    public GraphDefined:    any;
-    public GraphDefinedCSO: any;
-    public GraphDefinedEMP: any;
+    public GraphDefined:    Record<string, unknown>;
+    public GraphDefinedCSO: Record<string, unknown>;
+    public GraphDefinedEMP: Record<string, unknown>;
 
     constructor()
     {

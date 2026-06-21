@@ -15,7 +15,7 @@ declare module "asn1.js" {
     interface Asn1Schema {
         // asn1.js schemas return caller-defined object shapes.
         // Keep the default dynamic so legacy decode callsites keep their previous behaviour.
-        decode<T = any>(data: Uint8Array | ArrayBuffer, encoding: string): T;
+        decode(data: Uint8Array | ArrayBuffer, encoding: string): unknown;
     }
 
     const asn1: {

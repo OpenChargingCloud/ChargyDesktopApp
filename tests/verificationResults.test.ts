@@ -56,11 +56,11 @@ describe("toSessionVerificationResults", () => {
 
     test("falls back to a single 'no records' result, honoring the given message", () => {
 
-        const fallback = toSessionVerificationResults(ctrWithSessions([]), "Keine Datensätze gefunden!") as ISessionCryptoResult;
+        const fallback = toSessionVerificationResults(ctrWithSessions([]), { de: "Keine Datensätze gefunden!" }) as ISessionCryptoResult;
 
         expect(Array.isArray(fallback)).toBe(false);
         expect(fallback.status).toBe("Unvalidated");
-        expect(fallback.message).toBe("Keine Datensätze gefunden!");
+        expect(fallback.message).toEqual({ de: "Keine Datensätze gefunden!" });
 
     });
 
@@ -69,7 +69,7 @@ describe("toSessionVerificationResults", () => {
         const fallback = toSessionVerificationResults({ } as unknown as IChargeTransparencyRecord) as ISessionCryptoResult;
 
         expect(fallback.status).toBe("Unvalidated");
-        expect(fallback.message).toBe("No charge transparency records found!");
+        expect(fallback.message).toEqual({ en: "No charge transparency records found!" });
 
     });
 

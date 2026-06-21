@@ -1,10 +1,15 @@
-import { createRequire }          from "node:module";
 import { readFileSync }           from "node:fs";
 import { describe, expect, test } from "vitest";
-import { createChargy }           from './testHelper';
-import { IsAChargeTransparencyRecord } from '@open-charging-cloud/chargy-core';
+import {
+    createTestChargy,
+    mergeI18NDictionaries
+} from "./chargyTestRuntime";
+import { Chargy, IsAChargeTransparencyRecord } from '@open-charging-cloud/chargy-core';
 import type { IChargeTransparencyRecord } from '@open-charging-cloud/chargy-core';
 import { toSessionVerificationResults }   from '@open-charging-cloud/chargy-core';
+import coreI18n  from "@open-charging-cloud/chargy-core/i18n.json";
+import localI18n from "../src/i18n.json";
+import { createRequire }          from "node:module";
 
 const require = createRequire(import.meta.url);
 
@@ -18,7 +23,7 @@ type VerificationServiceModule = {
     renderCliVerification: (results: unknown, options?: {
         output?:   string | null;
         language?: string;
-        i18n?:     Record<string, Record<string, string>>;
+        i18n?:     Record<string, Record<string, string>>;  
     }) => CliVerification;
 };
 
@@ -35,7 +40,9 @@ const cliI18N = require("../src/i18n_CLI.json") as Record<string, Record<string,
 // the exact same function src/ts/chargyApp.ts uses in publishVerificationResult(...).
 async function verifyFixtureToCTR(fileName: string, contentType: string): Promise<IChargeTransparencyRecord> {
 
-    const result = await createChargy().DetectAndConvertContentFormat([
+    const i18n = mergeI18NDictionaries(coreI18n, localI18n);
+
+    const result = await createTestChargy(Chargy, { i18n }).DetectAndConvertContentFormat([
         {
             name: fileName,
             type: contentType,

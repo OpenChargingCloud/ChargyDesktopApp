@@ -31,7 +31,14 @@ module.exports = [
           {
             test: /\.ts$/,
             //include: /src/,
-            use: [{ loader: 'ts-loader' }]
+            use: [{
+              loader: 'ts-loader',
+              options: {
+                compilerOptions: {
+                  noEmit: false
+                }
+              }
+            }]
           },
           {
             test: /\.css$/,

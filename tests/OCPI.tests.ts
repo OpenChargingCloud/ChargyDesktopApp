@@ -1,31 +1,15 @@
-import { createRequire } from "node:module";
 import { describe, expect, test } from 'vitest';
-import './testHelper';   // Stubs browser globals before chargy.ts is imported.
+import './testHelper';   // Mocks 'pdfjs-dist' and stubs 'window' before chargy.ts is imported!
 import { Chargy } from '@open-charging-cloud/chargy-core';
 import { OCPI } from '@open-charging-cloud/chargy-core';
-
-const require = createRequire(import.meta.url);
-
-function createChargy(): Chargy {
-
-    return new Chargy(
-        {},
-        "en",
-        require("elliptic"),
-        require("moment"),
-        require("asn1.js"),
-        require("base32-decode"),
-        () => ""
-    );
-
-}
+import { createTestChargy } from './chargyTestRuntime';
 
 
 describe('OCPI Tests', () => {
 
     test("Old chargeIT container with OCMF data merges placeInfo and meterInfo into the CTR", async () => {
 
-        const result = await new OCPI(createChargy()).tryToParseOCPIFormat({
+        const result = await new OCPI(createTestChargy(Chargy)).tryToParseOCPIFormat({
 
             "placeInfo": {
                 "evseId": "DE*GEF*EVSE*CI*TESTS*2*B*1",

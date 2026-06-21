@@ -44,7 +44,7 @@
     "DCC"
   ],
   "devDependencies": {
-    "@cyclonedx/cyclonedx-npm": "^4.2.1",
+    "@cyclonedx/cyclonedx-npm": "^5.0.0",
     "@eslint/js": "^10.0.1",
     "@types/elliptic": "^6.4.18",
     "@types/leaflet": "^1.9.21",
@@ -67,7 +67,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.2.0",
-    "@open-charging-cloud/chargy-core": "^0.5.0",
+    "@open-charging-cloud/chargy-core": "^0.6.4",
     "@open-charging-cloud/totp": "^0.2.0",
     "asn1.js": "^5.4.1",
     "base32-decode": "^1.0.0",

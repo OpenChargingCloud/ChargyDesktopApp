@@ -1,5 +1,5 @@
-import { describe, expect, test, vi } from 'vitest';
-import { expectVerificationReport, expectArchiveVerificationReport } from './testHelper';
+import { describe, test }            from 'vitest';
+import { expectVerificationReport }  from './testHelper';
 
 
 describe('PTB Tests', () => {

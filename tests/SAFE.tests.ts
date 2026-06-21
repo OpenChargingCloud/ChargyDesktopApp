@@ -1,42 +1,26 @@
-import { createRequire } from "node:module";
-import { describe, expect, test, vi } from 'vitest';
-import { expectVerificationReport, expectArchiveVerificationReport, expectVerificationReportInline } from './testHelper';
-import { Chargy } from '@open-charging-cloud/chargy-core';
-import { SAFEXML } from '@open-charging-cloud/chargy-core';
-
-const require = createRequire(import.meta.url);
-const { DOMParser } = require("@oozcitak/dom");
-
-function createChargy(): Chargy {
-
-    return new Chargy(
-        {},
-        "en",
-        require("elliptic"),
-        require("moment"),
-        require("asn1.js"),
-        require("base32-decode"),
-        () => ""
-    );
-
-}
+import { describe, expect, test } from 'vitest';
+import { expectVerificationReport, expectArchiveVerificationReport } from './testHelper';
+import { Chargy, SAFEXML } from '@open-charging-cloud/chargy-core';
+import { createTestChargy, parseTestXML } from './chargyTestRuntime';
 
 describe('SAFE Tests', () => {
 
     test("SAFE value without signedData should fail", async () => {
 
-        const xmlDocument = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>
+        const xmlDocument = parseTestXML(`<?xml version="1.0" encoding="UTF-8"?>
 <values>
     <value transactionId="begin" context="Transaction.Begin">
         <publicKey encoding="plain">abc</publicKey>
     </value>
-</values>`, "text/xml");
+</values>`);
 
-        const result = await new SAFEXML(createChargy()).tryToParseSAFEXML(xmlDocument);
+        const result = await new SAFEXML(createTestChargy(Chargy)).tryToParseSAFEXML(xmlDocument);
 
         expect(result).toMatchObject({
             status:  "InvalidSessionFormat",
-            message: "Each value within the given XML container must contain signed data!"
+            message: {
+                en: "Each value within the given XML container must contain signed data!"
+            }
         });
 
     });

@@ -32,6 +32,12 @@ const {
     packageJson
 }                                                                = require('./applicationMetadata.cjs');
 const cliI18N                                                    = require('./i18n_CLI.json');
+const coreI18N                                                   = require('@open-charging-cloud/chargy-core/i18n.json');
+const desktopI18N                                                = require('./i18n.json');
+const rendererI18N                                               = {
+    ...coreI18N,
+    ...desktopI18N
+};
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -460,7 +466,7 @@ ipcMain.on('getAppContext', (event) => {
         copyright,
         commandLineArguments,
         packageJson,
-        i18n:         require('./i18n.json'),
+        i18n:         rendererI18N,
         httpConfig:   [ httpHost, httpPort ],
         mapbox: {
             accessToken:          mapboxAccessToken,

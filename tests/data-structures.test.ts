@@ -28,7 +28,6 @@ import {
 import {
   OBIS2Hex,
   OBIS2MeasurementName,
-  ParseJSON_LD,
   buf2hex,
   createHexString,
   hexToArrayBuffer,
@@ -47,12 +46,13 @@ import {
   sampleSessionCryptoResult
 } from "./fixtures/dataStructures";
 
+vi.mock("pdfjs-dist", () => ({
+  GlobalWorkerOptions: {}
+}));
+
 vi.stubGlobal("window", {
     navigator: {
         language: "en"
-    },
-    chargyElectron: {
-        openExternal: () => Promise.resolve()
     }
 });
 

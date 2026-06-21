@@ -6,7 +6,14 @@ import { tmpdir }                 from "node:os";
 import { join }                   from "node:path";
 import type { Server }            from "node:http";
 import { beforeAll, describe, expect, test } from "vitest";
-import { createChargy }           from './testHelper';
+import { Chargy } from '@open-charging-cloud/chargy-core';
+import type { IChargeTransparencyRecord } from '@open-charging-cloud/chargy-core';
+import coreI18n  from "@open-charging-cloud/chargy-core/i18n.json";
+import localI18n from "../src/i18n.json";
+import {
+    createTestChargy,
+    mergeI18NDictionaries
+} from "./chargyTestRuntime";
 import {
     ApiKeyRole,
     type ApiKeyAuthenticationResult,
@@ -41,7 +48,7 @@ type HttpApiModule = {
         maxContentSize?:     number;
         requestTimeoutMs?:   number;
         serializeDispatch?:  boolean;
-        apiKeyAuthenticator?: (headerValue: string | string[] | undefined) => ApiKeyAuthenticationResult;
+        apiKeyAuthenticator?: ((headerValue: string | string[] | undefined) => ApiKeyAuthenticationResult) | undefined;
         apiKeyEntries?:      ParsedApiKeyEntry[];
         apiKeysFileName?:    string | null;
         log?:                (message: string) => void;
@@ -106,7 +113,9 @@ const rawApiKeys = [
 
 async function dispatchToChargyCore(request: HttpDispatchRequest): Promise<HttpDispatchResponse> {
 
-    const result = await createChargy().DetectAndConvertContentFormat([
+    const i18n = mergeI18NDictionaries(coreI18n, localI18n);
+
+    const result = await createTestChargy(Chargy, { i18n }).DetectAndConvertContentFormat([
         {
             name: "uploaded-transparency-record.png",
             type: request.contentType ?? "application/octet-stream",
@@ -128,24 +137,38 @@ async function withHttpServer(
         language?:       string;
         i18n?:           Record<string, Record<string, string>>;
         maxContentSize?: number;
-        apiKeyAuthenticator?: (headerValue: string | string[] | undefined) => ApiKeyAuthenticationResult;
+        apiKeyAuthenticator?: ((headerValue: string | string[] | undefined) => ApiKeyAuthenticationResult) | undefined;
         apiKeyEntries?:      ParsedApiKeyEntry[];
         apiKeysFileName?:    string | null;
     } = {}
 ): Promise<void> {
 
-    const server = startChargyHttpServer({
+    const serverOptions: Parameters<typeof startChargyHttpServer>[0] = {
         host: "127.0.0.1",
         port: 0,
         dispatchHttpRequest,
-        language: options.language,
-        i18n: options.i18n,
-        maxContentSize: options.maxContentSize,
-        apiKeyAuthenticator: options.apiKeyAuthenticator,
-        apiKeyEntries: options.apiKeyEntries,
-        apiKeysFileName: options.apiKeysFileName,
         log: () => {}
-    });
+    };
+
+    if (options.language !== undefined)
+        serverOptions.language = options.language;
+
+    if (options.i18n !== undefined)
+        serverOptions.i18n = options.i18n;
+
+    if (options.maxContentSize !== undefined)
+        serverOptions.maxContentSize = options.maxContentSize;
+
+    if (options.apiKeyAuthenticator !== undefined)
+        serverOptions.apiKeyAuthenticator = options.apiKeyAuthenticator;
+
+    if (options.apiKeyEntries !== undefined)
+        serverOptions.apiKeyEntries = options.apiKeyEntries;
+
+    if (options.apiKeysFileName !== undefined)
+        serverOptions.apiKeysFileName = options.apiKeysFileName;
+
+    const server = startChargyHttpServer(serverOptions);
 
     await new Promise<void>(resolve => server.once("listening", resolve));
 
@@ -158,7 +181,12 @@ async function withHttpServer(
     finally
     {
         await new Promise<void>((resolve, reject) => {
-            server.close(exception => exception != null ? reject(exception) : resolve());
+            server.close(exception => {
+                if (exception != null)
+                    reject(exception);
+                else
+                    resolve();
+            });
         });
     }
 
@@ -1260,11 +1288,19 @@ describe("Chargy HTTP API", () => {
 
                 expect(response.status).toBe(200);
 
-                const result = await response.json();
+                const result = await response.json() as unknown as IChargeTransparencyRecord;
 
-                expect(result.chargingSessions).toHaveLength(1);
-                expect(result.chargingSessions[0].verificationResult.status).toBe("ValidSignature");
-                expect(result.chargingSessions[0].EVSEId).toBe("DE*GEF*EVSE*CHARGY*1");
+                const chargingSessions = result.chargingSessions;
+
+                expect(chargingSessions).toBeDefined();
+                expect(chargingSessions).toHaveLength(1);
+
+                const session = chargingSessions?.[0];
+
+                expect(session).toBeDefined();
+                expect(session?.verificationResult).toBeDefined();
+                expect(session?.verificationResult?.status).toBe("ValidSignature");
+                expect(session?.EVSEId).toBe("DE*GEF*EVSE*CHARGY*1");
             }
         );
 
@@ -1574,7 +1610,7 @@ describe("Chargy HTTP API", () => {
 
 describe("Chargy HTTP API - robustness via raw sockets", () => {
 
-    function withDirectServer(
+    async function withDirectServer(
         options: {
             maxContentSize?:   number;
             requestTimeoutMs?: number;
