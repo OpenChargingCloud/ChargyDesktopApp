@@ -72,6 +72,7 @@
     "asn1.js": "^5.4.1",
     "base32-decode": "^1.0.0",
     "buffer": "^6.0.3",
+    "chart.js": "^4.5.1",
     "decimal.js": "^10.6.0",
     "elliptic": "^6.6.1",
     "leaflet": "^1.9.4",

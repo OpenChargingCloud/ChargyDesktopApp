@@ -1520,13 +1520,46 @@
 
                     .measurementValues {
 
-                        display:            table;
+                        display:            block;
                         width:              100%;
-                        cursor:             zoom-in;
+                        cursor:             default;
 
                         .headline2 {
                             margin-top:     0.6vh;
                             font-weight:    bold;
+                        }
+
+                        .measurementValueViews {
+                            display:        flex;
+                            align-items:    center;
+                            justify-content:center;
+                            gap:            10px;
+                            flex-wrap:      wrap;
+                            margin:         0.35vh 0 0.45vh 0;
+
+                            .viewLink {
+                                padding:            0;
+                                border:             0;
+                                background:         transparent;
+                                color:              #34668a;
+                                font:               inherit;
+                                font-weight:        bold;
+                                text-decoration:    underline;
+                                cursor:             pointer;
+                            }
+
+                            .viewLink.activated,
+                            .viewLink:disabled {
+                                color:              rgba(44, 74, 96, 0.45);
+                                text-decoration:    none;
+                                cursor:             default;
+                            }
+                        }
+
+                        .measurementValueRows {
+                            display:        table;
+                            width:          100%;
+                            cursor:         zoom-in;
                         }
 
                         .measurementValue {
@@ -1646,6 +1679,30 @@
                                 font-size:      85%;
                             }
 
+                        }
+
+                    }
+
+                    .chargingProgressChart {
+
+                        margin-top:         1.2vh;
+                        width:              100%;
+
+                        .headline2 {
+                            margin-top:     0.6vh;
+                            font-weight:    bold;
+                        }
+
+                        .chartFrame {
+                            position:       relative;
+                            height:         220px;
+                            min-height:     180px;
+                            margin-top:     0.5vh;
+                        }
+
+                        canvas {
+                            width:          100% !important;
+                            height:         100% !important;
                         }
 
                     }
