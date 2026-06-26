@@ -6,7 +6,9 @@
         <description language="en">
             GraphDefined Charging Station - CI-Tests Pool 1 / Station A
         </description>
-        <softwareVersion>3.0.25.2089</softwareVersion>
+        <firmware>
+            <version>3.0.25.2089</version>
+        </firmware>
 
         <geoLocation>
             <latitude>50.387945</latitude>

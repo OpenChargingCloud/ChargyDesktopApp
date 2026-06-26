@@ -13,7 +13,7 @@ import type {
     IMeasurementValue
 } from '@open-charging-cloud/chargy-core';
 import type {
-    IPublicKeyInfo,
+    IPublicKey,
     IPublicKeyLookup
 } from '@open-charging-cloud/chargy-core';
 import type {
@@ -22,7 +22,7 @@ import type {
     ISessionCryptoResult
 } from '@open-charging-cloud/chargy-core';
 
-export function samplePublicKeyInfo(overrides: Partial<IPublicKeyInfo> = {}): IPublicKeyInfo {
+export function samplePublicKeyInfo(overrides: Partial<IPublicKey> = {}): IPublicKey {
   return {
     "@id": "public-key/example-meter",
     "@context": "https://open.charging.cloud/contexts/PublicKeyInfo+json",
@@ -38,7 +38,7 @@ export function samplePublicKeyInfo(overrides: Partial<IPublicKeyInfo> = {}): IP
   };
 }
 
-export function samplePublicKeyLookup(publicKeys: IPublicKeyInfo[] = [samplePublicKeyInfo()]): IPublicKeyLookup {
+export function samplePublicKeyLookup(publicKeys: IPublicKey[] = [samplePublicKeyInfo()]): IPublicKeyLookup {
   return {
     publicKeys,
     status: SessionVerificationResult.Unvalidated

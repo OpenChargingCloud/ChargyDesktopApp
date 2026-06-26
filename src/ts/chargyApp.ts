@@ -34,6 +34,7 @@ import moment                           from 'moment';
 import base32Decode                     from 'base32-decode';
 import * as asn1                        from 'asn1.js';
 import * as L                           from 'leaflet';
+import { getMimeTypeFromFileName }      from './fileTypes';
 import 'leaflet.awesome-markers';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../css/chargy.scss';
@@ -41,7 +42,7 @@ import '../css/chargy.scss';
 
 type DetectionResult = chargeTransparencyRecord.  IChargeTransparencyRecord   |
                        chargeTransparencyLiveLink.IChargeTransparencyLiveLink |
-                       publicKeyInfo.             IPublicKeyInfo              |
+                       publicKeyInfo.             IPublicKey                  |
                        chargyInterfaces.          ISessionCryptoResult;
 
 type DetectionOptions = {
@@ -96,7 +97,7 @@ function dependencyVersion(dependencies: DependencyMap | undefined, dependencyNa
     return (dependencies?.[dependencyName] ?? coreDependencies?.[dependencyName])?.replace(/[^\d.]/g, "") ?? "";
 }
 
-function getTextFromMultilanguageText(text: chargyInterfaces.IMultilanguageText | undefined | null,
+function getTextFromMultilanguageText(text: chargyInterfaces.I18NString | undefined | null,
                                       language: SupportedLanguage,
                                       fallback: string = ""): string {
 
@@ -105,6 +106,15 @@ function getTextFromMultilanguageText(text: chargyInterfaces.IMultilanguageText 
            text?.["de"]   ??
            Object.values(text ?? {}).find((value): value is string => typeof value === "string") ??
            fallback;
+
+}
+
+function getObjectName(value: string | { name?: string | undefined } | undefined | null): string {
+
+    if (typeof value === "string")
+        return value;
+
+    return value?.name ?? "";
 
 }
 
@@ -1066,15 +1076,10 @@ export class ChargyApp {
             this.inputButtonsDiv.style.display           = "none";
             this.exportButtonDiv.style.display           = "none";
             this.fileInput.value                         = "";
-            this.detailedInfosDiv.innerHTML              = "";
+            this.clearChargingSessionOutput(true);
             this.currentChargeTransparencyRecord         = null;
             this.currentChargeTransparencyLiveLink       = null;
             this.currentGlobalError                      = null;
-
-            this.minlat = +1000;
-            this.maxlat = -1000;
-            this.minlng = +1000;
-            this.maxlng = -1000;
 
         }
 
@@ -1514,6 +1519,52 @@ export class ChargyApp {
 
     //#endregion    
 
+    private resetMapBounds(): void {
+
+        this.minlat = +1000;
+        this.maxlat = -1000;
+        this.minlng = +1000;
+        this.maxlng = -1000;
+
+    }
+
+    private clearMapMarkers(): void {
+
+        while (this.markers.length > 0)
+        {
+            const marker = this.markers.pop();
+
+            if (marker != null)
+                this.map.removeLayer(marker);
+        }
+
+        this.resetMapBounds();
+
+    }
+
+    private resetMapView(): void {
+
+        this.map.setView(
+            this.appContext.mapbox.startGeoCoordinates,
+            this.appContext.mapbox.startMapZoom
+        );
+
+    }
+
+    private clearChargingSessionOutput(resetMapView: boolean = false): void {
+
+        this.clearChargingSessionCharts();
+        this.clearMapMarkers();
+
+        this.chargingSessionScreenDiv.style.display = "none";
+        this.chargingSessionScreenDiv.innerHTML     = "";
+        this.detailedInfosDiv.innerHTML             = "";
+
+        if (resetMapView)
+            this.resetMapView();
+
+    }
+
     //#region UpdateFeedbackSection()
 
     public UpdateFeedbackSection(FeedbackEMail?:   string[],
@@ -1607,6 +1658,7 @@ export class ChargyApp {
         this.currentGlobalError                = result;
         this.currentChargeTransparencyRecord   = null;
         this.currentChargeTransparencyLiveLink = null;
+        this.clearChargingSessionOutput(true);
 
         let text = this.chargy.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord");
 
@@ -1627,10 +1679,11 @@ export class ChargyApp {
 
         this.inputDiv.style.flexDirection            = "";
         this.inputInfosDiv.style.display             = 'flex';
-        this.chargingSessionScreenDiv.style.display  = 'none';
-        this.chargingSessionScreenDiv.innerHTML      = '';
         this.invalidDataSetsScreenDiv.style.display  = "none";
         this.invalidDataSetsScreenDiv.innerText      = "";
+        this.inputButtonsDiv.style.display           = "none";
+        this.exportButtonDiv.style.display           = "none";
+        this.fileInput.value                         = "";
         this.errorTextDiv.style.display              = 'inline-block';
         this.errorTextDiv.innerHTML                  = '<i class="fas fa-times-circle"></i> ' + text;
 
@@ -1952,6 +2005,203 @@ export class ChargyApp {
 
     }
 
+    private isSVGFileInfo(fileInfo: chargyInterfaces.IFileInfo): boolean {
+
+        return fileInfo.type?.toLowerCase() === "image/svg+xml" ||
+               getMimeTypeFromFileName(fileInfo.path ?? fileInfo.name) === "image/svg+xml";
+
+    }
+
+    private textFileNameForQRCodeContent(fileName: string,
+                                         qrText:   string): string {
+
+        const baseFileName = fileName.replace(/\.[^/.\\]+$/, "");
+        const trimmedText  = qrText.trimStart();
+
+        if (trimmedText.startsWith("<?xml") ||
+            trimmedText.startsWith("<"))
+        {
+            return baseFileName + ".xml";
+        }
+
+        if (trimmedText.startsWith("{") ||
+            trimmedText.startsWith("["))
+        {
+            return baseFileName + ".json";
+        }
+
+        return baseFileName + ".txt";
+
+    }
+
+    private svgImageSize(svgText: string): { width: number; height: number }|null {
+
+        const svgDocument = new DOMParser().parseFromString(svgText, "image/svg+xml");
+        const svgElement  = svgDocument.documentElement;
+
+        if (svgElement.nodeName.toLowerCase() !== "svg")
+            return null;
+
+        const widthAttribute  = Number.parseFloat(svgElement.getAttribute("width")  ?? "");
+        const heightAttribute = Number.parseFloat(svgElement.getAttribute("height") ?? "");
+
+        if (Number.isFinite(widthAttribute)  && widthAttribute  > 0 &&
+            Number.isFinite(heightAttribute) && heightAttribute > 0)
+        {
+            return {
+                width:   widthAttribute,
+                height:  heightAttribute
+            };
+        }
+
+        const viewBoxValues = svgElement.getAttribute("viewBox")?.
+                                         trim().
+                                         split(/[\s,]+/).
+                                         map(value => Number.parseFloat(value));
+        const viewBoxWidth  = viewBoxValues?.[2];
+        const viewBoxHeight = viewBoxValues?.[3];
+
+        if (viewBoxValues != null         &&
+            viewBoxValues.length >= 4     &&
+            viewBoxWidth        != null   &&
+            viewBoxHeight       != null   &&
+            Number.isFinite(viewBoxWidth) &&
+            Number.isFinite(viewBoxHeight) &&
+            viewBoxWidth  > 0             &&
+            viewBoxHeight > 0)
+        {
+            return {
+                width:   viewBoxWidth,
+                height:  viewBoxHeight
+            };
+        }
+
+        return null;
+
+    }
+
+    private svgTextWithExplicitSize(svgText: string,
+                                    width:   number,
+                                    height:  number): string {
+
+        const svgDocument = new DOMParser().parseFromString(svgText, "image/svg+xml");
+        const svgElement  = svgDocument.documentElement;
+
+        if (svgElement.nodeName.toLowerCase() !== "svg")
+            return svgText;
+
+        svgElement.setAttribute("width",  width. toString());
+        svgElement.setAttribute("height", height.toString());
+
+        return new XMLSerializer().serializeToString(svgDocument);
+
+    }
+
+    private async readQRCodeTextFromSVG(svgText: string): Promise<string|undefined> {
+
+        if (typeof Blob === "undefined" ||
+            typeof URL  === "undefined" ||
+            typeof Image === "undefined" ||
+            typeof document === "undefined")
+        {
+            return undefined;
+        }
+
+        const imageSize = this.svgImageSize(svgText);
+
+        if (imageSize == null)
+            return undefined;
+
+        const scale        = Math.max(1, Math.ceil(512 / Math.max(imageSize.width, imageSize.height)));
+        const canvasWidth  = Math.ceil(imageSize.width  * scale);
+        const canvasHeight = Math.ceil(imageSize.height * scale);
+        const imageBlob    = new Blob(
+            [ this.svgTextWithExplicitSize(svgText, imageSize.width, imageSize.height) ],
+            { type: "image/svg+xml" }
+        );
+        const imageURL     = URL.createObjectURL(imageBlob);
+
+        try
+        {
+
+            const image = new Image();
+
+            await new Promise<void>((resolve, reject) => {
+                image.onload  = () => { resolve(); };
+                image.onerror = () => { reject(new Error("Could not decode SVG image.")); };
+                image.src     = imageURL;
+            });
+
+            const canvas  = document.createElement("canvas");
+            canvas.width  = canvasWidth;
+            canvas.height = canvasHeight;
+
+            const context = canvas.getContext("2d", { willReadFrequently: true });
+
+            if (context == null)
+                return undefined;
+
+            context.fillStyle = "#ffffff";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+            return readQRCodeTextFromImageData({
+                data:    imageData.data,
+                width:   imageData.width,
+                height:  imageData.height
+            });
+
+        }
+        catch
+        {
+            return undefined;
+        }
+        finally
+        {
+            URL.revokeObjectURL(imageURL);
+        }
+
+    }
+
+    private async expandSVGQRCodeFiles(fileInfos: chargyInterfaces.IFileInfo[]): Promise<chargyInterfaces.IFileInfo[]> {
+
+        const expandedFiles = new Array<chargyInterfaces.IFileInfo>();
+
+        for (const fileInfo of fileInfos)
+        {
+
+            if (fileInfo.data != null &&
+                this.isSVGFileInfo(fileInfo))
+            {
+
+                const svgText = new TextDecoder("utf-8").decode(fileInfo.data);
+                const qrText  = await this.readQRCodeTextFromSVG(svgText);
+
+                if (qrText != null &&
+                    qrText.length > 0)
+                {
+                    expandedFiles.push({
+                        name:  this.textFileNameForQRCodeContent(fileInfo.name, qrText),
+                        path:  fileInfo.path,
+                        type:  "text/plain",
+                        data:  new TextEncoder().encode(qrText),
+                        info:  "Text extracted from SVG QR code image"
+                    });
+                    continue;
+                }
+
+            }
+
+            expandedFiles.push(fileInfo);
+
+        }
+
+        return expandedFiles;
+
+    }
+
     //#endregion
 
     //#region readFile(s)FromDisk()
@@ -2002,11 +2252,13 @@ export class ChargyApp {
                         const fileData = filename instanceof File
                                              ? await filename.arrayBuffer()
                                              : await this.electron.readFile((filename.path ?? filename.name).replace("file://", ""));
+                        const fileType = filename.type?.trim() ||
+                                         getMimeTypeFromFileName(filename.path ?? filename.name);
 
                         loadedFiles.push({
                                        "name":  filename.name,
                                        "path":  filename.path,
-                                       "type":  filename.type,
+                                       "type":  fileType,
                                        "data":  fileData
                                     });
 
@@ -2024,7 +2276,7 @@ export class ChargyApp {
 
 
             if (loadedFiles.length > 0)
-                this.detectAndConvertContentFormat(loadedFiles);
+                await this.detectAndConvertContentFormat(await this.expandSVGQRCodeFiles(loadedFiles));
 
         }
     }
@@ -2276,7 +2528,7 @@ export class ChargyApp {
 
         }
 
-        if (publicKeyInfo.IsAPublicKeyInfo(result))
+        if (publicKeyInfo.IsAPublicKey(result))
         {
 
             if (options?.prepareUI === false)
@@ -2548,7 +2800,7 @@ export class ChargyApp {
 
         //#region Show global contract infos
 
-        if (CTR.contract)
+        if (CTR.contracts)
         {
         }
 
@@ -2677,7 +2929,7 @@ export class ChargyApp {
 
                     }
 
-                    for (const measurement of chargingSession.measurements)
+                    for (const measurement of chargingSession.measurements ?? [])
                     {
                         //<i class="far fa-chart-bar"></i>
                         if (measurement.values && measurement.values.length > 0)
@@ -2828,33 +3080,37 @@ export class ChargyApp {
                 try
                 {
 
-                    const authorizationStartDiv            = tableDiv.appendChild(document.createElement('div'));
-                        authorizationStartDiv.className  = "authorizationStart";
-
-                    const authorizationStartIconDiv                   = authorizationStartDiv.appendChild(document.createElement('div'));
-                    authorizationStartIconDiv.className             = "icon";
-                    switch (chargingSession.authorizationStart.type)
+                    if (chargingSession.authorizationStart != null)
                     {
 
-                        case "cryptoKey":
-                            authorizationStartIconDiv.innerHTML     = '<i class="fas fa-key"></i>';
-                            break;
+                        const authorizationStartDiv            = tableDiv.appendChild(document.createElement('div'));
+                            authorizationStartDiv.className  = "authorizationStart";
 
-                        case "eMAId":
-                        case "EVCOId":
-                            authorizationStartIconDiv.innerHTML     = '<i class="fas fa-mobile-alt"></i>';
-                            break;
+                        const authorizationStartIconDiv                   = authorizationStartDiv.appendChild(document.createElement('div'));
+                        authorizationStartIconDiv.className             = "icon";
+                        switch (chargingSession.authorizationStart.type)
+                        {
 
-                        default:
-                            authorizationStartIconDiv.innerHTML     = '<i class="fas fa-id-card"></i>';
-                            break;
+                            case "cryptoKey":
+                                authorizationStartIconDiv.innerHTML     = '<i class="fas fa-key"></i>';
+                                break;
+
+                            case "eMAId":
+                            case "EVCOId":
+                                authorizationStartIconDiv.innerHTML     = '<i class="fas fa-mobile-alt"></i>';
+                                break;
+
+                            default:
+                                authorizationStartIconDiv.innerHTML     = '<i class="fas fa-id-card"></i>';
+                                break;
+
+                        }
+
+                        const authorizationStartIdDiv                     = authorizationStartDiv.appendChild(document.createElement('div'));
+                        authorizationStartIdDiv.className               = "id";
+                        authorizationStartIdDiv.innerHTML = chargingSession.authorizationStart["@id"];
 
                     }
-
-                    const authorizationStartIdDiv                     = authorizationStartDiv.appendChild(document.createElement('div'));
-                    authorizationStartIdDiv.className               = "id";
-                    authorizationStartIdDiv.innerHTML = chargingSession.authorizationStart["@id"];
-
 
                     if (chargingSession.authorizationStop != null)
                     {
@@ -2925,9 +3181,12 @@ export class ChargyApp {
                             //     chargingSession.EVSE = this.chargy.GetEVSE(chargingSession.EVSEId);
                             if (!chargingSession.EVSE)
                             {
-                                const evse = this.chargy.GetEVSE(chargingSession.EVSEId);
-                                if (evse)
-                                    chargingSession.EVSE = evse;
+                                if (chargingSession.EVSEId !== undefined)
+                                {
+                                    const evse = this.chargy.GetEVSE(chargingSession.EVSEId);
+                                    if (evse)
+                                        chargingSession.EVSE = evse;
+                                }
                             }
 
                             chargingStationDiv.classList.add("EVSE");
@@ -3937,8 +4196,8 @@ export class ChargyApp {
                        (measurement.chargingSession.chargingStation["@id"] !== "DE*GEF*STATION*CHARGY*1" ||
                         measurement.chargingSession.chargingStation.manufacturer                         ||
                         measurement.chargingSession.chargingStation.model                                ||
-                        measurement.chargingSession.chargingStation.serialNumber                         ||
-                        measurement.chargingSession.chargingStation.firmwareVersion                      ||
+                        measurement.chargingSession.chargingStation.hardware?.serialNumber                ||
+                        measurement.chargingSession.chargingStation.firmware?.version                     ||
                         measurement.chargingSession.chargingStation.legalCompliance))
                     {
 
@@ -3955,36 +4214,36 @@ export class ChargyApp {
                                                  measurement.chargingSession.chargingStation["@id"]);
                         }
 
-                        if (measurement.chargingSession.chargingStation.manufacturer &&
-                            measurement.chargingSession.chargingStation.manufacturer.length > 0)
+                        const manufacturer = getObjectName(measurement.chargingSession.chargingStation.manufacturer);
+                        if (manufacturer.length > 0)
                         {
                             chargyLib.CreateDiv2(chargingStationInfosDiv, "manufacturer",
                                                  this.chargy.GetLocalizedMessage("Manufacturer"),
-                                                 measurement.chargingSession.chargingStation.manufacturer);
+                                                 manufacturer);
                         }
 
-                        if (measurement.chargingSession.chargingStation.model &&
-                            measurement.chargingSession.chargingStation.model.length > 0)
+                        const model = getObjectName(measurement.chargingSession.chargingStation.model);
+                        if (model.length > 0)
                         {
                             chargyLib.CreateDiv2(chargingStationInfosDiv, "model",
                                                  this.chargy.GetLocalizedMessage("Model"),
-                                                 measurement.chargingSession.chargingStation.model);
+                                                 model);
                         }
 
-                        if (measurement.chargingSession.chargingStation.serialNumber &&
-                            measurement.chargingSession.chargingStation.serialNumber.length > 0)
+                        if (measurement.chargingSession.chargingStation.hardware?.serialNumber &&
+                            measurement.chargingSession.chargingStation.hardware.serialNumber.length > 0)
                         {
                             chargyLib.CreateDiv2(chargingStationInfosDiv, "serialNumber",
                                                  this.chargy.GetLocalizedMessage("Serial Number"),
-                                                 measurement.chargingSession.chargingStation.serialNumber);
+                                                 measurement.chargingSession.chargingStation.hardware.serialNumber);
                         }
 
-                        if (measurement.chargingSession.chargingStation.firmwareVersion &&
-                            measurement.chargingSession.chargingStation.firmwareVersion.length > 0)
+                        if (measurement.chargingSession.chargingStation.firmware?.version &&
+                            measurement.chargingSession.chargingStation.firmware.version.length > 0)
                         {
                             chargyLib.CreateDiv2(chargingStationInfosDiv, "firmwareVersion",
                                                  this.chargy.GetLocalizedMessage("Firmware Version"),
-                                                 measurement.chargingSession.chargingStation.firmwareVersion);
+                                                 measurement.chargingSession.chargingStation.firmware.version);
                         }
 
                         if (measurement.chargingSession.chargingStation.legalCompliance?.freeText &&
@@ -4035,25 +4294,27 @@ export class ChargyApp {
                                                  this.chargy.GetLocalizedMessage("Serial Number"),
                                                  measurement.energyMeterId);
 
-                        if (meter.manufacturer && meter.manufacturer.length > 0)
+                        const meterManufacturer = getObjectName(meter.manufacturer);
+                        if (meterManufacturer.length > 0)
                             chargyLib.CreateDiv2(energyMeterInfosDiv, "meterManufacturer",
                                                  this.chargy.GetLocalizedMessage("Manufacturer"),
-                                                 meter.manufacturer);
+                                                 meterManufacturer);
 
-                        if (meter.model && meter.model.length > 0)
+                        const meterModel = getObjectName(meter.model);
+                        if (meterModel.length > 0)
                             chargyLib.CreateDiv2(energyMeterInfosDiv, "meterModel",
                                                  this.chargy.GetLocalizedMessage("Model"),
-                                                 meter.model);
+                                                 meterModel);
 
-                        if (meter.hardwareVersion && meter.hardwareVersion.length > 0)
+                        if (meter.hardware?.revision && meter.hardware.revision.length > 0)
                             chargyLib.CreateDiv2(energyMeterInfosDiv, "meterHardwareVersion",
                                                  this.chargy.GetLocalizedMessage("Hardware Version"),
-                                                 meter.hardwareVersion);
+                                                 meter.hardware.revision);
 
-                        if (meter.firmwareVersion && meter.firmwareVersion.length > 0)
+                        if (meter.firmware?.version && meter.firmware.version.length > 0)
                             chargyLib.CreateDiv2(energyMeterInfosDiv, "meterFirmwareVersion",
                                                  this.chargy.GetLocalizedMessage("Firmware Version"),
-                                                 meter.firmwareVersion);
+                                                 meter.firmware.version);
 
                     }
 

@@ -182,8 +182,8 @@ describe('PCDF crypto', () => {
         const parsed    = parsePCDFDocument(generatePCDF().pcdf);
         const signature = parsePCDFSignature(parsed.fields.SG);
 
-        expect(signature.r?.length).toBeGreaterThan(0);
-        expect(signature.s?.length).toBeGreaterThan(0);
+        expect(signature.r.length).toBeGreaterThan(0);
+        expect(signature.s.length).toBeGreaterThan(0);
 
     });
 
@@ -264,12 +264,12 @@ describe('PCDF Chargy integration', () => {
             return;
 
         const session     = result.chargingSessions?.[0];
-        const measurement = session?.measurements[0];
+        const measurement = session?.measurements?.[0];
         const value       = measurement?.values[0];
 
         expect(session?.verificationResult?.status).toBe(SessionVerificationResult.ValidSignature);
         expect(session?.["@context"]).toContain("PCDF");
-        expect(session?.authorizationStart["@id"]).toBe("testuser");
+        expect(session?.authorizationStart?.["@id"]).toBe("testuser");
         expect(session?.authorizationStop).toBeUndefined();
         expect(measurement?.obis).toBe(PCDF_PREFIX);
         expect(value?.value.toString()).toBe("1.234");
@@ -295,7 +295,7 @@ describe('PCDF Chargy integration', () => {
             return;
 
         expect(result.chargingSessions?.[0]?.verificationResult?.status).toBe(SessionVerificationResult.InvalidSignature);
-        expect(result.chargingSessions?.[0]?.measurements[0]?.values[0]?.result?.status).toBe(VerificationResult.InvalidSignature);
+        expect(result.chargingSessions?.[0]?.measurements?.[0]?.values[0]?.result?.status).toBe(VerificationResult.InvalidSignature);
 
     });
 

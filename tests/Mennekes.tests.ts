@@ -139,8 +139,8 @@ describe('Mennekes EDL40 Tests', () => {
         {
             expect(result.chargingSessions).toHaveLength(1);
             expect(result.chargingSessions?.[0]?.verificationResult?.status).toBe(SessionVerificationResult.ValidSignature);
-            expect(result.chargingSessions?.[0]?.measurements[0]?.verificationResult?.status).toBe(VerificationResult.ValidSignature);
-            expect(result.chargingSessions?.[0]?.measurements[0]?.values.map(value => value.result?.status)).toEqual([
+            expect(result.chargingSessions?.[0]?.measurements?.[0]?.verificationResult?.status).toBe(VerificationResult.ValidSignature);
+            expect(result.chargingSessions?.[0]?.measurements?.[0]?.values.map(value => value.result?.status)).toEqual([
                 VerificationResult.ValidSignature,
                 VerificationResult.ValidSignature
             ]);
@@ -169,7 +169,7 @@ describe('Mennekes EDL40 Tests', () => {
         if (IsAChargeTransparencyRecord(result))
         {
             expect(result.chargingSessions?.[0]?.verificationResult?.status).toBe(SessionVerificationResult.InvalidSignature);
-            expect(result.chargingSessions?.[0]?.measurements[0]?.values[0]?.result?.status).toBe(VerificationResult.InvalidSignature);
+            expect(result.chargingSessions?.[0]?.measurements?.[0]?.values[0]?.result?.status).toBe(VerificationResult.InvalidSignature);
         }
 
     });

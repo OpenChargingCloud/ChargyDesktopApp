@@ -67,7 +67,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.2.0",
-    "@open-charging-cloud/chargy-core": "^0.6.4",
+    "@open-charging-cloud/chargy-core": "^0.7.1",
     "@open-charging-cloud/totp": "^0.2.0",
     "asn1.js": "^5.4.1",
     "base32-decode": "^1.0.0",

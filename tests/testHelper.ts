@@ -15,12 +15,12 @@ import type {
     IChargeTransparencyRecord,
     IMeasurement,
     IMeasurementValue,
-    IMultilanguageText,
+    I18NString,
     ICryptoResult,
     IFileInfo,
     ISessionCryptoResult,
     IValidationRules,
-    IPublicKeyInfo,
+    IPublicKey,
     IChargeTransparencyLiveLink
 } from '@open-charging-cloud/chargy-core';
 
@@ -249,7 +249,7 @@ async function verifyChargeData(fileName:  string,
 
     : Promise<IChargeTransparencyRecord   |
               IChargeTransparencyLiveLink |
-              IPublicKeyInfo              |
+              IPublicKey                  |
               ISessionCryptoResult>
 
 {
@@ -271,14 +271,14 @@ async function verifyChargeDataFiles(fileInfos: IFileInfo[],
 
     : Promise<IChargeTransparencyRecord   |
               IChargeTransparencyLiveLink |
-              IPublicKeyInfo              |
+              IPublicKey                  |
               ISessionCryptoResult>
 
 {
     return createVerificationChargy(validationRules).DetectAndConvertContentFormat(fileInfos);
 }
 
-function formatChargeDataVerificationReport(report: IChargeTransparencyRecord | IChargeTransparencyLiveLink | IPublicKeyInfo | ISessionCryptoResult): string {
+function formatChargeDataVerificationReport(report: IChargeTransparencyRecord | IChargeTransparencyLiveLink | IPublicKey | ISessionCryptoResult): string {
 
     if (IsAChargeTransparencyLiveLink(report))
         return [
@@ -312,13 +312,13 @@ function formatChargeDataVerificationReport(report: IChargeTransparencyRecord | 
 
     for (const [sessionIndex, session] of sessions.entries()) {
 
-        const measurements = session.measurements;
+        const measurements = session.measurements ?? [];
         const meterId      = session.meterId
                                 ?? measurements[0]?.energyMeterId
                                 ?? "";
 
         lines.push("session " + ((sessionIndex + 1).toString()) + ": " + session["@id"]);
-        lines.push("session " + ((sessionIndex + 1).toString()) + " evseId: " + session.EVSEId);
+        lines.push("session " + ((sessionIndex + 1).toString()) + " evseId: " + (session.EVSEId ?? "unknown"));
         lines.push("session " + ((sessionIndex + 1).toString()) + " meterId: " + meterId);
         lines.push("session " + ((sessionIndex + 1).toString()) + " status: " + (session.verificationResult?.status ?? "unknown"));
         lines.push("session " + ((sessionIndex + 1).toString()) + " measurements: " + measurements.length.toString());
@@ -366,19 +366,19 @@ function formatCryptoResult(result: ICryptoResult | undefined): string {
     return result?.status ?? "unknown";
 }
 
-function formatWarning(warning: { level: string; message: IMultilanguageText }): string {
+function formatWarning(warning: { level: string; message: I18NString }): string {
 
     return warning.level + ": " + formatMultilanguageText(warning.message);
 
 }
 
-function formatMultilanguageText(text: IMultilanguageText): string {
+function formatMultilanguageText(text: I18NString): string {
 
     return text['en'] ?? Object.values(text)[0] ?? "";
 
 }
 
-function formatOptionalMultilanguageText(text: IMultilanguageText | undefined): string {
+function formatOptionalMultilanguageText(text: I18NString | undefined): string {
 
     if (text == null)
         return "";

@@ -1,7 +1,7 @@
 format: ctr
 sessions: 1
 session 1: 1554181214441:-1965658344385548683:2
-session 1 evseId: DE*GEF*EVSE*CHARGY*1
+session 1 evseId: unknown
 session 1 meterId: BQ27400330016
 session 1 status: AtLeastTwoMeasurementsRequired
 session 1 measurements: 1

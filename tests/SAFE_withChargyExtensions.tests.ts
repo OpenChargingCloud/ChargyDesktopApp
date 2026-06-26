@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { expectVerificationReport, expectVerificationReportInline } from './testHelper';
-import { Chargy, SAFEXML } from '@open-charging-cloud/chargy-core';
+import { Chargy, IsAChargeTransparencyRecord, SAFEXML } from '@open-charging-cloud/chargy-core';
 import { createTestChargy, parseTestXML } from './chargyTestRuntime';
 
 
@@ -12,7 +12,9 @@ describe('SAFE Tests with Chargy Extensions', () => {
 <values>
     <chargingStation id="DE*GEF*STATION*CI*TESTS*1*A" xmlns="https://open.charging.cloud/CTR/2020/01">
         <description language="en">GraphDefined Charging Station - CI-Tests Pool 1 / Station A</description>
-        <softwareVersion>3.0.25.2089</softwareVersion>
+        <firmware>
+            <version>3.0.25.2089</version>
+        </firmware>
         <geoLocation>
             <latitude>50.387945</latitude>
             <longitude>10.4304</longitude>
@@ -29,54 +31,35 @@ describe('SAFE Tests with Chargy Extensions', () => {
     </value>
 </values>`);
 
-        const safeXml  = new SAFEXML(createTestChargy(Chargy));
-        const context  = SAFEXML.ParseChargingStationContext(xmlDocument);
+        const chargy   = createTestChargy(Chargy);
+        const safeXml  = new SAFEXML(chargy);
+        const context  = SAFEXML.ParseContainerInfos(xmlDocument, chargy);
 
         expect(safeXml).toBeDefined();
         expect(context).toEqual({
-            ChargingStationId: "DE*GEF*STATION*CI*TESTS*1*A",
-            EVSEId:            "DE*GEF*EVSE*CI*TESTS*1*A*1",
-            chargingStation: {
+            chargingStations: [{
                 "@id":             "DE*GEF*STATION*CI*TESTS*1*A",
                 description:       {
                     en: "GraphDefined Charging Station - CI-Tests Pool 1 / Station A"
                 },
-                firmwareVersion:   "3.0.25.2089",
-                softwareVersion:   "3.0.25.2089",
+                firmware: {
+                    version:   "3.0.25.2089"
+                },
                 geoLocation:       {
                     lat: 50.387945,
                     lng: 10.4304
                 },
-                EVSE: {
+                EVSEs: [{
                     "@id":         "DE*GEF*EVSE*CI*TESTS*1*A*1",
                     description:   {
                         en: "GraphDefined EVSE - CI-Tests Pool 1 / Station A / EVSE 1"
                     },
-                    meters:        [],
-                    connector:     {
-                        "@id": "1",
-                        type: "Type-2",
-                        looses: 0
-                    }
-                }
-            },
-            EVSE: {
-                "@id":         "DE*GEF*EVSE*CI*TESTS*1*A*1",
-                description:   {
-                    en: "GraphDefined EVSE - CI-Tests Pool 1 / Station A / EVSE 1"
-                },
-                meters:        [],
-                connector:     {
-                    "@id": "1",
-                    type: "Type-2",
-                    looses: 0
-                }
-            },
-            connector: {
-                "@id": "1",
-                type: "Type-2",
-                looses: 0
-            }
+                    connectors: [{
+                        "@id":   "1",
+                        type:    "Type-2"
+                    }]
+                }]
+            }]
         });
 
     });
@@ -120,7 +103,7 @@ describe('SAFE Tests with Chargy Extensions', () => {
 
     });
 
-    test("SAFE OCMF v0.1 chargingStation extensions are wired into the charging station and EVSE", async () => {
+    test("SAFE OCMF v0.1 chargingStation extensions stay separate from the parsed OCMF CTR", async () => {
 
         const xmlText      = (await import("node:fs/promises")).readFile;
         const xmlDocument  = parseTestXML(
@@ -130,23 +113,16 @@ describe('SAFE Tests with Chargy Extensions', () => {
         const result       = await new SAFEXML(createTestChargy(Chargy)).tryToParseSAFEXML(xmlDocument);
 
         expect(result).toMatchObject({
-            chargingPools: [{
-                chargingStations: [{
-                    "@id":             "DE*GEF*STATION*CI*TESTS*1*A",
-                    description:       { en: "GraphDefined Charging Station - CI-Tests Pool 1 / Station A" },
-                    firmwareVersion:   "3.0.25.2089",
-                    geoLocation:       { lat: 50.387945, lng: 10.4304 },
-                    EVSEs: [{
-                        "@id":         "DE*GEF*EVSE*CI*TESTS*1*A*1",
-                        description:   { en: "GraphDefined EVSE - CI-Tests Pool 1 / Station A / EVSE 1" },
-                        connectors:    [{ type: "Type-2", looses: 0 }]
-                    }]
-                }]
-            }],
             chargingSessions: [{
-                EVSEId: "DE*GEF*EVSE*CI*TESTS*1*A*1"
+                measurements: [{
+                    energyMeterId: "BQ27400330016"
+                }]
             }]
         });
+        expect(IsAChargeTransparencyRecord(result)).toBe(true);
+
+        if (IsAChargeTransparencyRecord(result))
+            expect(result.chargingSessions?.[0]).not.toHaveProperty("EVSEId");
 
     });
 
@@ -157,7 +133,7 @@ describe('SAFE Tests with Chargy Extensions', () => {
             {
                 status:  "InvalidSessionFormat",
                 message: {
-                    en: "Exception occured: The SAFE chargingStation XML element must not contain more than one EVSE element!"
+                    en: "Only one EVSE element is allowed within the given SAFE XML chargingStation element!"
                 }
             }
         );
@@ -174,7 +150,7 @@ describe('SAFE Tests with Chargy Extensions', () => {
             {
                 status:  "InvalidSessionFormat",
                 message: {
-                    en: "Exception occured: The SAFE EVSE XML element must not contain more than one connector element!"
+                    en: "Only one connector element is allowed within the given SAFE XML EVSE element!"
                 }
             }
         );
