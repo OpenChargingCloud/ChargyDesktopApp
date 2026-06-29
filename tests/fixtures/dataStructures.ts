@@ -24,17 +24,17 @@ import type {
 
 export function samplePublicKeyInfo(overrides: Partial<IPublicKey> = {}): IPublicKey {
   return {
-    "@id": "public-key/example-meter",
-    "@context": "https://open.charging.cloud/contexts/PublicKeyInfo+json",
-    subject: "DE*GDF*E12345678",
-    algorithm: {
-      oid: "1.2.840.10045.2.1",
-      name: CryptoAlgorithms.ECC
-    },
-    encoding: "hex",
-    value: "04" + "a1".repeat(32) + "b2".repeat(32),
-    certainty: 1,
-    ...overrides
+      "@id":       "public-key/example-meter",
+      "@context":  "https://open.charging.cloud/contexts/PublicKeyInfo+json",
+      subject:     "DE*GDF*E12345678",
+      algorithm: {
+          oid:         "1.2.840.10045.2.1",
+          name:         CryptoAlgorithms.ECC
+      },
+      encoding:    "hex",
+      value:       "04" + "a1".repeat(32) + "b2".repeat(32),
+      certainty:    1,
+      ...overrides
   };
 }
 

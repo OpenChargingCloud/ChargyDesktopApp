@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { createSign, generateKeyPairSync } from "node:crypto";
+import { DOMParser } from "@oozcitak/dom";
 import { describe, expect, test, vi } from 'vitest';
 import { Chargy } from '@open-charging-cloud/chargy-core';
 import {
@@ -23,8 +24,7 @@ import {
     validatePCDFFields,
     verifyPCDFDocument
 } from '@open-charging-cloud/chargy-core';
-import { createTestChargy, ensureChargyTestDOM } from './chargyTestRuntime';
-
+import { createTestChargy } from './chargyTestRuntime';
 
 vi.mock('pdfjs-dist', async () => {
     const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
@@ -38,7 +38,7 @@ vi.stubGlobal('window', {
     }
 });
 
-ensureChargyTestDOM();
+vi.stubGlobal('DOMParser', DOMParser);
 
 type TestPCDFFields = Record<typeof PCDF_FIELD_ORDER[number], string>;
 
@@ -263,9 +263,9 @@ describe('PCDF Chargy integration', () => {
         if (!IsAChargeTransparencyRecord(result))
             return;
 
-        const session     = result.chargingSessions?.[0];
-        const measurement = session?.measurements?.[0];
-        const value       = measurement?.values[0];
+        const session      = result.      chargingSessions?.[0];
+        const measurement  = session?.    measurements?.    [0];
+        const value        = measurement?.values            [0];
 
         expect(session?.verificationResult?.status).toBe(SessionVerificationResult.ValidSignature);
         expect(session?.["@context"]).toContain("PCDF");

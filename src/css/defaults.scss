@@ -1385,6 +1385,116 @@
 
                             display:            table-row-group;
 
+                            .decodedTariff {
+
+                                display:            flex;
+                                flex-direction:     column;
+                                gap:                8px;
+                                margin:             4px 0 10px 12px;
+
+                                .betTariffElement {
+
+                                    .betTariffRestriction {
+                                        margin:             4px 0;
+                                        font-style:         italic;
+                                        color:              #315a78;
+                                    }
+
+                                    .betTariffPrices {
+                                        display:            flex;
+                                        flex-direction:     column;
+                                        gap:                3px;
+                                    }
+
+                                    .betTariffPrice {
+
+                                        display:                grid;
+                                        grid-template-columns:  minmax(9em, 1fr) auto;
+                                        column-gap:             14px;
+                                        align-items:            baseline;
+
+                                        .label {
+                                            overflow-wrap:          anywhere;
+                                        }
+
+                                        .amount {
+                                            font-variant-numeric:   tabular-nums;
+                                            white-space:            nowrap;
+                                        }
+
+                                    }
+
+                                }
+
+                                .betTariffElement.restricted .betTariffPrices {
+                                    margin-left:        10px;
+                                    padding-left:       10px;
+                                    // border-left:        2px solid rgba(49, 90, 120, 0.35);
+                                }
+
+                            }
+
+                            .structuredTariff {
+
+                                display:            block;
+                                margin:             4px 0 8px 12px;
+                                font-family:        monospace;
+                                font-size:          95%;
+
+                                .tariffObject {
+                                    display:            flex;
+                                    flex-direction:     column;
+                                    gap:                2px;
+                                }
+
+                                .tariffProperty {
+                                    display:            grid;
+                                    grid-template-columns: minmax(8em, auto) 1fr;
+                                    column-gap:         10px;
+                                    align-items:        start;
+                                }
+
+                                .tariffComplexProperty {
+                                    display:            block;
+
+                                    > .tariffValue {
+                                        margin-left:        10px;
+                                        padding-left:       8px;
+                                        border-left:        2px solid rgba(0, 0, 0, 0.15);
+                                    }
+                                }
+
+                                .tariffKey {
+                                    font-weight:        bold;
+                                    overflow-wrap:      anywhere;
+                                }
+
+                                .tariffValue {
+                                    min-width:          0;
+                                    overflow-wrap:      anywhere;
+                                }
+
+                                .tariffArray {
+                                    display:            flex;
+                                    flex-direction:     column;
+                                    gap:                4px;
+                                }
+
+                                .tariffArrayItem {
+                                    display:            block;
+                                }
+
+                                .tariffArrayIndex {
+                                    color:              #555;
+                                }
+
+                                .tariffArrayValue {
+                                    min-width:          0;
+                                    margin-left:        10px;
+                                }
+
+                            }
+
                             .chargingTariffRow {
 
                                 display:            table-row;
@@ -1419,6 +1529,23 @@
 
                             .chargingTariffRow:hover {
                                 background-color:     #72b3e2;
+                            }
+
+                        }
+
+                        .betTariffTotal {
+
+                            display:                grid;
+                            grid-template-columns:  minmax(9em, 1fr) auto;
+                            column-gap:             14px;
+                            align-items:            baseline;
+                            margin:                 10px 0 0 12px;
+                            padding-top:            8px;
+
+                            .amount {
+                                font-size:              100%;
+                                font-variant-numeric:   tabular-nums;
+                                white-space:            nowrap;
                             }
 
                         }

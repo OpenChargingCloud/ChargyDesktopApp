@@ -1,0 +1,73 @@
+{
+  "ocmf": {
+    "formatVersion": "1.4",
+    "tariffText": "001;EUR;0;35;5;30",
+    "tariffTextInterpretation": {
+      "raw": "001;EUR;0;35;5;30",
+      "code": "001",
+      "currency": "EUR",
+      "startFeeCents": 0,
+      "energyFeeCentsPerKWh": 35,
+      "blockingFeeCentsPerMinute": 5,
+      "blockingFeeStartMinute": 30
+    }
+  },
+  "chargingTariff": {
+    "@id": "001;EUR;0;35;5;30",
+    "currency": "EUR",
+    "elements": [
+      {
+        "price_components": [
+          { "type": "FLAT", "price": 0, "step_size": 1 },
+          { "type": "ENERGY", "price": 0.35, "step_size": 1 }
+        ]
+      },
+      {
+        "price_components": [
+          { "type": "PARKING_TIME", "price": 3, "step_size": 60 }
+        ],
+        "restrictions": { "min_duration": 1800 }
+      }
+    ]
+  },
+  "session": {
+    "chargingStationId": null,
+    "EVSEId": "DE*BET*E00101",
+    "ConnectorId": null,
+    "chargingStationFirmware": null,
+    "cable": {
+      "lossCompensation": "BET-Cable-001-01",
+      "lossCompensationId": "1001",
+      "resistance": 1.1001,
+      "resistanceUnit": "mOhm"
+    },
+    "tariffId": "001;EUR;0;35;5;30",
+    "chargingTariff": {
+      "@id": "001;EUR;0;35;5;30",
+      "currency": "EUR",
+      "elements": [
+        {
+          "price_components": [
+            { "type": "FLAT", "price": 0, "step_size": 1 },
+            { "type": "ENERGY", "price": 0.35, "step_size": 1 }
+          ]
+        },
+        {
+          "price_components": [
+            { "type": "PARKING_TIME", "price": 3, "step_size": 60 }
+          ],
+          "restrictions": { "min_duration": 1800 }
+        }
+      ]
+    }
+  },
+  "measurement": {
+    "energyMeterId": "BET-METER-001-01",
+    "obis": "01-00:01.08.00*FF",
+    "unit": "kWh",
+    "values": [
+      { "timestamp": "2026-01-10T08:00:00.000+00:00", "value": 1234.1, "status": "PublicKeyNotFound" },
+      { "timestamp": "2026-01-10T09:15:00.000+00:00", "value": 1241.925, "status": "PublicKeyNotFound" }
+    ]
+  }
+}

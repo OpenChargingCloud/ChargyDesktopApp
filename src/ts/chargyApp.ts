@@ -39,6 +39,7 @@ import 'leaflet.awesome-markers';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../css/chargy.scss';
 
+import { calculateBETTariffTotal }     from './betTariffCosts';
 
 type DetectionResult = chargeTransparencyRecord.  IChargeTransparencyRecord   |
                        chargeTransparencyLiveLink.IChargeTransparencyLiveLink |
@@ -138,6 +139,271 @@ function getObjectName(value: string | { name?: string | undefined } | undefined
 //     return result;
 
 // }
+
+
+type OCMF_BET_TariffText  = NonNullable<ReturnType<typeof chargyLib.tryParseOCMFBonnTariffText>>;
+type Localize             = (key: string) => string;
+
+function appendChargingTariffValue(parent: HTMLElement, value: unknown): void {
+
+    if (Array.isArray(value))
+    {
+        const arrayDiv = parent.appendChild(document.createElement('div'));
+        arrayDiv.classList.add("tariffArray");
+
+        for (const [index, entry] of value.entries())
+        {
+            const itemDiv = arrayDiv.appendChild(document.createElement('div'));
+            itemDiv.classList.add("tariffArrayItem");
+
+            const indexDiv = itemDiv.appendChild(document.createElement('div'));
+            indexDiv.classList.add("tariffArrayIndex");
+            indexDiv.textContent = "[" + index.toString() + "]";
+
+            const valueDiv = itemDiv.appendChild(document.createElement('div'));
+            valueDiv.classList.add("tariffArrayValue");
+            appendChargingTariffValue(valueDiv, entry);
+        }
+
+        return;
+    }
+
+    if (Decimal.isDecimal(value))
+    {
+        parent.textContent = value.toString();
+        return;
+    }
+
+    if (value !== null && typeof value === "object")
+    {
+        const objectDiv = parent.appendChild(document.createElement('div'));
+        objectDiv.classList.add("tariffObject");
+
+        for (const [key, entry] of Object.entries(value))
+        {
+            const propertyDiv = objectDiv.appendChild(document.createElement('div'));
+            propertyDiv.classList.add("tariffProperty");
+            if (Array.isArray(entry) ||
+                (entry !== null && typeof entry === "object" && !Decimal.isDecimal(entry)))
+            {
+                propertyDiv.classList.add("tariffComplexProperty");
+            }
+
+            const keyDiv = propertyDiv.appendChild(document.createElement('div'));
+            keyDiv.classList.add("tariffKey");
+            keyDiv.textContent = key;
+
+            const valueDiv = propertyDiv.appendChild(document.createElement('div'));
+            valueDiv.classList.add("tariffValue");
+            appendChargingTariffValue(valueDiv, entry);
+        }
+
+        return;
+    }
+
+    if (value === null)
+        parent.textContent = "null";
+    else if (typeof value === "string")
+        parent.textContent = value;
+    else if (typeof value === "number" || typeof value === "bigint" || typeof value === "boolean")
+        parent.textContent = value.toString();
+    else if (value === undefined)
+        parent.textContent = "undefined";
+    else
+        parent.textContent = "";
+
+}
+
+function betTariffPriceLabel(componentType: string,
+                             localize:     Localize): string {
+
+    switch (componentType)
+    {
+        case "FLAT":
+            return localize("BET tariff start fee");
+        case "ENERGY":
+            return localize("BET tariff energy price");
+        case "TIME":
+            return localize("BET tariff time price");
+        case "PARKING_TIME":
+            return localize("BET tariff blocking fee");
+        default:
+            return localize("BET tariff price");
+    }
+
+}
+
+function formatBETTariffPrice(component: chargyInterfaces.IPriceComponent,
+                              tariff:    OCMF_BET_TariffText,
+                              language:  SupportedLanguage): string {
+
+    const centsPerMinute = component.type === "PARKING_TIME" &&
+                           (tariff.code === "001" || tariff.code === "002")
+                               ? tariff.blockingFeeCentsPerMinute
+                               : component.type === "TIME" && tariff.code === "003"
+                                     ? tariff.timeFeeCentsPerMinute
+                                     : undefined;
+
+    if (centsPerMinute !== undefined)
+    {
+        const formattedEuros = new Intl.NumberFormat(
+                                   language === "de" ? "de-DE" : "en-US",
+                                   {
+                                       minimumFractionDigits: 2,
+                                       maximumFractionDigits: 2
+                                   }
+                               ).format(centsPerMinute / 100);
+
+        return formattedEuros + " €/min";
+    }
+
+    const price = Decimal.isDecimal(component.price)
+                      ? component.price.toNumber()
+                      : Number(component.price);
+
+    const formattedPrice = new Intl.NumberFormat(
+                               language === "de" ? "de-DE" : "en-US",
+                               {
+                                   minimumFractionDigits: 2,
+                                   maximumFractionDigits: 2
+                               }
+                           ).format(price);
+
+    switch (component.type)
+    {
+        case "ENERGY":
+            return formattedPrice + " €/kWh";
+        case "TIME":
+        case "PARKING_TIME":
+            return formattedPrice + " €/h";
+        default:
+            return formattedPrice + " €";
+    }
+
+}
+
+function formatBETEuroAmount(amount:   Decimal,
+                             language: SupportedLanguage): string {
+
+    return new Intl.NumberFormat(
+               language === "de" ? "de-DE" : "en-US",
+               {
+                   minimumFractionDigits: 2,
+                   maximumFractionDigits: 2
+               }
+           ).format(amount.toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toNumber()) + " €";
+
+}
+
+function betTariffRestrictionText(tariff:       OCMF_BET_TariffText,
+                                  element:      chargyInterfaces.IChargingTariffElement,
+                                  elementIndex: number,
+                                  language:     SupportedLanguage,
+                                  localize:     Localize): string | undefined {
+
+    if (tariff.code === "002" && elementIndex > 0)
+        return localize("BET tariff applies after charging");
+
+    const minimumDuration = element.restrictions?.min_duration;
+    if (minimumDuration === undefined)
+        return undefined;
+
+    const minutes = minimumDuration / 60;
+    const formattedMinutes = new Intl.NumberFormat(
+                                 language === "de" ? "de-DE" : "en-US",
+                                 { maximumFractionDigits: 2 }
+                             ).format(minutes);
+    const template = localize(minutes === 1
+                                  ? "BET tariff applies after one minute"
+                                  : "BET tariff applies after minutes");
+
+    return template.replace("{minutes}", formattedMinutes);
+
+}
+
+function showDecodedOCMFTariff(parent:   HTMLElement,
+                               tariff:   chargyInterfaces.IChargingTariff,
+                               language: SupportedLanguage,
+                               localize: Localize): boolean {
+
+    const interpretedTariff = chargyLib.tryParseOCMFBonnTariffText(tariff["@id"]);
+
+    if (interpretedTariff === undefined ||
+        tariff.elements === undefined ||
+        tariff.elements.length === 0)
+    {
+        return false;
+    }
+
+    const decodedTariffDiv = parent.appendChild(document.createElement('div'));
+    decodedTariffDiv.classList.add("decodedTariff");
+
+    for (const [elementIndex, element] of tariff.elements.entries())
+    {
+        const elementDiv = decodedTariffDiv.appendChild(document.createElement('div'));
+        elementDiv.classList.add("betTariffElement");
+
+        const restrictionText = betTariffRestrictionText(interpretedTariff,
+                                                         element,
+                                                         elementIndex,
+                                                         language,
+                                                         localize);
+        if (restrictionText !== undefined)
+        {
+            elementDiv.classList.add("restricted");
+
+            const restrictionDiv = elementDiv.appendChild(document.createElement('div'));
+            restrictionDiv.classList.add("betTariffRestriction");
+            restrictionDiv.textContent = restrictionText;
+        }
+
+        const pricesDiv = elementDiv.appendChild(document.createElement('div'));
+        pricesDiv.classList.add("betTariffPrices");
+
+        for (const component of element.price_components)
+        {
+            const priceDiv = pricesDiv.appendChild(document.createElement('div'));
+            priceDiv.classList.add("betTariffPrice");
+
+            const labelDiv = priceDiv.appendChild(document.createElement('div'));
+            labelDiv.classList.add("label");
+            labelDiv.textContent = betTariffPriceLabel(component.type, localize);
+
+            const amountDiv = priceDiv.appendChild(document.createElement('div'));
+            amountDiv.classList.add("amount");
+            amountDiv.textContent = formatBETTariffPrice(component, interpretedTariff, language);
+        }
+    }
+
+    return true;
+
+}
+
+function showGenericChargingTariff(parent: HTMLElement,
+                                   tariff: chargyInterfaces.IChargingTariff): boolean {
+
+    const tariffEntries = Object.entries(tariff).filter(([key]) => key !== "@id");
+    if (tariffEntries.length === 0)
+        return false;
+
+    const structuredTariffDiv = parent.appendChild(document.createElement('div'));
+    structuredTariffDiv.classList.add("structuredTariff");
+
+    appendChargingTariffValue(structuredTariffDiv, Object.fromEntries(tariffEntries));
+
+    return true;
+
+}
+
+function showChargingTariff(parent:   HTMLElement,
+                            tariff:   chargyInterfaces.IChargingTariff,
+                            language: SupportedLanguage,
+                            localize: Localize): boolean {
+
+    return showDecodedOCMFTariff(parent, tariff, language, localize) ||
+           showGenericChargingTariff(parent, tariff);
+
+}
 
 
 interface ChargyElectronAPI {
@@ -1362,7 +1628,8 @@ export class ChargyApp {
             })));
 
         if (chargingSession.ctr?.warnings &&
-            chargingSession.verificationResult?.status === chargyInterfaces.SessionVerificationResult.InplausibleMeasurement)
+            chargingSession.ctr.warnings.length > 0)
+            //chargingSession.verificationResult?.status === chargyInterfaces.SessionVerificationResult.InplausibleMeasurement)
         {
             warnings.push(...chargingSession.ctr.warnings.map(warning => ({
                 ...warning,
@@ -1378,7 +1645,8 @@ export class ChargyApp {
                     source: measurement.name
                 })));
 
-            for (const measurementValue of measurement.values ?? []) {
+            for (const measurementValue of measurement.values) {
+
                 if (measurementValue.warnings)
                     warnings.push(...measurementValue.warnings.map(warning => ({
                         ...warning,
@@ -1390,6 +1658,7 @@ export class ChargyApp {
                         ...warning,
                         source: measurementValue.timestamp
                     })));
+
             }
 
         }
@@ -2893,7 +3162,7 @@ export class ChargyApp {
                     productDiv.className                 = "text";
                     productDiv.innerHTML = chargingSession.product != null ? chargingSession.product["@id"] + "<br />" : "";
 
-                    if (chargingSession.begin && chargingSession.end)
+                    if (chargingSession.begin !== undefined && chargingSession.end !== undefined)
                     {
 
                         const duration = this.moment.duration(chargyLib.parseUTC(chargingSession.end).valueOf() - chargyLib.parseUTC(chargingSession.begin).valueOf());
@@ -3156,12 +3425,12 @@ export class ChargyApp {
                 try
                 {
 
-                    if ((chargingSession.EVSEId            || chargingSession.EVSE            ||
-                         chargingSession.chargingStationId || chargingSession.chargingStation ||
-                         chargingSession.chargingPoolId    || chargingSession.chargingPool) &&
+                    if (chargingSession.EVSEId            || chargingSession.EVSE            ||
+                        chargingSession.chargingStationId || chargingSession.chargingStation ||
+                        chargingSession.chargingPoolId    || chargingSession.chargingPool)
 
-                         chargingSession.EVSEId            != "DE*GEF*EVSE*CHARGY*1" &&
-                         chargingSession.chargingStationId != "DE*GEF*STATION*CHARGY*1")
+                         //chargingSession.EVSEId            != "DE*GEF*EVSE*CHARGY*1" &&
+                         //chargingSession.chargingStationId != "DE*GEF*STATION*CHARGY*1")
 
                     {
 
@@ -4360,6 +4629,12 @@ export class ChargyApp {
                         for (const tariff of chargingSession.chargingTariffs)
                         {
 
+                            if (showChargingTariff(tariffTableDiv,
+                                                  tariff,
+                                                  this.UILanguage,
+                                                  key => this.chargy.GetLocalizedMessage(key)))
+                                continue;
+
                             var chargingPeriodRow      = tariffTableDiv.appendChild(document.createElement('div'));
                             chargingPeriodRow.classList.add("chargingTariffRow");
                             chargingPeriodRow.onclick  = () => {
@@ -4379,6 +4654,32 @@ export class ChargyApp {
                                 tariffSummary.innerText  = tariff.summary[this.UILanguage] ?? "";
                             }
 
+                        }
+
+                        const interpretedBETTariffs = chargingSession.chargingTariffs
+                                                                     .map(tariff => chargyLib.tryParseOCMFBonnTariffText(tariff["@id"]))
+                                                                     .filter(tariff => tariff !== undefined);
+                        const interpretedBETTariff  = interpretedBETTariffs.length === 1
+                                                          ? interpretedBETTariffs[0]
+                                                          : undefined;
+
+                        if (interpretedBETTariff !== undefined)
+                        {
+                            const costs = calculateBETTariffTotal(interpretedBETTariff, measurement);
+
+                            if (costs !== undefined)
+                            {
+                                const totalDiv = tariffTableDiv.appendChild(document.createElement('div'));
+                                totalDiv.classList.add("betTariffTotal");
+
+                                const totalLabelDiv = totalDiv.appendChild(document.createElement('div'));
+                                totalLabelDiv.classList.add("label");
+                                totalLabelDiv.textContent = this.chargy.GetLocalizedMessage("BET tariff total price");
+
+                                const totalAmountDiv = totalDiv.appendChild(document.createElement('div'));
+                                totalAmountDiv.classList.add("amount");
+                                totalAmountDiv.textContent = formatBETEuroAmount(costs.totalPrice, this.UILanguage);
+                            }
                         }
 
                     }

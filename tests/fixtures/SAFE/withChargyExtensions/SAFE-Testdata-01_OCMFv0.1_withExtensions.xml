@@ -6,6 +6,7 @@
         <description language="en">
             GraphDefined Charging Station - CI-Tests Pool 1 / Station A
         </description>
+
         <firmware>
             <version>3.0.25.2089</version>
         </firmware>

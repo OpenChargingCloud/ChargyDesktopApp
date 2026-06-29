@@ -63,6 +63,58 @@
     "chargingProgressPowerYAxisLabel": {
         "de": "Ladeleistung",
         "en": "Charging power"
+    },
+
+    "BET tariff start fee": {
+        "de": "Startgebühr",
+        "en": "Start fee"
+    },
+
+    "BET tariff energy price": {
+        "de": "Energiepreis",
+        "en": "Energy price"
+    },
+
+    "BET tariff time price": {
+        "de": "Zeitpreis",
+        "en": "Time price"
+    },
+
+    "BET tariff blocking fee": {
+        "de": "Blockiergebühr",
+        "en": "Blocking fee"
+    },
+
+    "BET tariff price": {
+        "de": "Preis",
+        "en": "Price"
+    },
+
+    "BET tariff applies after one minute": {
+        "de": "Nach 1 Minute gilt:",
+        "en": "After 1 minute:"
+    },
+
+    "BET tariff applies after minutes": {
+        "de": "Nach {minutes} Minuten gilt:",
+        "en": "After {minutes} minutes:"
+    },
+
+    "BET tariff applies after charging": {
+        "de": "Nach Ende des Ladevorgangs gilt:",
+        "en": "After charging has ended:"
+    },
+
+    "BET tariff total price": {
+        "de": "Gesamtpreis",
+        "en": "Total price"
     }
+
+
+
+
+
+
+
 
 }

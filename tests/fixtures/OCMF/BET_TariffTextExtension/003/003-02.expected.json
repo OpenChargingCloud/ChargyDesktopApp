@@ -1,0 +1,59 @@
+{
+  "ocmf": {
+    "formatVersion": "1.4",
+    "tariffText": "003;EUR;25;6",
+    "tariffTextInterpretation": {
+      "raw": "003;EUR;25;6",
+      "code": "003",
+      "currency": "EUR",
+      "startFeeCents": 25,
+      "timeFeeCentsPerMinute": 6
+    }
+  },
+  "chargingTariff": {
+    "@id": "003;EUR;25;6",
+    "currency": "EUR",
+    "elements": [
+      {
+        "price_components": [
+          { "type": "FLAT", "price": 0.25, "step_size": 1 },
+          { "type": "TIME", "price": 3.6, "step_size": 60 }
+        ]
+      }
+    ]
+  },
+  "session": {
+    "chargingStationId": "BET-CP-003-02",
+    "EVSEId": null,
+    "ConnectorId": "7",
+    "chargingStationFirmware": "3.1.4",
+    "cable": {
+      "lossCompensation": "BET-Cable-003-02",
+      "lossCompensationId": "3002",
+      "resistance": 1.3002,
+      "resistanceUnit": "mOhm"
+    },
+    "tariffId": "003;EUR;25;6",
+    "chargingTariff": {
+      "@id": "003;EUR;25;6",
+      "currency": "EUR",
+      "elements": [
+        {
+          "price_components": [
+            { "type": "FLAT", "price": 0.25, "step_size": 1 },
+            { "type": "TIME", "price": 3.6, "step_size": 60 }
+          ]
+        }
+      ]
+    }
+  },
+  "measurement": {
+    "energyMeterId": "BET-METER-003-02",
+    "obis": "01-00:01.08.00*FF",
+    "unit": "kWh",
+    "values": [
+      { "timestamp": "2026-08-17T12:15:00.000+00:00", "value": 711.7, "status": "PublicKeyNotFound" },
+      { "timestamp": "2026-08-17T13:25:00.000+00:00", "value": 720.8, "status": "PublicKeyNotFound" }
+    ]
+  }
+}

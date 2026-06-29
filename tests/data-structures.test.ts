@@ -14,7 +14,9 @@ import {
     isISessionCryptoResult1,
     isISessionCryptoResult2,
     IsAPublicKeyXY,
-    IsAPublicKey,
+    IsAPublicKey
+} from '@open-charging-cloud/chargy-core';
+import {
     isIFileInfo
 } from '@open-charging-cloud/chargy-core';
 import {
@@ -78,7 +80,7 @@ describe("Chargy data structure guards", () => {
     test("recognizes session and measurement crypto results", () => {
       const validSessionResult   = sampleSessionCryptoResult();
       const invalidSessionResult = sampleSessionCryptoResult({
-        status: SessionVerificationResult.InvalidSessionFormat
+          status: SessionVerificationResult.InvalidSessionFormat
       });
 
       expect(IsASessionCryptoResult(validSessionResult)).toBe(true);
@@ -104,6 +106,7 @@ describe("Chargy data structure guards", () => {
       expect(isIFileInfo(sampleFileInfo(new Uint8Array([1, 2, 3]).buffer))).toBe(true);
       expect(isIFileInfo({ name: "missing-data.chargy" })).toBe(false);
     });
+
   });
 
 

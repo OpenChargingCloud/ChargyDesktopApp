@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { DOMParser } from "@oozcitak/dom";
 import { describe, expect, test, vi } from 'vitest';
 import { Chargy } from '@open-charging-cloud/chargy-core';
 import {
@@ -18,10 +19,8 @@ import type {
     IFileInfo
 } from '@open-charging-cloud/chargy-core';
 import {
-    createTestChargy,
-    parseTestXML
+    createTestChargy
 } from "./chargyTestRuntime";
-
 
 type DetectionResult = ReturnType<Chargy["DetectAndConvertContentFormat"]>;
 
@@ -37,12 +36,14 @@ vi.stubGlobal('window', {
     }
 });
 
+vi.stubGlobal('DOMParser', DOMParser);
+
 function readFixture(fileName: string): string {
     return readFileSync(new URL("fixtures/Mennekes/" + fileName, import.meta.url), "utf8").trim();
 }
 
 function parseXML(xml: string): Document {
-    return parseTestXML(xml);
+    return new DOMParser().parseFromString(xml, "text/xml");
 }
 
 async function verifyMennekesXML(fileName: string, xml: string): DetectionResult {

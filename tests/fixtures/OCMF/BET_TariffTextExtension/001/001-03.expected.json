@@ -1,0 +1,73 @@
+{
+  "ocmf": {
+    "formatVersion": "1.4",
+    "tariffText": "001;EUR;250;79;15;1",
+    "tariffTextInterpretation": {
+      "raw": "001;EUR;250;79;15;1",
+      "code": "001",
+      "currency": "EUR",
+      "startFeeCents": 250,
+      "energyFeeCentsPerKWh": 79,
+      "blockingFeeCentsPerMinute": 15,
+      "blockingFeeStartMinute": 1
+    }
+  },
+  "chargingTariff": {
+    "@id": "001;EUR;250;79;15;1",
+    "currency": "EUR",
+    "elements": [
+      {
+        "price_components": [
+          { "type": "FLAT", "price": 2.5, "step_size": 1 },
+          { "type": "ENERGY", "price": 0.79, "step_size": 1 }
+        ]
+      },
+      {
+        "price_components": [
+          { "type": "PARKING_TIME", "price": 9, "step_size": 60 }
+        ],
+        "restrictions": { "min_duration": 60 }
+      }
+    ]
+  },
+  "session": {
+    "chargingStationId": null,
+    "EVSEId": "DE*BET*E00103",
+    "ConnectorId": null,
+    "chargingStationFirmware": null,
+    "cable": {
+      "lossCompensation": "BET-Cable-001-03",
+      "lossCompensationId": "1003",
+      "resistance": 1.1003,
+      "resistanceUnit": "mOhm"
+    },
+    "tariffId": "001;EUR;250;79;15;1",
+    "chargingTariff": {
+      "@id": "001;EUR;250;79;15;1",
+      "currency": "EUR",
+      "elements": [
+        {
+          "price_components": [
+            { "type": "FLAT", "price": 2.5, "step_size": 1 },
+            { "type": "ENERGY", "price": 0.79, "step_size": 1 }
+          ]
+        },
+        {
+          "price_components": [
+            { "type": "PARKING_TIME", "price": 9, "step_size": 60 }
+          ],
+          "restrictions": { "min_duration": 60 }
+        }
+      ]
+    }
+  },
+  "measurement": {
+    "energyMeterId": "BET-METER-001-03",
+    "obis": "01-00:01.08.00*FF",
+    "unit": "kWh",
+    "values": [
+      { "timestamp": "2026-03-12T14:45:00.000+00:00", "value": 987.321, "status": "PublicKeyNotFound" },
+      { "timestamp": "2026-03-12T15:22:00.000+00:00", "value": 991.654, "status": "PublicKeyNotFound" }
+    ]
+  }
+}

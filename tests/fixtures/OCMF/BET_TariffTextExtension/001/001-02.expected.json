@@ -1,0 +1,73 @@
+{
+  "ocmf": {
+    "formatVersion": "1.4",
+    "tariffText": "001;EUR;100;59;10;120",
+    "tariffTextInterpretation": {
+      "raw": "001;EUR;100;59;10;120",
+      "code": "001",
+      "currency": "EUR",
+      "startFeeCents": 100,
+      "energyFeeCentsPerKWh": 59,
+      "blockingFeeCentsPerMinute": 10,
+      "blockingFeeStartMinute": 120
+    }
+  },
+  "chargingTariff": {
+    "@id": "001;EUR;100;59;10;120",
+    "currency": "EUR",
+    "elements": [
+      {
+        "price_components": [
+          { "type": "FLAT", "price": 1, "step_size": 1 },
+          { "type": "ENERGY", "price": 0.59, "step_size": 1 }
+        ]
+      },
+      {
+        "price_components": [
+          { "type": "PARKING_TIME", "price": 6, "step_size": 60 }
+        ],
+        "restrictions": { "min_duration": 7200 }
+      }
+    ]
+  },
+  "session": {
+    "chargingStationId": "BET-CP-001-02",
+    "EVSEId": null,
+    "ConnectorId": "2",
+    "chargingStationFirmware": "3.1.4",
+    "cable": {
+      "lossCompensation": "BET-Cable-001-02",
+      "lossCompensationId": "1002",
+      "resistance": 1.1002,
+      "resistanceUnit": "mOhm"
+    },
+    "tariffId": "001;EUR;100;59;10;120",
+    "chargingTariff": {
+      "@id": "001;EUR;100;59;10;120",
+      "currency": "EUR",
+      "elements": [
+        {
+          "price_components": [
+            { "type": "FLAT", "price": 1, "step_size": 1 },
+            { "type": "ENERGY", "price": 0.59, "step_size": 1 }
+          ]
+        },
+        {
+          "price_components": [
+            { "type": "PARKING_TIME", "price": 6, "step_size": 60 }
+          ],
+          "restrictions": { "min_duration": 7200 }
+        }
+      ]
+    }
+  },
+  "measurement": {
+    "energyMeterId": "BET-METER-001-02",
+    "obis": "01-00:01.08.00*FF",
+    "unit": "kWh",
+    "values": [
+      { "timestamp": "2026-02-11T10:30:00.000+00:00", "value": 2110.5, "status": "PublicKeyNotFound" },
+      { "timestamp": "2026-02-11T12:05:00.000+00:00", "value": 2128.75, "status": "PublicKeyNotFound" }
+    ]
+  }
+}

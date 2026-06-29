@@ -1,0 +1,71 @@
+{
+  "ocmf": {
+    "formatVersion": "1.4",
+    "tariffText": "002;EUR;199;69;20",
+    "tariffTextInterpretation": {
+      "raw": "002;EUR;199;69;20",
+      "code": "002",
+      "currency": "EUR",
+      "startFeeCents": 199,
+      "energyFeeCentsPerKWh": 69,
+      "blockingFeeCentsPerMinute": 20,
+      "blockingFeeStartsAfterCharging": true
+    }
+  },
+  "chargingTariff": {
+    "@id": "002;EUR;199;69;20",
+    "currency": "EUR",
+    "elements": [
+      {
+        "price_components": [
+          { "type": "FLAT", "price": 1.99, "step_size": 1 },
+          { "type": "ENERGY", "price": 0.69, "step_size": 1 }
+        ]
+      },
+      {
+        "price_components": [
+          { "type": "PARKING_TIME", "price": 12, "step_size": 60 }
+        ]
+      }
+    ]
+  },
+  "session": {
+    "chargingStationId": "BET-CP-002-03",
+    "EVSEId": null,
+    "ConnectorId": "4",
+    "chargingStationFirmware": "3.1.4",
+    "cable": {
+      "lossCompensation": "BET-Cable-002-03",
+      "lossCompensationId": "2003",
+      "resistance": 1.2003,
+      "resistanceUnit": "mOhm"
+    },
+    "tariffId": "002;EUR;199;69;20",
+    "chargingTariff": {
+      "@id": "002;EUR;199;69;20",
+      "currency": "EUR",
+      "elements": [
+        {
+          "price_components": [
+            { "type": "FLAT", "price": 1.99, "step_size": 1 },
+            { "type": "ENERGY", "price": 0.69, "step_size": 1 }
+          ]
+        },
+        {
+          "price_components": [
+            { "type": "PARKING_TIME", "price": 12, "step_size": 60 }
+          ]
+        }
+      ]
+    }
+  },
+  "measurement": {
+    "energyMeterId": "BET-METER-002-03",
+    "obis": "01-00:01.08.00*FF",
+    "unit": "kWh",
+    "values": [
+      { "timestamp": "2026-06-15T17:05:00.000+00:00", "value": 8080.808, "status": "PublicKeyNotFound" },
+      { "timestamp": "2026-06-15T18:35:00.000+00:00", "value": 8091.919, "status": "PublicKeyNotFound" }
+    ]
+  }
+}
