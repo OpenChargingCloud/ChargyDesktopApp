@@ -41,6 +41,8 @@ import '../css/chargy.scss';
 
 import { calculateBETTariffTotal }     from './betTariffCosts';
 
+declare const __CHARGY_CORE_NPM_INTEGRITY__: string;
+
 type DetectionResult = chargeTransparencyRecord.  IChargeTransparencyRecord   |
                        chargeTransparencyLiveLink.IChargeTransparencyLiveLink |
                        publicKeyInfo.             IPublicKey                  |
@@ -96,6 +98,30 @@ const coreDependencies = corePackageJson.dependencies as DependencyMap | undefin
 
 function dependencyVersion(dependencies: DependencyMap | undefined, dependencyName: string): string {
     return (dependencies?.[dependencyName] ?? coreDependencies?.[dependencyName])?.replace(/[^\d.]/g, "") ?? "";
+}
+
+function formatHashValue(hashValue: string): string {
+    return hashValue.match(/.{1,8}/g)?.join(" ") ?? "";
+}
+
+function sha512HexFromSubresourceIntegrity(integrity: string): string {
+
+    const sha512Prefix = "sha512-";
+    const sha512Token  = integrity.split(/\s+/).find(token => token.startsWith(sha512Prefix));
+
+    if (sha512Token == null)
+        return "";
+
+    try
+    {
+        return Array.from(atob(sha512Token.substring(sha512Prefix.length)),
+                          char => char.charCodeAt(0).toString(16).padStart(2, "0")).join("");
+    }
+    catch
+    {
+        return "";
+    }
+
 }
 
 function getTextFromMultilanguageText(text: chargyInterfaces.I18NString | undefined | null,
@@ -522,6 +548,9 @@ export class ChargyApp {
     private readonly aboutScreenDiv:                     HTMLDivElement;
     private readonly applicationHashDiv:                 HTMLDivElement;
     private readonly applicationHashValueDiv:            HTMLDivElement;
+    private readonly chargyCoreHashDiv:                  HTMLDivElement;
+    private readonly chargyCoreHashVersionSpan:          HTMLSpanElement;
+    private readonly chargyCoreHashValueDiv:             HTMLDivElement;
     private readonly softwareInfosDiv:                   HTMLDivElement;
     private readonly openSourceLibsDiv:                  HTMLDivElement;
     private readonly chargingSessionScreenDiv:           HTMLDivElement;
@@ -640,6 +669,9 @@ export class ChargyApp {
         this.aboutScreenDiv                           = document.getElementById('aboutScreen')                              as HTMLDivElement;
         this.softwareInfosDiv                         = this.aboutScreenDiv.    querySelector("#softwareInfos")             as HTMLDivElement;
         this.openSourceLibsDiv                        = this.aboutScreenDiv.    querySelector("#openSourceLibs")            as HTMLDivElement;
+        this.chargyCoreHashDiv                        = document.getElementById('chargyCoreHash')                          as HTMLDivElement;
+        this.chargyCoreHashVersionSpan                = this.chargyCoreHashDiv.querySelector("#version")                    as HTMLSpanElement;
+        this.chargyCoreHashValueDiv                   = this.chargyCoreHashDiv.querySelector("#value")                      as HTMLDivElement;
 
         this.languageButton                           = document.getElementById('languageButton')                           as HTMLButtonElement;
         this.languageMenuDiv                          = document.getElementById('languageMenu')                             as HTMLDivElement;
@@ -751,6 +783,12 @@ export class ChargyApp {
             (this.softwareInfosDiv. querySelector("#appEdition")             as HTMLSpanElement).innerHTML = this.appEdition;
             (this.softwareInfosDiv. querySelector("#appVersion")             as HTMLSpanElement).innerHTML = this.packageJson.version;
             (this.softwareInfosDiv. querySelector("#copyright")              as HTMLSpanElement).innerHTML = this.copyright;
+
+            const chargyCoreHashValue = sha512HexFromSubresourceIntegrity(__CHARGY_CORE_NPM_INTEGRITY__);
+            this.chargyCoreHashVersionSpan.innerHTML = corePackageJson.version;
+            this.chargyCoreHashValueDiv.innerHTML    = chargyCoreHashValue !== ""
+                                                           ? formatHashValue(chargyCoreHashValue)
+                                                           : "Kann nicht berechnet werden!";
 
             (this.openSourceLibsDiv.querySelector("#chargyVersion")          as HTMLSpanElement).innerHTML = this.packageJson.version;
             (this.openSourceLibsDiv.querySelector("#electronVersion")        as HTMLSpanElement).innerHTML = this.appContext.versions.electron ?? "";
@@ -952,7 +990,7 @@ export class ChargyApp {
                 if (applicationHash !== "")
                 {
                     this.applicationHash                          = applicationHash;
-                    this.applicationHashValueDiv.innerHTML        = applicationHash.match(/.{1,8}/g)?.join(" ") ?? "";
+                    this.applicationHashValueDiv.innerHTML        = formatHashValue(applicationHash);
                 }
                 else
                     this.applicationHashValueDiv.innerHTML        = "Kann nicht berechnet werden!";
@@ -1110,7 +1148,7 @@ export class ChargyApp {
 
                                                 const cryptoHashValueDiv = cryptoHashDiv.appendChild(document.createElement('div'));
                                                 cryptoHashValueDiv.className = "value";
-                                                cryptoHashValueDiv.innerHTML = value.match(/.{1,8}/g).join(" ");
+                                                cryptoHashValueDiv.innerHTML = formatHashValue(value);
 
                                             }
 

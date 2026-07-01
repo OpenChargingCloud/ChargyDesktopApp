@@ -1,6 +1,10 @@
 const isDevelopment = process.env.NODE_ENV === 'development';
 const webpack       = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const packageLock   = require('./package-lock.json');
+
+const chargyCoreNpmIntegrity =
+  packageLock.packages?.['node_modules/@open-charging-cloud/chargy-core']?.integrity ?? '';
 
 module.exports = [
     {
@@ -69,6 +73,9 @@ module.exports = [
         'base32decode': 'base32-decode'
       },
       plugins: [
+        new webpack.DefinePlugin({
+          __CHARGY_CORE_NPM_INTEGRITY__: JSON.stringify(chargyCoreNpmIntegrity)
+        }),
         new webpack.NormalModuleReplacementPlugin(/^node:buffer$/, 'buffer'),
         new webpack.ProvidePlugin({
           Buffer: ['buffer', 'Buffer']

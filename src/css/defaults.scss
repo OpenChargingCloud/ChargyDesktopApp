@@ -332,7 +332,8 @@
                             background-color:   #3c75a0;
                         }
 
-                        #applicationHash {
+                        #applicationHash,
+                        #chargyCoreHash {
 
                             margin:             1em 0 1em 0;
 
@@ -344,6 +345,10 @@
                                 padding:            6px 8px;
                                 border-radius:      4px;
                             }
+
+                        }
+
+                        #applicationHash {
 
                             #sigHead {
                                 padding-top:        5px;
