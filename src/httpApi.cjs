@@ -563,8 +563,8 @@ function createHttpHelpText() {
         "GET /apiKeys - Return matching API keys as JSON; root tokens return all configured API keys.",
         "ADD /apiKeys - Add one API key from a JSON request body; requires root authorization.",
         "DELETE /apiKeys - Delete one exactly matching API key from a JSON request body; requires root authorization.",
-        "POST /verify - Verify a transparency record and return session verification results.",
-        "POST /convert - Convert a transparency record and return the Charge Transparency Record as JSON.",
+        "QUERY /verify - Verify a transparency record and return session verification results.",
+        "QUERY /convert - Convert a transparency record and return the Charge Transparency Record as JSON.",
         "",
         "Request headers:",
         "Authorization: Bearer <static-api-secret> or TOTP <token> <totp>; required for /apiKeys, /verify and /convert when the server was started with --apiKeys.",
@@ -764,10 +764,10 @@ function createChargyHttpRequestHandler({
             }
         }
 
-        if (request.method !== "POST" ||
+        if (request.method !== "QUERY" ||
             (requestUrl.pathname !== "/verify" && requestUrl.pathname !== "/convert"))
         {
-            sendPlainText(response, 400, "Please use POST /verify for the verification of transparency records or POST /convert for conversion.");
+            sendPlainText(response, 400, "Please use QUERY /verify for the verification of transparency records or QUERY /convert for conversion.");
             return;
         }
 

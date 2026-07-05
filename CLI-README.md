@@ -208,8 +208,12 @@ The HTTP server starts after the renderer has loaded. It currently supports:
 - `GET /apiKeys`
 - `ADD /apiKeys`
 - `DELETE /apiKeys`
-- `POST /verify`
-- `POST /convert`
+- `QUERY /verify`
+- `QUERY /convert`
+
+Verification and conversion use the HTTP `QUERY` method defined by [RFC 10008, *The HTTP QUERY Method*](https://www.rfc-editor.org/rfc/rfc10008.html). `QUERY` is designed for safe and idempotent requests whose input is carried in the request body. This matches these endpoints: they inspect a supplied transparency record and return a result without requesting a change to server state.
+
+Compared with `POST`, `QUERY` communicates these read-only semantics directly at the protocol level. Clients and intermediaries can therefore recognize that an interrupted request may be retried or restarted automatically without causing the requested operation to run with additional state-changing effects. At the same time, the transparency record can remain in the request body instead of being encoded into a potentially long, logged, or impractical request URI. This is particularly useful for Chargy's text, JSON, and binary QR-code inputs. Clients, reverse proxies, and other intermediaries in front of the service must allow the `QUERY` method.
 
 `GET /` returns a small `text/plain` help text for the HTTP service. It lists the known endpoints and the request headers relevant for authentication, content negotiation and language negotiation. It intentionally stays reachable without an `Authorization` header, even when API-key authentication is enabled.
 
@@ -221,7 +225,7 @@ The HTTP server starts after the renderer has loaded. It currently supports:
 
 Successful `ADD /apiKeys` and `DELETE /apiKeys` operations rewrite the complete canonical API-key array to the configured `--apiKeys` file using a temporary file followed by rename. If persistence fails, the in-memory change is rolled back and the server returns `500`.
 
-`POST /verify` returns only session verification results. A single session returns one JSON string; multiple sessions return a JSON array.
+`QUERY /verify` returns only session verification results. A single session returns one JSON string; multiple sessions return a JSON array.
 
 The returned status text uses the configured CLI language by default:
 
@@ -233,7 +237,7 @@ For HTTP clients, the standard `Accept-Language` request header wins per request
 
 ```bash
 curl -H "Accept-Language: de-DE,de;q=0.9,en;q=0.8" \
-     -X POST \
+     -X QUERY \
      --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" \
      "http://127.0.0.1:8080/verify"
 ```
@@ -255,12 +259,12 @@ Supported response content types:
 - `GET /apiKeys`: `application/json`
 - `ADD /apiKeys`: `application/json`
 - `DELETE /apiKeys`: `application/json`
-- `POST /verify`: `application/json`, `text/plain`, `text/csv`, `application/xml`
-- `POST /convert`: `application/json`
+- `QUERY /verify`: `application/json`, `text/plain`, `text/csv`, `application/xml`
+- `QUERY /convert`: `application/json`
 
 If no acceptable response content type is found, the server returns `406`.
 
-`POST /convert` returns the converted Charge Transparency Record. Add `?pretty` for indented JSON.
+`QUERY /convert` returns the converted Charge Transparency Record. Add `?pretty` for indented JSON.
 
 Examples:
 
@@ -269,11 +273,11 @@ curl "http://127.0.0.1:8080/"
 curl -H "Authorization: Bearer root-secret" "http://127.0.0.1:8080/apiKeys"
 curl -H "Authorization: Bearer root-secret" -H "Content-Type: application/json" -X ADD --data '{"token":"new-driver-secret"}' "http://127.0.0.1:8080/apiKeys"
 curl -H "Authorization: Bearer root-secret" -H "Content-Type: application/json" -X DELETE --data '{"token":"new-driver-secret"}' "http://127.0.0.1:8080/apiKeys"
-curl -X POST --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/verify"
-curl -H "Accept: text/plain" -X POST --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/verify"
-curl -H "Accept: text/csv" -X POST --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/verify"
-curl -H "Accept: application/xml" -X POST --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/verify"
-curl -X POST --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/convert?pretty"
+curl -X QUERY --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/verify"
+curl -H "Accept: text/plain" -X QUERY --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/verify"
+curl -H "Accept: text/csv" -X QUERY --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/verify"
+curl -H "Accept: application/xml" -X QUERY --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/verify"
+curl -X QUERY --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" "http://127.0.0.1:8080/convert?pretty"
 ```
 
 ### `--apiKeys`
@@ -295,9 +299,9 @@ When `--apiKeys` is configured:
 - `ADD /apiKeys` accepts one API-key JSON object, persists the updated API-key list, returns `201` for new entries and `409` for duplicates.
 - `DELETE /apiKeys` requires a valid active `root` authorization.
 - `DELETE /apiKeys` accepts one API-key JSON object, persists the updated API-key list when exactly one entry matches, returns `404` when no entry matches, and returns `409` when multiple entries match.
-- `POST /verify` and `POST /convert` require the `Authorization` request header.
+- `QUERY /verify` and `QUERY /convert` require the `Authorization` request header.
 - Missing, unknown, not-yet-valid, or expired keys return `401`.
-- The validity-window checks apply to `POST /verify` and `POST /convert`, not to `GET /apiKeys`.
+- The validity-window checks apply to `QUERY /verify` and `QUERY /convert`, not to `GET /apiKeys`.
 - Empty API-key files are valid JSON but allow no protected request through.
 - Static API keys use `Authorization: Bearer <static-api-secret>` and compare the bearer secret directly with the configured `token`.
 - TOTP API keys use `Authorization: TOTP <token> <totp>` and compare the TOTP value with the generated one-time password for the previous, current, or next time slot.
@@ -359,7 +363,7 @@ Authenticated request example:
 
 ```bash
 curl -H "Authorization: Bearer driver-secret" \
-     -X POST \
+     -X QUERY \
      --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" \
      "http://127.0.0.1:8080/verify"
 ```
@@ -368,7 +372,7 @@ TOTP request example, schematically:
 
 ```bash
 curl -H "Authorization: TOTP totp-driver <generated-current-totp>" \
-     -X POST \
+     -X QUERY \
      --data-binary "@tests/fixtures/OCMF/OCMF-Testdata-01.txt" \
      "http://127.0.0.1:8080/verify"
 ```
@@ -376,7 +380,7 @@ curl -H "Authorization: TOTP totp-driver <generated-current-totp>" \
 HTTP limits:
 
 - `GET /` and `GET /apiKeys` are accepted for service/admin metadata.
-- Verification and conversion use `POST` only.
+- Verification and conversion use `QUERY` only.
 - Only `/`, `/apiKeys`, `/verify`, and `/convert` are accepted.
 - Maximum request size is 20 MiB.
 - Main-to-renderer request timeout is 30 seconds.
@@ -407,8 +411,8 @@ npm run start -- --nogui --output=xml   record.chargy
 ```
 
 - `text` (default): one localized status line per session, with ` - <message>` appended when present.
-- `csv`: a `session,status` table with the localized status text (same renderer as `POST /verify`).
-- `xml`: a `<verificationResults>` document (same renderer as `POST /verify`).
+- `csv`: a `session,status` table with the localized status text (same renderer as `QUERY /verify`).
+- `xml`: a `<verificationResults>` document (same renderer as `QUERY /verify`).
 - `json`: an array of `{ session, status, text, message }` objects.
 
 Status texts honor `--lang=de|en`. An unsupported `--output` value is a technical error (exit code `1`).
@@ -512,18 +516,18 @@ Current covered cases:
 - `ADD /apiKeys` requires root authorization, adds and persists a new API key, and rejects canonical duplicates with `409`.
 - `ADD /apiKeys` rejects valid non-root authorization with `403`.
 - `DELETE /apiKeys` requires root authorization, deletes and persists exactly one matching API key, returns `404` for missing matches, and rejects ambiguous matches with `409`.
-- `POST /verify` rejects missing, expired or unknown API keys with `401`.
-- `POST /verify` accepts valid Bearer authorizations from the `Authorization` request header.
-- `POST /verify` accepts valid TOTP authorizations from the `Authorization` request header.
+- `QUERY /verify` rejects missing, expired or unknown API keys with `401`.
+- `QUERY /verify` accepts valid Bearer authorizations from the `Authorization` request header.
+- `QUERY /verify` accepts valid TOTP authorizations from the `Authorization` request header.
 - The former `API-Key` request header is not accepted.
-- `POST /convert` also rejects missing API keys with `401`.
-- `POST /verify` dispatches to the renderer bridge and returns verification text.
-- `POST /verify` honors `Accept` for JSON, text, CSV, and XML responses.
-- `POST /verify` localizes verification text with the configured CLI language.
-- `POST /verify` supports `Accept-Language` as a per-request language override.
-- `POST /verify` can upload a QR-code PNG transparency record and verify it through the real Chargy core.
-- `POST /convert?pretty` dispatches to the renderer bridge and returns the converted Charge Transparency Record.
-- `POST /convert?pretty` can upload a QR-code PNG transparency record and convert it through the real Chargy core.
+- `QUERY /convert` also rejects missing API keys with `401`.
+- `QUERY /verify` dispatches to the renderer bridge and returns verification text.
+- `QUERY /verify` honors `Accept` for JSON, text, CSV, and XML responses.
+- `QUERY /verify` localizes verification text with the configured CLI language.
+- `QUERY /verify` supports `Accept-Language` as a per-request language override.
+- `QUERY /verify` can upload a QR-code PNG transparency record and verify it through the real Chargy core.
+- `QUERY /convert?pretty` dispatches to the renderer bridge and returns the converted Charge Transparency Record.
+- `QUERY /convert?pretty` can upload a QR-code PNG transparency record and convert it through the real Chargy core.
 - Unsupported `Accept` content types are rejected with `406`.
 - Unsupported methods and empty bodies are rejected before renderer dispatch.
 - API-key TypeScript interfaces and TypeGuards validate raw JSON entries, parsed entries, role enums, timestamp windows, and rejected legacy fields.

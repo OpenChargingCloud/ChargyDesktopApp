@@ -108,6 +108,71 @@
     "BET tariff total price": {
         "de": "Gesamtpreis",
         "en": "Total price"
+    },
+
+
+
+
+
+
+    "fundingIntro": {
+        "de": "Dieses Open-Source-Projekt wird teilweise durch den",
+        "en": "This Open Source project is partially funded by the"
+    },
+
+    "fundingAsPartOf": {
+        "de": "im Rahmen unseres",
+        "en": "as part of our"
+    },
+
+    "fundingEVQIProjectLabel": {
+        "de": "EVQI-Projekts",
+        "en": "EVQI project"
+    },
+
+    "fundingProjectOutro": {
+        "de": " gefördert",
+        "en": ""
+    },
+
+    "fundingSupportIntro": {
+        "de": "Wir schätzen auch jede zusätzliche Finanzierung und langfristige Unterstützung für die Chargy-Familie, zum Beispiel über",
+        "en": "We also appreciate any additional funding and long-term support for the Chargy family, for example via"
+    },
+
+    "fundingSupportOutro": {
+        "de": "da es uns hilft, das Projekt nachhaltig, unabhängig und nützlich für die gesamte E-Mobilitäts-Community weiterzuentwickeln.",
+        "en": "as it helps us keep the project sustainable, independent and useful for the entire e-mobility community."
+    },
+
+    "tospIntro": {
+        "de": "Diese Software ist einer der Gewinner des",
+        "en": "This software is one of the winners of the"
+    },
+
+    "tospPrizeLabel": {
+        "de": "1. Thüringer Open Source Preises",
+        "en": "1st Thuringian Open Source Prize"
+    },
+
+    "tospAwardedBy": {
+        "de": "im März 2019. Der Preis wurde verliehen durch",
+        "en": "in March 2019. The prize was awarded by"
+    },
+
+    "tospAndThe": {
+        "de": "und das",
+        "en": "and the"
+    },
+
+    "tospMinistryLabel": {
+        "de": "Thüringer Ministerium für Wirtschaft, Wissenschaft und Digitale Gesellschaft",
+        "en": "Thuringian Ministry for Economic Affairs, Science and Digital Society"
+    },
+
+    "chargyCoreHashLabel": {
+        "de": "SHA-512-Hashwert der Chargy Core v{version}:",
+        "en": "SHA-512 hash of Chargy Core v{version}:"
     }
 
 

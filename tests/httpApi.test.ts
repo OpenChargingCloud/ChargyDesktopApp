@@ -245,8 +245,8 @@ describe("Chargy HTTP API", () => {
                 const text = await response.text();
 
                 expect(text).toContain("This is a Chargy HTTP service");
-                expect(text).toContain("POST /verify");
-                expect(text).toContain("POST /convert");
+                expect(text).toContain("QUERY /verify");
+                expect(text).toContain("QUERY /convert");
                 expect(text).toContain("GET /apiKeys");
                 expect(text).toContain("ADD /apiKeys");
             }
@@ -902,7 +902,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("rejects POST /verify without Authorization when API key authentication is enabled", async () => {
+    test("rejects QUERY /verify without Authorization when API key authentication is enabled", async () => {
 
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
@@ -927,7 +927,7 @@ describe("Chargy HTTP API", () => {
             },
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method: "POST",
+                    method: "QUERY",
                     body:   Buffer.from("transparency-record")
                 });
 
@@ -942,7 +942,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("rejects POST /verify with the legacy API-Key header", async () => {
+    test("rejects QUERY /verify with the legacy API-Key header", async () => {
 
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
@@ -967,7 +967,7 @@ describe("Chargy HTTP API", () => {
             },
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method:  "POST",
+                    method:  "QUERY",
                     headers: {
                         "API-Key": "driver-secret"
                     },
@@ -984,7 +984,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("rejects POST /convert without Authorization when API key authentication is enabled", async () => {
+    test("rejects QUERY /convert without Authorization when API key authentication is enabled", async () => {
 
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
@@ -1009,7 +1009,7 @@ describe("Chargy HTTP API", () => {
             },
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/convert`, {
-                    method: "POST",
+                    method: "QUERY",
                     body:   Buffer.from("transparency-record")
                 });
 
@@ -1023,7 +1023,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("accepts POST /verify with a valid Bearer Authorization", async () => {
+    test("accepts QUERY /verify with a valid Bearer Authorization", async () => {
 
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
@@ -1043,7 +1043,7 @@ describe("Chargy HTTP API", () => {
             }),
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method:  "POST",
+                    method:  "QUERY",
                     headers: {
                         "Authorization": "Bearer driver-secret"
                     },
@@ -1058,7 +1058,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("accepts POST /verify with a valid TOTP Authorization", async () => {
+    test("accepts QUERY /verify with a valid TOTP Authorization", async () => {
 
         const now           = new Date("2026-06-15T12:00:05Z");
         const apiKeyEntries = parseApiKeyEntries([
@@ -1087,7 +1087,7 @@ describe("Chargy HTTP API", () => {
             }),
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method:  "POST",
+                    method:  "QUERY",
                     headers: {
                         "Authorization": "TOTP totp-driver " + generateTOTPApiKeyValue(totp, now)
                     },
@@ -1102,7 +1102,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("rejects POST /verify with an expired Bearer Authorization", async () => {
+    test("rejects QUERY /verify with an expired Bearer Authorization", async () => {
 
         const apiKeyAuthenticator = createApiKeyAuthenticator(
             parseApiKeyEntries([
@@ -1127,7 +1127,7 @@ describe("Chargy HTTP API", () => {
             },
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method:  "POST",
+                    method:  "QUERY",
                     headers: {
                         "Authorization": "Bearer driver-secret"
                     },
@@ -1143,7 +1143,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("starts an HTTP server and routes POST /verify to the renderer dispatcher", async () => {
+    test("starts an HTTP server and routes QUERY /verify to the renderer dispatcher", async () => {
 
         const dispatchedRequests: HttpDispatchRequest[] = [];
 
@@ -1157,7 +1157,7 @@ describe("Chargy HTTP API", () => {
             },
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method: "POST",
+                    method: "QUERY",
                     body:   Buffer.from("transparency-record")
                 });
 
@@ -1175,7 +1175,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("returns POST /verify as text/plain when requested via Accept", async () => {
+    test("returns QUERY /verify as text/plain when requested via Accept", async () => {
 
         await withHttpServer(
             () => ({
@@ -1184,7 +1184,7 @@ describe("Chargy HTTP API", () => {
             }),
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method:  "POST",
+                    method:  "QUERY",
                     headers: {
                         "Accept": "text/plain"
                     },
@@ -1199,7 +1199,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("returns POST /verify as CSV when requested via Accept", async () => {
+    test("returns QUERY /verify as CSV when requested via Accept", async () => {
 
         await withHttpServer(
             () => ({
@@ -1208,7 +1208,7 @@ describe("Chargy HTTP API", () => {
             }),
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method:  "POST",
+                    method:  "QUERY",
                     headers: {
                         "Accept": "text/csv"
                     },
@@ -1223,7 +1223,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("returns POST /verify as XML when requested via Accept", async () => {
+    test("returns QUERY /verify as XML when requested via Accept", async () => {
 
         await withHttpServer(
             () => ({
@@ -1232,7 +1232,7 @@ describe("Chargy HTTP API", () => {
             }),
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method:  "POST",
+                    method:  "QUERY",
                     headers: {
                         "Accept": "application/xml"
                     },
@@ -1255,7 +1255,7 @@ describe("Chargy HTTP API", () => {
             dispatchToChargyCore,
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method:  "POST",
+                    method:  "QUERY",
                     headers: {
                         "Accept":       "text/plain",
                         "Content-Type": "image/png"
@@ -1278,7 +1278,7 @@ describe("Chargy HTTP API", () => {
             dispatchToChargyCore,
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/convert?pretty`, {
-                    method:  "POST",
+                    method:  "QUERY",
                     headers: {
                         "Accept":       "application/json",
                         "Content-Type": "image/png"
@@ -1306,7 +1306,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("rejects POST /verify when no requested response content type is supported", async () => {
+    test("rejects QUERY /verify when no requested response content type is supported", async () => {
 
         await withHttpServer(
             () => ({
@@ -1315,7 +1315,7 @@ describe("Chargy HTTP API", () => {
             }),
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method:  "POST",
+                    method:  "QUERY",
                     headers: {
                         "Accept": "image/png"
                     },
@@ -1329,7 +1329,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("localizes POST /verify status text with the configured CLI language", async () => {
+    test("localizes QUERY /verify status text with the configured CLI language", async () => {
 
         await withHttpServer(
             () => ({
@@ -1338,7 +1338,7 @@ describe("Chargy HTTP API", () => {
             }),
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method: "POST",
+                    method: "QUERY",
                     body:   Buffer.from("transparency-record")
                 });
 
@@ -1353,7 +1353,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("uses Accept-Language as per-request override for POST /verify status text", async () => {
+    test("uses Accept-Language as per-request override for QUERY /verify status text", async () => {
 
         await withHttpServer(
             () => ({
@@ -1362,7 +1362,7 @@ describe("Chargy HTTP API", () => {
             }),
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method:  "POST",
+                    method:  "QUERY",
                     headers: {
                         "Accept-Language": "fr-CH, de-DE;q=0.9, en;q=0.8"
                     },
@@ -1389,7 +1389,7 @@ describe("Chargy HTTP API", () => {
             }),
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method:  "POST",
+                    method:  "QUERY",
                     headers: {
                         "Accept-Language": "fr-CH, es;q=0.9"
                     },
@@ -1407,7 +1407,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("rejects POST /convert when JSON is not accepted", async () => {
+    test("rejects QUERY /convert when JSON is not accepted", async () => {
 
         await withHttpServer(
             () => ({
@@ -1416,7 +1416,7 @@ describe("Chargy HTTP API", () => {
             }),
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/convert`, {
-                    method:  "POST",
+                    method:  "QUERY",
                     headers: {
                         "Accept": "text/plain"
                     },
@@ -1430,7 +1430,7 @@ describe("Chargy HTTP API", () => {
 
     });
 
-    test("routes POST /convert to the renderer dispatcher and returns the converted record", async () => {
+    test("routes QUERY /convert to the renderer dispatcher and returns the converted record", async () => {
 
         let dispatchedRequest: HttpDispatchRequest | undefined;
 
@@ -1444,7 +1444,7 @@ describe("Chargy HTTP API", () => {
             },
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/convert?pretty`, {
-                    method:  "POST",
+                    method:  "QUERY",
                     headers: {
                         "Content-Type": "application/json"
                     },
@@ -1484,7 +1484,7 @@ describe("Chargy HTTP API", () => {
                 });
 
                 expect(response.status).toBe(400);
-                expect(await response.text()).toContain("Please use POST /verify");
+                expect(await response.text()).toContain("Please use QUERY /verify");
             }
         );
 
@@ -1506,7 +1506,7 @@ describe("Chargy HTTP API", () => {
             },
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/convert`, {
-                    method: "POST"
+                    method: "QUERY"
                 });
 
                 expect(response.status).toBe(400);
@@ -1532,7 +1532,7 @@ describe("Chargy HTTP API", () => {
             },
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method: "POST",
+                    method: "QUERY",
                     body:   Buffer.alloc(64, 0x41)
                 });
 
@@ -1554,7 +1554,7 @@ describe("Chargy HTTP API", () => {
             },
             async baseUrl => {
                 const response = await fetch(`${baseUrl}/verify`, {
-                    method: "POST",
+                    method: "QUERY",
                     body:   Buffer.from("transparency-record")
                 });
 
@@ -1586,8 +1586,8 @@ describe("Chargy HTTP API", () => {
             },
             async baseUrl => {
                 await Promise.all([
-                    fetch(`${baseUrl}/convert`, { method: "POST", body: Buffer.from("A") }),
-                    fetch(`${baseUrl}/convert`, { method: "POST", body: Buffer.from("B") })
+                    fetch(`${baseUrl}/convert`, { method: "QUERY", body: Buffer.from("A") }),
+                    fetch(`${baseUrl}/convert`, { method: "QUERY", body: Buffer.from("B") })
                 ]);
             }
         );
@@ -1659,7 +1659,7 @@ describe("Chargy HTTP API - robustness via raw sockets", () => {
                 const outcome = await new Promise<string>(resolve => {
 
                     const clientRequest = httpClientRequest(
-                        { host: "127.0.0.1", port, method: "POST", path: "/verify" },
+                        { host: "127.0.0.1", port, method: "QUERY", path: "/verify" },
                         response => {
                             response.resume();
                             resolve("status:" + String(response.statusCode));
@@ -1703,7 +1703,7 @@ describe("Chargy HTTP API - robustness via raw sockets", () => {
                         {
                             host:    "127.0.0.1",
                             port,
-                            method:  "POST",
+                            method:  "QUERY",
                             path:    "/verify",
                             headers: { "Content-Length": "1000" }
                         },
