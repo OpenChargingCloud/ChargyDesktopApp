@@ -1,10 +1,22 @@
 const isDevelopment = process.env.NODE_ENV === 'development';
+const path          = require('path');
 const webpack       = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const packageLock   = require('./package-lock.json');
 
 const chargyCoreNpmIntegrity =
   packageLock.packages?.['node_modules/@open-charging-cloud/chargy-core']?.integrity ?? '';
+
+const sourceMapModuleName = info => {
+  let resourcePath = (info.resourcePath || info.absoluteResourcePath || '').replace(/\\/g, '/');
+
+  resourcePath = resourcePath
+    .replace(/^ignored\|.*\/node_modules\//, 'ignored|node_modules/')
+    .replace(/^.*\/node_modules\//, 'node_modules/')
+    .replace(/^\.\//, '');
+
+  return `webpack://chargytransparenzsoftware/${resourcePath}`;
+};
 
 module.exports = [
     {
@@ -32,6 +44,12 @@ module.exports = [
       },
       module: {
         rules: [
+          {
+            test: /\.js$/,
+            enforce: 'pre',
+            include: path.resolve(__dirname, 'node_modules/@open-charging-cloud/chargy-core'),
+            use: ['source-map-loader']
+          },
           {
             test: /\.ts$/,
             //include: /src/,
@@ -85,8 +103,9 @@ module.exports = [
         })
       ],
       output: {
-        path: __dirname + '/src/build',
-        filename: 'chargyApp-bundle.js'
+        path:                          path.resolve(__dirname, 'src/build'),
+        filename:                      'chargyApp-bundle.js',
+        devtoolModuleFilenameTemplate: sourceMapModuleName
       }
     }
   ];

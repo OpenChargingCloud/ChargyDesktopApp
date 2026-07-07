@@ -46,6 +46,7 @@ declare const __CHARGY_CORE_NPM_INTEGRITY__: string;
 type DetectionResult = chargeTransparencyRecord.  IChargeTransparencyRecord   |
                        chargeTransparencyLiveLink.IChargeTransparencyLiveLink |
                        publicKeyInfo.             IPublicKey                  |
+                       publicKeyInfo.             IPublicKeyLookup            |
                        chargyInterfaces.          ISessionCryptoResult;
 
 type DetectionOptions = {
@@ -612,7 +613,7 @@ export class ChargyApp {
 
     private currentChargeTransparencyRecord:    chargeTransparencyRecord.IChargeTransparencyRecord|null = null;
     private currentChargeTransparencyLiveLink:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink|null = null;
-    private currentPublicKey:                   publicKeyInfo.IPublicKey|null = null;
+    private currentPublicKeyLookup:             publicKeyInfo.IPublicKeyLookup|null = null;
     private currentGlobalError:                 chargyInterfaces.ISessionCryptoResult|null = null;
 
     //#endregion
@@ -1384,7 +1385,7 @@ export class ChargyApp {
             this.clearChargingSessionOutput(true);
             this.currentChargeTransparencyRecord         = null;
             this.currentChargeTransparencyLiveLink       = null;
-            this.currentPublicKey                        = null;
+            this.currentPublicKeyLookup                  = null;
             this.currentGlobalError                      = null;
 
         }
@@ -1802,7 +1803,7 @@ export class ChargyApp {
 
     }
 
-    private async rerenderCurrentView(): Promise<void> {
+    private rerenderCurrentView(): void {
 
         if (this.currentChargeTransparencyRecord != null &&
             this.chargingSessionScreenDiv.style.display !== "none")
@@ -1814,14 +1815,14 @@ export class ChargyApp {
         if (this.currentChargeTransparencyLiveLink != null &&
             this.chargingSessionScreenDiv.style.display !== "none")
         {
-            await this.showChargeTransparencyLiveLink(this.currentChargeTransparencyLiveLink);
+            this.showChargeTransparencyLiveLink(this.currentChargeTransparencyLiveLink);
             return;
         }
 
-        if (this.currentPublicKey != null &&
+        if (this.currentPublicKeyLookup != null &&
             this.chargingSessionScreenDiv.style.display !== "none")
         {
-            this.showPublicKeyInfo(this.currentPublicKey);
+            this.showPublicKeyInfo(this.currentPublicKeyLookup);
             return;
         }
 
@@ -1968,13 +1969,13 @@ export class ChargyApp {
     //#region doGlobalError(...)
 
     private doGlobalError(result:    chargyInterfaces.ISessionCryptoResult,
-                          context?:  unknown)
+                          context?:  unknown) : void
     {
 
         this.currentGlobalError                      = result;
         this.currentChargeTransparencyRecord         = null;
         this.currentChargeTransparencyLiveLink       = null;
-        this.currentPublicKey                        = null;
+        this.currentPublicKeyLookup                  = null;
         this.clearChargingSessionOutput(true);
 
         let text = this.chargy.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord");
@@ -2845,7 +2846,7 @@ export class ChargyApp {
 
         }
 
-        if (publicKeyInfo.IsAPublicKey(result))
+        if (publicKeyInfo.IsAPublicKey(result) || publicKeyInfo.IsAPublicKeyLookup(result))
         {
 
             if (options?.prepareUI === false)
@@ -2871,12 +2872,16 @@ export class ChargyApp {
 
     //#endregion
 
-    //#region showPublicKeyInfo(PublicKey)
+    //#region showPublicKeyInfo(PublicKeys)
 
-    private showPublicKeyInfo(PublicKey: publicKeyInfo.IPublicKey): void
+    private showPublicKeyInfo(PublicKeys: publicKeyInfo.IPublicKey|publicKeyInfo.IPublicKeyLookup): void
     {
 
-        this.currentPublicKey                       = PublicKey;
+        const publicKeys                            =  publicKeyInfo.IsAPublicKeyLookup(PublicKeys)
+                                                           ? PublicKeys.publicKeys
+                                                           : [ PublicKeys ];
+
+        this.currentPublicKeyLookup                 = { publicKeys };
         this.currentChargeTransparencyRecord        = null;
         this.currentChargeTransparencyLiveLink      = null;
         this.currentGlobalError                     = null;
@@ -2898,58 +2903,61 @@ export class ChargyApp {
         const publicKeysDiv        = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
         publicKeysDiv.id           = "chargingSessions";
 
-        const publicKeyDiv         = chargyLib.CreateDiv(publicKeysDiv, "chargingSession");
-        publicKeyDiv.classList.add("publicKeyCard");
-
-        const subject              = this.formatPublicKeyValue(PublicKey.subject);
-        const cardTitleDiv         = publicKeyDiv.appendChild(document.createElement('div'));
-        cardTitleDiv.className     = "date";
-        cardTitleDiv.innerText     = subject || this.chargy.GetLocalizedMessage("publicKeyLabel");
-
-        const tableDiv             = publicKeyDiv.appendChild(document.createElement('div'));
-        tableDiv.className         = "table publicKeyTable";
-
-        const identifier = PublicKey["@id"];
-        if (typeof identifier === "string" && identifier !== "")
-            this.appendPublicKeyInfoRow(tableDiv, "fa-fingerprint", "publicKeyIdentifierLabel", identifier);
-
-        if (subject !== "")
-            this.appendPublicKeyInfoRow(tableDiv, "fa-user-tag", "publicKeySubjectLabel", subject);
-
-        this.appendPublicKeyInfoRow(tableDiv, "fa-shield-halved", "publicKeyAlgorithmLabel", this.formatPublicKeyValue(PublicKey.algorithm));
-
-        if (PublicKey.type !== undefined)
-            this.appendPublicKeyInfoRow(tableDiv, "fa-key", "publicKeyTypeLabel", this.formatPublicKeyValue(PublicKey.type));
-
-        if (typeof PublicKey.format === "string" && PublicKey.format !== "")
-            this.appendPublicKeyInfoRow(tableDiv, "fa-file-code", "publicKeyFormatLabel", PublicKey.format);
-
-        if (PublicKey.encoding && typeof PublicKey.encoding === "string" && PublicKey.encoding !== "")
-            this.appendPublicKeyInfoRow(tableDiv, "fa-code", "publicKeyEncodingLabel", PublicKey.encoding);
-
-        if (PublicKey.value && typeof PublicKey.value === "string" && PublicKey.value !== "")
-            this.appendPublicKeyInfoRow(tableDiv, "fa-key", "publicKeyValueLabel", PublicKey.value, true);
-
-        if (publicKeyInfo.IsAPublicKeyXY(PublicKey))
+        for (const publicKey of publicKeys)
         {
-            this.appendPublicKeyInfoRow(tableDiv, "fa-arrows-left-right", "publicKeyXCoordinateLabel", PublicKey.x, true);
-            this.appendPublicKeyInfoRow(tableDiv, "fa-arrows-up-down", "publicKeyYCoordinateLabel", PublicKey.y, true);
-        }
+            const publicKeyDiv         = chargyLib.CreateDiv(publicKeysDiv, "chargingSession");
+            publicKeyDiv.classList.add("publicKeyCard");
 
-        if (PublicKey.certainty !== undefined)
-        {
-            const certainty = PublicKey.certainty <= 1
-                                  ? Math.round(PublicKey.certainty * 100).toString() + " %"
-                                  : PublicKey.certainty.toString();
-            this.appendPublicKeyInfoRow(tableDiv, "fa-circle-check", "publicKeyCertaintyLabel", certainty);
-        }
+            const subject              = this.formatPublicKeyValue(publicKey.subject);
+            const cardTitleDiv         = publicKeyDiv.appendChild(document.createElement('div'));
+            cardTitleDiv.className     = "date";
+            cardTitleDiv.innerText     = subject || this.chargy.GetLocalizedMessage("publicKeyLabel");
 
-        if (PublicKey.signatures !== undefined)
-        {
-            const signatureText = PublicKey.signatures.length === 1
-                                      ? this.chargy.GetLocalizedMessage("publicKeyOneSignatureLabel")
-                                      : PublicKey.signatures.length.toString() + " " + this.chargy.GetLocalizedMessage("publicKeySignaturesLabel");
-            this.appendPublicKeyInfoRow(tableDiv, "fa-file-signature", "publicKeySignatureCountLabel", signatureText);
+            const tableDiv             = publicKeyDiv.appendChild(document.createElement('div'));
+            tableDiv.className         = "table publicKeyTable";
+
+            const identifier = publicKey["@id"];
+            if (typeof identifier === "string" && identifier !== "")
+                this.appendPublicKeyInfoRow(tableDiv, "fa-fingerprint", "publicKeyIdentifierLabel", identifier);
+
+            if (subject !== "")
+                this.appendPublicKeyInfoRow(tableDiv, "fa-user-tag", "publicKeySubjectLabel", subject);
+
+            this.appendPublicKeyInfoRow(tableDiv, "fa-shield-halved", "publicKeyAlgorithmLabel", this.formatPublicKeyValue(publicKey.algorithm));
+
+            if (publicKey.type !== undefined)
+                this.appendPublicKeyInfoRow(tableDiv, "fa-key", "publicKeyTypeLabel", this.formatPublicKeyValue(publicKey.type));
+
+            if (typeof publicKey.format === "string" && publicKey.format !== "")
+                this.appendPublicKeyInfoRow(tableDiv, "fa-file-code", "publicKeyFormatLabel", publicKey.format);
+
+            if (publicKey.encoding)
+                this.appendPublicKeyInfoRow(tableDiv, "fa-code", "publicKeyEncodingLabel", publicKey.encoding);
+
+            if (publicKey.value)
+                this.appendPublicKeyInfoRow(tableDiv, "fa-key", "publicKeyValueLabel", publicKey.value, true);
+
+            if (publicKeyInfo.IsAPublicKeyXY(publicKey))
+            {
+                this.appendPublicKeyInfoRow(tableDiv, "fa-arrows-left-right", "publicKeyXCoordinateLabel", publicKey.x, true);
+                this.appendPublicKeyInfoRow(tableDiv, "fa-arrows-up-down", "publicKeyYCoordinateLabel", publicKey.y, true);
+            }
+
+            if (publicKey.certainty !== undefined)
+            {
+                const certainty = publicKey.certainty <= 1
+                                      ? Math.round(publicKey.certainty * 100).toString() + " %"
+                                      : publicKey.certainty.toString();
+                this.appendPublicKeyInfoRow(tableDiv, "fa-circle-check", "publicKeyCertaintyLabel", certainty);
+            }
+
+            if (publicKey.signatures !== undefined)
+            {
+                const signatureText = publicKey.signatures.length === 1
+                                          ? this.chargy.GetLocalizedMessage("publicKeyOneSignatureLabel")
+                                          : publicKey.signatures.length.toString() + " " + this.chargy.GetLocalizedMessage("publicKeySignaturesLabel");
+                this.appendPublicKeyInfoRow(tableDiv, "fa-file-signature", "publicKeySignatureCountLabel", signatureText);
+            }
         }
 
     }
@@ -3211,7 +3219,7 @@ export class ChargyApp {
 
         this.currentChargeTransparencyRecord         = CTR;
         this.currentChargeTransparencyLiveLink       = null;
-        this.currentPublicKey                        = null;
+        this.currentPublicKeyLookup                  = null;
         this.currentGlobalError                      = null;
 
         //#region Prepare View
