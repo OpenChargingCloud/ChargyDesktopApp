@@ -1,4 +1,84 @@
 {
+
+    "publicKeyDetailsTitle": {
+        "de": "PublicKey-Informationen",
+        "en": "Public key information"
+    },
+
+    "publicKeyLabel": {
+        "de": "PublicKey",
+        "en": "Public key"
+    },
+
+    "publicKeyIdentifierLabel": {
+        "de": "Kennung",
+        "en": "Identifier"
+    },
+
+    "publicKeySubjectLabel": {
+        "de": "Subjekt",
+        "en": "Subject"
+    },
+
+    "publicKeyAlgorithmLabel": {
+        "de": "Algorithmus",
+        "en": "Algorithm"
+    },
+
+    "publicKeyTypeLabel": {
+        "de": "Typ",
+        "en": "Type"
+    },
+
+    "publicKeyFormatLabel": {
+        "de": "Format",
+        "en": "Format"
+    },
+
+    "publicKeyEncodingLabel": {
+        "de": "Kodierung",
+        "en": "Encoding"
+    },
+
+    "publicKeyValueLabel": {
+        "de": "Schlüsselwert",
+        "en": "Key value"
+    },
+
+    "publicKeyXCoordinateLabel": {
+        "de": "X-Koordinate",
+        "en": "X coordinate"
+    },
+
+    "publicKeyYCoordinateLabel": {
+        "de": "Y-Koordinate",
+        "en": "Y coordinate"
+    },
+
+    "publicKeyCertaintyLabel": {
+        "de": "Erkennungssicherheit",
+        "en": "Detection certainty"
+    },
+
+    "publicKeySignatureCountLabel": {
+        "de": "Signaturen",
+        "en": "Signatures"
+    },
+
+    "publicKeyOneSignatureLabel": {
+        "de": "1 Signatur",
+        "en": "1 signature"
+    },
+
+    "publicKeySignaturesLabel": {
+        "de": "Signaturen",
+        "en": "signatures"
+    },
+
+
+
+
+
     "imprintLabel": {
         "de": "Impressum",
         "en": "Imprint"

@@ -612,6 +612,7 @@ export class ChargyApp {
 
     private currentChargeTransparencyRecord:    chargeTransparencyRecord.IChargeTransparencyRecord|null = null;
     private currentChargeTransparencyLiveLink:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink|null = null;
+    private currentPublicKey:                   publicKeyInfo.IPublicKey|null = null;
     private currentGlobalError:                 chargyInterfaces.ISessionCryptoResult|null = null;
 
     //#endregion
@@ -1383,6 +1384,7 @@ export class ChargyApp {
             this.clearChargingSessionOutput(true);
             this.currentChargeTransparencyRecord         = null;
             this.currentChargeTransparencyLiveLink       = null;
+            this.currentPublicKey                        = null;
             this.currentGlobalError                      = null;
 
         }
@@ -1805,7 +1807,7 @@ export class ChargyApp {
         if (this.currentChargeTransparencyRecord != null &&
             this.chargingSessionScreenDiv.style.display !== "none")
         {
-            await this.showChargeTransparencyRecord(this.currentChargeTransparencyRecord);
+            this.showChargeTransparencyRecord(this.currentChargeTransparencyRecord);
             return;
         }
 
@@ -1813,6 +1815,13 @@ export class ChargyApp {
             this.chargingSessionScreenDiv.style.display !== "none")
         {
             await this.showChargeTransparencyLiveLink(this.currentChargeTransparencyLiveLink);
+            return;
+        }
+
+        if (this.currentPublicKey != null &&
+            this.chargingSessionScreenDiv.style.display !== "none")
+        {
+            this.showPublicKeyInfo(this.currentPublicKey);
             return;
         }
 
@@ -1962,9 +1971,10 @@ export class ChargyApp {
                           context?:  unknown)
     {
 
-        this.currentGlobalError                = result;
-        this.currentChargeTransparencyRecord   = null;
-        this.currentChargeTransparencyLiveLink = null;
+        this.currentGlobalError                      = result;
+        this.currentChargeTransparencyRecord         = null;
+        this.currentChargeTransparencyLiveLink       = null;
+        this.currentPublicKey                        = null;
         this.clearChargingSessionOutput(true);
 
         let text = this.chargy.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord");
@@ -2811,7 +2821,7 @@ export class ChargyApp {
                 this.errorTextDiv.style.display  = 'none';
             }
 
-            await this.showChargeTransparencyRecord(result);
+            this.showChargeTransparencyRecord(result);
 
             if (this.appContext.isDebug)
                 this.publishVerificationResult(result);
@@ -2829,7 +2839,7 @@ export class ChargyApp {
                 this.errorTextDiv.style.display  = 'none';
             }
 
-            await this.showChargeTransparencyLiveLink(result);
+            this.showChargeTransparencyLiveLink(result);
 
             return true;
 
@@ -2844,7 +2854,7 @@ export class ChargyApp {
                 this.errorTextDiv.style.display  = 'none';
             }
 
-            // await this.showPublicKeyInfo(result);
+            this.showPublicKeyInfo(result);
 
             return true;
 
@@ -2856,6 +2866,142 @@ export class ChargyApp {
             this.doGlobalError(result);
 
         return false;
+
+    }
+
+    //#endregion
+
+    //#region showPublicKeyInfo(PublicKey)
+
+    private showPublicKeyInfo(PublicKey: publicKeyInfo.IPublicKey): void
+    {
+
+        this.currentPublicKey                       = PublicKey;
+        this.currentChargeTransparencyRecord        = null;
+        this.currentChargeTransparencyLiveLink      = null;
+        this.currentGlobalError                     = null;
+     //   this.clearRenderedChargeData();
+
+        this.inputDiv.style.flexDirection           = "column";
+        this.aboutScreenDiv.style.display           = "none";
+        this.chargingSessionScreenDiv.style.display = "flex";
+        this.chargingSessionScreenDiv.innerText     = "";
+        this.invalidDataSetsScreenDiv.style.display = "none";
+        this.invalidDataSetsScreenDiv.innerText     = "";
+        this.inputButtonsDiv.style.display          = "flex";
+        this.exportButtonDiv.style.display          = "none";
+
+        const descriptionDiv       = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
+        descriptionDiv.id          = "description";
+        descriptionDiv.innerText   = this.chargy.GetLocalizedMessage("publicKeyDetailsTitle");
+
+        const publicKeysDiv        = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
+        publicKeysDiv.id           = "chargingSessions";
+
+        const publicKeyDiv         = chargyLib.CreateDiv(publicKeysDiv, "chargingSession");
+        publicKeyDiv.classList.add("publicKeyCard");
+
+        const subject              = this.formatPublicKeyValue(PublicKey.subject);
+        const cardTitleDiv         = publicKeyDiv.appendChild(document.createElement('div'));
+        cardTitleDiv.className     = "date";
+        cardTitleDiv.innerText     = subject || this.chargy.GetLocalizedMessage("publicKeyLabel");
+
+        const tableDiv             = publicKeyDiv.appendChild(document.createElement('div'));
+        tableDiv.className         = "table publicKeyTable";
+
+        const identifier = PublicKey["@id"];
+        if (typeof identifier === "string" && identifier !== "")
+            this.appendPublicKeyInfoRow(tableDiv, "fa-fingerprint", "publicKeyIdentifierLabel", identifier);
+
+        if (subject !== "")
+            this.appendPublicKeyInfoRow(tableDiv, "fa-user-tag", "publicKeySubjectLabel", subject);
+
+        this.appendPublicKeyInfoRow(tableDiv, "fa-shield-halved", "publicKeyAlgorithmLabel", this.formatPublicKeyValue(PublicKey.algorithm));
+
+        if (PublicKey.type !== undefined)
+            this.appendPublicKeyInfoRow(tableDiv, "fa-key", "publicKeyTypeLabel", this.formatPublicKeyValue(PublicKey.type));
+
+        if (typeof PublicKey.format === "string" && PublicKey.format !== "")
+            this.appendPublicKeyInfoRow(tableDiv, "fa-file-code", "publicKeyFormatLabel", PublicKey.format);
+
+        if (PublicKey.encoding && typeof PublicKey.encoding === "string" && PublicKey.encoding !== "")
+            this.appendPublicKeyInfoRow(tableDiv, "fa-code", "publicKeyEncodingLabel", PublicKey.encoding);
+
+        if (PublicKey.value && typeof PublicKey.value === "string" && PublicKey.value !== "")
+            this.appendPublicKeyInfoRow(tableDiv, "fa-key", "publicKeyValueLabel", PublicKey.value, true);
+
+        if (publicKeyInfo.IsAPublicKeyXY(PublicKey))
+        {
+            this.appendPublicKeyInfoRow(tableDiv, "fa-arrows-left-right", "publicKeyXCoordinateLabel", PublicKey.x, true);
+            this.appendPublicKeyInfoRow(tableDiv, "fa-arrows-up-down", "publicKeyYCoordinateLabel", PublicKey.y, true);
+        }
+
+        if (PublicKey.certainty !== undefined)
+        {
+            const certainty = PublicKey.certainty <= 1
+                                  ? Math.round(PublicKey.certainty * 100).toString() + " %"
+                                  : PublicKey.certainty.toString();
+            this.appendPublicKeyInfoRow(tableDiv, "fa-circle-check", "publicKeyCertaintyLabel", certainty);
+        }
+
+        if (PublicKey.signatures !== undefined)
+        {
+            const signatureText = PublicKey.signatures.length === 1
+                                      ? this.chargy.GetLocalizedMessage("publicKeyOneSignatureLabel")
+                                      : PublicKey.signatures.length.toString() + " " + this.chargy.GetLocalizedMessage("publicKeySignaturesLabel");
+            this.appendPublicKeyInfoRow(tableDiv, "fa-file-signature", "publicKeySignatureCountLabel", signatureText);
+        }
+
+    }
+
+    private appendPublicKeyInfoRow(tableDiv:  HTMLDivElement,
+                                   icon:      string,
+                                   labelKey:  string,
+                                   value:     string,
+                                   isKey:     boolean = false): void
+    {
+
+        const rowDiv          = tableDiv.appendChild(document.createElement('div'));
+        rowDiv.className      = "publicKeyInfo";
+
+        const iconDiv         = rowDiv.appendChild(document.createElement('div'));
+        iconDiv.className     = "icon";
+        const iconElement     = iconDiv.appendChild(document.createElement('i'));
+        iconElement.className = "fas " + icon;
+
+        const textDiv         = rowDiv.appendChild(document.createElement('div'));
+        textDiv.className     = "text";
+
+        const labelDiv        = textDiv.appendChild(document.createElement('div'));
+        labelDiv.className    = "label";
+        labelDiv.innerText    = this.chargy.GetLocalizedMessage(labelKey);
+
+        const valueDiv        = textDiv.appendChild(document.createElement('div'));
+        valueDiv.className    = isKey ? "value keyValue" : "value";
+        valueDiv.innerText    = value;
+
+    }
+
+    private formatPublicKeyValue(value: unknown): string
+    {
+
+        if (typeof value === "string")
+            return value;
+
+        if (Array.isArray(value))
+            return value.filter(item => typeof item === "string").join(", ");
+
+        if (chargyLib.isObject(value))
+        {
+            if (chargyLib.isOIDInfo(value))
+                return value.name + " (" + value.oid + ")";
+
+            return Object.entries(value)
+                         .map(([ key, item ]) => key + ": " + (Array.isArray(item) ? item.join(", ") : String(item)))
+                         .join(" · ");
+        }
+
+        return value == null ? "" : String(value);
 
     }
 
@@ -2876,7 +3022,7 @@ export class ChargyApp {
 
     //#region showChargeTransparencyLiveLink(LiveLink)
 
-    private async showChargeTransparencyLiveLink(LiveLink: chargeTransparencyLiveLink.IChargeTransparencyLiveLink)
+    private showChargeTransparencyLiveLink(LiveLink: chargeTransparencyLiveLink.IChargeTransparencyLiveLink) : void
     {
 
         this.currentChargeTransparencyLiveLink       = LiveLink;
@@ -2895,7 +3041,7 @@ export class ChargyApp {
         descriptionDiv.id          = "description";
         descriptionDiv.innerText   = this.chargy.GetLocalizedText(LiveLink.description) ?? "Charge Transparency Live-Link";
 
-        if (LiveLink.timestamp)
+        if (typeof(LiveLink.timestamp) === "string" && LiveLink.timestamp !== "")
         {
             const timestampDiv     = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
             timestampDiv.id        = "begin";
@@ -3057,7 +3203,7 @@ export class ChargyApp {
 
     //#region showChargeTransparencyRecord  (CTR)
 
-    private async showChargeTransparencyRecord(CTR: chargeTransparencyRecord.IChargeTransparencyRecord)
+    private showChargeTransparencyRecord(CTR: chargeTransparencyRecord.IChargeTransparencyRecord) : void
     {
 
         if (this.currentChargeTransparencyRecord !== CTR)
@@ -3065,6 +3211,7 @@ export class ChargyApp {
 
         this.currentChargeTransparencyRecord         = CTR;
         this.currentChargeTransparencyLiveLink       = null;
+        this.currentPublicKey                        = null;
         this.currentGlobalError                      = null;
 
         //#region Prepare View
@@ -3086,17 +3233,17 @@ export class ChargyApp {
         descriptionDiv.id         = "description";
         descriptionDiv.innerText  = this.chargy.GetLocalizedText(CTR.description) ?? this.chargy.GetLocalizedMessage("All charging sessions");
 
-        const ctrBeginText        = CTR.begin ? chargyLib.parseUTC(CTR.begin).format('dddd, D. MMMM YYYY') : null;
-        const ctrEndText          = CTR.end   ? chargyLib.parseUTC(CTR.end).  format('dddd, D. MMMM YYYY') : null;
+        const ctrBeginText        = CTR.begin != null ? chargyLib.parseUTC(CTR.begin).format('dddd, D. MMMM YYYY') : null;
+        const ctrEndText          = CTR.end   != null ? chargyLib.parseUTC(CTR.end).  format('dddd, D. MMMM YYYY') : null;
 
-        if (ctrBeginText) {
+        if (typeof(ctrBeginText) === "string") {
             const beginDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
             beginDiv.id        = "begin";
             beginDiv.className = "dates";
             beginDiv.innerHTML = (ctrBeginText == ctrEndText ? this.chargy.GetLocalizedMessage("on") : this.chargy.GetLocalizedMessage("from")) + " " + ctrBeginText;
         }
 
-        if (ctrEndText && ctrEndText != ctrBeginText) {
+        if (typeof(ctrEndText) === "string" && ctrEndText != ctrBeginText) {
             const endDiv = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
             endDiv.id          = "end";
             endDiv.className   = "dates";
@@ -3127,21 +3274,21 @@ export class ChargyApp {
                 const chargingSessionDiv    = chargyLib.CreateDiv(chargingSessionsDiv, "chargingSession");
                 chargingSession.ctr         = CTR;
                 chargingSession.GUI         = chargingSessionDiv;
-                chargingSessionDiv.onclick  = async (ev: MouseEvent) => {
+                chargingSessionDiv.onclick  = (ev: MouseEvent): void => {
 
                     //#region Highlight the selected charging session...
 
                     const AllChargingSessionsDivs = document.getElementsByClassName("chargingSession");
 
-                    for(let i=0; i<AllChargingSessionsDivs.length; i++)
-                        AllChargingSessionsDivs[i]?.classList.remove("activated");
+                    for (const chargingSessionsDiv of AllChargingSessionsDivs)
+                        chargingSessionsDiv.classList.remove("activated");
 
                     //(this as HTMLDivElement)?.classList.add("activated");
                     (ev.currentTarget as HTMLDivElement).classList.add("activated");
 
                     //#endregion
 
-                    await this.showChargingSessionDetails(chargingSession);
+                    this.showChargingSessionDetails(chargingSession);
 
                 };
 
@@ -3150,7 +3297,7 @@ export class ChargyApp {
                 try
                 {
 
-                    if (chargingSession.begin)
+                    if (typeof(chargingSession.begin) === "string")
                     {
 
                         const dateDiv  = chargingSessionDiv.appendChild(document.createElement('div'));
@@ -3158,7 +3305,7 @@ export class ChargyApp {
                         //dateDiv.innerHTML = UTC2human(chargingSession.begin);
                         dateDiv.innerHTML = chargyLib.time2human(chargingSession.begin);
 
-                        if (chargingSession.end)
+                        if (typeof(chargingSession.end) === "string")
                         {
 
                             const endUTC   = chargyLib.parseUTC(chargingSession.end);
@@ -3239,7 +3386,7 @@ export class ChargyApp {
                     for (const measurement of chargingSession.measurements ?? [])
                     {
                         //<i class="far fa-chart-bar"></i>
-                        if (measurement.values && measurement.values.length > 0)
+                        if (measurement.values.length > 0)
                         {
 
                             if (measurement.phenomena && measurement.phenomena.length > 0)
@@ -3254,13 +3401,13 @@ export class ChargyApp {
                                 measurement.valueType    = phenomenon.valueType   ?? measurement.valueType;
                                 measurement.scale        = phenomenon.scale       ?? measurement.scale;
 
-                                if (measurement.scale == undefined || measurement.scale == null)
-                                    measurement.scale = 0;
+                                // if (measurement.scale == undefined || measurement.scale == null)
+                                //     measurement.scale = 0;
 
                             }
 
-                            const first  = measurement?.values[0]?.value                           ?? new Decimal(0);
-                            const last   = measurement?.values[measurement.values.length-1]?.value ?? first;
+                            const first  = measurement.values[0]?.value                           ?? new Decimal(0);
+                            const last   = measurement.values[measurement.values.length-1]?.value ?? first;
                             let   amount = parseFloat(((last.minus(first)).times(Math.pow(10, measurement.scale))).toFixed(10));
 
                             switch (measurement.unit)
@@ -4477,7 +4624,7 @@ export class ChargyApp {
 
     //#region showChargingSessionDetails    (chargingSession)
 
-    private async showChargingSessionDetails(chargingSession: chargeTransparencyRecord.IChargingSession)
+    private showChargingSessionDetails(chargingSession: chargeTransparencyRecord.IChargingSession) : void
     {
 
         try

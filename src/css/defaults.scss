@@ -670,6 +670,49 @@
                                 border-radius:      6px;
                                 cursor:             pointer;
 
+                                &.publicKeyCard {
+                                    cursor:             default;
+
+                                    .publicKeyTable {
+                                        width:              100%;
+                                    }
+
+                                    .publicKeyInfo {
+                                        display:            table-row;
+
+                                        .icon {
+                                            display:            table-cell;
+                                            width:              1.5em;
+                                            padding:            5px 9px 5px 3px;
+                                            text-align:         center;
+                                            vertical-align:     top;
+                                            color:              #416b8a;
+                                        }
+
+                                        .text {
+                                            display:            table-cell;
+                                            padding:            3px 0px;
+                                            color:              #212427;
+
+                                            .label {
+                                                font-size:          85%;
+                                                font-weight:        bold;
+                                                color:              #5a7184;
+                                            }
+
+                                            .value {
+                                                overflow-wrap:      anywhere;
+                                            }
+
+                                            .keyValue {
+                                                font-family:        monospace;
+                                                font-size:          90%;
+                                                line-height:        1.35;
+                                            }
+                                        }
+                                    }
+                                }
+
                                 .date {
                                     font-weight:        bold;
                                     padding:            2px 0px 3px 0px;
