@@ -529,7 +529,7 @@ export class ChargyApp {
     private          currentPackage:                     any                               = null;
     private          applicationHash:                    string                            = "";
 
-    private readonly markers:                            any                               = [];
+    private readonly markers:                            L.Marker[]                        = [];
     private          minlat:                             number                            =  1000;
     private          maxlat:                             number                            = -1000;
     private          minlng:                             number                            =  1000;
@@ -780,7 +780,7 @@ export class ChargyApp {
 
         //#region OnWindowResize
 
-        window.onresize = () => {
+        window.onresize = (): void => {
             this.verifyframeDiv.style.maxHeight = (this.appDiv.clientHeight - this.headlineDiv.clientHeight).toString() + "px";
         }
 
@@ -852,17 +852,17 @@ export class ChargyApp {
 
         //#region The Issue tracker
 
-        this.showPrivacyStatement.onclick = (ev: MouseEvent) => {
+        this.showPrivacyStatement.onclick = (ev: MouseEvent): void => {
             ev.preventDefault();
             this.privacyStatement.style.display = "block";
             this.issueTrackerText.scrollTop = this.issueTrackerText.scrollHeight;
         }
 
-        this.privacyStatementAccepted.onchange = () => {
+        this.privacyStatementAccepted.onchange = (): void => {
             this.sendIssueButton.disabled  = !this.privacyStatementAccepted.checked;
         }
 
-        this.sendIssueButton.onclick = (ev: MouseEvent) => {
+        this.sendIssueButton.onclick = (ev: MouseEvent): void => {
 
             ev.preventDefault();
 
@@ -963,7 +963,7 @@ export class ChargyApp {
                                true);
                 sendIssue.setRequestHeader('Content-type', 'application/json');
 
-                sendIssue.onreadystatechange = () => {
+                sendIssue.onreadystatechange = (): void => {
 
                     // 0 UNSENT | 1 OPENED | 2 HEADERS_RECEIVED | 3 LOADING | 4 DONE
                     if (sendIssue.readyState == 4) {
@@ -1009,7 +1009,7 @@ export class ChargyApp {
                 else
                     this.applicationHashValueDiv.innerHTML        = "Kann nicht berechnet werden!";
             })
-            .catch(error => {
+            .catch((error: unknown) => {
                 this.applicationHashValueDiv.style.fontStyle      = "italic";
                 this.applicationHashValueDiv.innerHTML            = error instanceof Error ? error.message : String(error);
             });
@@ -1024,11 +1024,11 @@ export class ChargyApp {
                                true);
         GetListOfVersions.setRequestHeader('Accept', 'application/json');
 
-        GetListOfVersions.onerror = function() {
+        GetListOfVersions.onerror = function(): void {
             //console.error('Network error');
         };
 
-        GetListOfVersions.onreadystatechange = () => {
+        GetListOfVersions.onreadystatechange = (): void => {
 
             // 0 UNSENT | 1 OPENED | 2 HEADERS_RECEIVED | 3 LOADING | 4 DONE
             if (GetListOfVersions.readyState === XMLHttpRequest.DONE) {
@@ -1079,9 +1079,9 @@ export class ChargyApp {
 
                                     //#region Find newer/updated version
 
-                                    else if (remoteVersion[0] >  thisVersion[0]! ||
-                                            (remoteVersion[0] >= thisVersion[0]! && remoteVersion[1] >  thisVersion[1]!) ||
-                                            (remoteVersion[0] >= thisVersion[0]! && remoteVersion[1] >= thisVersion[1]! && remoteVersion[2] > thisVersion[2]!))
+                                    else if (remoteVersion[0] >  thisVersion[0] ||
+                                            (remoteVersion[0] >= thisVersion[0] && remoteVersion[1] >  thisVersion[1]) ||
+                                            (remoteVersion[0] >= thisVersion[0] && remoteVersion[1] >= thisVersion[1] && remoteVersion[2] > thisVersion[2]))
                                     {
 
                                         this.updateAvailableButton.style.display = "block";
@@ -1211,11 +1211,11 @@ export class ChargyApp {
                                                     downloadURLAnchor.title = versionpackage.downloadURLs[downloadURLName];
                                                     downloadURLAnchor.dataset["externalUrl"] = versionpackage.downloadURLs[downloadURLName];
                                                     downloadURLAnchor.innerHTML = "<i class=\"fas fa-globe\"></i>" + downloadURLName;
-                                                    downloadURLAnchor.onclick = (ev: MouseEvent) => {
+                                                    downloadURLAnchor.onclick = (ev: MouseEvent): void => {
                                                         ev.preventDefault();
                                                         const link = downloadURLAnchor.dataset["externalUrl"];
                                                         if (link?.startsWith("https://"))
-                                                            this.electron.openExternal(link);
+                                                            void this.electron.openExternal(link);
                                                     };
                                                 }
 
@@ -1232,7 +1232,7 @@ export class ChargyApp {
                             }
 
                         }
-                        catch (exception)
+                        catch (_exception)
                         {
                             // Just do nothing!
                         }
@@ -1263,7 +1263,7 @@ export class ChargyApp {
 
         //#region Handle the 'Update available'-button
 
-        this.updateAvailableButton.onclick = () => {
+        this.updateAvailableButton.onclick = (): void => {
             this.updateAvailableScreen.style.display     = "block";
             this.inputDiv.style.flexDirection            = "";
             this.inputInfosDiv.style.display             = "none";
@@ -1278,7 +1278,7 @@ export class ChargyApp {
 
         //#region Handle the 'About'-button
 
-        this.aboutButton.onclick = async () => {
+        this.aboutButton.onclick = async (): Promise<void> => {
 
             this.updateAvailableScreen.style.display     = "none";
             this.inputDiv.style.flexDirection            = "";
@@ -1355,7 +1355,7 @@ export class ChargyApp {
 
         //#region Handle the 'Full Screen'-button
 
-        this.fullScreenButton.onclick = () => {
+        this.fullScreenButton.onclick = (): void => {
             if (document.fullscreenElement)
             {
                 this.measurementsDetailsDiv.classList.remove("fullScreen");
@@ -1564,7 +1564,9 @@ export class ChargyApp {
 
         // Stupid workaround via setTimeout
         if (filteredcommandLineArguments.length > 0)
-            setTimeout(async () => this.readFilesFromDisk(filteredcommandLineArguments), 100);
+            setTimeout(() => {
+                void this.readFilesFromDisk(filteredcommandLineArguments);
+            }, 100);
 
         //#endregion
 
@@ -2262,7 +2264,7 @@ export class ChargyApp {
                     qrText !== this.qrCodeScannerLastText)
                 {
                     this.qrCodeScannerLastText = qrText;
-                    this.handleScannedQRCodeText(qrText);
+                    void this.handleScannedQRCodeText(qrText);
                 }
             }
         }
@@ -2549,10 +2551,8 @@ export class ChargyApp {
 
             const filesToLoad = new Array<chargyInterfaces.IFileInfo>();
 
-            for (let i = 0; i < files.length; i++)
+            for (const file of files)
             {
-
-                const file = files[i];
 
                 if (file != undefined)
                 {
@@ -2723,8 +2723,10 @@ export class ChargyApp {
 
 
         }
-        catch (exception)
-        { }
+        catch (_exception)
+        {
+            // Signature verification failures are rendered as an invalid signature below.
+        }
 
         return "<i class=\"fas fa-times-circle\"></i>" + signature.signer;
 
@@ -3749,7 +3751,7 @@ export class ChargyApp {
                                                                     : "") +
                                                                 (chargingSession.EVSEId !== undefined
                                                                     ? chargingSession.EVSEId
-                                                                    : chargingSession.EVSE!["@id"]);
+                                                                    : chargingSession.EVSE?.["@id"] ?? "");
 
                             if (chargingSession.EVSE)
                             {
@@ -3928,23 +3930,32 @@ export class ChargyApp {
 
                 // First clear the map...
                 while(this.markers.length > 0)
-                    this.map.removeLayer(this.markers.pop());
+                {
+                    const marker = this.markers.pop();
+                    if (marker != null)
+                        this.map.removeLayer(marker);
+                }
 
-                const redMarker     = (L as any).AwesomeMarkers?.icon({
+                const leafletWithAwesomeMarkers = L as typeof L & {
+                    AwesomeMarkers?: {
+                        icon(options: Record<string, unknown>): L.Icon;
+                    };
+                };
+                const redMarker     = leafletWithAwesomeMarkers.AwesomeMarkers?.icon({
                     prefix:               'fa',
                     icon:                 'exclamation',
                     markerColor:          'red',
                     iconColor:            '#ecc8c3'
                 });
 
-                const orangeMarker  = (L as any).AwesomeMarkers?.icon({
+                const orangeMarker  = leafletWithAwesomeMarkers.AwesomeMarkers?.icon({
                     prefix:               'fa',
                     icon:                 this.isWarningSession(chargingSession) ? 'exclamation' : 'question',
                     markerColor:          'orange',
                     iconColor:            '#ae6a0a'
                 });
 
-                const greenMarker   = (L as any).AwesomeMarkers?.icon({
+                const greenMarker   = leafletWithAwesomeMarkers.AwesomeMarkers?.icon({
                     prefix:               'fa',
                     icon:                 'charging-station',
                     //markerColor:          'green',
@@ -4427,7 +4438,9 @@ export class ChargyApp {
         const canvas                  = chartFrame.appendChild(document.createElement('canvas'));
         const unit                    = chartData.unit;
         const lastTickIndex           = chartData.tickTimestamps.length - 1;
-        const lastTickTimestamp       = chartData.tickTimestamps[lastTickIndex]!;
+        const lastTickTimestamp       = chartData.tickTimestamps[lastTickIndex];
+        if (lastTickTimestamp === undefined)
+            return null;
         const previousTickTimestamp   = chartData.tickTimestamps[lastTickIndex - 1] ?? lastTickTimestamp;
         const rightAxisPadding        = Math.max(1, lastTickTimestamp - previousTickTimestamp) * 0.35;
         const intervalBarPlugin: Plugin<'bar'> = {
@@ -4685,8 +4698,8 @@ export class ChargyApp {
         powerButton.textContent        = this.chargy.GetLocalizedMessage("chargingProgressPowerLinkLabel");
 
         measurementsButton.onclick = showRows;
-        energyButton.onclick       = () => showChart("energy", energyButton);
-        powerButton.onclick        = () => showChart("power",  powerButton);
+        energyButton.onclick       = (): void => { showChart("energy", energyButton); };
+        powerButton.onclick        = (): void => { showChart("power",  powerButton); };
 
         chartDiv.style.display = "none";
 
@@ -4920,9 +4933,9 @@ export class ChargyApp {
                                                   key => this.chargy.GetLocalizedMessage(key)))
                                 continue;
 
-                            var chargingPeriodRow      = tariffTableDiv.appendChild(document.createElement('div'));
+                            const chargingPeriodRow    = tariffTableDiv.appendChild(document.createElement('div'));
                             chargingPeriodRow.classList.add("chargingTariffRow");
-                            chargingPeriodRow.onclick  = () => {
+                            chargingPeriodRow.onclick  = (): void => {
                                 this.showChargingTariffDetails(tariff);
                             };
 
@@ -4991,9 +5004,9 @@ export class ChargyApp {
                             if (chargingPeriod)
                             {
 
-                                var chargingPeriodRow        = chargingPeriodsTableDiv.appendChild(document.createElement('div'));
+                                const chargingPeriodRow      = chargingPeriodsTableDiv.appendChild(document.createElement('div'));
                                 chargingPeriodRow.classList.add("chargingPeriodRow");
-                                chargingPeriodRow.onclick    = () => {
+                                chargingPeriodRow.onclick    = (): void => {
                                     this.showChargingPeriodDetails(chargingPeriod);
                                 };
 
@@ -5686,7 +5699,7 @@ export class ChargyApp {
     private showMeasurementCryptoDetails(measurementValue:  chargeTransparencyRecord.IMeasurementValue) : void
     {
 
-        function doError(text: string)
+        function doError(text: string): void
         {
             errorDiv.innerHTML          = '<i class="fas fa-times-circle"></i> ' + text;
             introDiv.style.display      = "none";
@@ -5763,7 +5776,7 @@ export class ChargyApp {
 
     //#region showPKIDetails                (pkiData)
 
-    private showPKIDetails(_pkiData:  any) : void
+    private showPKIDetails(_pkiData:  unknown) : void
     {
 
         //#region Headline
