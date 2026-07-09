@@ -15,14 +15,25 @@
  * limitations under the License.
  */
 
-import { Chargy }                       from '@open-charging-cloud/chargy-core'
-import { readQRCodeTextFromImageData }  from '@open-charging-cloud/chargy-core'
-import * as chargyInterfaces            from '@open-charging-cloud/chargy-core'
-import * as chargeTransparencyRecord    from '@open-charging-cloud/chargy-core'
-import * as chargeTransparencyLiveLink  from '@open-charging-cloud/chargy-core'
-import * as publicKeyInfo               from '@open-charging-cloud/chargy-core'
+import {
+    Chargy,
+    ChargyInterfaces           as chargyInterfaces,
+    ChargeTransparencyLiveLink as chargeTransparencyLiveLink,
+    ChargeTransparencyRecord   as chargeTransparencyRecord,
+    PublicKeyInfo              as publicKeyInfo,
+    SimpleURL                  as simpleURL,
+    readQRCodeTextFromImageData
+}                                       from '@open-charging-cloud/chargy-core'
 import * as chargyLib                   from '@open-charging-cloud/chargy-core'
-import { toSessionVerificationResults } from '@open-charging-cloud/chargy-core'
+
+// import { Chargy }                       from '@open-charging-cloud/chargy-core'
+// import { readQRCodeTextFromImageData }  from '@open-charging-cloud/chargy-core'
+// import * as chargyInterfaces            from '@open-charging-cloud/chargy-core'
+// import * as chargeTransparencyRecord    from '@open-charging-cloud/chargy-core'
+// import * as chargeTransparencyLiveLink  from '@open-charging-cloud/chargy-core'
+// import * as publicKeyInfo               from '@open-charging-cloud/chargy-core'
+// import * as chargyLib                   from '@open-charging-cloud/chargy-core'
+// import { toSessionVerificationResults } from '@open-charging-cloud/chargy-core'
 import Chart                            from 'chart.js/auto';
 import type { Plugin, TooltipItem }     from 'chart.js';
 import corePackageJson                  from '@open-charging-cloud/chargy-core/package.json'
@@ -43,11 +54,7 @@ import { calculateBETTariffTotal }     from './betTariffCosts';
 
 declare const __CHARGY_CORE_NPM_INTEGRITY__: string;
 
-type DetectionResult = chargeTransparencyRecord.  IChargeTransparencyRecord   |
-                       chargeTransparencyLiveLink.IChargeTransparencyLiveLink |
-                       publicKeyInfo.             IPublicKey                  |
-                       publicKeyInfo.             IPublicKeyLookup            |
-                       chargyInterfaces.          ISessionCryptoResult;
+type DetectionResult = Awaited<ReturnType<Chargy["DetectAndConvertContentFormat"]>>;
 
 type DetectionOptions = {
     prepareUI?: boolean;
@@ -125,7 +132,7 @@ function sha512HexFromSubresourceIntegrity(integrity: string): string {
 
 }
 
-function getTextFromMultilanguageText(text: chargyInterfaces.I18NString | undefined | null,
+function getTextFromMultilanguageText(text: chargyLib.I18NString | undefined | null,
                                       language: SupportedLanguage,
                                       fallback: string = ""): string {
 
@@ -440,7 +447,7 @@ interface ChargyElectronAPI {
         copyright:              string;
         commandLineArguments:   string[];
         packageJson:            any;
-        i18n:                   chargyInterfaces.I18NDictionary;
+        i18n:                   chargyLib.I18NDictionary;
         httpConfig:             [string, number];
         mapbox: {
             accessToken:            string;
@@ -509,7 +516,7 @@ export class ChargyApp {
     public           defaultFeedbackHotline:             string[]                          = [];
     public           defaultIssueURL:                    string                            = "";
     public           packageJson:                        any                               = {};
-    public           i18n:                               chargyInterfaces.I18NDictionary   = {};
+    public           i18n:                               chargyLib.I18NDictionary          = {};
     public           UILanguage:                         SupportedLanguage                 = "en";
 
     private readonly electron:                           ChargyElectronAPI                 = window.chargyElectron;
@@ -605,16 +612,18 @@ export class ChargyApp {
     private readonly qrCodeScannerOpenURLButton:         HTMLButtonElement;
     private readonly qrCodeScannerRescanButton:          HTMLButtonElement;
     private readonly qrCodeScannerCancelButton:          HTMLButtonElement;
-    private qrCodeScannerStream:                MediaStream|null     = null;
-    private qrCodeScannerAnimationFrame:        number|null          = null;
-    private qrCodeScannerIsProcessing:          boolean              = false;
-    private qrCodeScannerLastText:              string|null          = null;
-    private qrCodeScannerLastURL:               URL|null             = null;
 
-    private currentChargeTransparencyRecord:    chargeTransparencyRecord.IChargeTransparencyRecord|null = null;
-    private currentChargeTransparencyLiveLink:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink|null = null;
-    private currentPublicKeyLookup:             publicKeyInfo.IPublicKeyLookup|null = null;
-    private currentGlobalError:                 chargyInterfaces.ISessionCryptoResult|null = null;
+    private qrCodeScannerStream:                MediaStream | null          = null;
+    private qrCodeScannerAnimationFrame:        number      | null          = null;
+    private qrCodeScannerIsProcessing:          boolean                     = false;
+    private qrCodeScannerLastText:              string      | null          = null;
+    private qrCodeScannerLastURL:               URL         | null          = null;
+
+    private currentChargeTransparencyRecord:    chargeTransparencyRecord.  IChargeTransparencyRecord   | null = null;
+    private currentChargeTransparencyLiveLink:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink | null = null;
+    private currentPublicKeyLookup:             publicKeyInfo.             IPublicKeyLookup            | null = null;
+    private currentSimpleURL:                   simpleURL.                 IURL                        | null = null;
+    private currentGlobalError:                 chargyInterfaces.          ISessionCryptoResult        | null = null;
 
     //#endregion
 
@@ -685,19 +694,19 @@ export class ChargyApp {
 
         this.chargingTariffDetailsDiv                 = document.getElementById('chargingTariffDetails')                    as HTMLDivElement;
         this.chargingTariffDetailsLeftButton          = this.chargingTariffDetailsDiv.querySelector(".overlayLeftButton")   as HTMLButtonElement;
-        this.chargingTariffDetailsLeftButton.onclick  = () => {
+        this.chargingTariffDetailsLeftButton.onclick  = (): void => {
                                                             this.chargingTariffDetailsDiv.style.display = 'none';
                                                         }
 
         this.chargingPeriodDetailsDiv                 = document.getElementById('chargingPeriodDetails')                    as HTMLDivElement;
         this.chargingPeriodDetailsLeftButton          = this.chargingPeriodDetailsDiv.querySelector(".overlayLeftButton")   as HTMLButtonElement;
-        this.chargingPeriodDetailsLeftButton.onclick  = () => {
+        this.chargingPeriodDetailsLeftButton.onclick  = (): void => {
                                                             this.chargingPeriodDetailsDiv.style.display = 'none';
                                                         }
 
         this.measurementsDetailsDiv                   = document.getElementById('measurementsDetails')                      as HTMLDivElement;
         this.measurementsDetailsLeftButton            = this.measurementsDetailsDiv.querySelector(".overlayLeftButton")     as HTMLButtonElement;
-        this.measurementsDetailsLeftButton.onclick    = () => {
+        this.measurementsDetailsLeftButton.onclick    = (): void => {
                                                             this.measurementsDetailsDiv.style.display = 'none';
                                                         }
 
@@ -708,13 +717,13 @@ export class ChargyApp {
         this.privacyStatementAccepted                 = this.issueTrackerDiv.   querySelector("#privacyStatementAccepted")  as HTMLInputElement;
         this.sendIssueButton                          = this.issueTrackerDiv.   querySelector("#sendIssueButton")           as HTMLButtonElement;
         this.issueTrackerLeftButton                   = this.issueTrackerDiv.   querySelector(".overlayLeftButton")         as HTMLButtonElement;
-        this.issueTrackerLeftButton.onclick           = () => {
+        this.issueTrackerLeftButton.onclick           = (): void => {
                                                             this.issueTrackerDiv.style.display = 'none';
                                                         }
 
         this.pkiDetailsDiv                            = document.getElementById('pkiDetails')                               as HTMLDivElement;
         this.pkiDetailsLeftButton                     = this.pkiDetailsDiv.querySelector(".overlayLeftButton")              as HTMLButtonElement;
-        this.pkiDetailsLeftButton.onclick             = () => {
+        this.pkiDetailsLeftButton.onclick             = (): void => {
                                                             this.pkiDetailsDiv.style.display = 'none';
                                                         }
 
@@ -815,10 +824,13 @@ export class ChargyApp {
             (this.openSourceLibsDiv.querySelector("#chargyCore")             as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "@open-charging-cloud/chargy-core");
             (this.openSourceLibsDiv.querySelector("#openChargingCloudTOTP")  as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "@open-charging-cloud/totp");
             (this.openSourceLibsDiv.querySelector("#elliptic")               as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "elliptic");
+            (this.openSourceLibsDiv.querySelector("#nobleCurves")            as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "@noble/curves");
+            (this.openSourceLibsDiv.querySelector("#noblePostQuantum")       as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "@noble/post-quantum");
             (this.openSourceLibsDiv.querySelector("#momentJS")               as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "moment");
             (this.openSourceLibsDiv.querySelector("#pdfjsdist")              as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "pdfjs-dist");
             (this.openSourceLibsDiv.querySelector("#seekBzip")               as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "seek-bzip");
             (this.openSourceLibsDiv.querySelector("#fileType")               as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "file-type");
+            (this.openSourceLibsDiv.querySelector("#isURLSuperb")            as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "is-url-superb");
             (this.openSourceLibsDiv.querySelector("#jsQR")                   as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "jsqr");
             (this.openSourceLibsDiv.querySelector("#buffer")                 as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "buffer");
             (this.openSourceLibsDiv.querySelector("#fontAwesome")            as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "@fortawesome/fontawesome-free");
@@ -1362,7 +1374,7 @@ export class ChargyApp {
 
         //#region Handle the 'App Quit'-button
 
-        this.appQuitButton.onclick = () => {
+        this.appQuitButton.onclick = (): void => {
             window.close();
         }
 
@@ -1371,7 +1383,7 @@ export class ChargyApp {
 
         //#region Handle the 'back'-button
 
-        this.backButton.onclick  = () => {
+        this.backButton.onclick  = (): void => {
 
             this.updateAvailableScreen.style.display     = "none";
             this.inputDiv.style.flexDirection            = "";
@@ -1386,6 +1398,7 @@ export class ChargyApp {
             this.currentChargeTransparencyRecord         = null;
             this.currentChargeTransparencyLiveLink       = null;
             this.currentPublicKeyLookup                  = null;
+            this.currentSimpleURL                        = null;
             this.currentGlobalError                      = null;
 
         }
@@ -1394,7 +1407,7 @@ export class ChargyApp {
 
         //#region Handle the 'export'-button
 
-        this.exportButton.onclick  = async () => {
+        this.exportButton.onclick  = async (): Promise<void> => {
 
             try
             {
@@ -1422,54 +1435,33 @@ export class ChargyApp {
 
         const linkButtons  = document.getElementsByClassName('linkButton') as HTMLCollectionOf<HTMLButtonElement>;
 
-        for (let i = 0; i < linkButtons.length; i++) {
-
-            const linkButton = linkButtons[i];
-
-            if (linkButton != null)
-            {
-                linkButton.onclick = (ev: MouseEvent) => {
-                    ev.preventDefault();
-                    const link = linkButton.getAttribute("href");
-                    if (link && link.startsWith("https://"))
-                        this.electron.openExternal(link);
-                }
+        for (const linkButton of linkButtons) {
+            linkButton.onclick = (ev: MouseEvent): void => {
+                ev.preventDefault();
+                const link = linkButton.getAttribute("href") ?? "";
+                if (link.startsWith("https://"))
+                    void this.electron.openExternal(link);
             }
-
         }
 
         const externalLinks = document.querySelectorAll<HTMLElement>('[data-external-url]');
 
-        for (let i = 0; i < externalLinks.length; i++) {
-
-            const externalLink = externalLinks[i];
-
-            if (externalLink != null)
-            {
-                externalLink.onclick = (ev: MouseEvent) => {
-                    ev.preventDefault();
-                    const link = externalLink.getAttribute("data-external-url");
-                    if (link && link.startsWith("https://"))
-                        this.electron.openExternal(link);
-                }
+        for (const externalLink of externalLinks) {
+            externalLink.onclick = (ev: MouseEvent): void => {
+                ev.preventDefault();
+                const link = externalLink.getAttribute("data-external-url") ?? "";
+                if (link.startsWith("https://"))
+                    void this.electron.openExternal(link);
             }
-
         }
 
         const protocolLinks = document.querySelectorAll<HTMLAnchorElement>('a[href^="mailto:"], a[href^="tel:"]');
 
-        for (let i = 0; i < protocolLinks.length; i++) {
-
-            const protocolLink = protocolLinks[i];
-
-            if (protocolLink != null)
-            {
-                protocolLink.onclick = (ev: MouseEvent) => {
-                    ev.preventDefault();
-                    this.electron.openExternal(protocolLink.href);
-                }
+        for (const protocolLink of protocolLinks) {
+            protocolLink.onclick = (ev: MouseEvent): void => {
+                ev.preventDefault();
+                void this.electron.openExternal(protocolLink.href);
             }
-
         }
 
         //#endregion
@@ -1478,18 +1470,18 @@ export class ChargyApp {
         //#region Handle the 'fileInput'-button
 
         this.fileInput  = document.getElementById('fileInput')  as HTMLInputElement;
-        this.fileInputButton.onclick = () => {
+        this.fileInputButton.onclick = (): void => {
             this.fileInput.value = '';
             this.fileInput.click();
         }
 
-        this.fileInput.onchange = (ev: Event) => {
+        this.fileInput.onchange = (ev: Event): void => {
 
-            //@ts-ignore
-            const files = ev?.target?.files;
+            const input = ev.target as HTMLInputElement | null;
+            const files = input?.files;
 
             if (files != null)
-                this.readFilesFromDisk(files);
+                void this.readFilesFromDisk(files);
 
         }
 
@@ -1499,33 +1491,34 @@ export class ChargyApp {
 
         this.inputDiv.addEventListener('dragenter', (event: DragEvent) => {
             event.preventDefault();
-            (event.currentTarget as HTMLDivElement)?.classList.add('over');
+            (event.currentTarget as HTMLDivElement).classList.add('over');
         }, false);
 
         this.inputDiv.addEventListener('dragover',  (event: DragEvent) => {
             event.stopPropagation();
             event.preventDefault();
-            event.dataTransfer!.dropEffect = 'copy';
-            (event.currentTarget as HTMLDivElement)?.classList.add('over');
+            if (event.dataTransfer != null)
+                event.dataTransfer.dropEffect = 'copy';
+            (event.currentTarget as HTMLDivElement).classList.add('over');
         }, false);
 
         this.inputDiv.addEventListener('dragleave', (event: DragEvent) => {
-            (event.currentTarget as HTMLDivElement)?.classList.remove('over');
+            (event.currentTarget as HTMLDivElement).classList.remove('over');
         }, false);
 
         this.inputDiv.addEventListener('drop',      (event: DragEvent) => {
             event.stopPropagation();
             event.preventDefault();
-            (event.currentTarget as HTMLDivElement)?.classList.remove('over');
+            (event.currentTarget as HTMLDivElement).classList.remove('over');
             if (event.dataTransfer?.files != null)
-                this.readFilesFromDisk(event.dataTransfer.files);
+                void this.readFilesFromDisk(event.dataTransfer.files);
         }, false);
 
         //#endregion
 
         //#region Handle the 'paste'-button
 
-        this.pasteButton.onclick = async ()  => {
+        this.pasteButton.onclick = async (): Promise<void> => {
             await this.readClipboard();
         }
 
@@ -1533,8 +1526,8 @@ export class ChargyApp {
 
         //#region Handle IPC message "receiveReadClipboard" (Ctrl+V)
 
-        this.electron.on('receiveReadClipboard', async () => {
-            await this.readClipboard();
+        this.electron.on('receiveReadClipboard', () => {
+            void this.readClipboard();
         });
 
         //#endregion
@@ -1543,15 +1536,15 @@ export class ChargyApp {
 
         // e.g. on Mac OS X - when app is running
         this.electron.on('receiveFileToOpen', (filename:string) => {
-            this.readFileFromDisk(filename);
+            void this.readFileFromDisk(filename);
         });
 
         this.electron.on('receiveFilesToOpen', (filenames:string[]) => {
-            this.readFilesFromDisk(filenames);
+            void this.readFilesFromDisk(filenames);
         });
 
-        this.electron.on('receiveHttpRequest', async (request: ChargyHttpRequest) => {
-            await this.handleHttpRequest(request);
+        this.electron.on('receiveHttpRequest', (request: ChargyHttpRequest) => {
+            void this.handleHttpRequest(request);
         });
 
         //#endregion
@@ -1563,7 +1556,7 @@ export class ChargyApp {
         // File to open on Mac OS X
         const filename = this.appContext.fileToOpen;
         if (filename !== "")
-            this.readFileFromDisk(filename);
+            void this.readFileFromDisk(filename);
 
 
         // Open files sent via command line parameters
@@ -1577,22 +1570,22 @@ export class ChargyApp {
 
         //#region Handle the 'qrScan'-button
 
-        this.qrScanButton.onclick = async (ev: MouseEvent) => {
+        this.qrScanButton.onclick = async (ev: MouseEvent): Promise<void> => {
             ev.preventDefault();
             await this.openQRCodeScanner();
         }
 
-        this.qrCodeScannerCancelButton.onclick = (ev: MouseEvent) => {
+        this.qrCodeScannerCancelButton.onclick = (ev: MouseEvent): void => {
             ev.preventDefault();
             this.closeQRCodeScanner();
         }
 
-        this.qrCodeScannerRescanButton.onclick = (ev: MouseEvent) => {
+        this.qrCodeScannerRescanButton.onclick = (ev: MouseEvent): void => {
             ev.preventDefault();
             this.resumeQRCodeScanner();
         }
 
-        this.qrCodeScannerOpenURLButton.onclick = (ev: MouseEvent) => {
+        this.qrCodeScannerOpenURLButton.onclick = (ev: MouseEvent): void => {
             ev.preventDefault();
 
             if (this.qrCodeScannerLastURL != null)
@@ -1602,8 +1595,8 @@ export class ChargyApp {
             }
         }
 
-        this.updateQRCodeScannerAvailability();
-        navigator.mediaDevices?.addEventListener?.("devicechange", async () => this.updateQRCodeScannerAvailability());
+        void this.updateQRCodeScannerAvailability();
+        navigator.mediaDevices.addEventListener("devicechange", () => { void this.updateQRCodeScannerAvailability(); });
 
         //#endregion
 
@@ -1719,7 +1712,7 @@ export class ChargyApp {
 
     private setupLanguageSelector(): void {
 
-        this.languageButton.onclick = (ev: MouseEvent) => {
+        this.languageButton.onclick = (ev: MouseEvent): void => {
             ev.preventDefault();
             ev.stopPropagation();
 
@@ -1729,13 +1722,13 @@ export class ChargyApp {
 
         for (const languageMenuButton of Array.from(this.languageMenuDiv.querySelectorAll<HTMLButtonElement>("button[data-language]")))
         {
-            languageMenuButton.onclick = async (ev: MouseEvent) => {
+            languageMenuButton.onclick = (ev: MouseEvent): void => {
                 ev.preventDefault();
                 ev.stopPropagation();
 
                 const language = languageMenuButton.dataset["language"];
                 if (this.isSupportedLanguage(language))
-                    await this.setUILanguage(language);
+                    this.setUILanguage(language);
             };
         }
 
@@ -1746,8 +1739,8 @@ export class ChargyApp {
 
     }
 
-    private async setUILanguage(language: SupportedLanguage,
-                                persist:  boolean = true): Promise<void> {
+    private setUILanguage(language: SupportedLanguage,
+                          persist:  boolean = true): void {
 
         this.UILanguage = language;
         this.chargy.SetUILanguages([ language ]);
@@ -1758,7 +1751,7 @@ export class ChargyApp {
             localStorage.setItem("ChargyUILanguage", language);
 
         this.applyTranslations();
-        await this.rerenderCurrentView();
+        this.rerenderCurrentView();
 
     }
 
@@ -1826,6 +1819,13 @@ export class ChargyApp {
             return;
         }
 
+        if (this.currentSimpleURL != null &&
+            this.chargingSessionScreenDiv.style.display !== "none")
+        {
+            this.showSimpleURL(this.currentSimpleURL);
+            return;
+        }
+
         if (this.currentGlobalError != null &&
             this.errorTextDiv.style.display !== "none")
         {
@@ -1838,9 +1838,9 @@ export class ChargyApp {
 
     private resetMapBounds(): void {
 
-        this.minlat = +1000;
+        this.minlat =  1000;
         this.maxlat = -1000;
-        this.minlng = +1000;
+        this.minlng =  1000;
         this.maxlng = -1000;
 
     }
@@ -1868,6 +1868,18 @@ export class ChargyApp {
 
     }
 
+    private clearRenderedChargeData(resetMapView: boolean = false): void
+    {
+
+        this.clearChargingSessionCharts();
+        this.detailedInfosDiv.innerHTML = "";
+        this.clearMapMarkers();
+
+        if (resetMapView)
+            this.map.setView([50.9279287, 11.5731785], 12);
+
+    }
+
     private clearChargingSessionOutput(resetMapView: boolean = false): void {
 
         this.clearChargingSessionCharts();
@@ -1885,7 +1897,7 @@ export class ChargyApp {
     //#region UpdateFeedbackSection()
 
     public UpdateFeedbackSection(FeedbackEMail?:   string[],
-                                 FeedbackHotline?: string[]) {
+                                 FeedbackHotline?: string[]): void {
 
         if (!this.showFeedbackSection)
         {
@@ -1902,7 +1914,7 @@ export class ChargyApp {
 
             this.showIssueTrackerButton.style.display = "block";
 
-            this.showIssueTrackerButton.onclick = () => {
+            this.showIssueTrackerButton.onclick = (): void => {
                 this.issueTrackerDiv.style.display    = 'block';
                 this.privacyStatement.style.display   = "none";
                 this.issueTrackerText.scrollTop       = 0;
@@ -1917,11 +1929,11 @@ export class ChargyApp {
 
         const feedbackEMail   = FeedbackEMail   ?? this.defaultFeedbackEMail;
 
-        if (feedbackEMail?.length == 2)
+        if (feedbackEMail.length == 2)
         {
             this.feedbackEMailAnchor.style.display = "block";
-            this.feedbackEMailAnchor.href          = "mailto:" + feedbackEMail[0] + feedbackEMail[1];
-            this.feedbackEMailAnchor.innerHTML    += feedbackEMail[0];
+            this.feedbackEMailAnchor.href          = "mailto:" + (feedbackEMail[0] ?? "") + (feedbackEMail[1] ?? "");
+            this.feedbackEMailAnchor.textContent  += feedbackEMail[0] ?? "";
         }
         else
             this.feedbackEMailAnchor.style.display = "none";
@@ -1932,11 +1944,11 @@ export class ChargyApp {
 
         const feedbackHotline = FeedbackHotline ?? this.defaultFeedbackHotline;
 
-        if (feedbackHotline?.length == 2)
+        if (feedbackHotline.length == 2)
         {
             this.feedbackHotlineAnchor.style.display = "block";
-            this.feedbackHotlineAnchor.href          = "tel:" + feedbackHotline[0];
-            this.feedbackHotlineAnchor.innerHTML    += feedbackHotline[1];
+            this.feedbackHotlineAnchor.href          = "tel:" + (feedbackHotline[0] ?? "");
+            this.feedbackHotlineAnchor.textContent  += feedbackHotline[1] ?? "";
         }
         else
             this.feedbackHotlineAnchor.style.display = "none";
@@ -1976,19 +1988,15 @@ export class ChargyApp {
         this.currentChargeTransparencyRecord         = null;
         this.currentChargeTransparencyLiveLink       = null;
         this.currentPublicKeyLookup                  = null;
+        this.currentSimpleURL                        = null;
         this.clearChargingSessionOutput(true);
 
         let text = this.chargy.GetLocalizedMessage("UnknownOrInvalidChargeTransparencyRecord");
 
-        if (result?.message !== null &&
-            result?.message !== undefined)
-        {
+        if (result.message !== undefined)
             text = getTextFromMultilanguageText(result.message, this.UILanguage, text).trim();
-        }
 
-        if (result?.errors                      &&
-            result.errors        !== undefined &&
-            result.errors        !== null      &&
+        if (result.errors        !== undefined &&
             result.errors.length   > 0         &&
             result.errors[0]     !== undefined)
         {
@@ -2016,7 +2024,7 @@ export class ChargyApp {
 
     //#region readClipboard()
 
-    private async readClipboard()
+    private async readClipboard(): Promise<void>
     {
         try
         {
@@ -2445,8 +2453,8 @@ export class ChargyApp {
             const image = new Image();
 
             await new Promise<void>((resolve, reject) => {
-                image.onload  = () => { resolve(); };
-                image.onerror = () => { reject(new Error("Could not decode SVG image.")); };
+                image.onload  = (): void => { resolve(); };
+                image.onerror = (): void => { reject(new Error("Could not decode SVG image.")); };
                 image.src     = imageURL;
             });
 
@@ -2861,6 +2869,19 @@ export class ChargyApp {
 
         }
 
+        if (simpleURL.IsAURL(result))
+        {
+            if (options?.prepareUI === false)
+            {
+                this.inputInfosDiv.style.display = 'none';
+                this.errorTextDiv.style.display  = 'none';
+            }
+
+            this.showSimpleURL(result);
+
+            return true;
+        }
+
         if (options?.onError !== undefined)
             options.onError(result);
         else
@@ -2884,6 +2905,7 @@ export class ChargyApp {
         this.currentPublicKeyLookup                 = { publicKeys };
         this.currentChargeTransparencyRecord        = null;
         this.currentChargeTransparencyLiveLink      = null;
+        this.currentSimpleURL                       = null;
         this.currentGlobalError                     = null;
      //   this.clearRenderedChargeData();
 
@@ -3019,7 +3041,7 @@ export class ChargyApp {
     private publishVerificationResult(CTR: chargeTransparencyRecord.IChargeTransparencyRecord): void {
 
         this.electron.setVerificationResult(
-            toSessionVerificationResults(
+            chargyLib.toSessionVerificationResults(
                 CTR,
                 this.chargy.GetMultilanguageText("No charge transparency records found!")
             )
@@ -3028,6 +3050,67 @@ export class ChargyApp {
     }
 
 
+    //#region showSimpleURL(URLInfo)
+
+    private showSimpleURL(URLInfo: simpleURL.IURL): void
+    {
+
+        this.currentSimpleURL                       = URLInfo;
+        this.currentChargeTransparencyRecord        = null;
+        this.currentChargeTransparencyLiveLink      = null;
+        this.currentPublicKeyLookup                 = null;
+        this.currentGlobalError                     = null;
+        this.clearRenderedChargeData();
+
+        this.inputDiv.style.flexDirection           = "column";
+        this.aboutScreenDiv.style.display           = "none";
+        //this.imprintScreenDiv.style.display         = "none";
+        this.chargingSessionScreenDiv.style.display = "flex";
+        this.chargingSessionScreenDiv.innerText     = "";
+        this.invalidDataSetsScreenDiv.style.display = "none";
+        this.invalidDataSetsScreenDiv.innerText     = "";
+        this.inputButtonsDiv.style.display          = "flex";
+        this.exportButtonDiv.style.display          = "none";
+
+        const descriptionDiv       = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
+        descriptionDiv.id          = "description";
+        descriptionDiv.innerText   = this.chargy.GetLocalizedMessage("urlDetailsTitle");
+
+        const urlsDiv              = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
+        urlsDiv.id                 = "chargingSessions";
+
+        const urlDiv               = chargyLib.CreateDiv(urlsDiv, "chargingSession");
+        urlDiv.classList.add("publicKeyCard");
+
+        const cardTitleDiv         = urlDiv.appendChild(document.createElement('div'));
+        cardTitleDiv.className     = "date";
+        cardTitleDiv.innerText     = this.chargy.GetLocalizedMessage("urlLabel");
+
+        const tableDiv             = urlDiv.appendChild(document.createElement('div'));
+        tableDiv.className         = "table publicKeyTable";
+
+        this.appendPublicKeyInfoRow(tableDiv, "fa-globe", "urlContextLabel", URLInfo["@context"]);
+        this.appendPublicKeyInfoRow(tableDiv, "fa-link",  "urlAddressLabel", URLInfo.url, true);
+
+        if (URLInfo.method !== undefined)
+            this.appendPublicKeyInfoRow(tableDiv, "fa-right-left", "urlMethodLabel", URLInfo.method);
+
+        if (URLInfo.acceptType !== undefined)
+            this.appendPublicKeyInfoRow(tableDiv, "fa-file-arrow-down", "urlAcceptTypeLabel", URLInfo.acceptType);
+
+        if (URLInfo.actions !== undefined)
+            this.appendPublicKeyInfoRow(tableDiv, "fa-bolt", "urlActionsLabel", URLInfo.actions.join(", "));
+
+        if (URLInfo.serviceTypes !== undefined)
+            this.appendPublicKeyInfoRow(tableDiv, "fa-gears", "urlServiceTypesLabel", URLInfo.serviceTypes.join(", "));
+
+        if (URLInfo.serviceData !== undefined)
+            this.appendPublicKeyInfoRow(tableDiv, "fa-code", "urlServiceDataLabel", JSON.stringify(URLInfo.serviceData, null, 2), true);
+
+    }
+
+    //#endregion
+
     //#region showChargeTransparencyLiveLink(LiveLink)
 
     private showChargeTransparencyLiveLink(LiveLink: chargeTransparencyLiveLink.IChargeTransparencyLiveLink) : void
@@ -3035,9 +3118,14 @@ export class ChargyApp {
 
         this.currentChargeTransparencyLiveLink       = LiveLink;
         this.currentChargeTransparencyRecord         = null;
+        this.currentPublicKeyLookup                  = null;
+        this.currentSimpleURL                        = null;
         this.currentGlobalError                      = null;
+        this.clearRenderedChargeData();
 
         this.inputDiv.style.flexDirection            = "column";
+        this.aboutScreenDiv.style.display            = "none";
+        //this.imprintScreenDiv.style.display          = "none";
         this.chargingSessionScreenDiv.style.display  = "flex";
         this.chargingSessionScreenDiv.innerText      = "";
         this.invalidDataSetsScreenDiv.style.display  = "none";
@@ -3220,11 +3308,15 @@ export class ChargyApp {
         this.currentChargeTransparencyRecord         = CTR;
         this.currentChargeTransparencyLiveLink       = null;
         this.currentPublicKeyLookup                  = null;
+        this.currentSimpleURL                        = null;
         this.currentGlobalError                      = null;
+        this.clearRenderedChargeData();
 
         //#region Prepare View
 
         this.inputDiv.style.flexDirection            = "column";
+        this.aboutScreenDiv.style.display            = "none";
+        //this.imprintScreenDiv.style.display          = "none";
         this.chargingSessionScreenDiv.style.display  = "flex";
         this.chargingSessionScreenDiv.innerText      = "";
         this.invalidDataSetsScreenDiv.style.display  = "none";
@@ -3262,9 +3354,9 @@ export class ChargyApp {
 
         //#region Show global contract infos
 
-        if (CTR.contracts)
-        {
-        }
+        // if (CTR.contracts)
+        // {
+        // }
 
         //#endregion
 
