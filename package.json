@@ -44,13 +44,13 @@
     "DCC"
   ],
   "devDependencies": {
-    "@cyclonedx/cyclonedx-npm": "^5.0.0",
+    "@cyclonedx/cyclonedx-npm": "^6.0.0",
     "@eslint/js": "^10.0.1",
     "@types/elliptic": "^6.4.18",
     "@types/leaflet": "^1.9.21",
-    "@types/node": "^26.0.1",
+    "@types/node": "^26.1.1",
     "css-loader": "^7.1.4",
-    "electron": "^42.5.0",
+    "electron": "^43.1.0",
     "electron-builder": "^26.15.3",
     "electron-localshortcut": "^3.2.1",
     "eslint": "^10.6.0",
@@ -61,10 +61,10 @@
     "source-map-loader": "^5.0.0",
     "ts-loader": "^9.6.2",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.62.0",
-    "vitest": "^4.1.9",
-    "webpack": "^5.108.1",
-    "webpack-cli": "^7.1.0"
+    "typescript-eslint": "^8.63.0",
+    "vitest": "^4.1.10",
+    "webpack": "^5.108.4",
+    "webpack-cli": "^7.2.1"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.3.0",
@@ -79,6 +79,7 @@
     "leaflet": "^1.9.4",
     "leaflet.awesome-markers": "^2.0.5",
     "moment": "^2.30.1",
+    "pdfjs-dist": "6.0.227",
     "safe-stable-stringify": "^2.5.0"
   },
   "build": {

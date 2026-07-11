@@ -5,6 +5,7 @@ import {
     JSONSignatureVerificationStatus,
     SignMessage,
     type SignedJSONMessage,
+    generateSignatureKeyPair,
     parseAndVerifyJSONSignatures,
     signJSONMessage,
     signMessage,
@@ -18,8 +19,7 @@ describe("CryptoUtils", () => {
 
     test("adds a P-256 ECDSA signature over canonical JSON without existing signatures", async () => {
 
-        const curve   = new EC("p256");
-        const keyPair = curve.keyFromPrivate("1".padStart(64, "0"), "hex");
+        const keyPair = generateSignatureKeyPair("ECDSA-P256");
         const message: SignedJSONMessage = {
             z: 1,
             a: {
@@ -31,8 +31,11 @@ describe("CryptoUtils", () => {
         await expect(signMessage(message, keyPair)).resolves.toBe(true);
 
         expect(message.signatures).toHaveLength(1);
-        expect(message.signatures?.[0]?.publicKeyHEX).toBe(keyPair.getPublic(false, "hex"));
-        expect(message.signatures?.[0]?.publicKey).toBe(Buffer.from(keyPair.getPublic(false, "array")).toString("base64"));
+        const publicKey = keyPair.publicKey;
+        if (publicKey === undefined)
+            throw new Error("Missing public key");
+        expect(message.signatures?.[0]?.publicKeyHEX).toBe(Buffer.from(publicKey).toString("hex"));
+        expect(message.signatures?.[0]?.publicKey).toBe(Buffer.from(publicKey).toString("base64"));
         expect(message.signatures?.[0]?.signatureHEX).toMatch(/^30[0-9a-f]+$/);
 
         if (message.signatures && message.signatures.length > 0)
@@ -63,9 +66,8 @@ describe("CryptoUtils", () => {
 
     test("signatures do not sign previous signatures", async () => {
 
-        const curve     = new EC("p256");
-        const keyPair1  = curve.keyFromPrivate("1".padStart(64, "0"), "hex");
-        const keyPair2  = curve.keyFromPrivate("2".padStart(64, "0"), "hex");
+        const keyPair1  = generateSignatureKeyPair("ECDSA-P256");
+        const keyPair2  = generateSignatureKeyPair("ECDSA-P256");
         const message: SignedJSONMessage = { b: 2, a: 1 };
 
         await expect(signJSONMessage(message, [keyPair1, keyPair2])).resolves.toBe(true);
@@ -88,8 +90,7 @@ describe("CryptoUtils", () => {
 
     test("returns false when signed JSON has been changed", async () => {
 
-        const curve   = new EC("p256");
-        const keyPair = curve.keyFromPrivate("1".padStart(64, "0"), "hex");
+        const keyPair = generateSignatureKeyPair("ECDSA-P256");
         const message: SignedJSONMessage = {
             a: 1,
             b: 2
@@ -115,8 +116,7 @@ describe("CryptoUtils", () => {
 
     test("returns false for missing or malformed signatures", async () => {
 
-        const curve   = new EC("p256");
-        const keyPair = curve.keyFromPrivate("1".padStart(64, "0"), "hex");
+        const keyPair = generateSignatureKeyPair("ECDSA-P256");
         const message: SignedJSONMessage = { a: 1 };
 
         await expect(verifyJSONMessageSignatures("{ nope")).resolves.toBe(false);
@@ -158,8 +158,7 @@ describe("CryptoUtils", () => {
 
     test("reports invalid public keys per signature", async () => {
 
-        const curve   = new EC("p256");
-        const keyPair = curve.keyFromPrivate("1".padStart(64, "0"), "hex");
+        const keyPair = generateSignatureKeyPair("ECDSA-P256");
         const message: SignedJSONMessage = { a: 1 };
 
         await expect(signMessage(message, keyPair)).resolves.toBe(true);
