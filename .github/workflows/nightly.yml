@@ -1,0 +1,256 @@
+name: Nightly
+
+# CI answers whether a repository change is good. Nightly covers the things
+# that can change without a commit: dependency releases, security advisories,
+# runner images and platform-specific installer tooling.
+on:
+  schedule:
+    # Avoid the busy top of the hour and do not overlap ChargyCore's 02:43 UTC
+    # schedule.
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  full-suite:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: '22.13'
+            leg: ubuntu-node-22.13
+          - os: ubuntu-latest
+            node: '26'
+            leg: ubuntu-node-26
+          - os: windows-latest
+            node: '24'
+            leg: windows-node-24
+          - os: macos-latest
+            node: '26'
+            leg: macos-node-26
+
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck application
+        run: npm run typecheck
+
+      - name: Typecheck tests
+        run: npm run test:typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test -- --reporter=default --reporter=junit --outputFile.junit=artifacts/tests-${{ matrix.leg }}.xml
+
+      - name: Generate SBOM
+        run: npm run sbom
+
+      - name: Build renderer bundle
+        run: npm run bundle
+
+      - name: Package application directory
+        run: npx electron-builder --dir
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: Upload verification artifacts
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-verification-${{ matrix.leg }}
+          path: |
+            artifacts/*.xml
+            sbom.json
+          if-no-files-found: warn
+
+  # Build the actual unsigned distribution files on their native platforms.
+  # Keeping this out of the merge gate avoids making PRs wait for three large
+  # Electron packages while still testing the release path every night.
+  installers:
+    needs: full-suite
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux
+          - os: windows-latest
+            target: win
+          - os: macos-latest
+            target: mac
+
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build ${{ matrix.target }} distributions
+        run: npm run build -- --${{ matrix.target }}
+        env:
+          # Signing and notarization belong in a separate release workflow with
+          # protected secrets. Nightly validates reproducible unsigned output.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-distributions-${{ matrix.target }}
+          path: |
+            dist/*.exe
+            dist/*.blockmap
+            dist/*.deb
+            dist/*.dmg
+            dist/*.zip
+            dist/*.yml
+            sbom.json
+          if-no-files-found: error
+          retention-days: 14
+
+  # Resolve the declared ranges without changing the committed lockfile. This
+  # warns about an upstream incompatibility before a routine dependency update
+  # pulls it into the normal CI gate.
+  floating-dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+
+      - name: Install newest permitted dependencies
+        run: npm install --no-package-lock
+
+      - name: Report resolved versions
+        run: |
+          {
+            echo '## Dependency versions with the lockfile ignored'
+            echo
+            echo 'Ranges resolved to the newest published release.'
+            echo
+            echo '| Package | Range | Locked | Resolved |'
+            echo '| --- | --- | --- | --- |'
+          } >> "$GITHUB_STEP_SUMMARY"
+          node -e '
+            const fs = require("fs");
+            const pkg  = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            const lock = JSON.parse(fs.readFileSync("package-lock.json", "utf8"));
+            for (const [name, range] of Object.entries(pkg.dependencies ?? {})) {
+              let resolved = "(missing)";
+              try { resolved = JSON.parse(fs.readFileSync(`node_modules/${name}/package.json`, "utf8")).version; } catch {}
+              const locked = lock.packages?.[`node_modules/${name}`]?.version ?? "?";
+              const mark = locked !== resolved ? " **changed**" : "";
+              console.log(`| \`${name}\` | \`${range}\` | ${locked} | ${resolved}${mark} |`);
+            }
+          ' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Typecheck application
+        run: npm run typecheck
+
+      - name: Typecheck tests
+        run: npm run test:typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test -- --reporter=default --reporter=junit --outputFile.junit=artifacts/tests-floating.xml
+
+      - name: Build renderer bundle
+        run: npm run bundle
+
+      - name: Package application directory
+        run: npx electron-builder --dir
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-results-floating
+          path: artifacts/*.xml
+          if-no-files-found: warn
+
+  # Advisory data changes independently of the repository, so audit findings
+  # are informational here instead of turning otherwise unrelated PRs red.
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit
+        run: |
+          npm audit --omit=dev --json > audit-prod.json || true
+          npm audit --json > audit-all.json || true
+          node -e '
+            const fs = require("fs");
+            const render = (file, title) => {
+              let report;
+              try { report = JSON.parse(fs.readFileSync(file, "utf8")); }
+              catch { return `### ${title}\n\nCould not be read.\n`; }
+              const counts = report.metadata?.vulnerabilities ?? {};
+              const rows = Object.values(report.vulnerabilities ?? {})
+                .map(v => `| \`${v.name}\` | ${v.severity} | ${v.fixAvailable ? "yes" : "**no**"} |`);
+              return `### ${title}\n\n`
+                + `critical ${counts.critical ?? 0} · high ${counts.high ?? 0} · `
+                + `moderate ${counts.moderate ?? 0} · low ${counts.low ?? 0}\n\n`
+                + (rows.length
+                  ? `| Package | Severity | Fix available |\n| --- | --- | --- |\n${rows.join("\n")}\n`
+                  : `Nothing reported.\n`);
+            };
+            console.log("## npm audit\n");
+            console.log(render("audit-prod.json", "Runtime dependencies"));
+            console.log(render("audit-all.json", "Including build-time dependencies"));
+          ' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload audit reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-audit
+          path: audit-*.json
+          if-no-files-found: warn

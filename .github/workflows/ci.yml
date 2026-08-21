@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Keep a verdict for every pushed commit, but let a newer revision replace an
+  # obsolete pull-request run from the same branch.
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    # Node 22.13 is the minimum required by ChargyCore. Node 26 covers current
+    # development, while Windows and macOS exercise the platform-sensitive
+    # Electron packaging and path handling.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: '22.13'
+            leg: ubuntu-node-22.13
+          - os: ubuntu-latest
+            node: '26'
+            leg: ubuntu-node-26
+          - os: windows-latest
+            node: '24'
+            leg: windows-node-24
+          - os: macos-latest
+            node: '26'
+            leg: macos-node-26
+
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck application
+        run: npm run typecheck
+
+      - name: Typecheck tests
+        run: npm run test:typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test -- --reporter=default --reporter=junit --outputFile.junit=artifacts/tests-${{ matrix.leg }}.xml
+
+      - name: Generate SBOM
+        run: npm run sbom
+
+      - name: Build renderer bundle
+        run: npm run bundle
+
+      # --dir verifies electron-builder's platform-specific application layout
+      # without spending CI time creating distributable installers. Nightly
+      # builds the real .exe, .deb, .dmg and .zip files.
+      - name: Package application directory
+        run: npx electron-builder --dir
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: Upload verification artifacts
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: verification-${{ matrix.leg }}
+          path: |
+            artifacts/*.xml
+            sbom.json
+          if-no-files-found: warn
