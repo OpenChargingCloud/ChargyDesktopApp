@@ -101,6 +101,12 @@ type ChargingProgressChartData = {
 };
 
 type DependencyMap = Record<string, string | undefined>;
+type AppPackageJson = {
+    version:           string;
+    devDependencies?:  DependencyMap;
+    dependencies?:     DependencyMap;
+    [key: string]:     unknown;
+};
 
 const coreDependencies = corePackageJson.dependencies as DependencyMap | undefined;
 
@@ -446,7 +452,7 @@ interface ChargyElectronAPI {
         appEdition:             string;
         copyright:              string;
         commandLineArguments:   string[];
-        packageJson:            any;
+        packageJson:            AppPackageJson;
         i18n:                   chargyLib.I18NDictionary;
         httpConfig:             [string, number];
         mapbox: {
@@ -515,7 +521,7 @@ export class ChargyApp {
     public           defaultFeedbackEMail:               string[]                          = [];
     public           defaultFeedbackHotline:             string[]                          = [];
     public           defaultIssueURL:                    string                            = "";
-    public           packageJson:                        any                               = {};
+    public           packageJson:                        AppPackageJson                    = { version: "0.0.0" };
     public           i18n:                               chargyLib.I18NDictionary          = {};
     public           UILanguage:                         SupportedLanguage                 = "en";
 
@@ -524,7 +530,7 @@ export class ChargyApp {
     private readonly commandLineArguments:               Array<string>                     = [];
     private readonly platform:                           string                            = "";
 
-    private          currentAppInfos:                    any                               = null;
+    private          currentAppInfos:                    chargyInterfaces.IVersions|null   = null;
     private          currentVersionInfos:                any                               = null;
     private          currentPackage:                     any                               = null;
     private          applicationHash:                    string                            = "";
@@ -753,8 +759,8 @@ export class ChargyApp {
 
         //#region IPC
 
-        this.appEdition                               = this.appContext.appEdition ?? "";
-        this.copyright                                = this.appContext.copyright  ?? "&copy; 2018-2026 GraphDefined GmbH";
+        this.appEdition                               = this.appContext.appEdition;
+        this.copyright                                = this.appContext.copyright;
 
         this.commandLineArguments                     = this.appContext.commandLineArguments;
         this.packageJson                              = this.appContext.packageJson;
@@ -791,55 +797,52 @@ export class ChargyApp {
 
         //#region Set infos of the about section
 
-            (this.softwareInfosDiv. querySelector("#appEdition")             as HTMLSpanElement).innerHTML = this.appEdition;
-            (this.softwareInfosDiv. querySelector("#appVersion")             as HTMLSpanElement).innerHTML = this.packageJson.version;
-            (this.softwareInfosDiv. querySelector("#copyright")              as HTMLSpanElement).innerHTML = this.copyright;
+        (this.softwareInfosDiv. querySelector("#appEdition")             as HTMLSpanElement).innerHTML   = this.appEdition;
+        (this.softwareInfosDiv. querySelector("#appVersion")             as HTMLSpanElement).textContent = this.packageJson.version;
+        (this.softwareInfosDiv. querySelector("#copyright")              as HTMLSpanElement).innerHTML   = this.copyright;
 
-            const chargyCoreHashValue = sha512HexFromSubresourceIntegrity(__CHARGY_CORE_NPM_INTEGRITY__);
-            this.chargyCoreHashVersionSpan.innerHTML = corePackageJson.version;
-            this.chargyCoreHashValueDiv.innerHTML    = chargyCoreHashValue !== ""
-                                                           ? formatHashValue(chargyCoreHashValue)
-                                                           : "Kann nicht berechnet werden!";
+        const chargyCoreHashValue = sha512HexFromSubresourceIntegrity(__CHARGY_CORE_NPM_INTEGRITY__);
+        this.chargyCoreHashVersionSpan.innerHTML = corePackageJson.version;
+        this.chargyCoreHashValueDiv.innerHTML    = chargyCoreHashValue !== ""
+                                                        ? formatHashValue(chargyCoreHashValue)
+                                                        : "Kann nicht berechnet werden!";
 
-            (this.openSourceLibsDiv.querySelector("#chargyVersion")          as HTMLSpanElement).innerHTML = this.packageJson.version;
-            (this.openSourceLibsDiv.querySelector("#electronVersion")        as HTMLSpanElement).innerHTML = this.appContext.versions.electron ?? "";
-            (this.openSourceLibsDiv.querySelector("#chromiumVersion")        as HTMLSpanElement).innerHTML = this.appContext.versions.chrome   ?? "";
-            (this.openSourceLibsDiv.querySelector("#nodeVersion")            as HTMLSpanElement).innerHTML = this.appContext.versions.node     ?? "";
-            (this.openSourceLibsDiv.querySelector("#opensslVersion")         as HTMLSpanElement).innerHTML = this.appContext.versions.openssl  ?? "";
+        (this.openSourceLibsDiv.querySelector("#chargyVersion")          as HTMLSpanElement).textContent = this.packageJson.version;
+        (this.openSourceLibsDiv.querySelector("#electronVersion")        as HTMLSpanElement).innerHTML   = this.appContext.versions.electron ?? "";
+        (this.openSourceLibsDiv.querySelector("#chromiumVersion")        as HTMLSpanElement).innerHTML   = this.appContext.versions.chrome   ?? "";
+        (this.openSourceLibsDiv.querySelector("#nodeVersion")            as HTMLSpanElement).innerHTML   = this.appContext.versions.node     ?? "";
+        (this.openSourceLibsDiv.querySelector("#opensslVersion")         as HTMLSpanElement).innerHTML   = this.appContext.versions.openssl  ?? "";
 
-        const devDependencies = this.packageJson.devDependencies as DependencyMap | undefined;
-        const dependencies    = this.packageJson.dependencies    as DependencyMap | undefined;
-
-        if (devDependencies)
+        if (this.packageJson.devDependencies)
         {
-            (this.openSourceLibsDiv.querySelector("#electronBuilder")        as HTMLSpanElement).innerHTML = dependencyVersion(devDependencies, "electron-builder");
-            (this.openSourceLibsDiv.querySelector("#electronLocalShortcut")  as HTMLSpanElement).innerHTML = dependencyVersion(devDependencies, "electron-localshortcut");
-            (this.openSourceLibsDiv.querySelector("#SASS")                   as HTMLSpanElement).innerHTML = dependencyVersion(devDependencies, "sass");
-            (this.openSourceLibsDiv.querySelector("#typeScript")             as HTMLSpanElement).innerHTML = dependencyVersion(devDependencies, "typescript");
-            (this.openSourceLibsDiv.querySelector("#webpack")                as HTMLSpanElement).innerHTML = dependencyVersion(devDependencies, "webpack");
+            (this.openSourceLibsDiv.querySelector("#electronBuilder")        as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.devDependencies, "electron-builder");
+            (this.openSourceLibsDiv.querySelector("#electronLocalShortcut")  as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.devDependencies, "electron-localshortcut");
+            (this.openSourceLibsDiv.querySelector("#SASS")                   as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.devDependencies, "sass");
+            (this.openSourceLibsDiv.querySelector("#typeScript")             as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.devDependencies, "typescript");
+            (this.openSourceLibsDiv.querySelector("#webpack")                as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.devDependencies, "webpack");
         }
 
-        if (dependencies)
+        if (this.packageJson.dependencies)
         {
-            (this.openSourceLibsDiv.querySelector("#chargyCore")             as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "@open-charging-cloud/chargy-core");
-            (this.openSourceLibsDiv.querySelector("#openChargingCloudTOTP")  as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "@open-charging-cloud/totp");
-            (this.openSourceLibsDiv.querySelector("#elliptic")               as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "elliptic");
-            (this.openSourceLibsDiv.querySelector("#nobleCurves")            as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "@noble/curves");
-            (this.openSourceLibsDiv.querySelector("#noblePostQuantum")       as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "@noble/post-quantum");
-            (this.openSourceLibsDiv.querySelector("#momentJS")               as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "moment");
-            (this.openSourceLibsDiv.querySelector("#pdfjsdist")              as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "pdfjs-dist");
-            (this.openSourceLibsDiv.querySelector("#seekBzip")               as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "seek-bzip");
-            (this.openSourceLibsDiv.querySelector("#fileType")               as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "file-type");
-            (this.openSourceLibsDiv.querySelector("#isURLSuperb")            as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "is-url-superb");
-            (this.openSourceLibsDiv.querySelector("#jsQR")                   as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "jsqr");
-            (this.openSourceLibsDiv.querySelector("#buffer")                 as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "buffer");
-            (this.openSourceLibsDiv.querySelector("#fontAwesome")            as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "@fortawesome/fontawesome-free");
-            (this.openSourceLibsDiv.querySelector("#asn1JS")                 as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "asn1.js");
-            (this.openSourceLibsDiv.querySelector("#base32Decode")           as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "base32-decode");
-            (this.openSourceLibsDiv.querySelector("#safeStableStringify")    as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "safe-stable-stringify");
-            (this.openSourceLibsDiv.querySelector("#leafletJS")              as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "leaflet");
-            (this.openSourceLibsDiv.querySelector("#leafletAwesomeMarkers")  as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "leaflet.awesome-markers");
-            (this.openSourceLibsDiv.querySelector("#decimalJS")              as HTMLSpanElement).innerHTML = dependencyVersion(dependencies, "decimal.js");
+            (this.openSourceLibsDiv.querySelector("#chargyCore")             as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "@open-charging-cloud/chargy-core");
+            (this.openSourceLibsDiv.querySelector("#openChargingCloudTOTP")  as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "@open-charging-cloud/totp");
+            (this.openSourceLibsDiv.querySelector("#elliptic")               as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "elliptic");
+            (this.openSourceLibsDiv.querySelector("#nobleCurves")            as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "@noble/curves");
+            (this.openSourceLibsDiv.querySelector("#noblePostQuantum")       as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "@noble/post-quantum");
+            (this.openSourceLibsDiv.querySelector("#momentJS")               as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "moment");
+            (this.openSourceLibsDiv.querySelector("#pdfjsdist")              as HTMLSpanElement).innerHTML = dependencyVersion(corePackageJson.dependencies, "pdfjs-dist");
+            (this.openSourceLibsDiv.querySelector("#seekBzip")               as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "seek-bzip");
+            (this.openSourceLibsDiv.querySelector("#fileType")               as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "file-type");
+            (this.openSourceLibsDiv.querySelector("#isURLSuperb")            as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "is-url-superb");
+            (this.openSourceLibsDiv.querySelector("#jsQR")                   as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "jsqr");
+            (this.openSourceLibsDiv.querySelector("#buffer")                 as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "buffer");
+            (this.openSourceLibsDiv.querySelector("#fontAwesome")            as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "@fortawesome/fontawesome-free");
+            (this.openSourceLibsDiv.querySelector("#asn1JS")                 as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "asn1.js");
+            (this.openSourceLibsDiv.querySelector("#base32Decode")           as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "base32-decode");
+            (this.openSourceLibsDiv.querySelector("#safeStableStringify")    as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "safe-stable-stringify");
+            (this.openSourceLibsDiv.querySelector("#leafletJS")              as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "leaflet");
+            (this.openSourceLibsDiv.querySelector("#leafletAwesomeMarkers")  as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "leaflet.awesome-markers");
+            (this.openSourceLibsDiv.querySelector("#decimalJS")              as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "decimal.js");
         }
 
         //#endregion
@@ -1039,194 +1042,211 @@ export class ChargyApp {
                         try
                         {
 
-                            const versionsDiv = this.updateAvailableScreen.querySelector("#versions") as HTMLDivElement;
-                            if (versionsDiv != null)
+                            const versionsDiv = this.updateAvailableScreen.querySelector("#versions");
+                            if (versionsDiv instanceof HTMLDivElement)
                             {
 
-                                this.currentAppInfos = JSON.parse(GetListOfVersions.responseText) as chargyInterfaces.IVersions;
+                                try
+                                {
+                                    this.currentAppInfos = JSON.parse(GetListOfVersions.responseText) as chargyInterfaces.IVersions;
+                                }
+                                catch (exception)
+                                {
+                                    console.log(exception);
+                                }
 
-                                for (const version of this.currentAppInfos.versions)
+                                if (this.currentAppInfos !== null)
                                 {
 
-                                    const thisVersion    = this.packageJson.version.split('.');
-                                    const remoteVersion  = version.version.split('.');
+                                    const appVersion = typeof this.packageJson.version === "string"
+                                        ? this.packageJson.version
+                                        : "0.0.0";
+                                    const [thisMajor = "0", thisMinor = "0", thisPatch = "0"] = appVersion.split('.');
 
-                                    //#region Find current version package
-
-                                    if (remoteVersion[0] == thisVersion[0] &&
-                                        remoteVersion[1] == thisVersion[1] &&
-                                        remoteVersion[2] == thisVersion[2])
+                                    for (const version of this.currentAppInfos.versions)
                                     {
 
-                                        this.currentVersionInfos = version;
+                                        const remoteVersion = version.version.split('.');
+                                        const [remoteMajor = "0", remoteMinor = "0", remotePatch = "0"] = remoteVersion;
 
-                                        if (this.currentVersionInfos.packages && this.currentVersionInfos.packages.length > 0)
+                                        //#region Find current version package
+
+                                        if (remoteMajor == thisMajor &&
+                                            remoteMinor == thisMinor &&
+                                            remotePatch == thisPatch)
                                         {
-                                            for (const _package of this.currentVersionInfos.packages)
+
+                                            this.currentVersionInfos = version;
+
+                                            if (this.currentVersionInfos.packages && this.currentVersionInfos.packages.length > 0)
                                             {
-                                                if (_package.isInstaller == null &&
-                                                    (_package.platform === this.platform ||
-                                                    (_package.platforms != null && Array.isArray(_package.platforms) && _package.platforms.indexOf(this.platform) > -1)))
+                                                for (const _package of this.currentVersionInfos.packages)
                                                 {
-                                                    this.currentPackage = _package;
+                                                    if (_package.isInstaller == null &&
+                                                       (_package.platform === this.platform ||
+                                                       (_package.platforms != null && Array.isArray(_package.platforms) && _package.platforms.indexOf(this.platform) > -1)))
+                                                    {
+                                                        this.currentPackage = _package;
+                                                    }
                                                 }
                                             }
+
                                         }
 
-                                    }
+                                        //#endregion
 
-                                    //#endregion
+                                        //#region Find newer/updated version
 
-                                    //#region Find newer/updated version
-
-                                    else if (remoteVersion[0] >  thisVersion[0] ||
-                                            (remoteVersion[0] >= thisVersion[0] && remoteVersion[1] >  thisVersion[1]) ||
-                                            (remoteVersion[0] >= thisVersion[0] && remoteVersion[1] >= thisVersion[1] && remoteVersion[2] > thisVersion[2]))
-                                    {
-
-                                        this.updateAvailableButton.style.display = "block";
-
-                                        const versionDiv = versionsDiv.appendChild(document.createElement('div'));
-                                        versionDiv.className = "version";
-
-                                        const headlineDiv = versionDiv.appendChild(document.createElement('div'));
-                                        headlineDiv.className = "headline";
-
-                                        const versionnumberDiv = headlineDiv.appendChild(document.createElement('div'));
-                                        versionnumberDiv.className = "versionnumber";
-                                        versionnumberDiv.innerHTML = "Version " + version.version;
-
-                                        const releaseDateDiv = headlineDiv.appendChild(document.createElement('div'));
-                                        releaseDateDiv.className = "releaseDate";
-                                        releaseDateDiv.innerHTML = chargyLib.parseUTC(version.releaseDate).format("ll");
-
-                                        const descriptionDiv = versionDiv.appendChild(document.createElement('div'));
-                                        descriptionDiv.className = "description";
-                                        descriptionDiv.innerHTML = version.description["de"];
-
-                                        const tagsDiv = versionDiv.appendChild(document.createElement('div'));
-                                        tagsDiv.className = "tags";
-
-                                        for (const tag of version.tags)
-                                        {
-                                            const tagDiv = tagsDiv.appendChild(document.createElement('div'));
-                                            tagDiv.className = "tag";
-                                            tagDiv.innerHTML = tag;
-                                        }
-
-                                        const packagesDiv = versionDiv.appendChild(document.createElement('div'));
-                                        packagesDiv.className = "packages";
-
-                                        for (const versionpackage of version.packages)
+                                        else if (remoteMajor >  thisMajor ||
+                                                (remoteMajor >= thisMajor && remoteMinor >  thisMinor) ||
+                                                (remoteMajor >= thisMajor && remoteMinor >= thisMinor && remotePatch > thisPatch))
                                         {
 
-                                            const packageDiv = packagesDiv.appendChild(document.createElement('div'));
-                                            packageDiv.className = "package";
+                                            this.updateAvailableButton.style.display = "block";
 
-                                            const nameDiv = packageDiv.appendChild(document.createElement('div'));
-                                            nameDiv.className = "name";
-                                            nameDiv.innerHTML = versionpackage.name;
+                                            const versionDiv = versionsDiv.appendChild(document.createElement('div'));
+                                            versionDiv.className = "version";
 
-                                            if (versionpackage.description?.["de"])
+                                            const headlineDiv = versionDiv.appendChild(document.createElement('div'));
+                                            headlineDiv.className = "headline";
+
+                                            const versionnumberDiv = headlineDiv.appendChild(document.createElement('div'));
+                                            versionnumberDiv.className = "versionnumber";
+                                            versionnumberDiv.innerHTML = "Version " + version.version;
+
+                                            const releaseDateDiv = headlineDiv.appendChild(document.createElement('div'));
+                                            releaseDateDiv.className = "releaseDate";
+                                            releaseDateDiv.innerHTML = chargyLib.parseUTC(version.releaseDate).format("ll");
+
+                                            const descriptionDiv = versionDiv.appendChild(document.createElement('div'));
+                                            descriptionDiv.className = "description";
+                                            descriptionDiv.innerHTML = version.description["de"] ?? "";
+
+                                            const tagsDiv = versionDiv.appendChild(document.createElement('div'));
+                                            tagsDiv.className = "tags";
+
+                                            for (const tag of version.tags)
                                             {
-                                                const descriptionDiv = packageDiv.appendChild(document.createElement('div'));
-                                                descriptionDiv.className = "description";
-                                                descriptionDiv.innerHTML = versionpackage.description["de"];
+                                                const tagDiv = tagsDiv.appendChild(document.createElement('div'));
+                                                tagDiv.className = "tag";
+                                                tagDiv.innerHTML = tag;
                                             }
 
-                                            if (versionpackage.additionalInfo?.["de"])
-                                            {
-                                                const additionalInfoDiv = packageDiv.appendChild(document.createElement('div'));
-                                                additionalInfoDiv.className = "additionalInfo";
-                                                additionalInfoDiv.innerHTML = versionpackage.additionalInfo["de"];
-                                            }
+                                            const packagesDiv = versionDiv.appendChild(document.createElement('div'));
+                                            packagesDiv.className = "packages";
 
-
-                                            const cryptoHashesDiv = packageDiv.appendChild(document.createElement('div'));
-                                            cryptoHashesDiv.className = "cryptoHashes";
-
-                                            for (const cryptoHash in versionpackage.cryptoHashes)
+                                            for (const versionpackage of version.packages)
                                             {
 
-                                                const cryptoHashDiv = cryptoHashesDiv.appendChild(document.createElement('div'));
-                                                cryptoHashDiv.className = "cryptoHash";
+                                                const packageDiv = packagesDiv.appendChild(document.createElement('div'));
+                                                packageDiv.className = "package";
 
-                                                const cryptoHashNameDiv = cryptoHashDiv.appendChild(document.createElement('div'));
-                                                cryptoHashNameDiv.className = "name";
-                                                cryptoHashNameDiv.innerHTML = cryptoHash;
+                                                const nameDiv = packageDiv.appendChild(document.createElement('div'));
+                                                nameDiv.className = "name";
+                                                nameDiv.innerHTML = versionpackage.name;
 
-                                                let value = versionpackage.cryptoHashes[cryptoHash].replace(/\s+/g, '');
-
-                                                if (value.startsWith("0x"))
-                                                    value = value.substring(2);
-
-                                                const cryptoHashValueDiv = cryptoHashDiv.appendChild(document.createElement('div'));
-                                                cryptoHashValueDiv.className = "value";
-                                                cryptoHashValueDiv.innerHTML = formatHashValue(value);
-
-                                            }
-
-
-                                            const signaturesTextDiv = packageDiv.appendChild(document.createElement('div'));
-                                            signaturesTextDiv.className = "signaturesText";
-                                            signaturesTextDiv.innerHTML = "Die Authentizität diese Software wurde durch folgende digitale Signaturen bestätigt";
-
-                                            const signaturesDiv = packageDiv.appendChild(document.createElement('div'));
-                                            signaturesDiv.className = "signatures";
-
-                                            for (const signature of versionpackage.signatures)
-                                            {
-
-                                                const signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
-                                                signatureDiv.className = "signature";
-
-                                                const signatureCheckDiv = signatureDiv.appendChild(document.createElement('div'));
-                                                signatureCheckDiv.className = "signatureCheck";
-                                                signatureCheckDiv.innerHTML = "<i class=\"fas fa-question-circle fa-question-circle-orange\"></i>";
-
-                                                const authorDiv = signatureDiv.appendChild(document.createElement('div'));
-                                                authorDiv.className = "signer";
-                                                authorDiv.innerHTML = signature.signer;
-
-                                            }
-
-
-                                            if (versionpackage.downloadURLs)
-                                            {
-
-                                                const downloadURLsTextDiv = packageDiv.appendChild(document.createElement('div'));
-                                                downloadURLsTextDiv.className = "downloadURLsText";
-                                                downloadURLsTextDiv.innerHTML = "Diese Software kann über folgende Weblinks runtergeladen werden";
-
-                                                const downloadURLsDiv = packageDiv.appendChild(document.createElement('div'));
-                                                downloadURLsDiv.className = "downloadURLs";
-
-                                                for (const downloadURLName in versionpackage.downloadURLs)
+                                                if (chargyLib.isI18NString(versionpackage.description))
                                                 {
-                                                    const downloadURLDiv = downloadURLsDiv.appendChild(document.createElement('div'));
-                                                    downloadURLDiv.className = "downloadURL";
+                                                    const descriptionDiv = packageDiv.appendChild(document.createElement('div'));
+                                                    descriptionDiv.className   = "description";
+                                                    descriptionDiv.textContent = versionpackage.description[this.UILanguage] ?? "";
+                                                }
 
-                                                    const downloadURLAnchor = downloadURLDiv.appendChild(document.createElement('a'));
-                                                    downloadURLAnchor.href = "#";
-                                                    downloadURLAnchor.title = versionpackage.downloadURLs[downloadURLName];
-                                                    downloadURLAnchor.dataset["externalUrl"] = versionpackage.downloadURLs[downloadURLName];
-                                                    downloadURLAnchor.innerHTML = "<i class=\"fas fa-globe\"></i>" + downloadURLName;
-                                                    downloadURLAnchor.onclick = (ev: MouseEvent): void => {
-                                                        ev.preventDefault();
-                                                        const link = downloadURLAnchor.dataset["externalUrl"];
-                                                        if (link?.startsWith("https://"))
-                                                            void this.electron.openExternal(link);
-                                                    };
+                                                if (versionpackage.additionalInfo !== undefined)
+                                                {
+                                                    const additionalInfoDiv = packageDiv.appendChild(document.createElement('div'));
+                                                    additionalInfoDiv.className   = "additionalInfo";
+                                                    additionalInfoDiv.textContent = (versionpackage.additionalInfo as Record<string, string>)[this.UILanguage] ?? "";
+                                                }
+
+
+                                                const cryptoHashesDiv = packageDiv.appendChild(document.createElement('div'));
+                                                cryptoHashesDiv.className = "cryptoHashes";
+
+                                                const cryptoHashes = versionpackage.cryptoHashes as Record<string, string>;
+
+                                                for (const cryptoHash in cryptoHashes)
+                                                {
+
+                                                    const cryptoHashDiv = cryptoHashesDiv.appendChild(document.createElement('div'));
+                                                    cryptoHashDiv.className = "cryptoHash";
+
+                                                    const cryptoHashNameDiv = cryptoHashDiv.appendChild(document.createElement('div'));
+                                                    cryptoHashNameDiv.className = "name";
+                                                    cryptoHashNameDiv.innerHTML = cryptoHash;
+
+                                                    let value = cryptoHashes[cryptoHash]?.replace(/\s+/g, '') ?? "";
+
+                                                    if (value.startsWith("0x"))
+                                                        value = value.substring(2);
+
+                                                    const cryptoHashValueDiv = cryptoHashDiv.appendChild(document.createElement('div'));
+                                                    cryptoHashValueDiv.className = "value";
+                                                    cryptoHashValueDiv.innerHTML = formatHashValue(value);
+
+                                                }
+
+
+                                                const signaturesTextDiv = packageDiv.appendChild(document.createElement('div'));
+                                                signaturesTextDiv.className = "signaturesText";
+                                                signaturesTextDiv.innerHTML = "Die Authentizität diese Software wurde durch folgende digitale Signaturen bestätigt";
+
+                                                const signaturesDiv = packageDiv.appendChild(document.createElement('div'));
+                                                signaturesDiv.className = "signatures";
+
+                                                for (const signature of versionpackage.signatures)
+                                                {
+
+                                                    const signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
+                                                    signatureDiv.className = "signature";
+
+                                                    const signatureCheckDiv = signatureDiv.appendChild(document.createElement('div'));
+                                                    signatureCheckDiv.className = "signatureCheck";
+                                                    signatureCheckDiv.innerHTML = "<i class=\"fas fa-question-circle fa-question-circle-orange\"></i>";
+
+                                                    const authorDiv = signatureDiv.appendChild(document.createElement('div'));
+                                                    authorDiv.className = "signer";
+                                                    authorDiv.innerHTML = signature.signer;
+
+                                                }
+
+                                                if (Object.keys(versionpackage.downloadURLs).length > 0)
+                                                {
+
+                                                    const downloadURLsTextDiv = packageDiv.appendChild(document.createElement('div'));
+                                                    downloadURLsTextDiv.className = "downloadURLsText";
+                                                    downloadURLsTextDiv.innerHTML = "Diese Software kann über folgende Weblinks runtergeladen werden";
+
+                                                    const downloadURLsDiv = packageDiv.appendChild(document.createElement('div'));
+                                                    downloadURLsDiv.className = "downloadURLs";
+
+                                                    for (const downloadURLName in versionpackage.downloadURLs)
+                                                    {
+                                                        const downloadURLDiv = downloadURLsDiv.appendChild(document.createElement('div'));
+                                                        downloadURLDiv.className = "downloadURL";
+
+                                                        const downloadURLAnchor = downloadURLDiv.appendChild(document.createElement('a'));
+                                                        downloadURLAnchor.href = "#";
+                                                        downloadURLAnchor.title = versionpackage.downloadURLs[downloadURLName] ?? "";
+                                                        downloadURLAnchor.dataset["externalUrl"] = versionpackage.downloadURLs[downloadURLName];
+                                                        downloadURLAnchor.innerHTML = "<i class=\"fas fa-globe\"></i>" + downloadURLName;
+                                                        downloadURLAnchor.onclick = (ev: MouseEvent): void => {
+                                                            ev.preventDefault();
+                                                            const link = downloadURLAnchor.dataset["externalUrl"];
+                                                            if (link?.startsWith("https://"))
+                                                                void this.electron.openExternal(link);
+                                                        };
+                                                    }
+
                                                 }
 
                                             }
 
                                         }
 
+                                        //#endregion
+
                                     }
-
-                                    //#endregion
-
                                 }
 
                             }
