@@ -1,5 +1,8 @@
 # ChargyTS Desktop App
 
+[![CI](https://github.com/OpenChargingCloud/ChargyDesktopApp/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenChargingCloud/ChargyDesktopApp/actions/workflows/ci.yml)
+[![Nightly](https://github.com/OpenChargingCloud/ChargyDesktopApp/actions/workflows/nightly.yml/badge.svg)](https://github.com/OpenChargingCloud/ChargyDesktopApp/actions/workflows/nightly.yml)
+
 Chargy is a transparency software library for the validation of secure and transparent e-mobility charging processes, as defined by the *German Calibration Law ("Eichrecht")* in combination with the [Alternative Fuels Infrastructure Regulation (AFIR)](https://transport.ec.europa.eu/transport-themes/clean-transport/alternative-fuels-sustainable-mobility-europe/alternative-fuels-infrastructure_en) and the new [Measuring instruments (MID-11)](https://single-market-economy.ec.europa.eu/single-market/goods/european-standards/harmonised-standards/measuring-instruments-mid_en) of the European Commission and the [European Digital Quality Infrastructure](https://www.qi-digital.de/en/). The software allows you to verify the cryptographic signatures of energy measurements within charge detail records and comes with a couple of useful extentions to simplify the entire process for endusers and operators.
 
 <kbd>
