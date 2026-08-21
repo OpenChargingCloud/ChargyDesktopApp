@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>
+<values>
+  <value transactionId="1" context="Transaction.Begin">
+    <signedData format="OCMF" encoding="plain">OCMF|{"FV":"1.0","GI":"BAUER Electronic BSM-WS36A-H01-1311-0000","GS":"001BZR1521070003","GV":"1.8:33C4:DB63, 08d1aa3","PG":"T22107","MV":"BAUER Electronic","MM":"BSM-WS36A-H01-1311-0000","MS":"001BZR1521070003","IS":true,"IF":["RFID_PLAIN","OCPP_AUTH"],"IT":"UNDEFINED","ID":"chargeIT up 12*4, id: 12345678abcdef","RD":[{"TM":"2020-10-08T10:22:39,000+0200 S","TX":"B","RV":0,"RI":"1-0:1.8.0*198","RU":"Wh","XV":88200,"XI":"1-0:1.8.0*255","XU":"Wh","XT":1,"RT":"AC","EF":"","ST":"G"}]}|{"SA":"ECDSA-secp256r1-SHA256","SD":"3045022037784f4fe01127d757c7b0ecee2c8c367da6ad19814ecdbe89e3ba3cd7b763e2022100be66ab1800b91ce0e730aa0338c74fec51d58973e96e19a8c6c697f3ab63cc44"}</signedData>
+    <publicKey encoding="hex">3059301306072a8648ce3d020106082a8648ce3d030107034200043a6dee509640eb07edeb8b89a10453c4810a4f898d4c13413e7cb2e8487c6667d579f10699d3abec6fd33e7954f8e8bf0d3654c3d5e2fa7b407b998e44916363</publicKey>
+  </value>
+  <value transactionId="1" context="Transaction.End">
+    <signedData format="OCMF" encoding="plain">OCMF|{"FV":"1.0","GI":"BAUER Electronic BSM-WS36A-H01-1311-0000","GS":"001BZR1521070003","GV":"1.8:33C4:DB63, 08d1aa3","PG":"T22108","MV":"BAUER Electronic","MM":"BSM-WS36A-H01-1311-0000","MS":"001BZR1521070003","IS":true,"IF":["RFID_PLAIN","OCPP_AUTH"],"IT":"UNDEFINED","ID":"chargeIT up 12*4, id: 12345678abcdef","RD":[{"TM":"2020-10-08T10:27:37,000+0200 S","TX":"E","RV":150,"RI":"1-0:1.8.0*198","RU":"Wh","XV":88350,"XI":"1-0:1.8.0*255","XU":"Wh","XT":2,"RT":"AC","EF":"","ST":"G"}]}|{"SA":"ECDSA-secp256r1-SHA256","SD":"3046022100d6a2d9b3ffe427d936796d10babcd9c685a9055bdf3b48c12b74a7296c5e9a2f022100b34fc1c75d550cedd0f5cd97e07bfc4657d44dad5851952fc32ac86c36081870"}</signedData>
+    <publicKey encoding="hex">3059301306072a8648ce3d020106082a8648ce3d030107034200043a6dee509640eb07edeb8b89a10453c4810a4f898d4c13413e7cb2e8487c6667d579f10699d3abec6fd33e7954f8e8bf0d3654c3d5e2fa7b407b998e44916363</publicKey>
+  </value>
+</values>

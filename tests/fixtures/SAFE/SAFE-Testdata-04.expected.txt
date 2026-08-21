@@ -1,6 +1,6 @@
 format: ctr
 sessions: 1
-session 1: 1554181214441:-1965658344385548683:2
+session 1: OCMF-d7b3449036770aad41e2cee115c2dee61fc4114edf8df9a723d29e2f3dc0c553
 session 1 evseId: unknown
 session 1 meterId: HTBGenerated1
 session 1 status: InvalidPublicKey

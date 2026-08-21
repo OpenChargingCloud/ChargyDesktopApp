@@ -9,10 +9,13 @@ import {
 } from "./chargyTestRuntime";
 import {
     IsAChargeTransparencyRecord,
-    IsAChargeTransparencyLiveLink
+    IsAChargeTransparencyLiveLink,
+    IsAURL
 } from '@open-charging-cloud/chargy-core';
 import type {
     IChargeTransparencyRecord,
+    IChargeTransparencyLiveLink,
+    IURL,
     IMeasurement,
     IMeasurementValue,
     I18NString,
@@ -21,7 +24,7 @@ import type {
     ISessionCryptoResult,
     IValidationRules,
     IPublicKey,
-    IChargeTransparencyLiveLink
+    IPublicKeyLookup
 } from '@open-charging-cloud/chargy-core';
 
 import coreI18n  from '@open-charging-cloud/chargy-core/i18n.json';
@@ -251,7 +254,9 @@ async function verifyChargeData(fileName:  string,
 
     : Promise<IChargeTransparencyRecord   |
               IChargeTransparencyLiveLink |
+              IURL                        |
               IPublicKey                  |
+              IPublicKeyLookup            |
               ISessionCryptoResult>
 
 {
@@ -273,14 +278,16 @@ async function verifyChargeDataFiles(fileInfos: IFileInfo[],
 
     : Promise<IChargeTransparencyRecord   |
               IChargeTransparencyLiveLink |
+              IURL                        |
               IPublicKey                  |
+              IPublicKeyLookup            |
               ISessionCryptoResult>
 
 {
     return createVerificationChargy(validationRules).DetectAndConvertContentFormat(fileInfos);
 }
 
-function formatChargeDataVerificationReport(report: IChargeTransparencyRecord | IChargeTransparencyLiveLink | IPublicKey | ISessionCryptoResult): string {
+function formatChargeDataVerificationReport(report: IChargeTransparencyRecord | IChargeTransparencyLiveLink | IURL | IPublicKey | IPublicKeyLookup | ISessionCryptoResult): string {
 
     if (IsAChargeTransparencyLiveLink(report))
         return [
@@ -288,6 +295,9 @@ function formatChargeDataVerificationReport(report: IChargeTransparencyRecord | 
             "timestamp: "  +  (report.timestamp ?? ""),
             "transports: " + ((report.transports?.length ?? 0).toString())
         ].join("\n");
+
+    if (IsAURL(report))
+        return "url: " + report.url;
 
     if (!IsAChargeTransparencyRecord(report)) {
         const sessionResult = report as ISessionCryptoResult;

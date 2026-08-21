@@ -1,6 +1,6 @@
 format: ctr
 sessions: 1
-session 1: 1554181214441:-1965658344385548683:2
+session 1: OCMF-cbd0bde4cb1fc84edc4f61f46eed51340ba9f5bbd1d6a482dbf576b6e3caffc0
 session 1 evseId: unknown
 session 1 meterId: 1DZG0022222222
 session 1 status: PublicKeyNotFound

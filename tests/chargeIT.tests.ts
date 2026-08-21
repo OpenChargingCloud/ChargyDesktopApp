@@ -1,5 +1,5 @@
 import { describe, test } from 'vitest';
-import { expectVerificationReport, expectArchiveVerificationReport } from './testHelper';
+import { expectVerificationReport, expectVerificationReportInline, expectArchiveVerificationReport } from './testHelper';
 
 
 describe('chargeIT Tests', () => {
@@ -58,10 +58,36 @@ describe('chargeIT BSM Tests', () => {
         );
     });
 
-    test("ocmf_withoutIF", async () => {
+    test("ocmf_withIF", async () => {
         await expectVerificationReport(
-            "chargeIT/BSM/ocmf_withoutIF.xml",
-            "chargeIT/BSM/ocmf_withoutIF.expected.txt"
+            "chargeIT/BSM/ocmf_withIF.xml",
+            "chargeIT/BSM/ocmf_withIF.expected.txt"
+        );
+    });
+
+    test("ocmf_withIF carries the identification flags into the record", async () => {
+        await expectVerificationReportInline(
+            "chargeIT/BSM/ocmf_withIF.xml",
+            {
+                chargingSessions: [{
+                    authorizationStart: {
+                        identificationFlags: [ "RFID_PLAIN", "OCPP_AUTH" ]
+                    }
+                }]
+            }
+        );
+    });
+
+    test("ocmf without identification flags yields an empty list", async () => {
+        await expectVerificationReportInline(
+            "chargeIT/BSM/ocmf.xml",
+            {
+                chargingSessions: [{
+                    authorizationStart: {
+                        identificationFlags: []
+                    }
+                }]
+            }
         );
     });
 

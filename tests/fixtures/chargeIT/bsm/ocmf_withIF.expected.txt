@@ -1,6 +1,6 @@
 format: ctr
 sessions: 1
-session 1: 1554181214441:-1965658344385548683:2
+session 1: OCMF-629c38f1fad62bd6dfceef5c062f404b308571a71495199c88e23304f9fdf042
 session 1 evseId: unknown
 session 1 meterId: 001BZR1521070003
 session 1 status: ValidSignature
