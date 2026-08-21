@@ -6,7 +6,7 @@
 //
 // Run from the repository root:
 //
-//     node tests/fixtures/chargeIT/BSM/generate_ocmf_withIF.mjs
+//     node tests/fixtures/chargeIT/bsm/generate_ocmf_withIF.mjs
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { generateKeyPairSync, sign as signData } from "node:crypto";
