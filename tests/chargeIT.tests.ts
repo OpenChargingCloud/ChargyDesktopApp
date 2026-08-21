@@ -46,28 +46,28 @@ describe('chargeIT BSM Tests', () => {
 
     test("bsm-ws36a-good", async () => {
         await expectVerificationReport(
-            "chargeIT/BSM/bsm-ws36a-good.json",
-            "chargeIT/BSM/bsm-ws36a-good.expected.txt"
+            "chargeIT/bsm/bsm-ws36a-good.json",
+            "chargeIT/bsm/bsm-ws36a-good.expected.txt"
         );
     });
 
     test("ocmf", async () => {
         await expectVerificationReport(
-            "chargeIT/BSM/ocmf.xml",
-            "chargeIT/BSM/ocmf.expected.txt"
+            "chargeIT/bsm/ocmf.xml",
+            "chargeIT/bsm/ocmf.expected.txt"
         );
     });
 
     test("ocmf_withIF", async () => {
         await expectVerificationReport(
-            "chargeIT/BSM/ocmf_withIF.xml",
-            "chargeIT/BSM/ocmf_withIF.expected.txt"
+            "chargeIT/bsm/ocmf_withIF.xml",
+            "chargeIT/bsm/ocmf_withIF.expected.txt"
         );
     });
 
     test("ocmf_withIF carries the identification flags into the record", async () => {
         await expectVerificationReportInline(
-            "chargeIT/BSM/ocmf_withIF.xml",
+            "chargeIT/bsm/ocmf_withIF.xml",
             {
                 chargingSessions: [{
                     authorizationStart: {
@@ -80,7 +80,7 @@ describe('chargeIT BSM Tests', () => {
 
     test("ocmf without identification flags yields an empty list", async () => {
         await expectVerificationReportInline(
-            "chargeIT/BSM/ocmf.xml",
+            "chargeIT/bsm/ocmf.xml",
             {
                 chargingSessions: [{
                     authorizationStart: {
