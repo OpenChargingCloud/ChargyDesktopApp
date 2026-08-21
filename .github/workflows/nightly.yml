@@ -114,7 +114,7 @@ jobs:
         run: npm ci
 
       - name: Build ${{ matrix.target }} distributions
-        run: npm run build -- --${{ matrix.target }}
+        run: npm run build -- --${{ matrix.target }} --publish never
         env:
           # Signing and notarization belong in a separate release workflow with
           # protected secrets. Nightly validates reproducible unsigned output.
