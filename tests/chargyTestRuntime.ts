@@ -1,4 +1,5 @@
 import { createRequire } from "node:module";
+import { DOMParser }     from "@oozcitak/dom";
 import type {
     Chargy,
     I18NDictionary,
@@ -95,12 +96,6 @@ export function parseSignedJSONMessage(json: string): SignedJSONMessage {
 
 
 
-type DOMParserModule = {
-    DOMParser: typeof globalThis.DOMParser;
-};
-
-const { DOMParser: TestDOMParser } = requireModule("@oozcitak/dom") as DOMParserModule;
-
 class TestDOMMatrix {
 
     toString(): string {
@@ -122,7 +117,7 @@ function defineTestGlobal(name: "DOMParser" | "DOMMatrix",
 
 export function ensureChargyTestDOM(): void {
 
-    defineTestGlobal("DOMParser", TestDOMParser);
+    defineTestGlobal("DOMParser", DOMParser);
 
     if (typeof globalThis.DOMMatrix === "undefined")
         defineTestGlobal("DOMMatrix", TestDOMMatrix);
@@ -132,6 +127,6 @@ export function ensureChargyTestDOM(): void {
 export function parseTestXML(xml: string): Document {
 
     ensureChargyTestDOM();
-    return new TestDOMParser().parseFromString(xml, "text/xml");
+    return new DOMParser().parseFromString(xml, "text/xml");
 
 }
