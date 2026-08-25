@@ -1,11 +1,21 @@
 const isDevelopment = process.env.NODE_ENV === 'development';
-const path          = require('path');
-const webpack       = require('webpack');
+const path                 = require('path');
+const webpack              = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const packageLock   = require('./package-lock.json');
+const MinimizerPlugin      = require('minimizer-webpack-plugin');
+const packageLock          = require('./package-lock.json');
 
 const chargyCoreNpmIntegrity =
   packageLock.packages?.['node_modules/@open-charging-cloud/chargy-core']?.integrity ?? '';
+
+/**
+ * pdfjs-dist 6.2.108 uses private fields inside dynamic WASM imports. Terser
+ * 5.50.0 renames their declarations inconsistently and produces
+ * "Private field '#wasmUrl' must be declared in an enclosing class".
+ * Keep only the PDF worker unminified until its minified production chunk
+ * passes `node --check`; named chunk IDs keep this matcher stable in production.
+ */
+const pdfWorkerAssetPattern = /pdf[_-]worker/i;
 
 const sourceMapModuleName = info => {
   let resourcePath = (info.resourcePath || info.absoluteResourcePath || '').replace(/\\/g, '/');
@@ -24,6 +34,14 @@ module.exports = [
       entry:   './src/ts/chargyApp.ts',
       target:  'web',
       devtool: isDevelopment ? "eval-source-map" : "source-map",
+      optimization: {
+        chunkIds: 'named',
+        minimizer: [
+          new MinimizerPlugin({
+            exclude: pdfWorkerAssetPattern
+          })
+        ]
+      },
       resolve: {
         extensions: ["", ".ts", ".js"],
         alias: {
@@ -105,6 +123,10 @@ module.exports = [
       output: {
         path:                          path.resolve(__dirname, 'src/build'),
         filename:                      'chargyApp-bundle.js',
+        // Remove stale numeric worker chunks, but retain the tracked empty directory.
+        clean: {
+          keep: '.gitkeep'
+        },
         devtoolModuleFilenameTemplate: sourceMapModuleName
       }
     }
