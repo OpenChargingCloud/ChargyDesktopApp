@@ -15,7 +15,7 @@
     "test": "vitest run --config tests/vitest.config.ts",
     "test:typecheck": "tsc -p tests/tsconfig.json --noEmit",
     "test:watch": "vitest --config tests/vitest.config.ts",
-    "sbom": "cyclonedx-npm --output-format json --output-file sbom.json",
+    "sbom": "cyclonedx-npm --package-lock-only --output-format json --output-file sbom.json",
     "bundle": "webpack -c webpack.config.cjs",
     "build": "npm run sbom && npm run bundle && electron-builder",
     "pack": "npm run sbom && npm run bundle && electron-builder --dir",
