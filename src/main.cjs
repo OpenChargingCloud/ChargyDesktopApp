@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, clipboard, dialog, ipcMain, shell }  = require('electron')
+const { app, BrowserWindow, clipboard, dialog, ipcMain, net, shell }  = require('electron')
 const path                                                       = require('path');
 const fs                                                         = require('fs');
 const crypto                                                     = require('crypto');
@@ -31,6 +31,13 @@ const {
     copyright,
     packageJson
 }                                                                = require('./applicationMetadata.cjs');
+const {
+    parseLiveLinkHTTPSURL,
+    validateResolvedAddresses,
+    isWithinURLPrefix,
+    isAllowedRedirect,
+    sanitizePayloadLimit
+}                                                                = require('./liveLinkNetworkSecurity.cjs');
 const cliI18N                                                    = require('./i18n_CLI.json');
 const coreI18N                                                   = require('@open-charging-cloud/chargy-core/i18n.json');
 const desktopI18N                                                = require('./i18n.json');
@@ -58,6 +65,8 @@ const mapboxStartGeoCoordinates  = [50.9279287, 11.5731785];
 const mapboxStartMapZoom         = 12;
 
 const httpApiRequestTimeoutMs    = 30000;
+const liveLinkRequestTimeoutMs   = 15000;
+const liveLinkMaximumRedirects   = 3;
 
 const readPaths                  = createPathAllowList();
 const savePaths                  = createPathAllowList();
@@ -65,6 +74,132 @@ const pendingHttpRequests        = new Map();
 
 function allowReadPath(fileName) {
     return readPaths.allow(fileName);
+}
+
+function isMainRendererSender(event) {
+    return mainWindow != null &&
+           mainWindow.webContents != null &&
+           !mainWindow.webContents.isDestroyed() &&
+           event.sender === mainWindow.webContents;
+}
+
+async function resolvePublicLiveLinkHost(url) {
+    const hostname = url.hostname.replace(/^\[|\]$/g, '');
+    const resolutions = await Promise.allSettled([
+        net.resolveHost(hostname, { queryType: 'A',    cacheUsage: 'disallowed' }),
+        net.resolveHost(hostname, { queryType: 'AAAA', cacheUsage: 'disallowed' })
+    ]);
+    const endpoints = resolutions.flatMap(result => result.status === 'fulfilled' ? result.value.endpoints : []);
+    validateResolvedAddresses(endpoints);
+}
+
+async function readLiveLinkResponse(response, maximumBytes) {
+
+    const contentLength = Number(response.headers.get('content-length'));
+    if (Number.isFinite(contentLength) && contentLength > maximumBytes)
+        throw new Error('The live-link response exceeds the allowed size.');
+
+    if (response.body == null)
+        return new Uint8Array();
+
+    const reader = response.body.getReader();
+    const chunks = [];
+    let length   = 0;
+
+    try {
+        for (;;) {
+            const { done, value } = await reader.read();
+            if (done)
+                break;
+            length += value.byteLength;
+            if (length > maximumBytes) {
+                await reader.cancel();
+                throw new Error('The live-link response exceeds the allowed size.');
+            }
+            chunks.push(value);
+        }
+    }
+    finally {
+        reader.releaseLock();
+    }
+
+    const data = new Uint8Array(length);
+    let offset = 0;
+    for (const chunk of chunks) {
+        data.set(chunk, offset);
+        offset += chunk.byteLength;
+    }
+    return data;
+}
+
+async function fetchLiveLinkDocument(rawURL, rawMaximumBytes, rawPrefix) {
+
+    const maximumBytes = sanitizePayloadLimit(rawMaximumBytes);
+    const initialURL   = parseLiveLinkHTTPSURL(rawURL);
+    let prefix         = null;
+
+    if (typeof rawPrefix === 'string' && rawPrefix !== '') {
+        const prefixURL = parseLiveLinkHTTPSURL(rawPrefix);
+        if (prefixURL.origin !== initialURL.origin || !isWithinURLPrefix(initialURL.href, prefixURL.href))
+            throw new Error('The live-link URL is outside its configured prefix.');
+        prefix = prefixURL.href;
+    }
+
+    let currentURL = initialURL;
+
+    for (let redirects = 0; redirects <= liveLinkMaximumRedirects; redirects++) {
+
+        await resolvePublicLiveLinkHost(currentURL);
+
+        const controller = new AbortController();
+        const timeout    = setTimeout(() => controller.abort(), liveLinkRequestTimeoutMs);
+        let response;
+
+        try {
+            response = await net.fetch(currentURL.href, {
+                cache:        'no-store',
+                credentials:  'omit',
+                redirect:     'manual',
+                signal:       controller.signal,
+                headers:      { Accept: 'application/json, application/*+json;q=0.9, text/plain;q=0.5' }
+            });
+        }
+        finally {
+            clearTimeout(timeout);
+        }
+
+        if (response.status >= 300 && response.status < 400) {
+            const location = response.headers.get('location');
+            if (location == null || redirects === liveLinkMaximumRedirects)
+                throw new Error('The live-link server returned an unusable redirect.');
+            const redirectedURL = parseLiveLinkHTTPSURL(new URL(location, currentURL).href);
+            if (!isAllowedRedirect(currentURL, redirectedURL, prefix))
+                throw new Error('The live-link server redirected outside the approved target.');
+            currentURL = redirectedURL;
+            continue;
+        }
+
+        if (!response.ok)
+            return { ok: false, status: response.status, error: `HTTP ${response.status}` };
+
+        const contentType = (response.headers.get('content-type') ?? '').toLowerCase();
+        if (contentType !== '' &&
+            !contentType.includes('application/json') &&
+            !contentType.includes('+json') &&
+            !contentType.includes('text/plain'))
+        {
+            throw new Error('The live-link server did not return JSON data.');
+        }
+
+        const bytes = await readLiveLinkResponse(response, maximumBytes);
+        return {
+            ok:     true,
+            status: response.status,
+            data:   bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
+        };
+    }
+
+    throw new Error('Too many live-link redirects.');
 }
 
 function isAllowedCameraPermissionRequest(webContents, permission, details) {
@@ -552,6 +687,34 @@ ipcMain.handle('openExternal', async (_event, url) => {
     await shell.openExternal(url);
     return true;
 })
+
+ipcMain.handle('readExternalURLConfig', async event => {
+    if (!isMainRendererSender(event))
+        throw new Error('Untrusted IPC sender.');
+
+    try {
+        return await fs.promises.readFile(path.join(app.getAppPath(), 'src', 'externalURLs.conf'), 'utf8');
+    }
+    catch {
+        return '';
+    }
+});
+
+ipcMain.handle('fetchLiveLink', async (event, url, maximumBytes, prefix) => {
+    if (!isMainRendererSender(event))
+        throw new Error('Untrusted IPC sender.');
+
+    try {
+        return await fetchLiveLinkDocument(url, maximumBytes, prefix);
+    }
+    catch (exception) {
+        return {
+            ok:     false,
+            status: 0,
+            error:  exception instanceof Error ? exception.message : String(exception)
+        };
+    }
+});
 
 ipcMain.on('completeHttpRequest', (event, requestId, result) => {
 

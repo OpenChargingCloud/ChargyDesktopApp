@@ -75,6 +75,7 @@
                         </div>
                     </div>
                     <button id="updateAvailableButton"><i class="fas fa-exclamation-circle"></i></button>
+                    <button id="settingsButton"       title="Einstellungen"><i class="fas fa-cog"></i></button>
                     <button id="aboutButton"          ><i class="far fa-question-circle"   ></i></button>
                     <button id="fullScreenButton"     ><i class="fas fa-expand"            ></i></button>
                     <button id="appQuitButton"        ><i class="fas fa-times"             ></i></button>
@@ -301,6 +302,38 @@
                                 <div id="logos">
                                     <a id="TMWWDG" href="https://www.thueringen.de/th6/tmwwdg/"><img src="images/TMWWDG.svg"                 alt="Thüringer Ministerium für Wirtschaft, Wissenschaft und Digitale Gesellschaft"></a>
                                     <a id="ITnet"  href="https://www.itnet-th.de"              ><img src="images/ITnet_Thueringen_small.png" alt="ITnet Thüringen e.V."></a>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div id="settingsScreen">
+
+                            <h1 data-i18n-key="settingsLabel">Einstellungen</h1>
+
+                            <div id="settingsMenu">
+                                <button id="settingsTrustedOriginsEntry" class="settingsEntry">
+                                    <i class="fas fa-satellite-dish"></i>
+                                    <div class="text">
+                                        <div class="title" data-i18n-key="settingsTrustedOriginsTitle">Server für Live-Daten</div>
+                                        <div class="description" data-i18n-key="settingsTrustedOriginsDescription">Welchen Servern das Nachladen laufender Ladevorgänge erlaubt oder verboten wurde.</div>
+                                    </div>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+
+                            <div id="settingsTrustedOrigins">
+                                <div id="text" data-i18n-key="trustedOriginsLabel">Für das Nachladen von Live-Daten gemerkte Entscheidungen:</div>
+                                <div id="trustedOriginsList"></div>
+                                <div id="noTrustedOrigins" data-i18n-key="noTrustedOriginsLabel">Bisher wurde keine Entscheidung gemerkt.</div>
+                                <div id="trustRetention">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="trustRetentionEnabled">
+                                        <span data-i18n-key="trustRetentionTitle">Ungenutzte Entscheidungen vergessen nach</span>
+                                    </label>
+                                    <input type="number" id="trustRetentionMonths" min="1" max="120" step="1" value="6">
+                                    <span data-i18n-key="trustRetentionMonthsLabel">Monaten</span>
+                                    <div class="description" data-i18n-key="trustRetentionDescription">Jede Nutzung verlängert die Frist – nur Entscheidungen, die so lange nicht gebraucht wurden, verfallen und werden beim nächsten Mal erneut erfragt.</div>
                                 </div>
                             </div>
 
@@ -621,6 +654,25 @@
                         <button class="overlayLeftButton"><i class="fas fa-arrow-alt-circle-left"></i></button>
                     </div>
 
+                </div>
+            </div>
+
+            <div id="liveLinkTrustDialog" class="overlay">
+                <div class="overlayText">
+                    <div class="headline">
+                        <div class="error"></div>
+                        <div class="intro" data-i18n-key="liveLinkTrustTitle">Live-Daten laden?</div>
+                    </div>
+                    <div class="data">
+                        <div id="liveLinkTrustDocument"></div>
+                        <div id="liveLinkTrustQuestion" data-i18n-key="liveLinkTrustQuestion">Dieser Transparenz-Live-Link beschreibt einen laufenden Ladevorgang und möchte dessen aktuelle Messwerte von folgenden Servern laden:</div>
+                        <div id="liveLinkTrustOrigins"></div>
+                        <div id="liveLinkTrustHint" data-i18n-key="liveLinkTrustHint">„Immer erlauben“ und „Nicht erlauben“ werden für diese Server gemerkt und können jederzeit geändert werden.</div>
+                    </div>
+                    <div class="spacer"></div>
+                    <div class="footer">
+                        <button class="overlayLeftButton"><i class="fas fa-arrow-alt-circle-left"></i></button>
+                    </div>
                 </div>
             </div>
 

@@ -253,7 +253,196 @@
     "chargyCoreHashLabel": {
         "de": "SHA-512-Hashwert der Chargy Core v{version}:",
         "en": "SHA-512 hash of Chargy Core v{version}:"
-    }
+    },
+
+        "urlDetailsTitle": {
+            "de": "URL-Informationen",
+            "en": "URL information"
+        },
+        "urlLabel": {
+            "de": "URL",
+            "en": "URL"
+        },
+        "urlContextLabel": {
+            "de": "Kontext",
+            "en": "Context"
+        },
+        "urlAddressLabel": {
+            "de": "Adresse",
+            "en": "Address"
+        },
+        "urlMethodLabel": {
+            "de": "Methode",
+            "en": "Method"
+        },
+        "urlAcceptTypeLabel": {
+            "de": "Accept-Type",
+            "en": "Accept type"
+        },
+        "urlActionsLabel": {
+            "de": "Aktionen",
+            "en": "Actions"
+        },
+        "urlServiceTypesLabel": {
+            "de": "Service-Typen",
+            "en": "Service types"
+        },
+        "urlServiceDataLabel": {
+            "de": "Service-Daten",
+            "en": "Service data"
+        },
+        "documentOneSignatureLabel": {
+            "de": "1 Signatur über das Dokument",
+            "en": "1 signature over the document"
+        },
+        "documentSignaturesLabel": {
+            "de": "%p Signaturen über das Dokument",
+            "en": "%p signatures over the document"
+        },
+        "documentSignaturesVerifiedLabel": {
+            "de": "geprüft",
+            "en": "verified"
+        },
+        "documentSignaturesNotVerifiedLabel": {
+            "de": "nicht geprüft",
+            "en": "not verified"
+        },
+        "documentSignaturesPartiallyVerifiedLabel": {
+            "de": "%p geprüft",
+            "en": "%p verified"
+        },
+        "documentNotSignedLabel": {
+            "de": "Dokument nicht signiert",
+            "en": "Document not signed"
+        },
+        "liveLinkValidLabel": {
+            "de": "Gültiger Live-Link",
+            "en": "Valid live link"
+        },
+        "liveLinkWarningsLabel": {
+            "de": "Live-Link mit Warnungen",
+            "en": "Live link with warnings"
+        },
+        "liveLinkInvalidLabel": {
+            "de": "Ungültiger Live-Link!",
+            "en": "Invalid live link!"
+        },
+        "liveLinkTrustTitle": {
+            "de": "Live-Daten laden?",
+            "en": "Load live data?"
+        },
+        "liveLinkTrustQuestion": {
+            "de": "Dieser Transparenz-Live-Link beschreibt einen laufenden Ladevorgang und möchte dessen aktuelle Messwerte von folgenden Servern laden:",
+            "en": "This transparency live link describes a running charging session and wants to load its current meter values from the following servers:"
+        },
+        "liveLinkTrustHint": {
+            "de": "„Immer erlauben“ und „Nicht erlauben“ werden für diese Server gemerkt und können jederzeit geändert werden.",
+            "en": "“Always allow” and “Do not allow” are remembered for these servers and can be changed at any time."
+        },
+        "allowOnceLabel": {
+            "de": "Einmal erlauben",
+            "en": "Allow once"
+        },
+        "allowAlwaysLabel": {
+            "de": "Immer erlauben",
+            "en": "Always allow"
+        },
+        "doNotAllowLabel": {
+            "de": "Nicht erlauben",
+            "en": "Do not allow"
+        },
+        "liveReloadActive": {
+            "de": "Live-Aktualisierung aktiv",
+            "en": "Live reload active"
+        },
+        "liveReloadBlocked": {
+            "de": "Live-Aktualisierung blockiert",
+            "en": "Live reload blocked"
+        },
+        "liveReloadNotActive": {
+            "de": "Live-Aktualisierung nicht aktiv",
+            "en": "Live reload not active"
+        },
+        "liveReloadNotPossible": {
+            "de": "Live-Aktualisierung nicht möglich",
+            "en": "Live reload not possible"
+        },
+        "allowedByThisInstallation": {
+            "de": "von dieser Installation erlaubt",
+            "en": "allowed by this installation"
+        },
+        "thisSessionOnly": {
+            "de": "nur diese Sitzung",
+            "en": "this session only"
+        },
+        "trustedSince": {
+            "de": "vertraut seit",
+            "en": "trusted since"
+        },
+        "changeLabel": {
+            "de": "ändern",
+            "en": "change"
+        },
+        "allowLabel": {
+            "de": "erlauben",
+            "en": "allow"
+        },
+        "trustedOriginsLabel": {
+            "de": "Für das Nachladen von Live-Daten gemerkte Entscheidungen:",
+            "en": "Decisions remembered for reloading live data:"
+        },
+        "settingsLabel": {
+            "de": "Einstellungen",
+            "en": "Settings"
+        },
+        "settingsTrustedOriginsTitle": {
+            "de": "Server für Live-Daten",
+            "en": "Servers for live data"
+        },
+        "settingsTrustedOriginsDescription": {
+            "de": "Welchen Servern das Nachladen laufender Ladevorgänge erlaubt oder verboten wurde.",
+            "en": "Which servers were allowed or forbidden to reload running charging sessions."
+        },
+        "noTrustedOriginsLabel": {
+            "de": "Bisher wurde keine Entscheidung gemerkt.",
+            "en": "No decision has been remembered yet."
+        },
+        "unknownOperatorLabel": {
+            "de": "Unbekannter Betreiber",
+            "en": "Unknown operator"
+        },
+        "expiresLabel": {
+            "de": "läuft ab am",
+            "en": "expires on"
+        },
+        "trustRetentionTitle": {
+            "de": "Ungenutzte Entscheidungen vergessen nach",
+            "en": "Forget unused decisions after"
+        },
+        "trustRetentionMonthsLabel": {
+            "de": "Monaten",
+            "en": "months"
+        },
+        "trustRetentionDescription": {
+            "de": "Jede Nutzung verlängert die Frist — nur Entscheidungen, die so lange nicht gebraucht wurden, verfallen und werden beim nächsten Mal erneut erfragt. Das räumt auch Einträge für Server auf, die ein Betreiber längst abgeschaltet hat.",
+            "en": "Every use extends the deadline — only decisions unused for this long expire and are simply asked again next time. This also cleans up entries for servers an operator has long since retired."
+        },
+        "sinceLabel": {
+            "de": "seit",
+            "en": "since"
+        },
+        "deleteLabel": {
+            "de": "löschen",
+            "en": "delete"
+        },
+        "allowedLabel": {
+            "de": "erlaubt",
+            "en": "allowed"
+        },
+        "blockedLabel": {
+            "de": "blockiert",
+            "en": "blocked"
+        }
 
 
 

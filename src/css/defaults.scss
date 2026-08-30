@@ -271,7 +271,8 @@
 
                     }
 
-                    #aboutScreen {
+                    #aboutScreen,
+                    #settingsScreen {
 
                         display:        none;
                         width:          100%;
@@ -429,8 +430,196 @@
 
                     }
 
-                    #aboutScreen::-webkit-scrollbar {
+                    #aboutScreen::-webkit-scrollbar,
+                    #settingsScreen::-webkit-scrollbar {
                         display:            none;
+                    }
+
+                    #settingsScreen {
+
+                        // Unlike the web app the screens sit flush with their
+                        // column here, so the left margin lives on this screen
+                        // alone instead of on the shared base rule above.
+                        margin-left:        10px;
+
+                        h1 {
+                            font-size:          130%;
+                            margin:             5px 0 18px 0;
+                        }
+
+                        .settingsEntry {
+
+                            display:            flex;
+                            align-items:        center;
+                            gap:                14px;
+                            width:              95%;
+                            padding:            12px 14px;
+                            border:             1px solid #d4dde4;
+                            border-radius:      8px;
+                            background:         #ffffff;
+                            text-align:         left;
+                            cursor:             pointer;
+
+                            > i:first-child {
+                                font-size:          130%;
+                                color:              #517692;
+                            }
+
+                            .text {
+
+                                flex-grow:          1;
+
+                                .title {
+                                    font-weight:        bold;
+                                }
+
+                                .description {
+                                    font-size:          85%;
+                                    color:              #6e8195;
+                                    margin-top:         2px;
+                                }
+
+                            }
+
+                            .fa-chevron-right {
+                                color:              #9fb2c0;
+                            }
+
+                        }
+
+                        .settingsEntry:hover {
+                            background:         #eaf1f6;
+                        }
+
+                        #settingsTrustedOrigins {
+
+                            display:            none;
+
+                            #text {
+                                margin-bottom:      10px;
+                            }
+
+                            #trustedOriginsList {
+
+                                .trustedOrigin {
+
+                                    display:            flex;
+                                    align-items:        center;
+                                    width:              95%;
+                                    padding:            8px 14px;
+                                    border-radius:      8px;
+
+                                    .infos {
+
+                                        flex-grow:          1;
+
+                                        // Holds the operator label, not a URL:
+                                        // the origins themselves are stored
+                                        // hashed and cannot be shown.
+                                        .origin {
+                                            font-weight:        bold;
+                                        }
+
+                                        .details {
+
+                                            display:            flex;
+                                            gap:                16px;
+                                            font-size:          85%;
+                                            color:              #6e8195;
+                                            margin-top:         2px;
+
+                                            .fa-check-circle {
+                                                color:              #298143;
+                                            }
+
+                                            .fa-times-circle {
+                                                color:              #ab1e1e;
+                                            }
+
+                                        }
+
+                                    }
+
+                                    button.delete {
+
+                                        width:              28px;
+                                        height:             28px;
+                                        border:             none;
+                                        border-radius:      50%;
+                                        background:         #ab1e1e;
+                                        color:              #ffffff;
+                                        cursor:             pointer;
+                                        opacity:            0;
+                                        transition:         opacity 0.15s ease-in-out;
+
+                                    }
+
+                                    button.delete:hover {
+                                        background:         #8a1717;
+                                    }
+
+                                }
+
+                                .trustedOrigin:hover {
+
+                                    background:         #eaf1f6;
+
+                                    button.delete {
+                                        opacity:            1;
+                                    }
+
+                                }
+
+                            }
+
+                            #noTrustedOrigins {
+                                color:              #6e8195;
+                                font-style:         italic;
+                            }
+
+                            #trustRetention {
+
+                                margin-top:         22px;
+                                padding-top:        14px;
+                                border-top:         1px solid #d5dee6;
+
+                                label.toggle {
+
+                                    cursor:             pointer;
+
+                                    input[type="checkbox"] {
+                                        margin-right:       6px;
+                                        vertical-align:     -1px;
+                                        cursor:             pointer;
+                                    }
+
+                                }
+
+                                input[type="number"] {
+                                    width:              64px;
+                                    margin:             0 6px;
+                                    padding:            3px 6px;
+                                    border:             1px solid #517692;
+                                    border-radius:      4px;
+                                    font-size:          100%;
+                                }
+
+                                input[type="number"]:disabled {
+                                    border-color:       #d5dee6;
+                                    color:              #9aa8b5;
+                                    background:         #f5f5f5;
+                                }
+
+                                .description {
+                                    margin-top:         8px;
+                                    font-size:          90%;
+                                    color:              #6e8195;
+                                }
+
+                            }
+
+                        }
+
                     }
 
 
@@ -843,7 +1032,7 @@
 
                                     }
 
-                                    .imageInfos, .signatureInfos {
+                                    .contractInfos, .transportInfos, .trustInfos, .imageInfos, .signatureInfos {
 
                                         display:            table-row;
 
@@ -929,6 +1118,55 @@
                                 a {
                                     color:              #1f5f93;
                                     overflow-wrap:      anywhere;
+                                }
+
+                                .signatureInfos {
+
+                                    // What the document's own signatures came
+                                    // to: verified, partly verified, not
+                                    // verified, or never signed at all. The
+                                    // colour follows the same vocabulary as the
+                                    // rest of the application - a plain check
+                                    // when everything is in order, amber when
+                                    // something cannot be judged, red when a
+                                    // signature demonstrably does not match.
+                                    .signatureStatus {
+
+                                        &.warning {
+                                            color:              #7a5a00;
+                                        }
+
+                                        &.invalid {
+                                            color:              #ab1e1e;
+                                        }
+
+                                    }
+
+                                    .signatureWarning {
+                                        font-size:          90%;
+                                        color:              #6e8195;
+                                        padding-top:        2px;
+                                    }
+
+                                }
+
+                                .trustInfos {
+
+                                    .status {
+                                        display:            inline;
+                                    }
+
+                                    button.trustChange {
+                                        border:             none;
+                                        background:         none;
+                                        padding:            0 0 0 8px;
+                                        color:              #517692;
+                                        font-size:          100%;
+                                        font-weight:        bold;
+                                        cursor:             pointer;
+                                        text-decoration:    underline;
+                                    }
+
                                 }
 
                                 .imageInfos a, .liveLinkTransport a {
@@ -2725,6 +2963,123 @@
                             color:              #999999;
                         }
 
+                    }
+
+                }
+
+            }
+
+        }
+
+        #liveLinkTrustDialog {
+
+            display:    none;
+
+            .overlayText {
+
+                // Unlike the other overlays, this one carries a short, known
+                // amount of content, so it is sized to fit it and centred
+                // rather than filling most of the viewport. It only scrolls
+                // when a document lists so many origins that it would otherwise
+                // outgrow the screen.
+                top:                    50%;
+                transform:              translateY(-50%);
+                width:                  fit-content;
+                min-width:              min(360px, calc(100vw - 60px));
+                max-width:              min(560px, calc(100vw - 60px));
+                height:                 auto;
+                max-height:             calc(100vh - 80px);
+                overflow-y:             auto;
+
+                .data {
+
+                    margin-bottom:      12px;
+
+                    #liveLinkTrustDocument {
+                        font-weight:        bold;
+                        margin-bottom:      12px;
+                    }
+
+                    #liveLinkTrustOrigins {
+
+                        margin:             14px 0;
+
+                        .trustOrigin {
+
+                            padding:            10px 0;
+                            border-top:         1px solid #e2e8ee;
+
+                            .origin {
+                                font-family:        monospace;
+                                font-size:          150%;
+                                margin-bottom:      16px;
+                                word-break:         break-all;
+                                margin-top:         10px;
+                            }
+
+                            .trustOriginButtons {
+
+                                display:            flex;
+                                gap:                8px;
+                                flex-wrap:          wrap;
+
+                                button.trustChoice {
+                                    padding:            5px 12px;
+                                    border:             1px solid #517692;
+                                    border-radius:      6px;
+                                    background:         #ffffff;
+                                    color:              #2a4356;
+                                    font-size:          95%;
+                                    cursor:             pointer;
+                                }
+
+                                button.trustChoice:hover {
+                                    background:         #eaf1f6;
+                                }
+
+                                // The chosen decision stays highlighted after
+                                // the click, so a multi-origin dialog shows at a
+                                // glance what is still open.
+                                button.trustChoice.always.chosen {
+                                    background:         #517692;
+                                    color:              #ffffff;
+                                    border-color:       #517692;
+                                }
+
+                                button.trustChoice.once.chosen {
+                                    background:         #eaf1f6;
+                                    border-color:       #517692;
+                                    font-weight:        bold;
+                                }
+
+                                button.trustChoice.deny.chosen {
+                                    background:         #ab1e1e;
+                                    color:              #ffffff;
+                                    border-color:       #ab1e1e;
+                                }
+
+                            }
+
+                        }
+
+                        .trustOrigin:first-child {
+                            border-top:         none;
+                        }
+
+                    }
+
+                    #liveLinkTrustHint {
+                        font-size:          80%;
+                        color:              #6e8195;
+                        margin-top:         14px;
+                    }
+
+                }
+
+                .footer {
+
+                    .overlayRightButton {
+                        visibility:         hidden;
                     }
 
                 }

@@ -51,6 +51,39 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../css/chargy.scss';
 
 import { calculateBETTariffTotal }     from './betTariffCosts';
+import {
+    findExternalURLRule,
+    parseExternalURLConfig,
+    parseExternalURLConfigMode,
+    type ExternalURLRule
+}                                      from './deepLinks';
+import {
+    defaultTrustedPayloadBytes,
+    emptyTrustedOriginsStore,
+    findTrustedOrigin,
+    isLoopbackHost,
+    maximumRefreshSeconds,
+    minimumRefreshSeconds,
+    parseTrustedOriginsStore,
+    pollTargetProblem,
+    pruneExpiredTrustedOrigins,
+    removeTrustedOrigin,
+    sanitizeRetentionMonths,
+    sanitizeTrustLabel,
+    serializeTrustedOriginsStore,
+    touchTrustedOrigin,
+    trustLabelForOrigin,
+    trustedOriginExpiry,
+    upsertTrustedOrigin,
+    type ITrustedOriginsStore
+}                                      from './liveLinkTrust';
+import {
+    documentSignatureState,
+    measurementValueState,
+    meterValueSessionState,
+    worstLiveLinkState
+}                                      from './liveLinkStatus';
+import type { LiveLinkOverallState }   from './liveLinkStatus';
 
 declare const __CHARGY_CORE_NPM_INTEGRITY__: string;
 
@@ -60,6 +93,22 @@ type DetectionOptions = {
     prepareUI?: boolean;
     onError?:   (result: chargyInterfaces.ISessionCryptoResult) => void;
 };
+
+type LiveLinkOriginChoice = "once" | "always" | "deny";
+
+type LiveLinkPollTarget = {
+    url:              URL;
+    maxPayloadBytes:  number;
+    prefix?:          string;
+};
+
+type LiveLinkTrustState =
+    | { kind: "installation" }
+    | { kind: "session"      }
+    | { kind: "always", since?: string|undefined }
+    | { kind: "denied"       }
+    | { kind: "ask"          }
+    | { kind: "unavailable"  };
 
 const supportedLanguages = [ "de", "en" ] as const;
 
@@ -479,6 +528,8 @@ interface ChargyElectronAPI {
     readClipboardImage():                                 Promise<ArrayBuffer | null>;
     calculateApplicationHash():                           Promise<string>;
     openExternal(url: string):                            Promise<boolean>;
+    readExternalURLConfig():                             Promise<string>;
+    fetchLiveLink(url: string, maxPayloadBytes: number, prefix?: string): Promise<{ ok: boolean; status: number; data?: ArrayBuffer; error?: string }>;
     completeHttpRequest(requestId: string, result: any):  void;
     setVerificationResult(result: any):                   boolean;
 
@@ -552,6 +603,7 @@ export class ChargyApp {
     private readonly languageMenuDiv:                    HTMLDivElement;
     private readonly languageFlagImage:                  HTMLImageElement;
     private readonly updateAvailableButton:              HTMLButtonElement;
+    private readonly settingsButton:                     HTMLButtonElement;
     private readonly aboutButton:                        HTMLButtonElement;
     private readonly fullScreenButton:                   HTMLButtonElement;
     private readonly appQuitButton:                      HTMLButtonElement;
@@ -560,6 +612,11 @@ export class ChargyApp {
     private readonly inputDiv:                           HTMLDivElement;
     private readonly inputInfosDiv:                      HTMLDivElement;
     private readonly aboutScreenDiv:                     HTMLDivElement;
+    private readonly settingsScreenDiv:                  HTMLDivElement;
+    private readonly settingsMenuDiv:                    HTMLDivElement;
+    private readonly settingsTrustedOriginsDiv:          HTMLDivElement;
+    private readonly settingsTrustedOriginsEntry:        HTMLButtonElement;
+    private readonly noTrustedOriginsDiv:                HTMLDivElement;
     private readonly applicationHashDiv:                 HTMLDivElement;
     private readonly applicationHashValueDiv:            HTMLDivElement;
     private readonly chargyCoreHashDiv:                  HTMLDivElement;
@@ -605,6 +662,13 @@ export class ChargyApp {
     private readonly sendIssueButton:                    HTMLButtonElement;
 
     private readonly pkiDetailsDiv:                      HTMLDivElement;
+    private readonly liveLinkTrustDialogDiv:             HTMLDivElement;
+    private readonly liveLinkTrustDocumentDiv:           HTMLDivElement;
+    private readonly liveLinkTrustOriginsDiv:            HTMLDivElement;
+    private readonly liveLinkTrustLeftButton:            HTMLButtonElement;
+    private readonly trustedOriginsListDiv:              HTMLDivElement;
+    private readonly trustRetentionEnabledInput:         HTMLInputElement;
+    private readonly trustRetentionMonthsInput:          HTMLInputElement;
     private readonly pkiDetailsLeftButton:               HTMLButtonElement;
 
     private readonly qrCodeScannerDiv:                   HTMLDivElement;
@@ -627,9 +691,18 @@ export class ChargyApp {
 
     private currentChargeTransparencyRecord:    chargeTransparencyRecord.  IChargeTransparencyRecord   | null = null;
     private currentChargeTransparencyLiveLink:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink | null = null;
+    private currentLiveLinkMeterValues:         chargeTransparencyRecord.  IChargeTransparencyRecord   | null = null;
     private currentPublicKeyLookup:             publicKeyInfo.             IPublicKeyLookup            | null = null;
     private currentSimpleURL:                   simpleURL.                 IURL                        | null = null;
     private currentGlobalError:                 chargyInterfaces.          ISessionCryptoResult        | null = null;
+
+    private liveLinkRefreshTimer:               ReturnType<typeof setTimeout>                          | null   = null;
+    private liveLinkRefreshGeneration:          number                                                          = 0;
+    private readonly liveLinkSessionAllowedOrigins: Set<string>                                                 = new Set();
+    private liveLinkTrustResolve:               ((decisions: Map<string, LiveLinkOriginChoice>) => void) | null = null;
+    private liveLinkTrustDecisions:             Map<string, LiveLinkOriginChoice>                      | null   = null;
+    private liveLinkTrustRowDiv:                HTMLDivElement                                         | null   = null;
+    private liveLinkTrustContentDiv:            HTMLDivElement                                         | null   = null;
 
     //#endregion
 
@@ -684,6 +757,14 @@ export class ChargyApp {
         this.feedbackHotlineAnchor                    = this.feedbackMethodsDiv.querySelector("#hotline")                   as HTMLAnchorElement;
 
         this.aboutScreenDiv                           = document.getElementById('aboutScreen')                              as HTMLDivElement;
+        this.settingsScreenDiv                        = document.getElementById('settingsScreen')                           as HTMLDivElement;
+        this.settingsMenuDiv                          = this.settingsScreenDiv.querySelector("#settingsMenu")               as HTMLDivElement;
+        this.settingsTrustedOriginsDiv                = this.settingsScreenDiv.querySelector("#settingsTrustedOrigins")     as HTMLDivElement;
+        this.settingsTrustedOriginsEntry              = this.settingsScreenDiv.querySelector("#settingsTrustedOriginsEntry") as HTMLButtonElement;
+        this.trustedOriginsListDiv                    = this.settingsScreenDiv.querySelector("#trustedOriginsList")         as HTMLDivElement;
+        this.noTrustedOriginsDiv                      = this.settingsScreenDiv.querySelector("#noTrustedOrigins")           as HTMLDivElement;
+        this.trustRetentionEnabledInput               = this.settingsScreenDiv.querySelector("#trustRetentionEnabled")      as HTMLInputElement;
+        this.trustRetentionMonthsInput                = this.settingsScreenDiv.querySelector("#trustRetentionMonths")       as HTMLInputElement;
         this.softwareInfosDiv                         = this.aboutScreenDiv.    querySelector("#softwareInfos")             as HTMLDivElement;
         this.openSourceLibsDiv                        = this.aboutScreenDiv.    querySelector("#openSourceLibs")            as HTMLDivElement;
         this.chargyCoreHashDiv                        = document.getElementById('chargyCoreHash')                          as HTMLDivElement;
@@ -694,6 +775,7 @@ export class ChargyApp {
         this.languageMenuDiv                          = document.getElementById('languageMenu')                             as HTMLDivElement;
         this.languageFlagImage                        = document.getElementById('languageFlag')                             as HTMLImageElement;
         this.updateAvailableButton                    = document.getElementById('updateAvailableButton')                    as HTMLButtonElement;
+        this.settingsButton                           = document.getElementById('settingsButton')                           as HTMLButtonElement;
         this.aboutButton                              = document.getElementById('aboutButton')                              as HTMLButtonElement;
         this.fullScreenButton                         = document.getElementById('fullScreenButton')                         as HTMLButtonElement;
         this.appQuitButton                            = document.getElementById('appQuitButton')                            as HTMLButtonElement;
@@ -728,6 +810,11 @@ export class ChargyApp {
                                                         }
 
         this.pkiDetailsDiv                            = document.getElementById('pkiDetails')                               as HTMLDivElement;
+        this.liveLinkTrustDialogDiv                   = document.getElementById('liveLinkTrustDialog')                     as HTMLDivElement;
+        this.liveLinkTrustDocumentDiv                 = this.liveLinkTrustDialogDiv.querySelector("#liveLinkTrustDocument") as HTMLDivElement;
+        this.liveLinkTrustOriginsDiv                  = this.liveLinkTrustDialogDiv.querySelector("#liveLinkTrustOrigins")  as HTMLDivElement;
+        this.liveLinkTrustLeftButton                  = this.liveLinkTrustDialogDiv.querySelector(".overlayLeftButton")     as HTMLButtonElement;
+        this.liveLinkTrustLeftButton.onclick          = (): void => { this.resolveLiveLinkTrust(); };
         this.pkiDetailsLeftButton                     = this.pkiDetailsDiv.querySelector(".overlayLeftButton")              as HTMLButtonElement;
         this.pkiDetailsLeftButton.onclick             = (): void => {
                                                             this.pkiDetailsDiv.style.display = 'none';
@@ -1288,11 +1375,66 @@ export class ChargyApp {
             this.inputDiv.style.flexDirection            = "";
             this.inputInfosDiv.style.display             = "none";
             this.aboutScreenDiv.style.display            = "none";
+            this.settingsScreenDiv.style.display         = "none";
             this.chargingSessionScreenDiv.style.display  = "none";
             this.invalidDataSetsScreenDiv.style.display  = "none";
             this.inputButtonsDiv.style.display           = "block";
             this.exportButtonDiv.style.display           = "none";
         }
+
+        //#endregion
+
+        //#region Handle the 'Settings'-button
+
+        this.settingsButton.onclick = (): void => {
+
+            this.stopLiveLinkRefresh();
+            this.showSettingsMenu();
+
+            this.updateAvailableScreen.style.display     = "none";
+            this.inputDiv.style.flexDirection            = "";
+            this.inputInfosDiv.style.display             = "none";
+            this.aboutScreenDiv.style.display            = "none";
+            this.settingsScreenDiv.style.display         = "block";
+            this.chargingSessionScreenDiv.style.display  = "none";
+            this.invalidDataSetsScreenDiv.style.display  = "none";
+            this.inputButtonsDiv.style.display           = "block";
+            this.exportButtonDiv.style.display           = "none";
+
+        };
+
+        this.settingsTrustedOriginsEntry.onclick = (): void => {
+            this.refreshTrustedOriginsList();
+            this.settingsMenuDiv.style.display           = "none";
+            this.settingsTrustedOriginsDiv.style.display = "block";
+        };
+
+        this.trustRetentionEnabledInput.onchange = (): void => {
+
+            const store = this.loadTrustedOrigins();
+
+            store.retentionMonths = this.trustRetentionEnabledInput.checked
+                                        ? sanitizeRetentionMonths(this.trustRetentionMonthsInput.valueAsNumber)
+                                        : null;
+
+            this.saveTrustedOrigins(store);
+            this.refreshTrustedOriginsList();
+
+        };
+
+        this.trustRetentionMonthsInput.onchange = (): void => {
+
+            const store = this.loadTrustedOrigins();
+
+            if (store.retentionMonths !== null)
+            {
+                store.retentionMonths = sanitizeRetentionMonths(this.trustRetentionMonthsInput.valueAsNumber);
+                this.saveTrustedOrigins(store);
+            }
+
+            this.refreshTrustedOriginsList();
+
+        };
 
         //#endregion
 
@@ -1304,6 +1446,7 @@ export class ChargyApp {
             this.inputDiv.style.flexDirection            = "";
             this.inputInfosDiv.style.display             = "none";
             this.aboutScreenDiv.style.display            = "block";
+            this.settingsScreenDiv.style.display         = "none";
             this.chargingSessionScreenDiv.style.display  = "none";
             this.invalidDataSetsScreenDiv.style.display  = "none";
             this.inputButtonsDiv.style.display           = "block";
@@ -1405,10 +1548,18 @@ export class ChargyApp {
 
         this.backButton.onclick  = (): void => {
 
+            if (this.settingsScreenDiv.style.display         !== "none" &&
+                this.settingsTrustedOriginsDiv.style.display !== "none")
+            {
+                this.showSettingsMenu();
+                return;
+            }
+
             this.updateAvailableScreen.style.display     = "none";
             this.inputDiv.style.flexDirection            = "";
             this.inputInfosDiv.style.display             = 'flex';
             this.aboutScreenDiv.style.display            = "none";
+            this.settingsScreenDiv.style.display         = "none";
             this.chargingSessionScreenDiv.style.display  = "none";
             this.invalidDataSetsScreenDiv.style.display  = "none";
             this.inputButtonsDiv.style.display           = "none";
@@ -1417,9 +1568,11 @@ export class ChargyApp {
             this.clearChargingSessionOutput(true);
             this.currentChargeTransparencyRecord         = null;
             this.currentChargeTransparencyLiveLink       = null;
+            this.currentLiveLinkMeterValues              = null;
             this.currentPublicKeyLookup                  = null;
             this.currentSimpleURL                        = null;
             this.currentGlobalError                      = null;
+            this.stopLiveLinkRefresh();
 
         }
 
@@ -1830,7 +1983,10 @@ export class ChargyApp {
         if (this.currentChargeTransparencyLiveLink != null &&
             this.chargingSessionScreenDiv.style.display !== "none")
         {
-            this.showChargeTransparencyLiveLink(this.currentChargeTransparencyLiveLink);
+            this.showChargeTransparencyLiveLink(
+                this.currentChargeTransparencyLiveLink,
+                this.currentLiveLinkMeterValues
+            );
             return;
         }
 
@@ -1892,6 +2048,11 @@ export class ChargyApp {
 
     private clearRenderedChargeData(resetMapView: boolean = false): void
     {
+
+        this.stopLiveLinkRefresh();
+        this.closeLiveLinkTrustDialog();
+        this.liveLinkTrustRowDiv     = null;
+        this.liveLinkTrustContentDiv = null;
 
         this.clearChargingSessionCharts();
         this.detailedInfosDiv.innerHTML = "";
@@ -2009,6 +2170,7 @@ export class ChargyApp {
         this.currentGlobalError                      = result;
         this.currentChargeTransparencyRecord         = null;
         this.currentChargeTransparencyLiveLink       = null;
+        this.currentLiveLinkMeterValues              = null;
         this.currentPublicKeyLookup                  = null;
         this.currentSimpleURL                        = null;
         this.clearChargingSessionOutput(true);
@@ -2797,6 +2959,22 @@ export class ChargyApp {
 
     //#region detectAndConvertContentFormat (FileInfos)
 
+    private parseExternalURLConfig(configText: string): ExternalURLRule[]
+    {
+        return parseExternalURLConfig(configText);
+    }
+
+    private async loadExternalURLConfigText(): Promise<string>
+    {
+        return this.electron.readExternalURLConfig();
+    }
+
+    private findExternalURLRule(verifyURL: URL,
+                                rules:     ExternalURLRule[]): ExternalURLRule|null
+    {
+        return findExternalURLRule(verifyURL, rules);
+    }
+
     private async detectAndConvertContentFormat(FileInfos:  Array<chargyInterfaces.IFileInfo>|chargyInterfaces.IFileInfo|string,
                                                 options?:   DetectionOptions): Promise<boolean> {
 
@@ -2870,7 +3048,10 @@ export class ChargyApp {
                 this.errorTextDiv.style.display  = 'none';
             }
 
-            this.showChargeTransparencyLiveLink(result);
+            this.showChargeTransparencyLiveLink(
+                result,
+                await this.chargy.TryToParseLiveLinkMeterValues(result) ?? null
+            );
 
             return true;
 
@@ -2927,6 +3108,7 @@ export class ChargyApp {
         this.currentPublicKeyLookup                 = { publicKeys };
         this.currentChargeTransparencyRecord        = null;
         this.currentChargeTransparencyLiveLink      = null;
+        this.currentLiveLinkMeterValues             = null;
         this.currentSimpleURL                       = null;
         this.currentGlobalError                     = null;
      //   this.clearRenderedChargeData();
@@ -3080,6 +3262,7 @@ export class ChargyApp {
         this.currentSimpleURL                       = URLInfo;
         this.currentChargeTransparencyRecord        = null;
         this.currentChargeTransparencyLiveLink      = null;
+        this.currentLiveLinkMeterValues             = null;
         this.currentPublicKeyLookup                 = null;
         this.currentGlobalError                     = null;
         this.clearRenderedChargeData();
@@ -3133,12 +3316,17 @@ export class ChargyApp {
 
     //#endregion
 
-    //#region showChargeTransparencyLiveLink(LiveLink)
+    //#region showChargeTransparencyLiveLink(LiveLink, MeterValues)
 
-    private showChargeTransparencyLiveLink(LiveLink: chargeTransparencyLiveLink.IChargeTransparencyLiveLink) : void
+    private showChargeTransparencyLiveLink(LiveLink:     chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
+                                           MeterValues:  chargeTransparencyRecord.IChargeTransparencyRecord|null = null) : void
     {
 
+        if (this.currentChargeTransparencyLiveLink !== LiveLink)
+            this.measurementValuesViewMode           = "measurements";
+
         this.currentChargeTransparencyLiveLink       = LiveLink;
+        this.currentLiveLinkMeterValues              = MeterValues;
         this.currentChargeTransparencyRecord         = null;
         this.currentPublicKeyLookup                  = null;
         this.currentSimpleURL                        = null;
@@ -3147,7 +3335,7 @@ export class ChargyApp {
 
         this.inputDiv.style.flexDirection            = "column";
         this.aboutScreenDiv.style.display            = "none";
-        //this.imprintScreenDiv.style.display          = "none";
+        this.settingsScreenDiv.style.display         = "none";
         this.chargingSessionScreenDiv.style.display  = "flex";
         this.chargingSessionScreenDiv.innerText      = "";
         this.invalidDataSetsScreenDiv.style.display  = "none";
@@ -3159,12 +3347,12 @@ export class ChargyApp {
         descriptionDiv.id          = "description";
         descriptionDiv.innerText   = this.chargy.GetLocalizedText(LiveLink.description) ?? "Charge Transparency Live-Link";
 
-        if (typeof(LiveLink.timestamp) === "string" && LiveLink.timestamp !== "")
+        if (typeof(LiveLink.created) === "string" && LiveLink.created !== "")
         {
             const timestampDiv     = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
             timestampDiv.id        = "begin";
             timestampDiv.className = "dates";
-            timestampDiv.innerText = this.chargy.GetLocalizedMessage("Timestamp") + " " + chargyLib.time2human(LiveLink.timestamp);
+            timestampDiv.innerText = this.chargy.GetLocalizedMessage("Timestamp") + " " + chargyLib.time2human(LiveLink.created);
         }
 
         const liveLinksDiv         = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
@@ -3173,48 +3361,148 @@ export class ChargyApp {
         const liveLinkDiv          = chargyLib.CreateDiv(liveLinksDiv, "chargingSession");
         liveLinkDiv.classList.add("chargeTransparencyLiveLink");
 
+        //#region What the live link knows about its charging session
+
+        // A live link describes exactly one charging session, so it carries
+        // single objects where a charge transparency record carries lists.
+        // None of these properties is part of IChargeTransparencyLiveLink yet,
+        // hence the untyped reads.
+        const chargingStation      = chargyLib.asJSONObject(LiveLink["chargingStation"]);
+        const evse                 = chargyLib.asJSONObject(chargingStation?.["EVSE"]);
+        const connector            = chargyLib.asJSONObject(evse?.["connector"]);
+        const contract             = chargyLib.asJSONObject(LiveLink["contract"]);
+        const geoLocation          = chargyLib.asJSONObject(chargingStation?.["geoLocation"]);
+
+        const chargingSession      = MeterValues?.chargingSessions?.[0];
+        const measurement          = chargingSession?.measurements?.[0];
+        const measurementValues    = measurement != null
+                                         ? this.distinctValuesInTimeOrder(measurement.values)
+                                         : [];
+        const firstValue           = measurementValues[0];
+        const lastValue            = measurementValues[measurementValues.length - 1];
+
+        //#endregion
+
+        // When the charging session began. Where a finished session also shows
+        // when it ended, a live link cannot: it has not ended yet.
+        if (chargingSession?.begin != null)
+        {
+            const dateDiv          = liveLinkDiv.appendChild(document.createElement('div'));
+            dateDiv.className      = "date";
+            dateDiv.innerHTML      = chargyLib.time2human(chargingSession.begin);
+        }
+
         const tableDiv             = liveLinkDiv.appendChild(document.createElement('div'));
         tableDiv.className         = "table";
 
-        if (LiveLink.geoLocation)
-            this.appendLiveLinkInfoRow(
-                tableDiv,
-                "locationInfos",
-                '<i class="fas fa-map-marker-alt"></i>',
-                "Position " + [
-                    LiveLink.geoLocation.lat,
-                    LiveLink.geoLocation.lng
-                ].join(", ")
-            );
-
-        if (LiveLink.connector)
-            this.appendLiveLinkInfoRow(
-                tableDiv,
-                "chargingStationInfos",
-                '<i class="fas fa-plug"></i>',
-                [
-                    LiveLink.connector.standard,
-                    LiveLink.connector.format,
-                    LiveLink.connector.powerType,
-                    LiveLink.connector.maxPower
-                ].filter(value => value != null && value !== "").join(", ")
-            );
-
-        if (LiveLink.transports && LiveLink.transports.length > 0)
+        // How long it has been charging and how much energy the meter has seen
+        // so far: the same two lines a finished charging session shows here.
+        if (measurement != null && firstValue != null && lastValue != null)
         {
-            const transportsDiv = document.createElement('div');
-            transportsDiv.className = "liveLinkTransports";
 
-            for (const transport of LiveLink.transports)
-                transportsDiv.appendChild(this.createLiveLinkTransportDiv(transport));
+            const elapsed = chargyLib.parseUTC(lastValue. timestamp).valueOf() -
+                            chargyLib.parseUTC(firstValue.timestamp).valueOf();
+
+            const energy  = this.getMeasurementValueInKWh(measurement, lastValue).
+                                 minus(this.getMeasurementValueInKWh(measurement, firstValue));
 
             this.appendLiveLinkInfoRow(
                 tableDiv,
                 "productInfos",
+                '<i class="fas fa-chart-pie"></i>',
+                [
+                    elapsed > 0
+                        ? "Ladedauer " + this.formatChargingDuration(elapsed)
+                        : "",
+                    chargyLib.measurementName2human(measurement.name) + " " +
+                        parseFloat(energy.toFixed(10)).toString() + " kWh"
+                ].filter(line => line !== "").join("\n")
+            );
+
+        }
+
+        const contractId           = chargyLib.asString(contract?.["@id"]);
+
+        if (contractId != null && contractId !== "")
+            this.appendLiveLinkInfoRow(
+                tableDiv,
+                "contractInfos",
+                '<i class="fas fa-id-card"></i>',
+                contractId
+            );
+
+        const evseId               = chargyLib.asString(evse?.["@id"]);
+        const connectorText        = connector == null
+                                         ? ""
+                                         : [
+                                               chargyLib.asString(connector["standard"]),
+                                               chargyLib.asString(connector["format"]),
+                                               chargyLib.asString(connector["powerType"]),
+                                               chargyLib.asString(connector["maxPower"])
+                                           ].filter(value => value != null && value !== "").join(", ");
+
+        if ((evseId != null && evseId !== "") || connectorText !== "")
+            this.appendLiveLinkInfoRow(
+                tableDiv,
+                "chargingStationInfos",
+                '<i class="fas fa-charging-station"></i>',
+                [ evseId ?? "", connectorText ].filter(line => line !== "").join("\n")
+            );
+
+        const latitude             = chargyLib.asNumber(geoLocation?.["lat"]);
+        const longitude            = chargyLib.asNumber(geoLocation?.["lng"]);
+
+        if (latitude != null && longitude != null)
+            this.appendLiveLinkInfoRow(
+                tableDiv,
+                "locationInfos",
+                '<i class="fas fa-map-marker-alt"></i>',
+                "Position " + latitude.toString() + ", " + longitude.toString()
+            );
+
+        const transports = this.liveLinkTransports(LiveLink);
+
+        if (transports.length > 0)
+        {
+            const transportsDiv = document.createElement('div');
+            transportsDiv.className = "liveLinkTransports";
+
+            for (const transport of transports)
+                transportsDiv.appendChild(this.createLiveLinkTransportDiv(transport));
+
+            this.appendLiveLinkInfoRow(
+                tableDiv,
+                "transportInfos",
                 '<i class="fas fa-satellite-dish"></i>',
                 transportsDiv
             );
         }
+
+        //#region Whether live reloading is active, blocked or waiting for consent
+
+        // Only when there is something to reload: an https transport stating a
+        // refresh period. Filled in asynchronously, once conf, store or the
+        // user have spoken.
+        if (transports.some(transport => transport.type === "https"          &&
+                                         typeof transport.refresh === "number" &&
+                                         transport.refresh > 0))
+        {
+
+            const trustContentDiv         = document.createElement('div');
+
+            this.liveLinkTrustContentDiv  = trustContentDiv;
+            this.liveLinkTrustRowDiv      = this.appendLiveLinkInfoRow(
+                                                tableDiv,
+                                                "trustInfos",
+                                                '<i class="fas fa-shield-alt"></i>',
+                                                trustContentDiv
+                                            );
+
+            this.liveLinkTrustRowDiv.style.display = "none";
+
+        }
+
+        //#endregion
 
         if (LiveLink.imageURLs && LiveLink.imageURLs.length > 0)
         {
@@ -3231,22 +3519,983 @@ export class ChargyApp {
             );
         }
 
-        if (LiveLink.signatures)
-            this.appendLiveLinkInfoRow(
-                tableDiv,
-                "signatureInfos",
-                '<i class="fas fa-file-signature"></i>',
-                LiveLink.signatures.length === 1
-                    ? "1 Signatur"
-                    : LiveLink.signatures.length.toString() + " Signaturen"
-            );
+        // The operator's signatures over the document itself, and whether they
+        // checked out. This belongs directly under the transports and the trust
+        // row, because it is what says how much those URLs are worth: they are
+        // only the operator's if the signature covering them verifies.
+        this.appendLiveLinkSignatureRow(tableDiv, LiveLink);
+
+        // And the verdict over all of it, in the corner of the card - the same
+        // badge a charge transparency record carries.
+        this.appendLiveLinkVerificationStatus(liveLinkDiv, LiveLink, MeterValues);
+
+        //#region Show the signed meter values the live link already carries
+
+        // Every single meter value, on the right, exactly like those of a
+        // finished session: one that arrived a moment ago is read and verified
+        // just like one from an archive. A live link describes a single
+        // charging session, so there is no session list to choose from and the
+        // details are shown right away.
+        if (chargingSession != null)
+        {
+            chargingSession.ctr = MeterValues ?? undefined;
+            this.showChargingSessionDetails(chargingSession);
+        }
+
+        //#endregion
+
+        this.startLiveLinkRefresh(LiveLink);
 
     }
+
+    //#region Reloading a live link
+
+    // A live link points at a charging session that is still running, so an
+    // https transport may say how often to ask for the document again. Every
+    // "refresh" seconds it is fetched in the background: a newer document is
+    // processed and displayed like any other, the same one changes nothing.
+    //
+    // Neither does a request that fails. The transports belong to the operator,
+    // and a station that is unreachable for a while must not take a document
+    // that was loaded successfully off the screen.
+    private startLiveLinkRefresh(LiveLink:    chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
+                                 reconsider:  boolean = false): void
+    {
+
+        // stopLiveLinkRefresh() bumps the generation, so any prepare or poll
+        // still suspended from a previous start abandons itself the moment it
+        // resumes: no second timer chain, and no re-arm after the view has
+        // moved on or a decision was revoked.
+        this.stopLiveLinkRefresh();
+
+        void this.prepareLiveLinkRefresh(LiveLink, this.liveLinkRefreshGeneration, reconsider);
+
+    }
+
+    // Whether the refresh started by this generation is still the one that
+    // should be running: the document has not been replaced, and no newer
+    // start has superseded it.
+    private isLiveLinkRefreshCurrent(LiveLink:    chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
+                                     generation:  number): boolean
+    {
+        return this.currentChargeTransparencyLiveLink === LiveLink &&
+               this.liveLinkRefreshGeneration         === generation;
+    }
+
+    // When reconsider is set, the origins the user has already decided are
+    // offered again alongside any still-unknown ones - each with its current
+    // choice pre-selected - so "change" reopens the question without first
+    // throwing the existing answer away. Dismissing the dialog then keeps
+    // every decision exactly as it was.
+    private async prepareLiveLinkRefresh(LiveLink:    chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
+                                         generation:  number,
+                                         reconsider:  boolean = false): Promise<void>
+    {
+
+        const transport = this.liveLinkTransports(LiveLink).find(
+                              (candidate): candidate is chargeTransparencyLiveLink.TransportHTTPS =>
+                                  candidate.type === "https"              &&
+                                  typeof candidate.refresh === "number"   &&
+                                  candidate.refresh > 0
+                          );
+
+        const refresh   = transport?.refresh;
+
+        if (transport === undefined || refresh === undefined)
+            return;
+
+        // Whatever the document says, a reloading client hammers no one: a
+        // viral QR code must not turn every phone that scans it into a flood,
+        // and an enormous value must not overflow the timer delay into an
+        // immediate loop at the other end of the range.
+        const refreshSeconds = Math.min(Math.max(refresh, minimumRefreshSeconds), maximumRefreshSeconds);
+
+        // A live link is a document from outside and may name any URL at all,
+        // so its URLs are a trust question. It is answered in tiers: what the
+        // installation allowed in "externalURLs.conf" - the same rule that
+        // governs deep link verification URLs - and the installation's own
+        // origin need no consent; everything else needs the user's, given
+        // once per origin and remembered: trust on first use.
+        //
+        // Unless the installation is in strict mode: then only the listed
+        // prefixes and the own origin are ever reloaded, and nothing else is
+        // offered. A self-hosting operator that lists its own servers wants
+        // this, so its drivers are never asked a trust question they cannot
+        // judge.
+        const configText     = await this.loadExternalURLConfigText().catch(() => "");
+        const rules          = this.parseExternalURLConfig(configText);
+        const strictMode     = parseExternalURLConfigMode(configText) === "strict";
+        const appIsLoopback  = isLoopbackHost(window.location.hostname);
+        const trustedOrigins = this.loadTrustedOrigins();
+        const targets        = new Array<LiveLinkPollTarget>();
+
+        // The origins to put to the user, each with the URLs seen for it. On a
+        // first ask this holds only the unknown ones; when reconsidering it
+        // also holds the already-decided ones, and currentChoice remembers what
+        // each was so the dialog can pre-select it.
+        const askByOrigin    = new Map<string, Array<URL>>();
+        const currentChoice  = new Map<string, LiveLinkOriginChoice>();
+
+        // The origins whose remembered decision actually decided something
+        // here: expiry runs on disuse, so every application of a decision
+        // restarts its clock.
+        const usedOrigins    = new Set<string>();
+
+        const enqueueForAsk  = (origin: string, url: URL, choice?: LiveLinkOriginChoice): void => {
+
+            const urls = askByOrigin.get(origin);
+
+            if (urls !== undefined)
+                urls.push(url);
+            else
+                askByOrigin.set(origin, [ url ]);
+
+            if (choice !== undefined && !currentChoice.has(origin))
+                currentChoice.set(origin, choice);
+
+        };
+
+        // The tier the trust row shows is decided by which sources are in play,
+        // not by the order the URLs happen to appear in the document: a
+        // user-approved origin is worth a Change button even when it sits next
+        // to one the installation pre-approved. Installation-only is the
+        // fallthrough, so it needs no flag of its own.
+        let   hasSession      = false;
+        let   hasAlways       = false;
+        let   alwaysSince:    string | undefined;
+        let   denied          = false;
+
+        for (const url of this.liveLinkTransportURLs(transport))
+        {
+
+            let transportURL: URL;
+
+            try
+            {
+                transportURL = new URL(url, window.location.href);
+            }
+            catch
+            {
+                continue;
+            }
+
+            const rule = this.findExternalURLRule(transportURL, rules);
+
+            if (rule !== null)
+            {
+                targets.push({ url: transportURL, maxPayloadBytes: rule.maxPayloadBytes, prefix: rule.prefix });
+                continue;
+            }
+
+            // The installation asking itself is not a trust question.
+            if (transportURL.origin === window.location.origin)
+            {
+                targets.push({ url: transportURL, maxPayloadBytes: defaultTrustedPayloadBytes });
+                continue;
+            }
+
+            // Strict mode stops here: an origin the installation did not list is
+            // neither offered to the user nor polled, and a decision a user may
+            // have made in some earlier, non-strict session is not honoured
+            // either - the deployment behaves the same in every browser.
+            if (strictMode)
+            {
+                console.log("Not reloading this charge transparency live link from '" + transportURL.origin + "': strict mode allows only the origins listed in externalURLs.conf.");
+                continue;
+            }
+
+            // The structural rules come before any consent: what fails them
+            // is not even asked about.
+            const problem = pollTargetProblem(transportURL, appIsLoopback);
+
+            if (problem !== null)
+            {
+                console.log("Not reloading this charge transparency live link from '" + transportURL.origin + "': " + problem + ".");
+                continue;
+            }
+
+            if (this.liveLinkSessionAllowedOrigins.has(transportURL.origin))
+            {
+                if (reconsider)
+                {
+                    enqueueForAsk(transportURL.origin, transportURL, "once");
+                    continue;
+                }
+                targets.push({ url: transportURL, maxPayloadBytes: defaultTrustedPayloadBytes });
+                hasSession = true;
+                continue;
+            }
+
+            const remembered = findTrustedOrigin(trustedOrigins, transportURL.origin);
+
+            if (remembered?.decision === "allow")
+            {
+                if (reconsider)
+                {
+                    enqueueForAsk(transportURL.origin, transportURL, "always");
+                    continue;
+                }
+                targets.push({ url: transportURL, maxPayloadBytes: defaultTrustedPayloadBytes });
+                hasAlways    = true;
+                alwaysSince ??= remembered.since;
+                usedOrigins.add(transportURL.origin);
+                continue;
+            }
+
+            if (remembered?.decision === "deny")
+            {
+                if (reconsider)
+                {
+                    enqueueForAsk(transportURL.origin, transportURL, "deny");
+                    continue;
+                }
+                denied = true;
+                usedOrigins.add(transportURL.origin);
+                continue;
+            }
+
+            enqueueForAsk(transportURL.origin, transportURL);
+
+        }
+
+        //#region Using a decision restarts its idle-expiry clock
+
+        if (usedOrigins.size > 0)
+        {
+
+            const nowDate = new Date();
+            let   touched = false;
+
+            for (const origin of usedOrigins)
+                touched = touchTrustedOrigin(trustedOrigins, origin, nowDate) || touched;
+
+            // A use is persisted no more than hourly, so a live link that
+            // reloads every few seconds does not churn the storage.
+            if (touched)
+                this.saveTrustedOrigins(trustedOrigins);
+
+        }
+
+        //#endregion
+
+        //#region Ask about the unknown origins, before any request goes out
+
+        let   anyUndecided = false;
+
+        if (askByOrigin.size > 0 &&
+            this.isLiveLinkRefreshCurrent(LiveLink, generation))
+        {
+
+            const decisions = await this.askForLiveLinkTrust(
+                                        LiveLink,
+                                        Array.from(askByOrigin.keys()),
+                                        reconsider ? currentChoice : undefined
+                                    );
+
+            if (!this.isLiveLinkRefreshCurrent(LiveLink, generation))
+                return;
+
+            const now            = new Date().toISOString();
+            const stored         = this.loadTrustedOrigins();
+            const alwaysOrigins  = new Array<{ origin: string, urls: Array<URL>, since: string }>();
+            const sessionOrigins = new Array<{ origin: string, urls: Array<URL> }>();
+            let   storeChanged   = false;
+
+            // The label an entry is filed under in the settings: the operator
+            // name the user just saw in the consent dialog. The origins
+            // themselves are stored hashed, so this is all the settings screen
+            // will have to show.
+            const operatorLabel  = sanitizeTrustLabel(chargyLib.asJSONObject(LiveLink["chargingStationOperator"])?.["name"]);
+
+            for (const [ origin, urls ] of askByOrigin)
+            {
+
+                switch (decisions.get(origin))
+                {
+
+                    case "once":
+                        // Session-only: an earlier "always" or "deny" for this
+                        // origin is dropped so nothing about it stays remembered.
+                        if (removeTrustedOrigin(stored, origin))
+                            storeChanged = true;
+                        sessionOrigins.push({ origin, urls });
+                        break;
+
+                    case "always":
+                        // Persisted below in one write; the targets are added
+                        // afterwards so the row can tell "always" from the
+                        // "this session only" fallback if the write fails.
+                        //
+                        // A decision that has not changed is not rewritten at
+                        // all: the entry keeps its salt, its label and its
+                        // date. Rewriting would let any document that names an
+                        // already-trusted origin replace the label the user
+                        // originally consented under, and a fresh salt on every
+                        // confirmation would tell two snapshots of the store
+                        // apart by mere re-confirmation activity.
+                        {
+                            const existing = findTrustedOrigin(stored, origin);
+
+                            if (existing?.decision === "allow")
+                            {
+                                storeChanged = touchTrustedOrigin(stored, origin, new Date()) || storeChanged;
+                                alwaysOrigins.push({ origin, urls, since: existing.since });
+                            }
+
+                            else
+                            {
+                                const entry  = upsertTrustedOrigin(stored, origin, "allow", trustLabelForOrigin(operatorLabel, origin), now);
+                                storeChanged = true;
+                                alwaysOrigins.push({ origin, urls, since: entry.since });
+                            }
+                        }
+                        break;
+
+                    case "deny":
+                        if (findTrustedOrigin(stored, origin)?.decision !== "deny")
+                        {
+                            upsertTrustedOrigin(stored, origin, "deny", trustLabelForOrigin(operatorLabel, origin), now);
+                            storeChanged = true;
+                        }
+                        else
+                            storeChanged = touchTrustedOrigin(stored, origin, new Date()) || storeChanged;
+                        denied = true;
+                        // A session grant made earlier must not keep the origin
+                        // pollable after it has just been blocked.
+                        this.liveLinkSessionAllowedOrigins.delete(origin);
+                        break;
+
+                    default:
+                        // Left undecided: not remembered, not polled this time,
+                        // but still offerable through the trust row.
+                        anyUndecided = true;
+                        break;
+
+                }
+
+            }
+
+            const persisted = storeChanged ? this.saveTrustedOrigins(stored) : true;
+
+            for (const { origin, urls } of sessionOrigins)
+            {
+                this.liveLinkSessionAllowedOrigins.add(origin);
+                hasSession = true;
+                for (const url of urls)
+                    targets.push({ url: url, maxPayloadBytes: defaultTrustedPayloadBytes });
+            }
+
+            for (const { origin, urls, since } of alwaysOrigins)
+            {
+
+                // If the write did not stick, the honest tier for this origin
+                // is "this session only" - which is exactly how it will behave.
+                if (persisted)
+                {
+                    // A session grant would shadow the stored "always" on the
+                    // next prepare (session is checked first), so it is cleared
+                    // once the origin is remembered for good.
+                    this.liveLinkSessionAllowedOrigins.delete(origin);
+                    hasAlways    = true;
+                    alwaysSince ??= since;
+                }
+                else
+                {
+                    this.liveLinkSessionAllowedOrigins.add(origin);
+                    hasSession = true;
+                }
+
+                for (const url of urls)
+                    targets.push({ url: url, maxPayloadBytes: defaultTrustedPayloadBytes });
+
+            }
+
+        }
+
+        //#endregion
+
+        if (targets.length === 0)
+        {
+
+            // Something still offerable outranks a dead end: a user who
+            // dismissed can decide later, where nothing pollable never becomes
+            // pollable.
+            this.updateLiveLinkTrustRow(LiveLink, anyUndecided ? { kind: "ask" }
+                                                : denied        ? { kind: "denied" }
+                                                :                 { kind: "unavailable" });
+
+            if (!denied && !anyUndecided)
+                console.log("Not reloading this charge transparency live link: none of the URLs of its https transport may be polled.");
+
+            return;
+
+        }
+
+        if      (hasAlways)   this.updateLiveLinkTrustRow(LiveLink, { kind: "always", since: alwaysSince });
+        else if (hasSession)  this.updateLiveLinkTrustRow(LiveLink, { kind: "session" });
+        else                  this.updateLiveLinkTrustRow(LiveLink, { kind: "installation" });
+
+        // A timer that fires after the view has moved on, or after a newer
+        // start has superseded this one, does nothing and schedules no
+        // successor.
+        const poll      = async (): Promise<void> => {
+
+            if (!this.isLiveLinkRefreshCurrent(LiveLink, generation))
+                return;
+
+            try
+            {
+                await this.reloadLiveLink(LiveLink, targets);
+            }
+            catch
+            {
+                // Whatever went wrong out there, what is on screen was loaded
+                // successfully once and stays.
+            }
+
+            if (this.isLiveLinkRefreshCurrent(LiveLink, generation))
+                this.liveLinkRefreshTimer = setTimeout(() => void poll(), refreshSeconds * 1000);
+
+        };
+
+        if (this.isLiveLinkRefreshCurrent(LiveLink, generation))
+            this.liveLinkRefreshTimer = setTimeout(() => void poll(), refreshSeconds * 1000);
+
+    }
+
+    //#region The remembered decisions
+
+    private static readonly trustedOriginsStorageKey = "chargyLiveLinkTrustedOrigins";
+
+    private loadTrustedOrigins(): ITrustedOriginsStore
+    {
+
+        try
+        {
+
+            const raw     = localStorage.getItem(ChargyApp.trustedOriginsStorageKey);
+            const store   = parseTrustedOriginsStore(raw);
+
+            // Every load is also the moment expired decisions actually go: a
+            // pruned entry is written back right away, so it does not linger
+            // in storage until the next decision happens to be saved.
+            const pruned  = pruneExpiredTrustedOrigins(store, new Date());
+
+            // And whatever is stored that is not exactly the parsed store is
+            // rewritten as the parsed store. This is what actually deletes the
+            // plain text origins an earlier version kept under this very key:
+            // they parse as an empty store, and leaving the old bytes behind
+            // would preserve forever precisely what the hashing is for.
+            if (pruned || (raw !== null && raw !== serializeTrustedOriginsStore(store)))
+                this.saveTrustedOrigins(store);
+
+            return store;
+
+        }
+        catch
+        {
+            // A browser that refuses storage simply asks again next time.
+            return emptyTrustedOriginsStore();
+        }
+
+    }
+
+    // Returns whether the decisions were actually persisted. A browser that
+    // refuses storage (private mode, quota, blocked cookies) is no worse than
+    // a repeated question - but the caller must not then claim the decision was
+    // remembered, so the failure is reported rather than swallowed.
+    private saveTrustedOrigins(store: ITrustedOriginsStore): boolean
+    {
+
+        try
+        {
+            localStorage.setItem(ChargyApp.trustedOriginsStorageKey, serializeTrustedOriginsStore(store));
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+
+    }
+
+    //#endregion
+
+    //#region The trust dialog
+
+    // Asks about each unknown origin on its own row, so a document cannot make
+    // one "allow" carry an origin the user did not mean to trust: allowing the
+    // operator's server it recognises does not silently allow an attacker's
+    // server listed beside it. Resolves once every origin has a decision, or
+    // earlier if the user dismisses - undecided origins are then absent from
+    // the result and polled by no one.
+    private async askForLiveLinkTrust(LiveLink:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
+                                      origins:   Array<string>,
+                                      current?:  Map<string, LiveLinkOriginChoice>): Promise<Map<string, LiveLinkOriginChoice>>
+    {
+
+        this.closeLiveLinkTrustDialog();
+
+        const description = this.chargy.GetLocalizedText(LiveLink.description);
+        const operator    = chargyLib.asString(chargyLib.asJSONObject(LiveLink["chargingStationOperator"])?.["name"]);
+
+        this.liveLinkTrustDocumentDiv.innerText = [
+                                                      description ?? chargyLib.asString(LiveLink["@id"]) ?? "",
+                                                      operator    ?? ""
+                                                  ].filter(line => line !== "").join(" · ");
+
+        // Reconsidering ("change") seeds every origin with its current choice,
+        // so the dialog opens already decided and only what the user actually
+        // changes is changed. A first ask starts blank and every origin has to
+        // be answered.
+        const decisions     = new Map<string, LiveLinkOriginChoice>(current);
+        const undecided     = new Set<string>(origins.filter(origin => !decisions.has(origin)));
+
+        this.liveLinkTrustDecisions             = decisions;
+        this.liveLinkTrustOriginsDiv.innerText  = "";
+
+        for (const origin of origins)
+        {
+
+            const rowDiv        = chargyLib.CreateDiv(this.liveLinkTrustOriginsDiv, "trustOrigin");
+
+            // As text, not as markup: CreateDiv's third parameter is innerHTML,
+            // and what the user consents to must be displayed exactly as it is.
+            const originDiv     = chargyLib.CreateDiv(rowDiv, "origin");
+            originDiv.innerText = origin;
+
+            const buttonsDiv    = chargyLib.CreateDiv(rowDiv, "trustOriginButtons");
+
+            const chosen        = decisions.get(origin);
+
+            const addButton     = (labelKey: string, choice: LiveLinkOriginChoice): void => {
+
+                const button      = buttonsDiv.appendChild(document.createElement('button'));
+                button.className  = "trustChoice " + choice + (choice === chosen ? " chosen" : "");
+                button.innerText  = this.chargy.GetLocalizedMessage(labelKey);
+                button.onclick    = (): void => {
+
+                    decisions.set(origin, choice);
+                    undecided.delete(origin);
+
+                    for (const sibling of Array.from(buttonsDiv.children))
+                        sibling.classList.toggle("chosen", sibling === button);
+
+                    rowDiv.classList.add("decided");
+
+                    // Answering the last still-open origin closes the dialog and
+                    // the awaiting caller applies every choice - a clicked button
+                    // ends the dialog, as one expects. Reconsidering pre-answers
+                    // every origin, so the first click closes; the pre-filled
+                    // decisions make that close apply the current choice to
+                    // anything left untouched, so nothing is lost.
+                    if (undecided.size === 0)
+                        this.resolveLiveLinkTrust();
+
+                };
+
+            };
+
+            addButton("allowOnceLabel",   "once");
+            addButton("allowAlwaysLabel", "always");
+            addButton("doNotAllowLabel",  "deny");
+
+            if (chosen !== undefined)
+                rowDiv.classList.add("decided");
+
+        }
+
+        this.liveLinkTrustDialogDiv.style.display = 'block';
+
+        return new Promise(resolve => {
+            this.liveLinkTrustResolve = resolve;
+        });
+
+    }
+
+    private resolveLiveLinkTrust(): void
+    {
+
+        const resolve   = this.liveLinkTrustResolve;
+        const decisions = this.liveLinkTrustDecisions ?? new Map<string, LiveLinkOriginChoice>();
+
+        this.liveLinkTrustResolve                 = null;
+        this.liveLinkTrustDecisions               = null;
+        this.liveLinkTrustDialogDiv.style.display = 'none';
+
+        resolve?.(decisions);
+
+    }
+
+    // Loading another document while the dialog is open counts as no further
+    // answer: whatever was decided so far is delivered, and whoever awaits the
+    // dialog sees the view has moved on.
+    private closeLiveLinkTrustDialog(): void
+    {
+        if (this.liveLinkTrustResolve !== null)
+            this.resolveLiveLinkTrust();
+    }
+
+    //#endregion
+
+    //#region The trust row under the live link
+
+    private updateLiveLinkTrustRow(LiveLink:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
+                                   state:     LiveLinkTrustState): void
+    {
+
+        const rowDiv     = this.liveLinkTrustRowDiv;
+        const contentDiv = this.liveLinkTrustContentDiv;
+
+        if (rowDiv === null || contentDiv === null || this.currentChargeTransparencyLiveLink !== LiveLink)
+            return;
+
+        contentDiv.innerText = "";
+
+        const message = (key: string): string => this.chargy.GetLocalizedMessage(key);
+
+        let   statusText:  string;
+        let   buttonLabel: string | null = null;
+
+        switch (state.kind)
+        {
+
+            case "installation":
+                statusText  = message("liveReloadActive") + " (" + message("allowedByThisInstallation") + ")";
+                break;
+
+            case "session":
+                statusText  = message("liveReloadActive") + " – " + message("thisSessionOnly");
+                buttonLabel = message("changeLabel");
+                break;
+
+            case "always":
+                statusText  = message("liveReloadActive") +
+                              (state.since != null && state.since !== ""
+                                   ? " – " + message("trustedSince") + " " + new Date(state.since).toLocaleDateString(this.UILanguage)
+                                   : "");
+                buttonLabel = message("changeLabel");
+                break;
+
+            case "denied":
+                statusText  = message("liveReloadBlocked");
+                buttonLabel = message("changeLabel");
+                break;
+
+            case "ask":
+                statusText  = message("liveReloadNotActive");
+                buttonLabel = message("allowLabel");
+                break;
+
+            case "unavailable":
+                statusText  = message("liveReloadNotPossible");
+                break;
+
+        }
+
+        chargyLib.CreateDiv(contentDiv, "status", statusText);
+
+        if (buttonLabel !== null)
+        {
+
+            const changeButton      = contentDiv.appendChild(document.createElement('button'));
+            changeButton.className  = "linkButton trustChange";
+            changeButton.innerText  = buttonLabel;
+
+            // Reopens the dialog with every origin's current choice
+            // pre-selected, so changing one answer keeps the others and simply
+            // dismissing the dialog leaves every decision as it was. The button
+            // is only a way back into the question, never itself a change.
+            changeButton.onclick    = (): void => {
+                this.startLiveLinkRefresh(LiveLink, true);
+            };
+
+        }
+
+        rowDiv.style.display = "";
+
+    }
+
+    //#endregion
+
+    //#region The remembered origins on the settings screen
+
+    private showSettingsMenu(): void
+    {
+        this.settingsMenuDiv.style.display           = "block";
+        this.settingsTrustedOriginsDiv.style.display = "none";
+    }
+
+    private refreshTrustedOriginsList(): void
+    {
+
+        const store = this.loadTrustedOrigins();
+
+        //#region The retention controls
+
+        this.trustRetentionEnabledInput.checked = store.retentionMonths !== null;
+        this.trustRetentionMonthsInput.disabled = store.retentionMonths === null;
+
+        if (store.retentionMonths !== null)
+            this.trustRetentionMonthsInput.value = store.retentionMonths.toString();
+
+        //#endregion
+
+        // Sorted by operator, then by age; entries without a label at the end.
+        const entries = [ ...store.origins ].sort(
+                            (entry1, entry2) => (entry1.label === "" ? 1 : 0) - (entry2.label === "" ? 1 : 0) ||
+                                                entry1.label.localeCompare(entry2.label)                      ||
+                                                entry1.since.localeCompare(entry2.since));
+
+        this.trustedOriginsListDiv.innerText     = "";
+        this.noTrustedOriginsDiv.style.display   = entries.length > 0 ? "none" : "block";
+
+        for (const entry of entries)
+        {
+
+            const rowDiv          = chargyLib.CreateDiv(this.trustedOriginsListDiv, "trustedOrigin");
+
+            const infosDiv        = chargyLib.CreateDiv(rowDiv, "infos");
+
+            // The origin itself is stored hashed, so the row is named after the
+            // operator whose document the user consented to. That label is text
+            // from an outside document: assigned as text, never as markup.
+            const labelDiv        = chargyLib.CreateDiv(infosDiv, "origin");
+            labelDiv.innerText    = entry.label !== ""
+                                        ? entry.label
+                                        : this.chargy.GetLocalizedMessage("unknownOperatorLabel");
+
+            const detailsDiv      = chargyLib.CreateDiv(infosDiv, "details");
+
+            const decisionDiv     = chargyLib.CreateDiv(detailsDiv, "decision");
+            decisionDiv.innerHTML = entry.decision === "allow"
+                                        ? '<i class="fas fa-check-circle"></i> ' + this.chargy.GetLocalizedMessage("allowedLabel")
+                                        : '<i class="fas fa-times-circle"></i> ' + this.chargy.GetLocalizedMessage("blockedLabel");
+
+            if (entry.since !== "")
+                chargyLib.CreateDiv(detailsDiv, "since",
+                                    this.chargy.GetLocalizedMessage("sinceLabel") + " " +
+                                    new Date(entry.since).toLocaleDateString(this.UILanguage));
+
+            const expiry = trustedOriginExpiry(entry, store.retentionMonths);
+
+            if (expiry !== null)
+                chargyLib.CreateDiv(detailsDiv, "expires",
+                                    this.chargy.GetLocalizedMessage("expiresLabel") + " " +
+                                    expiry.toLocaleDateString(this.UILanguage));
+
+            const deleteButton      = rowDiv.appendChild(document.createElement('button'));
+            deleteButton.className  = "delete";
+            deleteButton.innerHTML  = '<i class="fas fa-trash-alt"></i>';
+            deleteButton.title      = this.chargy.GetLocalizedMessage("deleteLabel");
+            deleteButton.onclick    = (): void => {
+
+                // Salt and hash identify the entry; a plain origin to delete by
+                // does not exist here, which is the point of the hashing. For
+                // the same reason a session grant given under this origin
+                // cannot be cleared from the settings - it ends with the
+                // session either way.
+                const stored   = this.loadTrustedOrigins();
+                stored.origins = stored.origins.filter(candidate => candidate.hash !== entry.hash ||
+                                                                    candidate.salt !== entry.salt);
+                this.saveTrustedOrigins(stored);
+
+                this.refreshTrustedOriginsList();
+
+                // Revoking a decision has to reach an already-running poll: a
+                // live link loaded before this deletion keeps polling with the
+                // targets it captured then, including the origin just removed.
+                // Stopping is enough - the settings screen has replaced the live
+                // link view, so there is nothing to re-poll until a document is
+                // shown again, which prepares afresh. Restarting here instead
+                // would pop the trust dialog over the settings screen for the
+                // very origin the user is removing.
+                this.stopLiveLinkRefresh();
+
+            };
+
+        }
+
+    }
+
+    //#endregion
+
+    private stopLiveLinkRefresh(): void
+    {
+
+        // Bumping the generation is the actual stop: it cannot cancel a poll
+        // already suspended mid-await, but that poll checks the generation
+        // before it re-arms, so it will not schedule a successor. Clearing the
+        // timer handles the common case where nothing is in flight.
+        this.liveLinkRefreshGeneration++;
+
+        if (this.liveLinkRefreshTimer !== null)
+        {
+            clearTimeout(this.liveLinkRefreshTimer);
+            this.liveLinkRefreshTimer = null;
+        }
+
+    }
+
+    // The well-formed transports of a live link. liveTransports is optional and
+    // comes from a document written elsewhere, so it may be missing, not an
+    // array, or hold entries that are not transports at all; every reader goes
+    // through here, so a broken transport is simply dropped and the rest still
+    // work instead of the whole live link failing over it.
+    private liveLinkTransports(LiveLink: chargeTransparencyLiveLink.IChargeTransparencyLiveLink): Array<chargeTransparencyLiveLink.Transport>
+    {
+
+        return Array.isArray(LiveLink.liveTransports)
+                   ? LiveLink.liveTransports.filter(
+                         (transport): transport is chargeTransparencyLiveLink.Transport =>
+                             chargeTransparencyLiveLink.isTransport(transport)
+                     )
+                   : [];
+
+    }
+
+    // The URLs of a transport: the single "url" first, then the "urls" in the
+    // order of their priority.
+    private liveLinkTransportURLs(transport: chargeTransparencyLiveLink.Transport): Array<string>
+    {
+
+        const urls           = new Array<string>();
+
+        if (transport.url != null && transport.url !== "")
+            urls.push(transport.url);
+
+        const additionalURLs = [ ...(transport.urls ?? []) ].sort(
+                                   (url1, url2) => (typeof url1 === "string" ? 0 : url1.priority ?? 0) -
+                                                   (typeof url2 === "string" ? 0 : url2.priority ?? 0)
+                               );
+
+        for (const additionalURL of additionalURLs)
+        {
+
+            const url = typeof additionalURL === "string" ? additionalURL : additionalURL.url;
+
+            if (url !== "")
+                urls.push(url);
+
+        }
+
+        return urls;
+
+    }
+
+    // Asks each URL in turn until one answers with a live link. A document that
+    // describes a different session is ignored, and so is one that is not newer
+    // than what is on screen.
+    private async reloadLiveLink(LiveLink:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
+                                 targets:   Array<LiveLinkPollTarget>): Promise<void>
+    {
+
+        for (const target of targets)
+        {
+
+            const requestURL = this.liveLinkRefreshURL(target.url, LiveLink);
+
+            // Adding the timestamp must not move the URL out of the prefix or
+            // origin it was allowed under.
+            if (target.prefix !== undefined && !requestURL.href.startsWith(target.prefix))
+                continue;
+
+            if (requestURL.origin !== target.url.origin)
+                continue;
+
+            // Electron's main process performs the network request so this
+            // works without browser CORS exceptions. It also resolves and
+            // rejects private/reserved addresses, limits same-origin redirects,
+            // strips credentials, times out and enforces the payload limit.
+            const response = await this.electron.fetchLiveLink(
+                                       requestURL.href,
+                                       target.maxPayloadBytes,
+                                       target.prefix
+                                   ).catch(() => null);
+
+            if (response?.ok !== true || response.data == null)
+                continue;
+
+            const text     = new TextDecoder().decode(response.data);
+
+            let   reloaded: unknown;
+
+            try
+            {
+                reloaded = JSON.parse(text);
+            }
+            catch
+            {
+                continue;
+            }
+
+            if (!chargeTransparencyLiveLink.IsAChargeTransparencyLiveLink(reloaded) ||
+                reloaded["@id"] !== LiveLink["@id"])
+            {
+                continue;
+            }
+
+            if (this.isNewerLiveLink(reloaded, LiveLink))
+                await this.detectAndConvertContentFormat(text, {
+                                prepareUI:  false,
+                                onError:    () => { /* keep what is on screen */ }
+                            });
+
+            // The endpoint answered. Whether it had something new or not, there
+            // is no reason to ask the next one.
+            return;
+
+        }
+
+    }
+
+    // The request says which version the client already has, as
+    // "lastUpdated=<timestamp>" next to whatever the URL already carries. A
+    // server that keeps track of that can answer with less than the whole
+    // document; one that does not care ignores the parameter.
+    private liveLinkRefreshURL(url:       URL,
+                               LiveLink:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink): URL
+    {
+
+        const refreshURL  = new URL(url.href);
+        const lastUpdated = chargyLib.asString(LiveLink["lastUpdated"]);
+
+        if (lastUpdated !== undefined && lastUpdated !== "")
+            refreshURL.searchParams.set("lastUpdated", lastUpdated);
+
+        return refreshURL;
+
+    }
+
+    // "lastUpdated" is what a document says about its own recency, and it is
+    // what decides here. A document that does not carry it cannot be told apart
+    // from the one already loaded, so it is left alone.
+    private isNewerLiveLink(reloaded:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
+                            current:   chargeTransparencyLiveLink.IChargeTransparencyLiveLink): boolean
+    {
+
+        const reloadedLastUpdated = chargyLib.asString(reloaded["lastUpdated"]);
+
+        if (reloadedLastUpdated === undefined)
+            return false;
+
+        const currentLastUpdated  = chargyLib.asString(current["lastUpdated"]);
+
+        if (currentLastUpdated === undefined)
+            return true;
+
+        return chargyLib.parseUTC(reloadedLastUpdated).valueOf() >
+               chargyLib.parseUTC(currentLastUpdated). valueOf();
+
+    }
+
+    //#endregion
 
     private appendLiveLinkInfoRow(tableDiv:   HTMLDivElement,
                                   className:  string,
                                   iconHTML:   string,
-                                  content:    string|HTMLElement): void {
+                                  content:    string|HTMLElement): HTMLDivElement
+    {
 
         const rowDiv         = tableDiv.appendChild(document.createElement('div'));
         rowDiv.className     = className;
@@ -3262,6 +4511,225 @@ export class ChargyApp {
             textDiv.innerText = content;
         else
             textDiv.appendChild(content);
+
+        return rowDiv;
+
+    }
+
+    // How many signatures a document carries, as a sentence rather than a number.
+    private liveLinkSignatureCountText(count: number): string
+    {
+
+        return count === 1
+                   ? this.chargy.GetLocalizedMessage("documentOneSignatureLabel")
+                   : this.chargy.GetLocalizedMessageWithParameter("documentSignaturesLabel", count);
+
+    }
+
+    // The signatures over the whole document and what became of them.
+    //
+    // Says only what was actually established. A document nobody signed is not
+    // the same as one whose signature does not match, and neither is the same as
+    // a signature this application cannot judge because it does not know the
+    // algorithm - so each gets its own wording, and the detail lines come from
+    // ChargyCore, which knows which of the three it found.
+    private appendLiveLinkSignatureRow(tableDiv:  HTMLDivElement,
+                                       LiveLink:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink): void
+    {
+
+        const verification   = LiveLink.signatureVerification;
+        const signatureCount = Array.isArray(LiveLink.signatures) ? LiveLink.signatures.length : 0;
+
+        // A document read by a ChargyCore that does not verify document
+        // signatures carries no verdict. Counting the signatures is then still
+        // honest; claiming anything about them would not be.
+        if (verification === undefined)
+        {
+
+            if (signatureCount > 0)
+                this.appendLiveLinkInfoRow(
+                    tableDiv,
+                    "signatureInfos",
+                    '<i class="fas fa-file-signature"></i>',
+                    this.liveLinkSignatureCountText(signatureCount)
+                );
+
+            return;
+
+        }
+
+        const contentDiv     = document.createElement('div');
+        const statusDiv      = chargyLib.CreateDiv(contentDiv, "signatureStatus");
+
+        const describe       = (state:      string,
+                                iconClass:  string,
+                                text:       string): void => {
+
+            statusDiv.classList.add(state);
+
+            const iconElement     = statusDiv.appendChild(document.createElement('i'));
+            iconElement.className = iconClass;
+
+            // As a text node, not as markup: none of this is meant to be read
+            // as HTML, and part of it comes from a document written elsewhere.
+            statusDiv.appendChild(document.createTextNode(" " + text));
+
+        };
+
+        const countAnd       = (message: string): string =>
+                                   this.liveLinkSignatureCountText(signatureCount) + " · " + message;
+
+        // The colour says how bad it is, the wording says what happened. Naming
+        // the ratio is the only honest headline when some verified and some did
+        // not, because neither "verified" nor "not verified" is then true of the
+        // document as a whole.
+        const state    = documentSignatureState(verification);
+
+        const headline = verification.status === "unsigned"
+                             ? this.chargy.GetLocalizedMessage("documentNotSignedLabel")
+                             : verification.status === "allValid"
+                                   ? countAnd(this.chargy.GetLocalizedMessage("documentSignaturesVerifiedLabel"))
+                                   : verification.status === "someValid"
+                                         ? countAnd(this.chargy.GetLocalizedMessageWithParameter(
+                                                        "documentSignaturesPartiallyVerifiedLabel",
+                                                        verification.validCount.toString() + "/" + signatureCount.toString()
+                                                    ))
+                                         : countAnd(this.chargy.GetLocalizedMessage("documentSignaturesNotVerifiedLabel"));
+
+        describe(state,
+                 state === "valid"   ? "fas fa-check-circle"
+                 : state === "invalid" ? "fas fa-times-circle"
+                 :                       "fas fa-exclamation-circle",
+                 headline);
+
+        // Why, in ChargyCore's words: that the signature does not match, that
+        // the key is not in the document, that the algorithm is unknown.
+        //
+        // Several signatures failing the same way say one thing, not several,
+        // so the same sentence is never printed twice - whatever the core that
+        // produced the warnings did about it.
+        const shown = new Set<string>();
+
+        for (const warning of LiveLink.warnings ?? [])
+        {
+
+            const text = this.chargy.GetLocalizedText(warning.message);
+
+            if (text != null && text !== "" && !shown.has(text))
+            {
+
+                shown.add(text);
+
+                const warningDiv     = chargyLib.CreateDiv(contentDiv, "signatureWarning");
+                warningDiv.innerText = text;
+
+            }
+
+        }
+
+        this.appendLiveLinkInfoRow(
+            tableDiv,
+            "signatureInfos",
+            '<i class="fas fa-file-signature"></i>',
+            contentDiv
+        );
+
+    }
+
+    // The one verdict over the whole live link, the counterpart of the badge a
+    // charge transparency record carries: everything verified, something that
+    // could not be judged, or something that demonstrably does not hold.
+    //
+    // Two independent things have to hold for green, and both are signatures:
+    // the ones over the document - which make the transport URLs and the listed
+    // keys the operator's - and the ones over every single meter value. The
+    // worst of the two decides, because a verdict over the whole is only ever
+    // as good as its weakest part.
+    private liveLinkOverallState(LiveLink:     chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
+                                 MeterValues:  chargeTransparencyRecord.IChargeTransparencyRecord|null): LiveLinkOverallState
+    {
+
+        const states       = new Array<LiveLinkOverallState>();
+        const verification = LiveLink.signatureVerification;
+
+        //#region What the signatures over the document say
+
+        if (verification !== undefined)
+            states.push(documentSignatureState(verification));
+
+        //#endregion
+
+        //#region What the signatures over the meter values say
+
+        const chargingSession = MeterValues?.chargingSessions?.[0];
+
+        if (chargingSession != null)
+        {
+
+            const sessionState = meterValueSessionState(chargingSession.verificationResult?.status);
+
+            if (sessionState === "valid")
+                states.push(this.hasSessionWarnings(chargingSession) ? "warning" : "valid");
+
+            else if (sessionState !== null)
+                states.push(sessionState);
+
+            // The session verdict is an aggregate; the badge claims something
+            // about every single meter value, so every single one is looked at.
+            for (const measurement of chargingSession.measurements ?? [])
+                for (const measurementValue of measurement.values)
+                    states.push(measurementValueState(measurementValue.result?.status));
+
+        }
+
+        //#endregion
+
+        // Nothing to go on at all - no verification of the document, and no
+        // meter values yet.
+        return worstLiveLinkState(states);
+
+    }
+
+    // The badge in the top right corner of the live link, built exactly like
+    // the one of a charge transparency record so that it reads the same.
+    private appendLiveLinkVerificationStatus(liveLinkDiv:  HTMLDivElement,
+                                             LiveLink:     chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
+                                             MeterValues:  chargeTransparencyRecord.IChargeTransparencyRecord|null): void
+    {
+
+        const statusDiv     = liveLinkDiv.appendChild(document.createElement('div'));
+        statusDiv.className = "verificationStatus";
+
+        const describe      = (iconClass: string, messageKey: string): void => {
+
+            const iconElement     = statusDiv.appendChild(document.createElement('i'));
+            iconElement.className = iconClass;
+
+            statusDiv.appendChild(document.createTextNode(" " + this.chargy.GetLocalizedMessage(messageKey)));
+
+        };
+
+        switch (this.liveLinkOverallState(LiveLink, MeterValues))
+        {
+
+            case "valid":
+                describe("fas fa-check-circle",       "liveLinkValidLabel");
+                break;
+
+            case "warning":
+                statusDiv.classList.add("warning");
+                describe("fas fa-exclamation-circle", "liveLinkWarningsLabel");
+                break;
+
+            case "invalid":
+                describe("fas fa-times-circle",       "liveLinkInvalidLabel");
+                break;
+
+            case "unvalidated":
+                describe("fas fa-question-circle",    "Unvalidated");
+                break;
+
+        }
 
     }
 
@@ -3297,14 +4765,14 @@ export class ChargyApp {
         {
             const totpDiv = transportDiv.appendChild(document.createElement('div'));
             totpDiv.className = "totp";
-            totpDiv.innerText = `TOTP: ${transport.totp.timeStep} seconds`;
+            totpDiv.innerText = "TOTP: " + transport.totp.timeStep.toString() + " s";
         }
 
         return transportDiv;
 
     }
 
-    private createLiveLinkAnchor(url:  string,
+    private createLiveLinkAnchor(url: string,
                                  text: string): HTMLAnchorElement {
 
         const anchor = document.createElement('a');
@@ -3329,6 +4797,7 @@ export class ChargyApp {
 
         this.currentChargeTransparencyRecord         = CTR;
         this.currentChargeTransparencyLiveLink       = null;
+        this.currentLiveLinkMeterValues              = null;
         this.currentPublicKeyLookup                  = null;
         this.currentSimpleURL                        = null;
         this.currentGlobalError                      = null;
@@ -4247,6 +5716,43 @@ export class ChargyApp {
 
     }
 
+    // Documents can overlap or repeat the same meter reading. Keep all
+    // attestations in the underlying record, but present each reading once in
+    // chronological order so tables and interval bars remain meaningful.
+    private distinctValuesInTimeOrder(measurementValues: Array<chargeTransparencyRecord.IMeasurementValue>)
+        : Array<chargeTransparencyRecord.IMeasurementValue>
+    {
+
+        const inTimeOrder    = measurementValues.
+                                   map(measurementValue => ({
+                                       measurementValue,
+                                       timestamp: chargyLib.parseUTC(measurementValue.timestamp).valueOf()
+                                   })).
+                                   sort((entry1, entry2) => entry1.timestamp - entry2.timestamp);
+
+        const distinctValues = new Array<chargeTransparencyRecord.IMeasurementValue>();
+        let   previousTimestamp: number  | undefined;
+        let   previousValue:     Decimal | undefined;
+
+        for (const entry of inTimeOrder)
+        {
+
+            if (previousTimestamp === entry.timestamp &&
+                previousValue?.equals(entry.measurementValue.value) === true)
+            {
+                continue;
+            }
+
+            distinctValues.push(entry.measurementValue);
+            previousTimestamp = entry.timestamp;
+            previousValue     = entry.measurementValue.value;
+
+        }
+
+        return distinctValues;
+
+    }
+
     private getMeasurementValueInKWh(measurement:       chargeTransparencyRecord.IMeasurement,
                                      measurementValue:  chargeTransparencyRecord.IMeasurementValue): Decimal
     {
@@ -4264,6 +5770,21 @@ export class ChargyApp {
                 return value.div(1000);
 
         }
+
+    }
+
+    private formatChargingDuration(milliseconds: number): string
+    {
+
+        const duration = this.moment.duration(milliseconds);
+
+        if (Math.floor(duration.asDays())    > 1) return `${duration.days()} Tage ${duration.hours()} Std. ${duration.minutes()} Min. ${duration.seconds()} Sek.`;
+        if (Math.floor(duration.asDays())    > 0) return `${duration.days()} Tag ${duration.hours()} Std. ${duration.minutes()} Min. ${duration.seconds()} Sek.`;
+        if (Math.floor(duration.asHours())   > 0) return `${duration.hours()} Std. ${duration.minutes()} Min. ${duration.seconds()} Sek.`;
+        if (Math.floor(duration.asMinutes()) > 0) return `${duration.minutes()} Minuten ${duration.seconds()} Sekunden`;
+        if (Math.floor(duration.asSeconds()) > 0) return `${duration.seconds()} Sekunden`;
+
+        return "";
 
     }
 
@@ -4375,7 +5896,9 @@ export class ChargyApp {
                                          mode:         ChargingProgressChartMode): ChargingProgressChartData | null
     {
 
-        if (measurement.values.length <= 2)
+        const measurementValues = this.distinctValuesInTimeOrder(measurement.values);
+
+        if (measurementValues.length <= 2)
             return null;
 
         const points: ChargingProgressChartPoint[] = [];
@@ -4384,11 +5907,14 @@ export class ChargyApp {
         let   previousValue: Decimal | null = null;
         let   previousTimestamp: number | null = null;
 
-        for (const measurementValue of measurement.values)
+        for (const measurementValue of measurementValues)
         {
 
             const currentValue     = this.getMeasurementValueInKWh(measurement, measurementValue);
             const currentTimestamp = chargyLib.parseUTC(measurementValue.timestamp).valueOf();
+
+            if (previousTimestamp !== null && currentTimestamp <= previousTimestamp)
+                continue;
 
             tickTimestamps.push(currentTimestamp);
             tickStatuses.push({
@@ -5211,7 +6737,9 @@ export class ChargyApp {
 
                     //#region Show measurement values...
 
-                    if (measurement.values.length > 0)
+                    const measurementValues     = this.distinctValuesInTimeOrder(measurement.values);
+
+                    if (measurementValues.length > 0)
                     {
 
                         let   measurementCounter    = 0;
@@ -5221,7 +6749,7 @@ export class ChargyApp {
                                                       chargyLib.CreateDiv(measurementValuesDiv,  "headline2",
                                                                           this.chargy.GetLocalizedMessage("Meter Values"));
 
-                        const viewLinksDiv          = measurement.values.length > 2
+                        const viewLinksDiv          = measurementValues.length > 2
                                                           ? chargyLib.CreateDiv(measurementValuesDiv, "measurementValueViews")
                                                           : null;
                         const measurementRowsDiv    = chargyLib.CreateDiv(measurementValuesDiv, "measurementValueRows");
@@ -5242,7 +6770,7 @@ export class ChargyApp {
 
                         }
 
-                        for (const measurementValue of measurement.values)
+                        for (const measurementValue of measurementValues)
                         {
 
                             measurementCounter++;

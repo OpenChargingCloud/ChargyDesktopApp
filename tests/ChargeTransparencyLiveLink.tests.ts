@@ -57,8 +57,13 @@ describe("Charge Transparency LiveLink", () => {
 
         expect(IsAChargeTransparencyLiveLink(liveLink)).toBe(true);
         expect(IsAChargeTransparencyLiveLink({ ...liveLink, "@context": "https://example.com/other" })).toBe(false);
-        expect(IsAChargeTransparencyLiveLink({ ...liveLink, transports: [ { type: "ftp", url: "https://example.com" } ] })).toBe(false);
         expect(IsAChargeTransparencyLiveLink(undefined)).toBe(false);
+
+        // The JSON-LD context identifies the document. Malformed optional
+        // transports are dropped by the UI instead of hiding the whole link.
+        expect(IsAChargeTransparencyLiveLink({ ...liveLink, liveTransports: [ { type: "ftp", url: "https://example.com" } ] })).toBe(true);
+        expect(IsAChargeTransparencyLiveLink({ ...liveLink, liveTransports: "not an array" })).toBe(true);
+        expect(IsAChargeTransparencyLiveLink({ ...liveLink, connector: 42 })).toBe(true);
 
     });
 
@@ -70,8 +75,23 @@ describe("Charge Transparency LiveLink", () => {
 
         if (IsAChargeTransparencyLiveLink(report))
         {
-            expect(report.timestamp).toBe("2026-06-12T14:03:12Z");
-            expect(report.transports).toHaveLength(3);
+            expect(report.created).toBe("2026-08-28T11:59:59Z");
+            expect(report.liveTransports).toHaveLength(3);
+        }
+
+    });
+
+    test("carries verification of signatures over the complete document", async () => {
+
+        const report = await verifyChargeTransparencyLiveLink("ChargeTransparencyLive/ChargeTransparencyLiveLink_1.json");
+
+        expect(IsAChargeTransparencyLiveLink(report)).toBe(true);
+
+        if (IsAChargeTransparencyLiveLink(report))
+        {
+            expect(report.signatureVerification?.status).toBe("allValid");
+            expect(report.signatureVerification?.validCount).toBe(2);
+            expect(report.warnings ?? []).toHaveLength(0);
         }
 
     });
@@ -87,7 +107,7 @@ describe("Charge Transparency LiveLink", () => {
             expect(IsAChargeTransparencyLiveLink(report)).toBe(true);
 
             if (IsAChargeTransparencyLiveLink(report))
-                expect(report.timestamp).toBe("2026-06-13T10:11:12.000Z");
+                expect(report.created).toBe("2026-06-13T10:11:12.000Z");
         }
         finally
         {
