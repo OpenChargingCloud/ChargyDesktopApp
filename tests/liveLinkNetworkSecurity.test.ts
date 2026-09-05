@@ -8,6 +8,7 @@ type LiveLinkNetworkSecurityModule = {
     parseLiveLinkHTTPSURL:     (value: string) => URL;
     validateResolvedAddresses: (endpoints: Array<{ address: string }>) => void;
     isWithinURLPrefix:         (href: string, prefix: string) => boolean;
+    isWithinURLPrefixAfterQueryAppend: (href: string, prefix: string) => boolean;
     isAllowedRedirect:         (fromURL: URL, toURL: URL, prefix?: string|null) => boolean;
     sanitizePayloadLimit:      (value: number, maximum?: number) => number;
 };
@@ -17,6 +18,7 @@ const {
     parseLiveLinkHTTPSURL,
     validateResolvedAddresses,
     isWithinURLPrefix,
+    isWithinURLPrefixAfterQueryAppend,
     isAllowedRedirect,
     sanitizePayloadLimit
 } = require('../src/liveLinkNetworkSecurity.cjs') as LiveLinkNetworkSecurityModule;
@@ -53,6 +55,12 @@ describe('live-link network boundary', () => {
         expect(isAllowedRedirect(source, new URL('https://example.com/admin'), 'https://example.com/live/')).toBe(false);
         expect(isAllowedRedirect(source, new URL('https://example.com/liveevil'), 'https://example.com/live')).toBe(false);
         expect(isAllowedRedirect(source, new URL('https://other.example/live/b'))).toBe(false);
+
+        // A prefix that ends inside a query string keeps working once the
+        // renderer has appended its "lastUpdated" timestamp.
+        const pinned = new URL('https://example.com/live?f=c&lastUpdated=1');
+        expect(isAllowedRedirect(pinned, new URL('https://example.com/live?f=c&x=1'),   'https://example.com/live?f=c')).toBe(true);
+        expect(isAllowedRedirect(pinned, new URL('https://example.com/live?f=chargyx'), 'https://example.com/live?f=c')).toBe(false);
     });
 
     test('prefixes end at component boundaries, not mid-segment', () => {
@@ -64,6 +72,19 @@ describe('live-link network boundary', () => {
         expect(isWithinURLPrefix('https://example.com/api.evil/x',  'https://example.com/api')).toBe(false);
         expect(isWithinURLPrefix('https://example.com/api/x',       'https://example.com/api/')).toBe(true);
         expect(isWithinURLPrefix('https://example.com/apix',        'https://example.com/api/')).toBe(false);
+    });
+
+    // The renderer appends "lastUpdated" before the URL reaches this process,
+    // so what arrives here is never quite what externalURLs.conf listed.
+    test('an appended query parameter keeps a URL within its prefix', () => {
+        expect(isWithinURLPrefixAfterQueryAppend('https://example.com/api?lastUpdated=1',   'https://example.com/api')).toBe(true);
+        expect(isWithinURLPrefixAfterQueryAppend('https://example.com/api/x?lastUpdated=1', 'https://example.com/api/')).toBe(true);
+        expect(isWithinURLPrefixAfterQueryAppend('https://example.com/api?f=c&lastUpdated=1', 'https://example.com/api?f=c')).toBe(true);
+        expect(isWithinURLPrefixAfterQueryAppend('https://example.com/api?f=c',               'https://example.com/api?f=c')).toBe(true);
+        expect(isWithinURLPrefixAfterQueryAppend('https://example.com/api?f=chargyevil',      'https://example.com/api?f=chargy')).toBe(false);
+        expect(isWithinURLPrefixAfterQueryAppend('https://example.com/api&evil',   'https://example.com/api')).toBe(false);
+        expect(isWithinURLPrefixAfterQueryAppend('https://example.com/apievil',    'https://example.com/api')).toBe(false);
+        expect(isWithinURLPrefixAfterQueryAppend('https://example.com/api.evil/x', 'https://example.com/api')).toBe(false);
     });
 
     test('clamps payload limits', () => {

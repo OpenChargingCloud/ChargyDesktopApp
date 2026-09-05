@@ -34,7 +34,7 @@ const {
 const {
     parseLiveLinkHTTPSURL,
     validateResolvedAddresses,
-    isWithinURLPrefix,
+    isWithinURLPrefixAfterQueryAppend,
     isAllowedRedirect,
     sanitizePayloadLimit
 }                                                                = require('./liveLinkNetworkSecurity.cjs');
@@ -140,7 +140,7 @@ async function fetchLiveLinkDocument(rawURL, rawMaximumBytes, rawPrefix) {
 
     if (typeof rawPrefix === 'string' && rawPrefix !== '') {
         const prefixURL = parseLiveLinkHTTPSURL(rawPrefix);
-        if (prefixURL.origin !== initialURL.origin || !isWithinURLPrefix(initialURL.href, prefixURL.href))
+        if (prefixURL.origin !== initialURL.origin || !isWithinURLPrefixAfterQueryAppend(initialURL.href, prefixURL.href))
             throw new Error('The live-link URL is outside its configured prefix.');
         prefix = prefixURL.href;
     }

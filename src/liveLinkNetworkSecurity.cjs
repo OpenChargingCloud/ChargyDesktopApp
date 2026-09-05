@@ -144,9 +144,27 @@ function isWithinURLPrefix(href, prefix) {
 
 }
 
+// The URLs checked here have already gained a query parameter - the live
+// link's "lastUpdated" timestamp - before they reach this process. A prefix
+// may itself end inside a query string ("https://host/ctrs?format=chargy"),
+// and there the next parameter follows an "&", which is that component's
+// boundary just as "/" is inside a path. Outside a query an "&" is an ordinary
+// path character, so it only counts once the prefix carries a "?"; otherwise a
+// prefix of "https://host/api" would cover "https://host/api&evil" again.
+function isWithinURLPrefixAfterQueryAppend(href, prefix) {
+
+    if (isWithinURLPrefix(href, prefix))
+        return true;
+
+    return prefix.includes('?') &&
+           href.startsWith(prefix) &&
+           href.charAt(prefix.length) === '&';
+
+}
+
 function isAllowedRedirect(fromURL, toURL, prefix) {
     return fromURL.origin === toURL.origin &&
-           (prefix == null || prefix === '' || isWithinURLPrefix(toURL.href, prefix));
+           (prefix == null || prefix === '' || isWithinURLPrefixAfterQueryAppend(toURL.href, prefix));
 }
 
 function sanitizePayloadLimit(value, maximum = 10 * 1024 * 1024) {
@@ -160,6 +178,7 @@ module.exports = {
     parseLiveLinkHTTPSURL,
     validateResolvedAddresses,
     isWithinURLPrefix,
+    isWithinURLPrefixAfterQueryAppend,
     isAllowedRedirect,
     sanitizePayloadLimit
 };
