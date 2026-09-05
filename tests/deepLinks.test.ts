@@ -6,6 +6,7 @@ import {
     findExternalURLRule,
     getDeepLinkFileName,
     isWithinURLPrefix,
+    isWithinURLPrefixAfterQueryAppend,
     parseExternalURLConfig,
     parseExternalURLConfigMode,
     readResponseWithinLimit,
@@ -104,6 +105,27 @@ describe("Deep link helpers", () => {
         expect(isWithinURLPrefix("https://example.com/api.evil/x",  "https://example.com/api")).toBe(false);
         expect(isWithinURLPrefix("https://example.com/api/x",       "https://example.com/api/")).toBe(true);
         expect(isWithinURLPrefix("https://example.com/apix",        "https://example.com/api/")).toBe(false);
+
+    });
+
+    test("an appended query parameter keeps a URL within its prefix", () => {
+
+        // What the deep-link "token" and the live-link "lastUpdated" timestamp
+        // do to a URL that was already matched against a prefix.
+        expect(isWithinURLPrefixAfterQueryAppend("https://example.com/api?token=1",  "https://example.com/api")).toBe(true);
+        expect(isWithinURLPrefixAfterQueryAppend("https://example.com/api/x?token=1","https://example.com/api/")).toBe(true);
+
+        // A prefix that ends inside a query string is continued by "&".
+        expect(isWithinURLPrefixAfterQueryAppend("https://example.com/api?f=c&token=1", "https://example.com/api?f=c")).toBe(true);
+        expect(isWithinURLPrefixAfterQueryAppend("https://example.com/api?f=c",         "https://example.com/api?f=c")).toBe(true);
+
+        // ... but a pinned query value may not simply be extended.
+        expect(isWithinURLPrefixAfterQueryAppend("https://example.com/api?f=chargyevil", "https://example.com/api?f=chargy")).toBe(false);
+
+        // Outside a query "&" is an ordinary path character and no boundary.
+        expect(isWithinURLPrefixAfterQueryAppend("https://example.com/api&evil",   "https://example.com/api")).toBe(false);
+        expect(isWithinURLPrefixAfterQueryAppend("https://example.com/apievil",    "https://example.com/api")).toBe(false);
+        expect(isWithinURLPrefixAfterQueryAppend("https://example.com/api.evil/x", "https://example.com/api")).toBe(false);
 
     });
 

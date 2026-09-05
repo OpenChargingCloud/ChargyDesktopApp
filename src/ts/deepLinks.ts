@@ -119,6 +119,31 @@ export function isWithinURLPrefix(href:   string,
 
 }
 
+/**
+ * Whether a URL that gained a query parameter still lies within a URL prefix.
+ *
+ * Chargy appends parameters to URLs it has already matched against a prefix:
+ * the deep link's "token", and a live link's "lastUpdated" timestamp. The
+ * result has to stay within that prefix - but a prefix may itself end inside a
+ * query string ("https://host/ctrs?format=chargy"), and there the next
+ * parameter follows an "&", which is that component's boundary just as "/" is
+ * inside a path. Outside a query an "&" is an ordinary path character, so it
+ * only counts once the prefix carries a "?"; otherwise a prefix of
+ * "https://host/api" would cover "https://host/api&evil" again.
+ */
+export function isWithinURLPrefixAfterQueryAppend(href:   string,
+                                                  prefix: string): boolean
+{
+
+    if (isWithinURLPrefix(href, prefix))
+        return true;
+
+    return prefix.includes("?") &&
+           href.startsWith(prefix) &&
+           href.charAt(prefix.length) === "&";
+
+}
+
 export function findExternalURLRule(verifyURL: URL,
                                     rules:     ExternalURLRule[]): ExternalURLRule|null
 {

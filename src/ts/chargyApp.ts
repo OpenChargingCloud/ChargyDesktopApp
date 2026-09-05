@@ -53,6 +53,7 @@ import '../css/chargy.scss';
 import { calculateBETTariffTotal }     from './betTariffCosts';
 import {
     findExternalURLRule,
+    isWithinURLPrefixAfterQueryAppend,
     parseExternalURLConfig,
     parseExternalURLConfigMode,
     type ExternalURLRule
@@ -4397,7 +4398,7 @@ export class ChargyApp {
 
             // Adding the timestamp must not move the URL out of the prefix or
             // origin it was allowed under.
-            if (target.prefix !== undefined && !requestURL.href.startsWith(target.prefix))
+            if (target.prefix !== undefined && !isWithinURLPrefixAfterQueryAppend(requestURL.href, target.prefix))
                 continue;
 
             if (requestURL.origin !== target.url.origin)
