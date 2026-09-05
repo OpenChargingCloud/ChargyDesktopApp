@@ -91,6 +91,7 @@ import {
 }                                      from './liveLinkHeaders';
 import {
     documentSignatureState,
+    liveLinkVerificationResult,
     measurementValueState,
     meterValueSessionState,
     worstLiveLinkState
@@ -525,6 +526,9 @@ interface ChargyElectronAPI {
         isDebug:                boolean;
         noGUI:                  boolean;
         platform:               string;
+
+        /** What --lang resolved to, for the modes that have no window. */
+        cliLanguage?:           string;
 
         // What this run allows beyond the transport rules that hold
         // everywhere, as the main process resolved it. Optional because an
@@ -1842,6 +1846,14 @@ export class ChargyApp {
 
     private getInitialUILanguage(): SupportedLanguage {
 
+        // On the command line there is no window whose language anyone could
+        // have chosen, and --lang is what they said instead. Everything the
+        // renderer produces there is printed by the CLI, so it speaks the CLI's
+        // language rather than the machine's - otherwise one line of the same
+        // output would answer in a different language than the next.
+        if (this.appContext.noGUI && this.isSupportedLanguage(this.appContext.cliLanguage))
+            return this.appContext.cliLanguage;
+
         const storedLanguage = localStorage.getItem("ChargyUILanguage");
 
         if (this.isSupportedLanguage(storedLanguage))
@@ -3086,16 +3098,29 @@ export class ChargyApp {
         if (chargeTransparencyLiveLink.IsAChargeTransparencyLiveLink(result))
         {
 
+            const meterValues = await this.chargy.TryToParseLiveLinkMeterValues(result) ?? null;
+
+            // On the command line there is no display to keep up to date, so
+            // the document is verified once, reported, and that is that. Going
+            // on to show it would start the live reload of a session nobody is
+            // watching - and the timer that keeps would hold the process open
+            // long after the answer had been given.
+            if (this.appContext.noGUI)
+            {
+                this.publishLiveLinkVerificationResult(result, meterValues);
+                return true;
+            }
+
             if (options?.prepareUI === false)
             {
                 this.inputInfosDiv.style.display = 'none';
                 this.errorTextDiv.style.display  = 'none';
             }
 
-            this.showChargeTransparencyLiveLink(
-                result,
-                await this.chargy.TryToParseLiveLinkMeterValues(result) ?? null
-            );
+            this.showChargeTransparencyLiveLink(result, meterValues);
+
+            if (this.appContext.isDebug)
+                this.publishLiveLinkVerificationResult(result, meterValues);
 
             return true;
 
@@ -3294,6 +3319,27 @@ export class ChargyApp {
                 this.chargy.GetMultilanguageText("No charge transparency records found!")
             )
         );
+
+    }
+
+    /**
+     * The same for a live link, which is one document rather than a list of
+     * charging sessions - so it reports one result.
+     *
+     * The verdict is the one the badge would show, built from the same two
+     * things: the signatures over the document, and those over the meter values
+     * measured so far. That is deliberate - what the command line says about a
+     * document and what the window shows for it must not be two different
+     * answers. It also means the live-link reading of a still-running session
+     * applies here too: a session with no stop value yet is not a defect.
+     */
+    private publishLiveLinkVerificationResult(LiveLink:     chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
+                                              MeterValues:  chargeTransparencyRecord.IChargeTransparencyRecord|null): void {
+
+        this.electron.setVerificationResult([{
+            status:   liveLinkVerificationResult(this.liveLinkOverallState(LiveLink, MeterValues)),
+            message:  this.liveLinkSignatureHeadline(LiveLink) ?? undefined
+        }]);
 
     }
 
@@ -4627,8 +4673,18 @@ export class ChargyApp {
     // a signature this application cannot judge because it does not know the
     // algorithm - so each gets its own wording, and the detail lines come from
     // ChargyCore, which knows which of the three it found.
-    private appendLiveLinkSignatureRow(tableDiv:  HTMLDivElement,
-                                       LiveLink:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink): void
+    /**
+     * The one line that says what the signatures over the document came to.
+     *
+     * The window shows it in the signature row and the command line prints it
+     * beside the verdict, so it lives here once: one document, one wording, in
+     * one language - the user's. Null means there is nothing to say at all.
+     *
+     * Naming the ratio is the only honest headline when some verified and some
+     * did not, because neither "verified" nor "not verified" is then true of
+     * the document as a whole.
+     */
+    private liveLinkSignatureHeadline(LiveLink: chargeTransparencyLiveLink.IChargeTransparencyLiveLink): string | null
     {
 
         const verification   = LiveLink.signatureVerification;
@@ -4638,15 +4694,47 @@ export class ChargyApp {
         // signatures carries no verdict. Counting the signatures is then still
         // honest; claiming anything about them would not be.
         if (verification === undefined)
+            return signatureCount > 0 ? this.liveLinkSignatureCountText(signatureCount) : null;
+
+        const countAnd = (message: string): string =>
+                             this.liveLinkSignatureCountText(signatureCount) + " · " + message;
+
+        return verification.status === "unsigned"
+                   ? this.chargy.GetLocalizedMessage("documentNotSignedLabel")
+                   : verification.status === "allValid"
+                         ? countAnd(this.chargy.GetLocalizedMessage("documentSignaturesVerifiedLabel"))
+                         : verification.status === "someValid"
+                               ? countAnd(this.chargy.GetLocalizedMessageWithParameter(
+                                              "documentSignaturesPartiallyVerifiedLabel",
+                                              verification.validCount.toString() + "/" + signatureCount.toString()
+                                          ))
+                               : countAnd(this.chargy.GetLocalizedMessage("documentSignaturesNotVerifiedLabel"));
+
+    }
+
+    private appendLiveLinkSignatureRow(tableDiv:  HTMLDivElement,
+                                       LiveLink:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink): void
+    {
+
+        const verification   = LiveLink.signatureVerification;
+        const headline       = this.liveLinkSignatureHeadline(LiveLink);
+
+        // Nothing was established and there is nothing to count: no row rather
+        // than an empty one.
+        if (headline === null)
+            return;
+
+        // Counted, but not judged - so there is a line to show and no verdict
+        // to colour it with.
+        if (verification === undefined)
         {
 
-            if (signatureCount > 0)
-                this.appendLiveLinkInfoRow(
-                    tableDiv,
-                    "signatureInfos",
-                    '<i class="fas fa-file-signature"></i>',
-                    this.liveLinkSignatureCountText(signatureCount)
-                );
+            this.appendLiveLinkInfoRow(
+                tableDiv,
+                "signatureInfos",
+                '<i class="fas fa-file-signature"></i>',
+                headline
+            );
 
             return;
 
@@ -4670,25 +4758,8 @@ export class ChargyApp {
 
         };
 
-        const countAnd       = (message: string): string =>
-                                   this.liveLinkSignatureCountText(signatureCount) + " · " + message;
-
-        // The colour says how bad it is, the wording says what happened. Naming
-        // the ratio is the only honest headline when some verified and some did
-        // not, because neither "verified" nor "not verified" is then true of the
-        // document as a whole.
+        // The colour says how bad it is, the wording says what happened.
         const state    = documentSignatureState(verification);
-
-        const headline = verification.status === "unsigned"
-                             ? this.chargy.GetLocalizedMessage("documentNotSignedLabel")
-                             : verification.status === "allValid"
-                                   ? countAnd(this.chargy.GetLocalizedMessage("documentSignaturesVerifiedLabel"))
-                                   : verification.status === "someValid"
-                                         ? countAnd(this.chargy.GetLocalizedMessageWithParameter(
-                                                        "documentSignaturesPartiallyVerifiedLabel",
-                                                        verification.validCount.toString() + "/" + signatureCount.toString()
-                                                    ))
-                                         : countAnd(this.chargy.GetLocalizedMessage("documentSignaturesNotVerifiedLabel"));
 
         describe(state,
                  state === "valid"   ? "fas fa-check-circle"

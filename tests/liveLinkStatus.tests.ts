@@ -5,6 +5,7 @@ import type { IDocumentSignaturesResult, IDocumentSignatureResult } from "@open-
 
 import {
     documentSignatureState,
+    liveLinkVerificationResult,
     measurementValueState,
     meterValueSessionState,
     worstLiveLinkState
@@ -156,6 +157,32 @@ describe("The verdict over a whole live link", () => {
         });
 
     });
+
+    //#region What the command line makes of it
+
+    describe("the verdict on the command line", () => {
+
+        // Exit code 0 is a claim that everything held. Only the state that
+        // actually says so may produce it.
+        test("only a verified live link reports a valid signature", () => {
+            expect(liveLinkVerificationResult("valid")).toBe(SessionResult.ValidSignature);
+        });
+
+        test("a demonstrably broken signature reports one", () => {
+            expect(liveLinkVerificationResult("invalid")).toBe(SessionResult.InvalidSignature);
+        });
+
+        // A warning is not a failure, but a script reading exit code 0 would
+        // take it for a confirmation - so it is reported as "nothing was
+        // established" rather than as success.
+        test("a state that established nothing is not success", () => {
+            expect(liveLinkVerificationResult("warning")).toBe(SessionResult.Unvalidated);
+            expect(liveLinkVerificationResult("unvalidated")).toBe(SessionResult.Unvalidated);
+        });
+
+    });
+
+    //#endregion
 
 });
 

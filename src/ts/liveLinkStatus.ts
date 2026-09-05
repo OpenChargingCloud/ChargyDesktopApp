@@ -163,3 +163,38 @@ export function worstLiveLinkState(states: Array<LiveLinkOverallState>): LiveLin
 }
 
 
+/**
+ * The same verdict in the vocabulary the command line speaks.
+ *
+ * The GUI can show a badge that means "this cannot be judged"; a process exit
+ * code cannot. It has three outcomes, and the CLI contract reserves the
+ * successful one for a verification where everything held: only "valid"
+ * becomes ValidSignature and therefore exit code 0.
+ *
+ * A warning is not a failure - but it is not a confirmation either, and a
+ * script that reads exit code 0 would take it for one. So it maps, like a state
+ * with nothing to go on at all, to Unvalidated: "nothing was established here",
+ * which the exit-code mapping turns into 2 rather than into success.
+ */
+export function liveLinkVerificationResult(state: LiveLinkOverallState): chargyInterfaces.SessionVerificationResult {
+
+    switch (state)
+    {
+
+        case "valid":
+            return chargyInterfaces.SessionVerificationResult.ValidSignature;
+
+        case "invalid":
+            return chargyInterfaces.SessionVerificationResult.InvalidSignature;
+
+        // "warning" and "unvalidated": checked, and nothing was established.
+        default:
+            return chargyInterfaces.SessionVerificationResult.Unvalidated;
+
+    }
+
+}
+
+
+
+

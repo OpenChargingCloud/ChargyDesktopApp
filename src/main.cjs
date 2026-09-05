@@ -646,6 +646,10 @@ ipcMain.on('getAppContext', (event) => {
         isDebug:   app.commandLine.hasSwitch('inspect'),
         noGUI:     app.commandLine.hasSwitch('nogui'),
         platform:  process.platform,
+        // What --lang resolved to. In --nogui mode the renderer has no window
+        // whose language a user could have chosen, and it produces text this
+        // process prints, so it follows the CLI rather than the machine.
+        cliLanguage: cliArguments.language,
         transportAllowances,
         versions: {
             chrome:    process.versions.chrome,

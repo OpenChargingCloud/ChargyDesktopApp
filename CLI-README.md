@@ -162,6 +162,12 @@ Current flow:
 
 Successful Charge Transparency Record verification now reports session verification results back to the main process again. In `--nogui` mode this happens before GUI rendering, so the CLI path does not depend on rendering `showChargeTransparencyRecord(...)` before it can print and exit. In debug/inspect mode the GUI is still rendered and the verification result is also sent to stdout.
 
+Charge transparency live links report the same way. A live link describes a charging session that is still running, so showing it starts a reload timer — and on the command line there is no display to keep up to date, only a timer that would hold the process open after the answer had been given. `--nogui` therefore verifies the document, reports one result and returns before any of that; live reloading never starts.
+
+The result is the verdict the window would show as its badge, built from the same two things: the signatures over the document and those over the meter values measured so far (`liveLinkOverallState(...)`). `liveLinkVerificationResult(...)` in `src/ts/liveLinkStatus.ts` maps that verdict into the exit-code vocabulary, and it is deliberately strict: only `valid` becomes `ValidSignature` and therefore exit code `0`. A state that established nothing — an unsigned document, a key this application cannot judge — reports `Unvalidated` and exit code `2`, because a script reading `0` would take it for a confirmation. The message beside it is the same localized line the window shows in its signature row.
+
+Because that line is produced by the renderer, `--nogui` also makes the renderer follow `--lang`: on the command line there is no window whose language anyone could have chosen, and one line of the same output must not answer in a different language than the next.
+
 `--nogui` with neither a file to verify nor `--http` has nothing to do. Instead of starting an invisible renderer that would never receive a verification result, the main process prints the usage help and exits with `0`. The decision is the pure predicate `hasNoActionableInput(cliArguments)` in `src/cliArguments.cjs` (covered by `tests/cliArguments.test.ts`).
 
 ### File Arguments
@@ -436,6 +442,10 @@ The verification service maps results to a stable contract (`src/verificationSer
 
 The `chargy` output format and `--export` are documented in the output help topic but not implemented. They require the full Charge Transparency Record plus a CLI export path; export currently exists only in the GUI through the export button, `showSaveDialog()`, and `writeTextFile(...)`.
 
+### Charge transparency live links over the HTTP API
+
+`--nogui <live link>` verifies a live link and exits, but `QUERY /verify` answers `400 Invalid transparency format!` for the same document. The HTTP path (`handleHttpRequest(...)`) calls `Chargy.DetectAndConvertContentFormat(...)` directly and serializes whatever comes back, rather than going through the renderer's own format dispatch — so it never reaches the live-link branch. Nothing about it is specific to the CLI fix above; it is its own gap.
+
 ## CLI and HTTP Tests
 
 The CLI and HTTP tests are in:
@@ -592,6 +602,7 @@ Keep these few and focused:
 - `--help` prints usage and exits with `0`.
 - `--version` prints the package version and exits with `0`.
 - `--nogui charge_transparency_record.chargy` prints a result and exits.
+- `--nogui charge_transparency_live_link.json` prints a result and exits — without starting the live reload, which would hold the process open.
 - `--nogui missing-file` exits with a defined technical error.
 - `--http=127.0.0.1:PORT` starts the Electron-backed API, answers `/verify`, and shuts down.
 
