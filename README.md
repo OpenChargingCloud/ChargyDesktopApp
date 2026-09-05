@@ -55,7 +55,7 @@ A charge transparency record describes a charging session that has **finished**.
 
 Chargy reloads such a document while the session runs. Because the document comes from outside and may name any URL at all, several gates decide what is actually fetched:
 
-- **The scheme**: only `https` and `wss`, and only hosts on the public internet. No document, setting or user decision widens this.
+- **The scheme**: only `https` and `wss`, and only hosts on the public internet. No document, setting or user decision widens this; only a [test bench run](#test-bench-runs) does.
 - **`externalURLs.conf`**: an origin listed there is polled without asking anyone, and so is the application's own origin. `mode strict` in that file restricts polling to exactly those origins and never asks the user about any other.
 - **The user**, for everything else: asked once per origin and remembered — trust on first use, revocable in the settings, expiring after six months without use. The remembered decisions are stored the way OpenSSH stores a hashed `known_hosts`: salted hashes rather than the origins themselves, so a copy of the store does not reveal where its owner charges.
 - **Electron's main process**, which performs every request: it re-resolves the host and refuses private, reserved or otherwise non-public addresses, refuses credentials in the URL, allows only same-origin redirects within the approved prefix, times out, and caps the response size.
@@ -63,6 +63,20 @@ Chargy reloads such a document while the session runs. Because the document come
 The polling period is what the document asks for, clamped: no faster than every 5 seconds, no slower than once a day, and 10 seconds when the document does not say. A transport may state HTTP headers to send with every request — a literal value, or a one-time password computed per request with [`@open-charging-cloud/totp`](https://www.npmjs.com/package/@open-charging-cloud/totp). What a document asks for is validated twice: once in the renderer and again in the main process, which is what opens the connection. Names a document has no business setting — `Host`, `Origin`, `Cookie`, `Sec-*`, … — are never sent.
 
 The document format and what operators must provide are documented with the [WebApp](https://github.com/OpenChargingCloud/ChargyWebApp/blob/master/tests/fixtures/ChargeTransparencyLive/README.md), which reads the same format.
+
+### Test bench runs
+
+A test bench often speaks plain `http` and lives on the local network, which is exactly what the rules above refuse. Lifting either refusal is a decision for whoever runs the application, never for the document and never for a setting a user could be talked into flipping while Chargy is open — so it is taken once, at startup, from the command line:
+
+```
+npm run start:testbench                        # both switches
+electron . --allow-insecure-transports         # plaintext http:// and ws://
+electron . --allow-private-network-transports  # hosts on the local network
+```
+
+The same switches can be asked for with the environment variables `CHARGY_ALLOW_INSECURE_TRANSPORTS=1` and `CHARGY_ALLOW_PRIVATE_NETWORK_TRANSPORTS=1`, which is what the WebApp takes too.
+
+**A packaged Chargy never takes them, whatever asks.** They only apply to a checkout being run by a developer, and a run that has one of them on says so on both consoles. The main process resolves the switches and hands the answer to the renderer, so the half that decides to poll and the half that opens the connection can never disagree about what is allowed.
 
 
 ## Editions, Versions and Milestones

@@ -93,7 +93,9 @@ function isPublicIPAddress(address) {
 
 }
 
-function parseLiveLinkHTTPSURL(value) {
+// Whether plaintext http:// may be asked over at all. Off unless a test bench
+// says otherwise, and a packaged Chargy can never say so - see buildFlags.cjs.
+function parseLiveLinkHTTPSURL(value, { insecureTransports = false } = {}) {
 
     let url;
 
@@ -104,8 +106,11 @@ function parseLiveLinkHTTPSURL(value) {
         throw new Error('Invalid live-link URL.');
     }
 
-    if (url.protocol !== 'https:')
+    if (url.protocol !== 'https:' &&
+       !(insecureTransports && url.protocol === 'http:'))
+    {
         throw new Error('Live-link URLs must use HTTPS.');
+    }
 
     if (url.username !== '' || url.password !== '')
         throw new Error('Live-link URLs must not contain user information.');
@@ -115,10 +120,13 @@ function parseLiveLinkHTTPSURL(value) {
 
 }
 
-function validateResolvedAddresses(endpoints) {
+function validateResolvedAddresses(endpoints, { privateNetworkTransports = false } = {}) {
 
     if (!Array.isArray(endpoints) || endpoints.length === 0)
         throw new Error('The live-link host did not resolve to an address.');
+
+    if (privateNetworkTransports)
+        return;
 
     for (const endpoint of endpoints) {
         if (endpoint == null || !isPublicIPAddress(endpoint.address))

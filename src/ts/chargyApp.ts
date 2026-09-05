@@ -74,10 +74,16 @@ import {
     serializeTrustedOriginsStore,
     touchTrustedOrigin,
     trustLabelForOrigin,
+    transportProtocolProblem,
     trustedOriginExpiry,
     upsertTrustedOrigin,
+    type ITransportAllowances,
     type ITrustedOriginsStore
 }                                      from './liveLinkTrust';
+import {
+    transportAllowancesOf,
+    transportAllowanceWarnings
+}                                      from './buildFlags';
 import {
     customRequestHeaders,
     resolveRequestHeaders,
@@ -519,6 +525,15 @@ interface ChargyElectronAPI {
         isDebug:                boolean;
         noGUI:                  boolean;
         platform:               string;
+
+        // What this run allows beyond the transport rules that hold
+        // everywhere, as the main process resolved it. Optional because an
+        // absent answer has to mean the strict rules, never the relaxed ones.
+        transportAllowances?: {
+            insecureTransports?:        boolean;
+            privateNetworkTransports?:  boolean;
+        };
+
         versions: {
             chrome?:                string;
             electron?:              string;
@@ -584,6 +599,12 @@ export class ChargyApp {
 
     private readonly electron:                           ChargyElectronAPI                 = window.chargyElectron;
     private readonly appContext:                         ReturnType<ChargyElectronAPI["getAppContext"]>;
+
+    // What this run allows beyond the transport rules that hold everywhere.
+    // The main process resolved it once at startup, so this is decided here
+    // too, once, and is the same for every document the application sees.
+    private readonly transportAllowances:                ITransportAllowances;
+
     private readonly commandLineArguments:               Array<string>                     = [];
     private readonly platform:                           string                            = "";
 
@@ -721,12 +742,25 @@ export class ChargyApp {
         //#region Set parameters
 
         this.appContext                               = this.electron.getAppContext();
+        this.transportAllowances                      = transportAllowancesOf(this.appContext);
         this.versionsURL                              = versionsURL         ?? "https://chargy.charging.cloud/apps/desktop/versions";
         this.showFeedbackSection                      = showFeedbackSection ?? false;
         this.defaultFeedbackEMail                     = feedbackEMail       ?? [];
         this.defaultFeedbackHotline                   = feedbackHotline     ?? [];
         this.defaultIssueURL                          = issueURL            ?? "";
         this.UILanguage                               = this.getInitialUILanguage();
+
+        //#endregion
+
+        //#region Say it when this run weakens a transport rule
+
+        // A run with one of these switches on is a test bench, and whoever
+        // opens the developer tools should be able to see that it is - the rule
+        // it relaxes is otherwise invisible until a document happens to
+        // exercise it. A packaged Chargy never has them on, so this stays quiet
+        // where it matters.
+        for (const warning of transportAllowanceWarnings(this.transportAllowances))
+            console.warn(warning);
 
         //#endregion
 
@@ -3697,6 +3731,19 @@ export class ChargyApp {
                 continue;
             }
 
+            // The scheme is decided before any trust tier, and no tier may
+            // waive it: an externalURLs.conf prefix and the installation's own
+            // origin both skip the structural rules below, and neither of them
+            // gets to send a poll in the clear. Only a run that was told to
+            // allow http:// does.
+            const protocolProblem = transportProtocolProblem(transportURL, appIsLoopback, this.transportAllowances);
+
+            if (protocolProblem !== null)
+            {
+                console.log("Not reloading this charge transparency live link from '" + transportURL.origin + "': " + protocolProblem + ".");
+                continue;
+            }
+
             const rule = this.findExternalURLRule(transportURL, rules);
 
             if (rule !== null)
@@ -3724,7 +3771,7 @@ export class ChargyApp {
 
             // The structural rules come before any consent: what fails them
             // is not even asked about.
-            const problem = pollTargetProblem(transportURL, appIsLoopback);
+            const problem = pollTargetProblem(transportURL, appIsLoopback, this.transportAllowances);
 
             if (problem !== null)
             {

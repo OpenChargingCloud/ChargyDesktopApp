@@ -3,10 +3,15 @@ import { describe, expect, test } from 'vitest';
 
 const require = createRequire(import.meta.url);
 
+type TransportAllowances = {
+    insecureTransports?:        boolean;
+    privateNetworkTransports?:  boolean;
+};
+
 type LiveLinkNetworkSecurityModule = {
     isPublicIPAddress:         (address: string) => boolean;
-    parseLiveLinkHTTPSURL:     (value: string) => URL;
-    validateResolvedAddresses: (endpoints: Array<{ address: string }>) => void;
+    parseLiveLinkHTTPSURL:     (value: string, allowances?: TransportAllowances) => URL;
+    validateResolvedAddresses: (endpoints: Array<{ address: string }>, allowances?: TransportAllowances) => void;
     sanitizeLiveLinkHeaders:   (headers: unknown) => Record<string, string>;
     isWithinURLPrefix:         (href: string, prefix: string) => boolean;
     isWithinURLPrefixAfterQueryAppend: (href: string, prefix: string) => boolean;
@@ -49,6 +54,35 @@ describe('live-link network boundary', () => {
         expect(() => { validateResolvedAddresses([{ address: '1.1.1.1' }]); }).not.toThrow();
         expect(() => { validateResolvedAddresses([{ address: '1.1.1.1' }, { address: '127.0.0.1' }]); }).toThrow(/non-public/);
         expect(() => { validateResolvedAddresses([]); }).toThrow(/did not resolve/);
+    });
+
+    test('lifts the scheme and address rules only for a run that allows it', () => {
+
+        // The main process is the half that opens the connection, so it applies
+        // the same two switches the renderer does - and refuses both by
+        // default, including when the allowances say so explicitly.
+        expect(() => parseLiveLinkHTTPSURL('http://example.com/live')).toThrow(/HTTPS/);
+        expect(() => parseLiveLinkHTTPSURL('http://example.com/live', {})).toThrow(/HTTPS/);
+        expect(() => parseLiveLinkHTTPSURL('http://example.com/live', { insecureTransports: false })).toThrow(/HTTPS/);
+
+        expect(parseLiveLinkHTTPSURL('http://example.com/live', { insecureTransports: true }).href).toBe('http://example.com/live');
+
+        // A switch opens its own rule and nothing else: credentials stay
+        // refused, and so does a scheme neither switch is about.
+        expect(() => parseLiveLinkHTTPSURL('http://user:pass@example.com/live', { insecureTransports: true })).toThrow(/user information/);
+        expect(() => parseLiveLinkHTTPSURL('ftp://example.com/live',            { insecureTransports: true })).toThrow(/HTTPS/);
+
+        // Likewise for the resolved addresses, which is the other switch.
+        const localhost = [ { address: '127.0.0.1' } ];
+
+        expect(() => { validateResolvedAddresses(localhost); }).toThrow(/non-public/);
+        expect(() => { validateResolvedAddresses(localhost, { insecureTransports: true }); }).toThrow(/non-public/);
+        expect(() => { validateResolvedAddresses(localhost, { privateNetworkTransports: true }); }).not.toThrow();
+
+        // A host that resolves to nothing is still a host that cannot be
+        // reached - that is not what the switch is about.
+        expect(() => { validateResolvedAddresses([], { privateNetworkTransports: true }); }).toThrow(/did not resolve/);
+
     });
 
     test('validates the document headers again rather than trusting the renderer', () => {

@@ -91,6 +91,13 @@ export interface ITrustedOriginsStore {
 }
 
 /**
+ * The two bounds below are this application's policy, not the format's: how
+ * often an https transport is asked when a document does not say is the
+ * format's own default, and ChargyCore states it as defaultRefreshSeconds.
+ * Duplicating the number here would give it two sources of truth.
+ */
+
+/**
  * A reloading client can hammer a server no faster than this, whatever the
  * document says: a viral QR code must not turn every phone that scans it
  * into a flood.
@@ -629,22 +636,91 @@ export function isPrivateNetworkHost(hostname: string): boolean {
 }
 
 /**
- * Why this URL must not be polled, or null if it may be - subject to the
- * user's consent, which is the next gate, not this one.
+ * What a run allows beyond the rules that hold everywhere. Both are off
+ * unless a test bench was explicitly started with them - the defaults here say
+ * so, so a caller that passes nothing gets the strict rules.
  *
- * An application served from loopback is a developer's, and a developer polls
- * their own machine: for them both rules are waived.
+ * The values come from the main process (see buildFlags.cjs), never from the
+ * document, a setting or anything else a user could be talked into changing.
+ * They are passed in rather than read here so that this module stays a set of
+ * plain functions, and so that both answers can be tested.
  */
-export function pollTargetProblem(url: URL, appIsLoopback: boolean): string | null {
+export interface ITransportAllowances {
+
+    /** Whether http:// and ws:// URLs may be used at all. */
+    insecureTransports?:        boolean;
+
+    /** Whether hosts on the local network may be reached. */
+    privateNetworkTransports?:  boolean;
+
+}
+
+/**
+ * Why this URL's scheme must not be used, or null if it may be.
+ *
+ * Encrypted schemes - https and wss - are always fine, their plaintext
+ * counterparts only in a run that was told to allow them, and everything else
+ * never. This is the rule that no trust decision may waive: what a consent
+ * tier can decide is whether an origin may be asked at all, not whether a
+ * request may travel in the clear, so it is asked before the tiers rather than
+ * after them.
+ *
+ * ws and wss are listed although nothing here opens a websocket yet: the rule
+ * belongs to the scheme, not to the code that happens to exist.
+ *
+ * An application served from loopback is a developer's, and a developer talks
+ * to their own machine: for them the rule is waived, as the others are.
+ */
+export function transportProtocolProblem(url:            URL,
+                                         appIsLoopback:  boolean,
+                                         allowances:     ITransportAllowances = {}): string | null {
 
     if (appIsLoopback && isLoopbackHost(url.hostname))
         return null;
 
-    if (url.protocol !== "https:")
-        return "only https is polled, not " + url.protocol.replace(":", "");
+    if (url.protocol === "https:" || url.protocol === "wss:")
+        return null;
 
-    if (isPrivateNetworkHost(url.hostname))
+    if (url.protocol === "http:" || url.protocol === "ws:")
+    {
+        return allowances.insecureTransports === true
+                   ? null
+                   : "unencrypted " + url.protocol.replace(":", "") + " is used only by a run that allows it";
+    }
+
+    return "only encrypted transports are used, not " + url.protocol.replace(":", "");
+
+}
+
+/**
+ * Why this URL must not be polled, or null if it may be - subject to the
+ * user's consent, which is the next gate, not this one.
+ *
+ * An application served from loopback is a developer's, and a developer polls
+ * their own machine: for them every rule is waived.
+ */
+export function pollTargetProblem(url:            URL,
+                                  appIsLoopback:  boolean,
+                                  allowances:     ITransportAllowances = {}): string | null {
+
+    const protocolProblem = transportProtocolProblem(url, appIsLoopback, allowances);
+
+    if (protocolProblem !== null)
+        return protocolProblem;
+
+    if (appIsLoopback && isLoopbackHost(url.hostname))
+        return null;
+
+    // A poll is an http request. A scheme another transport may use is
+    // therefore still not one to ask over.
+    if (url.protocol !== "https:" && url.protocol !== "http:")
+        return "a poll asks over https, not " + url.protocol.replace(":", "");
+
+    if (isPrivateNetworkHost(url.hostname) &&
+        allowances.privateNetworkTransports !== true)
+    {
         return "the host is not on the public internet";
+    }
 
     return null;
 

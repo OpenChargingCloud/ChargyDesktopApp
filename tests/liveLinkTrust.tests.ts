@@ -20,6 +20,7 @@ import {
     sanitizeTrustLabel,
     serializeTrustedOriginsStore,
     touchTrustedOrigin,
+    transportProtocolProblem,
     trustLabelForOrigin,
     trustedOriginExpiry,
     upsertTrustedOrigin
@@ -498,6 +499,63 @@ describe("Live link trust", () => {
         expect(clamp(1e309)).toBe(maximumRefreshSeconds);   // 1e309 parses to Infinity
         expect(clamp(1e308)).toBe(maximumRefreshSeconds);
         expect(clamp(600)).toBe(600);
+
+    });
+
+    //#endregion
+
+    //#region The transport switches of a test bench run
+
+    test("refuses plaintext transports unless the run allows them", () => {
+
+        const http = new URL("http://api.example.com/live");
+        const ws   = new URL("ws://api.example.com/live");
+
+        // The default is the strict rule, and it is the default of the
+        // signature itself: a caller that passes no allowances gets it.
+        expect(transportProtocolProblem(http, false)).not.toBeNull();
+        expect(transportProtocolProblem(ws,   false)).not.toBeNull();
+        expect(transportProtocolProblem(http, false, {})).not.toBeNull();
+        expect(transportProtocolProblem(http, false, { insecureTransports: false })).not.toBeNull();
+
+        expect(transportProtocolProblem(http, false, { insecureTransports: true })).toBeNull();
+        expect(transportProtocolProblem(ws,   false, { insecureTransports: true })).toBeNull();
+
+        // The encrypted schemes never needed a switch, and everything else
+        // stays refused with one.
+        expect(transportProtocolProblem(new URL("https://api.example.com/live"), false)).toBeNull();
+        expect(transportProtocolProblem(new URL("wss://api.example.com/live"),   false)).toBeNull();
+        expect(transportProtocolProblem(new URL("ftp://api.example.com/live"),   false, { insecureTransports: true })).not.toBeNull();
+        expect(transportProtocolProblem(new URL("file:///etc/passwd"),           false, { insecureTransports: true })).not.toBeNull();
+
+    });
+
+    test("polls http only with the switch, and asks over http(s) alone", () => {
+
+        expect(pollTargetProblem(new URL("http://api.example.com/live"), false)).not.toBeNull();
+        expect(pollTargetProblem(new URL("http://api.example.com/live"), false, { insecureTransports: true })).toBeNull();
+
+        // A websocket scheme passes the scheme rule but is still nothing to
+        // send a poll to.
+        expect(pollTargetProblem(new URL("wss://api.example.com/live"), false)).not.toBeNull();
+
+    });
+
+    test("reaches the local network only with its own switch", () => {
+
+        const lan = new URL("https://192.168.1.1/live");
+
+        expect(pollTargetProblem(lan, false)).not.toBeNull();
+        expect(pollTargetProblem(lan, false, { insecureTransports: true })).not.toBeNull();
+        expect(pollTargetProblem(lan, false, { privateNetworkTransports: true })).toBeNull();
+
+        // The two switches are independent: a plaintext test bench on the LAN
+        // needs both, and each alone opens only its own rule.
+        const insecureLAN = new URL("http://192.168.1.1/live");
+
+        expect(pollTargetProblem(insecureLAN, false, { insecureTransports: true })).not.toBeNull();
+        expect(pollTargetProblem(insecureLAN, false, { privateNetworkTransports: true })).not.toBeNull();
+        expect(pollTargetProblem(insecureLAN, false, { insecureTransports: true, privateNetworkTransports: true })).toBeNull();
 
     });
 

@@ -10,6 +10,7 @@
   "type": "module",
   "scripts": {
     "start": "electron .",
+    "start:testbench": "electron . --allow-insecure-transports --allow-private-network-transports",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src/ts tests",
     "test": "vitest run --config tests/vitest.config.ts",

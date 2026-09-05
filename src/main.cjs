@@ -39,6 +39,10 @@ const {
     isAllowedRedirect,
     sanitizePayloadLimit
 }                                                                = require('./liveLinkNetworkSecurity.cjs');
+const {
+    resolveTransportAllowances,
+    transportAllowanceWarnings
+}                                                                = require('./buildFlags.cjs');
 const cliI18N                                                    = require('./i18n_CLI.json');
 const coreI18N                                                   = require('@open-charging-cloud/chargy-core/i18n.json');
 const desktopI18N                                                = require('./i18n.json');
@@ -73,6 +77,25 @@ const readPaths                  = createPathAllowList();
 const savePaths                  = createPathAllowList();
 const pendingHttpRequests        = new Map();
 
+// What this run allows beyond the transport rules that hold everywhere.
+// Resolved once, here, from what the application was started with - and a
+// packaged Chargy always answers "no" to both, whatever asks. This process
+// opens the connections, so this is the answer that decides; the renderer is
+// handed the same one with its context so the two halves cannot disagree.
+const transportAllowances        = resolveTransportAllowances({
+                                       isPackaged:  app.isPackaged,
+                                       argv:        process.argv,
+                                       env:         process.env
+                                   });
+
+for (const warning of transportAllowanceWarnings({
+                          isPackaged:  app.isPackaged,
+                          argv:        process.argv,
+                          env:         process.env
+                      })) {
+    console.warn(warning);
+}
+
 function allowReadPath(fileName) {
     return readPaths.allow(fileName);
 }
@@ -91,7 +114,7 @@ async function resolvePublicLiveLinkHost(url) {
         net.resolveHost(hostname, { queryType: 'AAAA', cacheUsage: 'disallowed' })
     ]);
     const endpoints = resolutions.flatMap(result => result.status === 'fulfilled' ? result.value.endpoints : []);
-    validateResolvedAddresses(endpoints);
+    validateResolvedAddresses(endpoints, transportAllowances);
 }
 
 async function readLiveLinkResponse(response, maximumBytes) {
@@ -136,7 +159,7 @@ async function readLiveLinkResponse(response, maximumBytes) {
 async function fetchLiveLinkDocument(rawURL, rawMaximumBytes, rawPrefix, rawHeaders) {
 
     const maximumBytes = sanitizePayloadLimit(rawMaximumBytes);
-    const initialURL   = parseLiveLinkHTTPSURL(rawURL);
+    const initialURL   = parseLiveLinkHTTPSURL(rawURL, transportAllowances);
 
     // What the document asked to have sent along, as this process is willing
     // to send it. The renderer validated it already; this is the half that
@@ -146,7 +169,7 @@ async function fetchLiveLinkDocument(rawURL, rawMaximumBytes, rawPrefix, rawHead
     let prefix         = null;
 
     if (typeof rawPrefix === 'string' && rawPrefix !== '') {
-        const prefixURL = parseLiveLinkHTTPSURL(rawPrefix);
+        const prefixURL = parseLiveLinkHTTPSURL(rawPrefix, transportAllowances);
         if (prefixURL.origin !== initialURL.origin || !isWithinURLPrefixAfterQueryAppend(initialURL.href, prefixURL.href))
             throw new Error('The live-link URL is outside its configured prefix.');
         prefix = prefixURL.href;
@@ -183,7 +206,7 @@ async function fetchLiveLinkDocument(rawURL, rawMaximumBytes, rawPrefix, rawHead
             const location = response.headers.get('location');
             if (location == null || redirects === liveLinkMaximumRedirects)
                 throw new Error('The live-link server returned an unusable redirect.');
-            const redirectedURL = parseLiveLinkHTTPSURL(new URL(location, currentURL).href);
+            const redirectedURL = parseLiveLinkHTTPSURL(new URL(location, currentURL).href, transportAllowances);
             if (!isAllowedRedirect(currentURL, redirectedURL, prefix))
                 throw new Error('The live-link server redirected outside the approved target.');
             currentURL = redirectedURL;
@@ -623,6 +646,7 @@ ipcMain.on('getAppContext', (event) => {
         isDebug:   app.commandLine.hasSwitch('inspect'),
         noGUI:     app.commandLine.hasSwitch('nogui'),
         platform:  process.platform,
+        transportAllowances,
         versions: {
             chrome:    process.versions.chrome,
             electron:  process.versions.electron,
