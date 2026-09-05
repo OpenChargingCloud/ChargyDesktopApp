@@ -127,6 +127,77 @@ function validateResolvedAddresses(endpoints) {
 
 }
 
+// The headers a live link asked for, as this process is willing to send them.
+//
+// The renderer has already validated what the document asked for, but what
+// arrives here arrives over IPC and is checked again rather than trusted: this
+// process is what opens the connection, and it is the last place where a header
+// can still be refused. The limits are the renderer's, deliberately - two
+// halves of one application disagreeing about what a document may ask for is
+// how a document ends up meaning two different things.
+const maximumLiveLinkHeaders          = 16;
+const maximumLiveLinkHeaderNameLength = 64;
+const maximumLiveLinkHeaderValueLength = 1024;
+
+const liveLinkHeaderNamePattern  = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
+const liveLinkHeaderValuePattern = /^[\t\x20-\x7E]*$/;
+
+// What a document does not get to write on this application's behalf. Accept
+// is left out on purpose: it is this process's own, set after these headers.
+const forbiddenLiveLinkHeaderNames = new Set([
+    'accept-charset', 'accept-encoding', 'access-control-request-headers',
+    'access-control-request-method', 'connection', 'content-length', 'cookie',
+    'cookie2', 'date', 'dnt', 'expect', 'host', 'keep-alive', 'origin',
+    'referer', 'set-cookie', 'te', 'trailer', 'transfer-encoding', 'upgrade',
+    'via', 'accept'
+]);
+
+const forbiddenLiveLinkHeaderPrefixes = [ 'proxy-', 'sec-' ];
+
+function sanitizeLiveLinkHeaders(headers) {
+
+    const sanitized = {};
+
+    if (headers == null || typeof headers !== 'object' || Array.isArray(headers))
+        return sanitized;
+
+    const taken = new Set();
+
+    for (const [ name, value ] of Object.entries(headers)) {
+
+        if (Object.keys(sanitized).length >= maximumLiveLinkHeaders)
+            break;
+
+        if (typeof name !== 'string' || typeof value !== 'string')
+            continue;
+
+        const key = name.toLowerCase();
+
+        if (name.length > maximumLiveLinkHeaderNameLength ||
+            !liveLinkHeaderNamePattern.test(name)         ||
+            taken.has(key)                                ||
+            forbiddenLiveLinkHeaderNames.has(key)         ||
+            forbiddenLiveLinkHeaderPrefixes.some(prefix => key.startsWith(prefix)))
+        {
+            continue;
+        }
+
+        if (value === ''                                   ||
+            value.length > maximumLiveLinkHeaderValueLength ||
+            !liveLinkHeaderValuePattern.test(value))
+        {
+            continue;
+        }
+
+        sanitized[name] = value;
+        taken.add(key);
+
+    }
+
+    return sanitized;
+
+}
+
 // A lexical startsWith() alone would let a prefix of "https://host/api" also
 // cover "https://host/apievil". The match therefore has to end at a component
 // boundary: either the prefix itself ends with one, or the URL continues with
@@ -177,6 +248,7 @@ module.exports = {
     isPublicIPAddress,
     parseLiveLinkHTTPSURL,
     validateResolvedAddresses,
+    sanitizeLiveLinkHeaders,
     isWithinURLPrefix,
     isWithinURLPrefixAfterQueryAppend,
     isAllowedRedirect,

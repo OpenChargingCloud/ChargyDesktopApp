@@ -27,7 +27,7 @@ contextBridge.exposeInMainWorld('chargyElectron', {
 
     readExternalURLConfig: () => ipcRenderer.invoke('readExternalURLConfig'),
 
-    fetchLiveLink: (url, maximumBytes, prefix) => ipcRenderer.invoke('fetchLiveLink', url, maximumBytes, prefix),
+    fetchLiveLink: (url, maximumBytes, prefix, headers) => ipcRenderer.invoke('fetchLiveLink', url, maximumBytes, prefix, headers),
 
     completeHttpRequest: (requestId, result) => ipcRenderer.send('completeHttpRequest', requestId, result),
 

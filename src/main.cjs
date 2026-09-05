@@ -34,6 +34,7 @@ const {
 const {
     parseLiveLinkHTTPSURL,
     validateResolvedAddresses,
+    sanitizeLiveLinkHeaders,
     isWithinURLPrefixAfterQueryAppend,
     isAllowedRedirect,
     sanitizePayloadLimit
@@ -132,10 +133,16 @@ async function readLiveLinkResponse(response, maximumBytes) {
     return data;
 }
 
-async function fetchLiveLinkDocument(rawURL, rawMaximumBytes, rawPrefix) {
+async function fetchLiveLinkDocument(rawURL, rawMaximumBytes, rawPrefix, rawHeaders) {
 
     const maximumBytes = sanitizePayloadLimit(rawMaximumBytes);
     const initialURL   = parseLiveLinkHTTPSURL(rawURL);
+
+    // What the document asked to have sent along, as this process is willing
+    // to send it. The renderer validated it already; this is the half that
+    // opens the connection, so it does not take that on trust.
+    const customHeaders = sanitizeLiveLinkHeaders(rawHeaders);
+
     let prefix         = null;
 
     if (typeof rawPrefix === 'string' && rawPrefix !== '') {
@@ -161,7 +168,11 @@ async function fetchLiveLinkDocument(rawURL, rawMaximumBytes, rawPrefix) {
                 credentials:  'omit',
                 redirect:     'manual',
                 signal:       controller.signal,
-                headers:      { Accept: 'application/json, application/*+json;q=0.9, text/plain;q=0.5' }
+                // The document's headers go in first, so this application's own
+                // Accept is the one that survives a document that tried to name
+                // it. The sanitizer refuses it too; a request is not the place
+                // to rely on only one of the two.
+                headers:      { ...customHeaders, Accept: 'application/json, application/*+json;q=0.9, text/plain;q=0.5' }
             });
         }
         finally {
@@ -700,12 +711,12 @@ ipcMain.handle('readExternalURLConfig', async event => {
     }
 });
 
-ipcMain.handle('fetchLiveLink', async (event, url, maximumBytes, prefix) => {
+ipcMain.handle('fetchLiveLink', async (event, url, maximumBytes, prefix, headers) => {
     if (!isMainRendererSender(event))
         throw new Error('Untrusted IPC sender.');
 
     try {
-        return await fetchLiveLinkDocument(url, maximumBytes, prefix);
+        return await fetchLiveLinkDocument(url, maximumBytes, prefix, headers);
     }
     catch (exception) {
         return {

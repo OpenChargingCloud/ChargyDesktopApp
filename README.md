@@ -46,6 +46,23 @@ Supported representations include:
 - **Archive formats** such as ***tar, ZIP, tar.gz***, and similar formats that combine or compress multiple charge transparency files.
 - **QR-Code images**, such as ***PNG, JPG, JPEG or SVG files***, where the QR-Code represents a charge transparency data set.
 - **PDF/A-3** files transporting a charge transparency file as an embedded additional data stream.
+- **Charge Transparency Live Links**, a JSON-LD document describing a charging session that is still **running**: where its live data can be fetched, the public keys to verify it with, and the signed meter values measured so far. See [Charge Transparency Live Links](#charge-transparency-live-links) below.
+
+
+## Charge Transparency Live Links
+
+A charge transparency record describes a charging session that has **finished**. A charge transparency live link describes one that is still **running**: it carries what is already known — the station, the meter, the public keys, the signed meter values measured so far — and says where the next version of itself can be fetched.
+
+Chargy reloads such a document while the session runs. Because the document comes from outside and may name any URL at all, several gates decide what is actually fetched:
+
+- **The scheme**: only `https` and `wss`, and only hosts on the public internet. No document, setting or user decision widens this.
+- **`externalURLs.conf`**: an origin listed there is polled without asking anyone, and so is the application's own origin. `mode strict` in that file restricts polling to exactly those origins and never asks the user about any other.
+- **The user**, for everything else: asked once per origin and remembered — trust on first use, revocable in the settings, expiring after six months without use. The remembered decisions are stored the way OpenSSH stores a hashed `known_hosts`: salted hashes rather than the origins themselves, so a copy of the store does not reveal where its owner charges.
+- **Electron's main process**, which performs every request: it re-resolves the host and refuses private, reserved or otherwise non-public addresses, refuses credentials in the URL, allows only same-origin redirects within the approved prefix, times out, and caps the response size.
+
+The polling period is what the document asks for, clamped: no faster than every 5 seconds, no slower than once a day, and 10 seconds when the document does not say. A transport may state HTTP headers to send with every request — a literal value, or a one-time password computed per request with [`@open-charging-cloud/totp`](https://www.npmjs.com/package/@open-charging-cloud/totp). What a document asks for is validated twice: once in the renderer and again in the main process, which is what opens the connection. Names a document has no business setting — `Host`, `Origin`, `Cookie`, `Sec-*`, … — are never sent.
+
+The document format and what operators must provide are documented with the [WebApp](https://github.com/OpenChargingCloud/ChargyWebApp/blob/master/tests/fixtures/ChargeTransparencyLive/README.md), which reads the same format.
 
 
 ## Editions, Versions and Milestones

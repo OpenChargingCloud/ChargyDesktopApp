@@ -79,6 +79,11 @@ import {
     type ITrustedOriginsStore
 }                                      from './liveLinkTrust';
 import {
+    customRequestHeaders,
+    resolveRequestHeaders,
+    type ICustomHeader
+}                                      from './liveLinkHeaders';
+import {
     documentSignatureState,
     measurementValueState,
     meterValueSessionState,
@@ -530,7 +535,7 @@ interface ChargyElectronAPI {
     calculateApplicationHash():                           Promise<string>;
     openExternal(url: string):                            Promise<boolean>;
     readExternalURLConfig():                             Promise<string>;
-    fetchLiveLink(url: string, maxPayloadBytes: number, prefix?: string): Promise<{ ok: boolean; status: number; data?: ArrayBuffer; error?: string }>;
+    fetchLiveLink(url: string, maxPayloadBytes: number, prefix?: string, headers?: Record<string, string>): Promise<{ ok: boolean; status: number; data?: ArrayBuffer; error?: string }>;
     completeHttpRequest(requestId: string, result: any):  void;
     setVerificationResult(result: any):                   boolean;
 
@@ -3595,15 +3600,27 @@ export class ChargyApp {
 
         const transport = this.liveLinkTransports(LiveLink).find(
                               (candidate): candidate is chargeTransparencyLiveLink.TransportHTTPS =>
-                                  candidate.type === "https"              &&
-                                  typeof candidate.refresh === "number"   &&
-                                  candidate.refresh > 0
+                                  candidate.type === "https"
                           );
 
-        const refresh   = transport?.refresh;
-
-        if (transport === undefined || refresh === undefined)
+        if (transport === undefined)
             return;
+
+        // An https transport is there to be asked, so a document that names one
+        // without saying how often is still polled - at the default period.
+        // Only a value that is no period at all falls back to it; a value that
+        // is one is clamped just below.
+        const refresh       = typeof transport.refresh === "number" &&
+                              Number.isFinite(transport.refresh)    &&
+                              transport.refresh > 0
+                                  ? transport.refresh
+                                  : chargeTransparencyLiveLink.defaultRefreshSeconds;
+
+        // What the document wants sent along with every poll of this transport,
+        // and only of this transport: the headers belong to the endpoints it
+        // names, not to any other transport's. Read once here - what a value
+        // provider computes is read again before every single request.
+        const customHeaders = customRequestHeaders(transport.customHeaders);
 
         // Whatever the document says, a reloading client hammers no one: a
         // viral QR code must not turn every phone that scans it into a flood,
@@ -3946,7 +3963,7 @@ export class ChargyApp {
 
             try
             {
-                await this.reloadLiveLink(LiveLink, targets);
+                await this.reloadLiveLink(LiveLink, targets, customHeaders);
             }
             catch
             {
@@ -4387,8 +4404,9 @@ export class ChargyApp {
     // Asks each URL in turn until one answers with a live link. A document that
     // describes a different session is ignored, and so is one that is not newer
     // than what is on screen.
-    private async reloadLiveLink(LiveLink:  chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
-                                 targets:   Array<LiveLinkPollTarget>): Promise<void>
+    private async reloadLiveLink(LiveLink:       chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
+                                 targets:        Array<LiveLinkPollTarget>,
+                                 customHeaders:  Array<ICustomHeader> = []): Promise<void>
     {
 
         for (const target of targets)
@@ -4407,14 +4425,38 @@ export class ChargyApp {
             // Electron's main process performs the network request so this
             // works without browser CORS exceptions. It also resolves and
             // rejects private/reserved addresses, limits same-origin redirects,
-            // strips credentials, times out and enforces the payload limit.
+            // strips credentials, times out and enforces the payload limit -
+            // and it validates these headers again rather than trusting what
+            // the renderer hands it.
+            //
+            // They are resolved here, not once for the series: a one-time
+            // password is only ever valid for the request it was computed for.
             const response = await this.electron.fetchLiveLink(
                                        requestURL.href,
                                        target.maxPayloadBytes,
-                                       target.prefix
-                                   ).catch(() => null);
+                                       target.prefix,
+                                       resolveRequestHeaders(customHeaders)
+                                   ).catch((error: unknown) => {
+                                       // A poll that cannot even be sent - a
+                                       // server that is down, a host that no
+                                       // longer resolves - is not fatal: what is
+                                       // on screen stays. But it is silent, and
+                                       // a silent nothing is the hardest thing
+                                       // to diagnose, so it says so here.
+                                       console.log("Could not reload this charge transparency live link from '" + requestURL.origin + "': " + (error instanceof Error ? error.message : String(error)));
+                                       return null;
+                                   });
 
-            if (response?.ok !== true || response.data == null)
+            if (response === null)
+                continue;
+
+            if (!response.ok)
+            {
+                console.log("Could not reload this charge transparency live link from '" + requestURL.origin + "': " + (response.error ?? "HTTP " + response.status.toString()) + ".");
+                continue;
+            }
+
+            if (response.data == null)
                 continue;
 
             const text     = new TextDecoder().decode(response.data);

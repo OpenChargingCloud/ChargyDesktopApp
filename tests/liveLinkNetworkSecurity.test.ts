@@ -7,6 +7,7 @@ type LiveLinkNetworkSecurityModule = {
     isPublicIPAddress:         (address: string) => boolean;
     parseLiveLinkHTTPSURL:     (value: string) => URL;
     validateResolvedAddresses: (endpoints: Array<{ address: string }>) => void;
+    sanitizeLiveLinkHeaders:   (headers: unknown) => Record<string, string>;
     isWithinURLPrefix:         (href: string, prefix: string) => boolean;
     isWithinURLPrefixAfterQueryAppend: (href: string, prefix: string) => boolean;
     isAllowedRedirect:         (fromURL: URL, toURL: URL, prefix?: string|null) => boolean;
@@ -17,6 +18,7 @@ const {
     isPublicIPAddress,
     parseLiveLinkHTTPSURL,
     validateResolvedAddresses,
+    sanitizeLiveLinkHeaders,
     isWithinURLPrefix,
     isWithinURLPrefixAfterQueryAppend,
     isAllowedRedirect,
@@ -47,6 +49,47 @@ describe('live-link network boundary', () => {
         expect(() => { validateResolvedAddresses([{ address: '1.1.1.1' }]); }).not.toThrow();
         expect(() => { validateResolvedAddresses([{ address: '1.1.1.1' }, { address: '127.0.0.1' }]); }).toThrow(/non-public/);
         expect(() => { validateResolvedAddresses([]); }).toThrow(/did not resolve/);
+    });
+
+    test('validates the document headers again rather than trusting the renderer', () => {
+
+        expect(sanitizeLiveLinkHeaders({ 'X-Key1': 'headerValue1' })).toEqual({ 'X-Key1': 'headerValue1' });
+
+        // Nothing to send is not an error.
+        for (const nothing of [ undefined, null, 'X-Key1: v', [ 'X-Key1' ], 42 ])
+            expect(sanitizeLiveLinkHeaders(nothing)).toEqual({});
+
+        // The same rules the renderer applies: RFC 9110 token names, visible
+        // ASCII values, no second spelling of a name already taken, and
+        // nothing a document has no business writing on this application's
+        // behalf. Unlike a browser, this process would otherwise send them.
+        expect(sanitizeLiveLinkHeaders({
+            'X-Bad Name':  'value',
+            'X-Newline':   'value\r\nX-Injected: yes',
+            'X-Empty':     '',
+            'X-Number':    42,
+            'Host':        'evil.example.com',
+            'Cookie':      'session=1',
+            'Sec-Ch-Ua':   'x',
+            'Proxy-Authorization': 'Basic x',
+            'X-Key1':      'first',
+            'x-key1':      'second',
+            'X-Good':      'value'
+        })).toEqual({ 'X-Key1': 'first', 'X-Good': 'value' });
+
+        // Accept is this process's own, set after the document's headers.
+        expect(sanitizeLiveLinkHeaders({ 'Accept': 'text/html' })).toEqual({});
+
+        // And a document cannot make every request enormous.
+        const many: Record<string, string> = {};
+
+        for (let index = 0; index < 40; index++)
+            many['X-Key' + index.toString()] = 'value';
+
+        expect(Object.keys(sanitizeLiveLinkHeaders(many))).toHaveLength(16);
+        expect(sanitizeLiveLinkHeaders({ 'X-Long': 'v'.repeat(1025) })).toEqual({});
+        expect(sanitizeLiveLinkHeaders({ ['X-' + 'n'.repeat(63)]: 'value' })).toEqual({});
+
     });
 
     test('keeps redirects on the approved origin and optional prefix', () => {
