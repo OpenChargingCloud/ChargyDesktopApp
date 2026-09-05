@@ -427,6 +427,8 @@ npm run start -- --nogui --output=xml   record.chargy
 
 Status texts honor `--lang=de|en`. An unsupported `--output` value is a technical error (exit code `1`).
 
+So does the `message` beside a status. ChargyCore states its messages as an `I18NString` — a map from language code to text — rather than as a finished sentence, because the language is not the core's to choose. `multilanguageTextToString(...)` in `src/outputFormats.cjs` makes that choice where the answer is written: for the CLI in the language `--lang` named, for the HTTP API in the one `Accept-Language` asked for, falling back to English and then to whatever the map does carry. Both front ends share it, which is also why the text output no longer prints `[object Object]` where a message should be.
+
 ### Exit Codes
 
 The verification service maps results to a stable contract (`src/verificationService.cjs`):

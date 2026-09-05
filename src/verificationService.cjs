@@ -6,6 +6,7 @@
 // contract testable without starting Electron (see tests/verificationService.test.ts).
 
 const {
+    multilanguageTextToString,
     sessionVerificationResultToText,
     verificationRowsToCsv,
     verificationRowsToXml
@@ -58,7 +59,10 @@ function buildRows(results, language, i18n) {
         session:    index + 1,
         rawStatus:  result.status,
         status:     sessionVerificationResultToText(result.status, language, i18n),
-        message:    result.message ?? null
+        // The core states a message in every language it has; this picks the
+        // one being answered in. Concatenating the map itself is where the
+        // text output used to read "[object Object]".
+        message:    multilanguageTextToString(result.message, language)
     }));
 
 }

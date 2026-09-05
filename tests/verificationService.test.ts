@@ -5,7 +5,13 @@ const require = createRequire(import.meta.url);
 
 type VerificationResult = {
     status:   string;
-    message?: string;
+    // The core states a message in every language it has, so what arrives here
+    // is an I18NString as often as it is a finished sentence.
+    message?: string | Record<string, string>;
+};
+
+type OutputFormatsModule = {
+    multilanguageTextToString: (value: unknown, language?: string) => string | null;
 };
 
 type CliVerification = {
@@ -37,6 +43,8 @@ type VerificationServiceModule = {
 
 const service = require("../src/verificationService.cjs") as VerificationServiceModule;
 const cliI18N = require("../src/i18n_CLI.json") as Record<string, Record<string, string>>;
+
+const { multilanguageTextToString } = require("../src/outputFormats.cjs") as OutputFormatsModule;
 
 const {
     EXIT_ALL_VALID,
@@ -151,6 +159,48 @@ describe("verification service - renderCliVerification", () => {
         const { output, exitCode } = renderCliVerification([ valid ], { output: "yaml" });
         expect(output).toContain("Unsupported output format: yaml");
         expect(exitCode).toBe(EXIT_TECHNICAL_ERROR);
+    });
+
+});
+
+describe("a message the core stated in every language it has", () => {
+
+    const message = {
+        de: "Unbekanntes oder ungültiges Ladevorgangsformat!",
+        en: "Unknown or invalid charging session format!"
+    };
+
+    test("is answered in the language being answered in", () => {
+        expect(multilanguageTextToString(message, "de")).toBe(message.de);
+        expect(multilanguageTextToString(message, "en")).toBe(message.en);
+    });
+
+    test("falls back to English, then to whatever it does carry", () => {
+
+        expect(multilanguageTextToString(message, "fr")).toBe(message.en);
+        expect(multilanguageTextToString({ fr: "Format inconnu" }, "de")).toBe("Format inconnu");
+
+        // A sentence that is already one is left alone.
+        expect(multilanguageTextToString("boom", "de")).toBe("boom");
+
+    });
+
+    test("is null when there is nothing to say, so the caller keeps its fallback", () => {
+        for (const nothing of [ undefined, null, "", {}, { de: "" }, [ "x" ], 42 ])
+            expect(multilanguageTextToString(nothing, "de")).toBeNull();
+    });
+
+    // What the text output used to print instead: "[object Object]".
+    test("reaches the rendered CLI output as a sentence", () => {
+
+        const results = [ { status: "InvalidSessionFormat", message } ];
+
+        expect(renderCliVerification(results, { language: "de", i18n: cliI18N }).output).
+            toBe("Ungültiges Sitzungsformat - " + message.de + "\n");
+
+        expect(renderVerificationOutput(results, { format: "json", language: "en", i18n: cliI18N })).
+            toContain("\"message\":\"" + message.en + "\"");
+
     });
 
 });

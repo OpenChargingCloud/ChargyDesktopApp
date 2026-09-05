@@ -32,7 +32,8 @@ type HttpDispatchRequest = {
 
 type HttpDispatchResponse = {
     ok:                   boolean;
-    message?:             string;
+    // A message may still be ChargyCore's I18NString rather than a sentence.
+    message?:             string | Record<string, string>;
     result?:              unknown;
     // What the renderer states for a document that carries no charging
     // sessions of its own, e.g. a charge transparency live link.
@@ -1865,6 +1866,72 @@ describe("Chargy HTTP API - robustness via raw sockets", () => {
 
                 expect(response.status).toBe(400);
                 expect((await response.json() as { message: string }).message).toContain("Unknown or invalid");
+
+            }
+        );
+
+    });
+
+    test("answers a refusal in the language of the request, not in every language", async () => {
+
+        // The core states its messages as a map from language code to text.
+        // Handing that map to the client would make the one response that has
+        // to explain itself the only one that does not pick a language.
+        const message = {
+            de: "Unbekanntes oder ungültiges Ladevorgangsformat!",
+            en: "Unknown or invalid charging session format!"
+        };
+
+        const expectations: Array<[ string, string ]> = [
+            [ "de-DE,de;q=0.9", message.de ],
+            [ "en-GB,en;q=0.9", message.en ],
+            [ "fr-FR",          message.en ]   // falls back rather than answering in a map
+        ];
+
+        for (const [ acceptLanguage, expected ] of expectations)
+        {
+            await withHttpServer(
+                () => ({ ok: true, result: { message } }),
+                async baseUrl => {
+
+                    const response = await fetch(`${baseUrl}/verify`, {
+                        method:   "QUERY",
+                        headers:  {
+                            "Content-Type":     "application/json",
+                            "Accept-Language":  acceptLanguage
+                        },
+                        body:     "{}"
+                    });
+
+                    expect(response.status).toBe(400);
+                    expect((await response.json() as { message: unknown }).message).toBe(expected);
+
+                }
+            );
+        }
+
+    });
+
+    test("answers a renderer error in the request's language too", async () => {
+
+        await withHttpServer(
+            () => ({
+                ok:       false,
+                message:  { de: "Kaputt", en: "Broken" }
+            }),
+            async baseUrl => {
+
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method:   "QUERY",
+                    headers:  {
+                        "Content-Type":     "application/json",
+                        "Accept-Language":  "de"
+                    },
+                    body:     "{}"
+                });
+
+                expect(response.status).toBe(400);
+                expect((await response.json() as { message: unknown }).message).toBe("Kaputt");
 
             }
         );

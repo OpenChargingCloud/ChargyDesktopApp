@@ -15,6 +15,7 @@ const {
     saveApiKeysToFile
 }               = require('./apiKeys.cjs');
 const {
+    multilanguageTextToString,
     sessionVerificationResultToText,
     verificationRowsToText,
     verificationRowsToCsv,
@@ -867,7 +868,7 @@ function createChargyHttpRequestHandler({
 
                 if (!rendererResponse.ok)
                 {
-                    sendJson(response, 400, { message: rendererResponse.message ?? "Invalid transparency format!" });
+                    sendJson(response, 400, { message: multilanguageTextToString(rendererResponse.message, requestLanguage) ?? "Invalid transparency format!" });
                     return;
                 }
 
@@ -878,7 +879,7 @@ function createChargyHttpRequestHandler({
                 // stated them next to it. Neither means nothing was recognized.
                 if (!isChargeTransparencyRecord(result) && statedResults === null)
                 {
-                    sendJson(response, 400, { message: result?.message ?? "Invalid transparency format!" });
+                    sendJson(response, 400, { message: multilanguageTextToString(result?.message, requestLanguage) ?? "Invalid transparency format!" });
                     return;
                 }
 

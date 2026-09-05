@@ -77,6 +77,44 @@ function sessionVerificationResultToText(status, language = "en", i18n = {}) {
 
 }
 
+/**
+ * One line of text out of a message that may not be one yet.
+ *
+ * A message the core produced travels as ChargyCore's I18NString - a map from
+ * language code to text - rather than as a finished sentence, because the
+ * language is not the core's to choose. Both front ends answer in a language:
+ * the CLI in the one --lang named, the HTTP API in the one the request asked
+ * for. So the choice is made here, at the point where the answer is written.
+ *
+ * Returns null when there is nothing usable, which lets each caller keep its
+ * own fallback rather than inventing a message on the core's behalf.
+ *
+ * The order is the one every other status text follows - what was asked for,
+ * then English - with one addition: a message that exists in neither is still
+ * better delivered in some language than swallowed.
+ */
+function multilanguageTextToString(value, language = "en") {
+
+    if (typeof value === "string")
+        return value !== "" ? value : null;
+
+    if (value == null || typeof value !== "object" || Array.isArray(value))
+        return null;
+
+    const requested = value[language];
+
+    if (typeof requested === "string" && requested !== "")
+        return requested;
+
+    const english = value["en"];
+
+    if (typeof english === "string" && english !== "")
+        return english;
+
+    return Object.values(value).find(entry => typeof entry === "string" && entry !== "") ?? null;
+
+}
+
 function verificationRowsToText(rows) {
     return rows.map(row => row.status).join("\n") + "\n";
 }
@@ -107,6 +145,7 @@ function verificationRowsToJsonValue(rows) {
 module.exports = {
     escapeCsvValue,
     escapeXmlValue,
+    multilanguageTextToString,
     sessionVerificationResultToText,
     verificationRowsToText,
     verificationRowsToCsv,
