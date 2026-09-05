@@ -955,7 +955,10 @@ export class ChargyApp {
             (this.openSourceLibsDiv.querySelector("#openChargingCloudTOTP")  as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "@open-charging-cloud/totp");
             (this.openSourceLibsDiv.querySelector("#elliptic")               as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "elliptic");
             (this.openSourceLibsDiv.querySelector("#nobleCurves")            as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "@noble/curves");
+            (this.openSourceLibsDiv.querySelector("#nobleHashes")            as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "@noble/hashes");
             (this.openSourceLibsDiv.querySelector("#noblePostQuantum")       as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "@noble/post-quantum");
+            (this.openSourceLibsDiv.querySelector("#vanaheimrCOSE")          as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "@vanaheimr/cose");
+            (this.openSourceLibsDiv.querySelector("#vanaheimrMetrologicalCBOR") as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "@vanaheimr/metrological-cbor");
             (this.openSourceLibsDiv.querySelector("#momentJS")               as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "moment");
             (this.openSourceLibsDiv.querySelector("#pdfjsdist")              as HTMLSpanElement).innerHTML = dependencyVersion(corePackageJson.dependencies, "pdfjs-dist");
             (this.openSourceLibsDiv.querySelector("#seekBzip")               as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "seek-bzip");
@@ -970,6 +973,7 @@ export class ChargyApp {
             (this.openSourceLibsDiv.querySelector("#leafletJS")              as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "leaflet");
             (this.openSourceLibsDiv.querySelector("#leafletAwesomeMarkers")  as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "leaflet.awesome-markers");
             (this.openSourceLibsDiv.querySelector("#decimalJS")              as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "decimal.js");
+            (this.openSourceLibsDiv.querySelector("#chartJS")                as HTMLSpanElement).innerHTML = dependencyVersion(this.packageJson.dependencies, "chart.js");
         }
 
         //#endregion
