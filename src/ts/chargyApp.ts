@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2018-2026 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
@@ -2951,7 +2951,12 @@ export class ChargyApp {
 
             const Input        = JSON.stringify(toCheck);
             const sha256value  = await chargyLib.sha256(Input);
-            const result       = new this.elliptic.ec('secp256k1').
+            // secp256k1 comes from @noble/curves through ChargyCore, not from
+            // elliptic: same curve, same CompatibleCurve interface, but a
+            // maintained implementation. elliptic stays in the tree for
+            // secp192r1 alone, which @noble/curves does not provide - and
+            // which is the only thing this application still asks it for.
+            const result       = chargyLib.createCompatibleCurve('secp256k1').
                                         keyFromPublic(signature.publicKey, 'hex').
                                         verify       (sha256value,
                                                       signature.signature);
