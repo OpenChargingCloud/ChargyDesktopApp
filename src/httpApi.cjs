@@ -166,6 +166,18 @@ function isChargeTransparencyRecord(result) {
            Array.isArray(result.chargingSessions);
 }
 
+// A charge transparency record carries its verdict inside the charging
+// sessions it describes. A document that is not one - a charge transparency
+// live link describes a session that is still running and has no such list -
+// cannot, so the renderer states the verdict alongside the document instead.
+function statedVerificationResults(rendererResponse) {
+
+    return Array.isArray(rendererResponse.verificationResults)
+               ? rendererResponse.verificationResults.filter(entry => entry != null && typeof entry.status === "string")
+               : null;
+
+}
+
 function sendPlainText(response, statusCode, text) {
     response.writeHead(statusCode, { "Content-Type": "text/plain; charset=utf-8" });
     response.end(text);
@@ -588,6 +600,19 @@ function createVerificationResultRows(chargeTransparencyRecord, language, i18n) 
 
 }
 
+// The same rows from verdicts the renderer stated rather than ones read out of
+// a record. The status text is localized here either way: the language belongs
+// to the request - one renderer serves them all - and this is where the
+// request's Accept-Language is known.
+function createStatedVerificationRows(verificationResults, language, i18n) {
+
+    return verificationResults.map((entry, index) => ({
+        session: index + 1,
+        status:  sessionVerificationResultToText(entry.status, language, i18n)
+    }));
+
+}
+
 function sendVerificationResults(response, contentType, rows) {
 
     switch (contentType)
@@ -846,9 +871,12 @@ function createChargyHttpRequestHandler({
                     return;
                 }
 
-                const result = rendererResponse.result;
+                const result       = rendererResponse.result;
+                const statedResults = statedVerificationResults(rendererResponse);
 
-                if (!isChargeTransparencyRecord(result))
+                // Either the document carries its verdicts, or the renderer
+                // stated them next to it. Neither means nothing was recognized.
+                if (!isChargeTransparencyRecord(result) && statedResults === null)
                 {
                     sendJson(response, 400, { message: result?.message ?? "Invalid transparency format!" });
                     return;
@@ -868,7 +896,13 @@ function createChargyHttpRequestHandler({
                         return;
                     }
 
-                    sendVerificationResults(response, contentType, createVerificationResultRows(result, requestLanguage, i18n));
+                    sendVerificationResults(
+                        response,
+                        contentType,
+                        statedResults !== null
+                            ? createStatedVerificationRows(statedResults, requestLanguage, i18n)
+                            : createVerificationResultRows(result, requestLanguage, i18n)
+                    );
                     return;
                 }
 

@@ -233,6 +233,10 @@ Successful `ADD /apiKeys` and `DELETE /apiKeys` operations rewrite the complete 
 
 `QUERY /verify` returns only session verification results. A single session returns one JSON string; multiple sessions return a JSON array.
 
+A charge transparency live link describes a session that is still running and carries no `chargingSessions` list to read a verdict out of, so the renderer states one alongside the document and the HTTP layer renders it like any other row (`verificationResults` in the dispatch response). It is the same verdict the window shows as its badge and the CLI prints — built from the signatures over the document and those over the meter values measured so far — so the same document answers the same way however it is verified. `QUERY /convert` returns the live link itself as JSON.
+
+The verdict crosses that boundary as the raw status, not as text: one renderer serves every request, and the language belongs to the request. `Accept-Language` is therefore honoured for a live link exactly as it is for a record.
+
 The returned status text uses the configured CLI language by default:
 
 ```bash
@@ -442,9 +446,6 @@ The verification service maps results to a stable contract (`src/verificationSer
 
 The `chargy` output format and `--export` are documented in the output help topic but not implemented. They require the full Charge Transparency Record plus a CLI export path; export currently exists only in the GUI through the export button, `showSaveDialog()`, and `writeTextFile(...)`.
 
-### Charge transparency live links over the HTTP API
-
-`--nogui <live link>` verifies a live link and exits, but `QUERY /verify` answers `400 Invalid transparency format!` for the same document. The HTTP path (`handleHttpRequest(...)`) calls `Chargy.DetectAndConvertContentFormat(...)` directly and serializes whatever comes back, rather than going through the renderer's own format dispatch — so it never reaches the live-link branch. Nothing about it is specific to the CLI fix above; it is its own gap.
 
 ## CLI and HTTP Tests
 

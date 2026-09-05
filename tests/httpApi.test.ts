@@ -31,9 +31,12 @@ type HttpDispatchRequest = {
 };
 
 type HttpDispatchResponse = {
-    ok:       boolean;
-    message?: string;
-    result?:  unknown;
+    ok:                   boolean;
+    message?:             string;
+    result?:              unknown;
+    // What the renderer states for a document that carries no charging
+    // sessions of its own, e.g. a charge transparency live link.
+    verificationResults?: Array<{ status: string; message?: string }>;
 };
 
 type HttpApiModule = {
@@ -92,6 +95,16 @@ const chargeTransparencyRecord = {
             }
         }
     ]
+};
+
+// A charge transparency live link as it reaches the HTTP layer: the document
+// itself, plus the one verdict the renderer stated for it, because a live link
+// describes a session that is still running and carries no chargingSessions
+// list to read a verdict out of.
+const chargeTransparencyLiveLink = {
+    "@context":  "https://open.charging.cloud/contexts/chargeTransparency/live/link/1.0",
+    "@id":       "OCMF-Test-01",
+    created:     "2026-08-28T11:59:59Z"
 };
 
 const rawApiKeys = [
@@ -1728,5 +1741,136 @@ describe("Chargy HTTP API - robustness via raw sockets", () => {
         expect(dispatchCount).toBe(0);
 
     });
+
+    //#region Documents that carry no charging sessions
+
+    test("verifies a live link from the verdict the renderer stated", async () => {
+
+        await withHttpServer(
+            () => ({
+                ok:                   true,
+                result:               chargeTransparencyLiveLink,
+                verificationResults:  [ { status: "ValidSignature" } ]
+            }),
+            async baseUrl => {
+
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method:   "QUERY",
+                    headers:  { "Content-Type": "application/json" },
+                    body:     JSON.stringify(chargeTransparencyLiveLink)
+                });
+
+                expect(response.status).toBe(200);
+                expect(await response.json()).toBe("Valid signature");
+
+            }
+        );
+
+    });
+
+    test("localizes a stated verdict per request, like any other status", async () => {
+
+        await withHttpServer(
+            () => ({
+                ok:                   true,
+                result:               chargeTransparencyLiveLink,
+                verificationResults:  [ { status: "ValidSignature" } ]
+            }),
+            async baseUrl => {
+
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method:   "QUERY",
+                    headers:  {
+                        "Content-Type":     "application/json",
+                        "Accept-Language":  "de-DE,de;q=0.9"
+                    },
+                    body:     JSON.stringify(chargeTransparencyLiveLink)
+                });
+
+                expect(response.status).toBe(200);
+                expect(await response.json()).toBe("Gültige Signatur");
+
+            },
+            { i18n: cliI18N }
+        );
+
+    });
+
+    test("a verdict that established nothing is reported, not hidden", async () => {
+
+        await withHttpServer(
+            () => ({
+                ok:                   true,
+                result:               chargeTransparencyLiveLink,
+                verificationResults:  [ { status: "Unvalidated" } ]
+            }),
+            async baseUrl => {
+
+                // The HTTP API answers what the verification came to; it is not
+                // the place that decides whether that is good enough.
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method:   "QUERY",
+                    headers:  { "Content-Type": "application/json" },
+                    body:     JSON.stringify(chargeTransparencyLiveLink)
+                });
+
+                expect(response.status).toBe(200);
+                expect(await response.json()).toBe("Unvalidated");
+
+            }
+        );
+
+    });
+
+    test("converts a live link into the document itself", async () => {
+
+        await withHttpServer(
+            () => ({
+                ok:                   true,
+                result:               chargeTransparencyLiveLink,
+                verificationResults:  [ { status: "ValidSignature" } ]
+            }),
+            async baseUrl => {
+
+                const response = await fetch(`${baseUrl}/convert`, {
+                    method:   "QUERY",
+                    headers:  { "Content-Type": "application/json" },
+                    body:     JSON.stringify(chargeTransparencyLiveLink)
+                });
+
+                expect(response.status).toBe(200);
+                expect(await response.json()).toEqual(chargeTransparencyLiveLink);
+
+            }
+        );
+
+    });
+
+    test("still refuses what the renderer recognized as nothing at all", async () => {
+
+        // No charging sessions and no stated verdict: the guard that used to
+        // reject live links is still the one that rejects an unusable upload.
+        await withHttpServer(
+            () => ({
+                ok:      true,
+                result:  { message: "Unknown or invalid charge transparency record!" }
+            }),
+            async baseUrl => {
+
+                const response = await fetch(`${baseUrl}/verify`, {
+                    method:   "QUERY",
+                    headers:  { "Content-Type": "application/json" },
+                    body:     "{}"
+                });
+
+                expect(response.status).toBe(400);
+                expect((await response.json() as { message: string }).message).toContain("Unknown or invalid");
+
+            }
+        );
+
+    });
+
+    //#endregion
 
 });

@@ -2992,6 +2992,18 @@ export class ChargyApp {
                 data:  request.data
             }]);
 
+            // A charge transparency record carries its verdicts inside the
+            // charging sessions it describes, and the HTTP layer reads them
+            // from there. A live link describes a session that is still
+            // running and has no such list, so its verdict is stated here -
+            // the same one the window shows and the command line prints.
+            const verificationResults = chargeTransparencyLiveLink.IsAChargeTransparencyLiveLink(result)
+                                            ? this.liveLinkVerificationResults(
+                                                  result,
+                                                  await this.chargy.TryToParseLiveLinkMeterValues(result) ?? null
+                                              )
+                                            : null;
+
             const serializedResult = stringify(result);
 
             if (serializedResult == null)
@@ -2999,7 +3011,8 @@ export class ChargyApp {
 
             this.electron.completeHttpRequest(request.id, {
                 ok:      true,
-                result:  JSON.parse(serializedResult)
+                result:  JSON.parse(serializedResult),
+                ...(verificationResults !== null ? { verificationResults } : {})
             });
 
         }
@@ -3328,23 +3341,38 @@ export class ChargyApp {
     }
 
     /**
-     * The same for a live link, which is one document rather than a list of
-     * charging sessions - so it reports one result.
+     * What a live link amounts to, as the one verification result it has.
      *
-     * The verdict is the one the badge would show, built from the same two
-     * things: the signatures over the document, and those over the meter values
-     * measured so far. That is deliberate - what the command line says about a
-     * document and what the window shows for it must not be two different
-     * answers. It also means the live-link reading of a still-running session
-     * applies here too: a session with no stop value yet is not a defect.
+     * A live link is one document rather than a list of charging sessions, so
+     * there is one result. The verdict is the one the badge would show, built
+     * from the same two things: the signatures over the document, and those
+     * over the meter values measured so far. That is deliberate - what the
+     * window shows for a document, what the command line prints for it and
+     * what the HTTP API answers about it must not be three different answers.
+     * It also means the live-link reading of a still-running session applies
+     * everywhere: a session with no stop value yet is not a defect.
+     *
+     * The message is for the readers that show one. The HTTP API does not - its
+     * rows carry a status and nothing else - and it localizes the status itself,
+     * per request, because one renderer serves every language at once.
      */
+    private liveLinkVerificationResults(LiveLink:     chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
+                                        MeterValues:  chargeTransparencyRecord.IChargeTransparencyRecord|null):
+        Array<{ status: chargyInterfaces.SessionVerificationResult; message?: string }> {
+
+        const headline = this.liveLinkSignatureHeadline(LiveLink);
+
+        return [{
+            status:   liveLinkVerificationResult(this.liveLinkOverallState(LiveLink, MeterValues)),
+            ...(headline !== null ? { message: headline } : {})
+        }];
+
+    }
+
     private publishLiveLinkVerificationResult(LiveLink:     chargeTransparencyLiveLink.IChargeTransparencyLiveLink,
                                               MeterValues:  chargeTransparencyRecord.IChargeTransparencyRecord|null): void {
 
-        this.electron.setVerificationResult([{
-            status:   liveLinkVerificationResult(this.liveLinkOverallState(LiveLink, MeterValues)),
-            message:  this.liveLinkSignatureHeadline(LiveLink) ?? undefined
-        }]);
+        this.electron.setVerificationResult(this.liveLinkVerificationResults(LiveLink, MeterValues));
 
     }
 
