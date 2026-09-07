@@ -3608,12 +3608,11 @@ export class ChargyApp {
 
         //#region Whether live reloading is active, blocked or waiting for consent
 
-        // Only when there is something to reload: an https transport stating a
-        // refresh period. Filled in asynchronously, once conf, store or the
-        // user have spoken.
-        if (transports.some(transport => transport.type === "https"          &&
-                                         typeof transport.refresh === "number" &&
-                                         transport.refresh > 0))
+        // Only when there is something to reload: an https transport - one
+        // without a refresh period of its own is polled at the format's
+        // default, so it reloads too. Filled in asynchronously, once conf,
+        // store or the user have spoken.
+        if (transports.some(transport => transport.type === "https"))
         {
 
             const trustContentDiv         = document.createElement('div');
