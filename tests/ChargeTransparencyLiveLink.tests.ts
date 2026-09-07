@@ -62,8 +62,13 @@ describe("Charge Transparency LiveLink", () => {
         // The JSON-LD context identifies the document. Malformed optional
         // transports are dropped by the UI instead of hiding the whole link.
         expect(IsAChargeTransparencyLiveLink({ ...liveLink, liveTransports: [ { type: "ftp", url: "https://example.com" } ] })).toBe(true);
-        expect(IsAChargeTransparencyLiveLink({ ...liveLink, liveTransports: "not an array" })).toBe(true);
         expect(IsAChargeTransparencyLiveLink({ ...liveLink, connector: 42 })).toBe(true);
+
+        // What a live link cannot do without: when it was created, and a list
+        // of transports to receive its updates through. A document missing
+        // either of the two is not one.
+        expect(IsAChargeTransparencyLiveLink({ ...liveLink, created: undefined })).toBe(false);
+        expect(IsAChargeTransparencyLiveLink({ ...liveLink, liveTransports: "not an array" })).toBe(false);
 
     });
 
@@ -96,23 +101,21 @@ describe("Charge Transparency LiveLink", () => {
 
     });
 
-    test("adds the current UTC timestamp when a live link has none", async () => {
-        vi.useFakeTimers();
-        vi.setSystemTime(new Date("2026-06-13T10:11:12.000Z"));
+    test("reads the smallest live link there is, and keeps its own timestamp", async () => {
 
-        try
+        // A creation timestamp is never filled in for a document that does not
+        // state one: it is part of what makes the document a live link, so the
+        // timestamp that is read is always the document's own.
+        const report = await verifyChargeTransparencyLiveLink("ChargeTransparencyLive/ChargeTransparencyLiveLink_2.json");
+
+        expect(IsAChargeTransparencyLiveLink(report)).toBe(true);
+
+        if (IsAChargeTransparencyLiveLink(report))
         {
-            const report = await verifyChargeTransparencyLiveLink("ChargeTransparencyLive/ChargeTransparencyLiveLink_2.json");
-
-            expect(IsAChargeTransparencyLiveLink(report)).toBe(true);
-
-            if (IsAChargeTransparencyLiveLink(report))
-                expect(report.created).toBe("2026-06-13T10:11:12.000Z");
+            expect(report.created).toBe("2026-09-06T22:58:14Z");
+            expect(report.liveTransports).toHaveLength(1);
         }
-        finally
-        {
-            vi.useRealTimers();
-        }
+
     });
 
 });

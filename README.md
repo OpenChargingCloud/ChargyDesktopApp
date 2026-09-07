@@ -62,7 +62,7 @@ Chargy reloads such a document while the session runs. Because the document come
 
 The polling period is what the document asks for, clamped: no faster than every 5 seconds, no slower than once a day, and 10 seconds when the document does not say. A transport may state HTTP headers to send with every request — a literal value, or a one-time password computed per request with [`@open-charging-cloud/totp`](https://www.npmjs.com/package/@open-charging-cloud/totp). What a document asks for is validated twice: once in the renderer and again in the main process, which is what opens the connection. Names a document has no business setting — `Host`, `Origin`, `Cookie`, `Sec-*`, … — are never sent.
 
-The document format and what operators must provide are documented with the [WebApp](https://github.com/OpenChargingCloud/ChargyWebApp/blob/master/tests/fixtures/ChargeTransparencyLive/README.md), which reads the same format.
+The document format and what operators must provide are documented with [ChargyCore.TS](https://github.com/OpenChargingCloud/ChargyCore.TS/blob/master/tests/fixtures/ChargeTransparencyLive/README.md), which reads it — the same library this application and the WebApp both build on.
 
 ### Test bench runs
 

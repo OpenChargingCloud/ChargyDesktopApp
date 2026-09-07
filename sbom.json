@@ -3,9 +3,9 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "version": 1,
-  "serialNumber": "urn:uuid:2509e101-296a-4bdc-87a0-854ad65f2c19",
+  "serialNumber": "urn:uuid:ebf59c5f-6560-40f7-ac15-99ae58d9093f",
   "metadata": {
-    "timestamp": "2026-09-05T20:23:50.234Z",
+    "timestamp": "2026-09-07T12:27:37.950Z",
     "tools": {
       "components": [
         {
@@ -406,8 +406,8 @@
       "type": "library",
       "name": "chargy-core",
       "group": "@open-charging-cloud",
-      "version": "0.14.4",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.14.4",
+      "version": "0.15.1",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.15.1",
       "licenses": [
         {
           "license": {
@@ -416,15 +416,15 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40open-charging-cloud/chargy-core@0.14.4",
+      "purl": "pkg:npm/%40open-charging-cloud/chargy-core@0.15.1",
       "externalReferences": [
         {
-          "url": "https://registry.npmjs.org/@open-charging-cloud/chargy-core/-/chargy-core-0.14.4.tgz",
+          "url": "https://registry.npmjs.org/@open-charging-cloud/chargy-core/-/chargy-core-0.15.1.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "3e5204236e9fbedb046d7b14b4bdac555578e930c26ff4e52a9e576b6a818e4ec3f0fe2f7bbd4f49a1c9380d166013b02b2738181e4e1eede6b1042b064b0227"
+              "content": "e65b80568825ab0e93122ea8d72156663f586169bf1b58143f50118b7ef16a73c31b72149a366e38e124e036dfa2838b29f7f3f1dd816c4ad1348cc686320df7"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -27053,7 +27053,7 @@
         "chargytransparenzsoftware@1.4.7|@fortawesome/fontawesome-free@7.3.1",
         "chargytransparenzsoftware@1.4.7|@noble/hashes@2.4.0",
         "chargytransparenzsoftware@1.4.7|@oozcitak/dom@3.0.0",
-        "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.14.4",
+        "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.15.1",
         "chargytransparenzsoftware@1.4.7|@open-charging-cloud/totp@0.3.1",
         "chargytransparenzsoftware@1.4.7|@types/elliptic@6.4.18",
         "chargytransparenzsoftware@1.4.7|@types/leaflet@1.9.22",
@@ -27134,7 +27134,7 @@
       "ref": "chargytransparenzsoftware@1.4.7|@oozcitak/dom@3.0.0|@oozcitak/util@11.0.0"
     },
     {
-      "ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.14.4",
+      "ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.15.1",
       "dependsOn": [
         "chargytransparenzsoftware@1.4.7|@napi-rs/canvas@1.0.8",
         "chargytransparenzsoftware@1.4.7|@noble/curves@2.4.0",

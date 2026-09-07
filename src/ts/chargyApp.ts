@@ -3470,7 +3470,7 @@ export class ChargyApp {
         descriptionDiv.id          = "description";
         descriptionDiv.innerText   = this.chargy.GetLocalizedText(LiveLink.description) ?? "Charge Transparency Live-Link";
 
-        if (typeof(LiveLink.created) === "string" && LiveLink.created !== "")
+        if (LiveLink.created !== "")
         {
             const timestampDiv     = this.chargingSessionScreenDiv.appendChild(document.createElement('div'));
             timestampDiv.id        = "begin";
@@ -3487,14 +3487,19 @@ export class ChargyApp {
         //#region What the live link knows about its charging session
 
         // A live link describes exactly one charging session, so it carries
-        // single objects where a charge transparency record carries lists.
-        // None of these properties is part of IChargeTransparencyLiveLink yet,
-        // hence the untyped reads.
-        const chargingStation      = chargyLib.asJSONObject(LiveLink["chargingStation"]);
-        const evse                 = chargyLib.asJSONObject(chargingStation?.["EVSE"]);
+        // single objects where a charge transparency record carries lists. The
+        // document names its charging station, its operator and its contract,
+        // so those are read through the interface.
+        //
+        // The station's single "EVSE" with its single "connector" is not what
+        // IChargingStation describes - that one knows the lists of a charge
+        // transparency record - so those two are read untyped, exactly as
+        // ChargyCore reads them when it collects the meter value keys.
+        const chargingStation      = LiveLink.chargingStation;
+        const evse                 = chargyLib.asJSONObject(chargyLib.asJSONObject(chargingStation)?.["EVSE"]);
         const connector            = chargyLib.asJSONObject(evse?.["connector"]);
-        const contract             = chargyLib.asJSONObject(LiveLink["contract"]);
-        const geoLocation          = chargyLib.asJSONObject(chargingStation?.["geoLocation"]);
+        const contract             = LiveLink.contract;
+        const geoLocation          = chargingStation?.geoLocation;
 
         const chargingSession      = MeterValues?.chargingSessions?.[0];
         const measurement          = chargingSession?.measurements?.[0];
@@ -3544,7 +3549,7 @@ export class ChargyApp {
 
         }
 
-        const contractId           = chargyLib.asString(contract?.["@id"]);
+        const contractId           = contract?.["@id"];
 
         if (contractId != null && contractId !== "")
             this.appendLiveLinkInfoRow(
@@ -3572,8 +3577,8 @@ export class ChargyApp {
                 [ evseId ?? "", connectorText ].filter(line => line !== "").join("\n")
             );
 
-        const latitude             = chargyLib.asNumber(geoLocation?.["lat"]);
-        const longitude            = chargyLib.asNumber(geoLocation?.["lng"]);
+        const latitude             = geoLocation?.lat;
+        const longitude            = geoLocation?.lng;
 
         if (latitude != null && longitude != null)
             this.appendLiveLinkInfoRow(
@@ -3627,11 +3632,19 @@ export class ChargyApp {
 
         //#endregion
 
-        if (LiveLink.imageURLs && LiveLink.imageURLs.length > 0)
+        // Images no longer hang off the document itself: they belong to
+        // whoever they show - the operator's logo, the station's photo - and
+        // are read from there, the operator first.
+        const imageURLs = [
+                              ...(LiveLink.chargingStationOperator?.imageURLs ?? []),
+                              ...(chargingStation?.imageURLs                  ?? [])
+                          ].filter(imageURL => typeof imageURL === "string" && imageURL !== "");
+
+        if (imageURLs.length > 0)
         {
             const imagesDiv = document.createElement('div');
 
-            for (const imageURL of LiveLink.imageURLs)
+            for (const imageURL of imageURLs)
                 imagesDiv.appendChild(this.createLiveLinkAnchor(imageURL, imageURL));
 
             this.appendLiveLinkInfoRow(
@@ -4485,42 +4498,42 @@ export class ChargyApp {
 
     }
 
-    // The well-formed transports of a live link. liveTransports is optional and
-    // comes from a document written elsewhere, so it may be missing, not an
-    // array, or hold entries that are not transports at all; every reader goes
-    // through here, so a broken transport is simply dropped and the rest still
-    // work instead of the whole live link failing over it.
-    private liveLinkTransports(LiveLink: chargeTransparencyLiveLink.IChargeTransparencyLiveLink): Array<chargeTransparencyLiveLink.Transport>
+    // The well-formed transports of a live link. liveTransports comes from a
+    // document written elsewhere, so it may hold entries that are not
+    // transports at all; every reader goes through here, so a broken transport
+    // is simply dropped and the rest still work instead of the whole live link
+    // failing over it.
+    private liveLinkTransports(LiveLink: chargeTransparencyLiveLink.IChargeTransparencyLiveLink): Array<chargeTransparencyLiveLink.LiveTransports>
     {
 
         return Array.isArray(LiveLink.liveTransports)
                    ? LiveLink.liveTransports.filter(
-                         (transport): transport is chargeTransparencyLiveLink.Transport =>
-                             chargeTransparencyLiveLink.isTransport(transport)
+                         (transport): transport is chargeTransparencyLiveLink.LiveTransports =>
+                             chargeTransparencyLiveLink.isLiveTransport(transport)
                      )
                    : [];
 
     }
 
-    // The URLs of a transport: the single "url" first, then the "urls" in the
-    // order of their priority.
-    private liveLinkTransportURLs(transport: chargeTransparencyLiveLink.Transport): Array<string>
+    // The URLs of a transport, in the order of their priority. A transport
+    // states its endpoints in "urls" - a plain string, or one with a priority
+    // and a weight - and nowhere else: a transport written against the
+    // withdrawn singular "url" names no endpoint at all, so there is nothing
+    // here to show and nothing to poll.
+    private liveLinkTransportURLs(transport: chargeTransparencyLiveLink.LiveTransports): Array<string>
     {
 
-        const urls           = new Array<string>();
+        const urls        = new Array<string>();
 
-        if (transport.url != null && transport.url !== "")
-            urls.push(transport.url);
+        const sortedURLs  = [ ...(transport.urls ?? []) ].sort(
+                                (url1, url2) => (typeof url1 === "string" ? 0 : url1.priority ?? 0) -
+                                                (typeof url2 === "string" ? 0 : url2.priority ?? 0)
+                            );
 
-        const additionalURLs = [ ...(transport.urls ?? []) ].sort(
-                                   (url1, url2) => (typeof url1 === "string" ? 0 : url1.priority ?? 0) -
-                                                   (typeof url2 === "string" ? 0 : url2.priority ?? 0)
-                               );
-
-        for (const additionalURL of additionalURLs)
+        for (const sortedURL of sortedURLs)
         {
 
-            const url = typeof additionalURL === "string" ? additionalURL : additionalURL.url;
+            const url = typeof sortedURL === "string" ? sortedURL : sortedURL.url;
 
             if (url !== "")
                 urls.push(url);
@@ -4931,7 +4944,7 @@ export class ChargyApp {
 
     }
 
-    private createLiveLinkTransportDiv(transport: chargeTransparencyLiveLink.Transport): HTMLDivElement {
+    private createLiveLinkTransportDiv(transport: chargeTransparencyLiveLink.LiveTransports): HTMLDivElement {
 
         const transportDiv = document.createElement('div');
         transportDiv.className = "liveLinkTransport";
@@ -4939,9 +4952,6 @@ export class ChargyApp {
         const transportTypeDiv = transportDiv.appendChild(document.createElement('div'));
         transportTypeDiv.className = "type";
         transportTypeDiv.innerText = transport.type;
-
-        if (transport.url)
-            transportDiv.appendChild(this.createLiveLinkAnchor(transport.url, transport.url));
 
         if (transport.urls)
         {
@@ -4963,7 +4973,9 @@ export class ChargyApp {
         {
             const totpDiv = transportDiv.appendChild(document.createElement('div'));
             totpDiv.className = "totp";
-            totpDiv.innerText = "TOTP: " + transport.totp.timeStep.toString() + " s";
+            totpDiv.innerText = transport.totp.timeStep != null
+                                    ? "TOTP: " + transport.totp.timeStep.toString() + " s"
+                                    : "TOTP";
         }
 
         return transportDiv;
