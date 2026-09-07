@@ -49,6 +49,23 @@ Supported representations include:
 - **Charge Transparency Live Links**, a JSON-LD document describing a charging session that is still **running**: where its live data can be fetched, the public keys to verify it with, and the signed meter values measured so far. See [Charge Transparency Live Links](#charge-transparency-live-links) below.
 
 
+## Sample transparency records
+
+The `documentation/` folder carries example records for most of the formats above. They are meant to be **tried by hand**: load them from the start screen, drag them onto the window, or paste their content. Some of them also serve as the command line and HTTP API examples in [CLI.md](documentation/CLI.md) and [HTTPAPI.md](documentation/HTTPAPI.md).
+
+| Folder | Contents |
+|--------|----------|
+| [`documentation/Alfen`](documentation/Alfen) | SAFE XML containers, including two that are supposed to **fail** verification, and the same session in the old and the new chargeIT container |
+| [`documentation/ChargePoint`](documentation/ChargePoint) | ChargePoint records with their public keys, as `.chargy`, `.pem` and the raw signed payload |
+| [`documentation/chargeIT`](documentation/chargeIT) | chargeIT containers in both format variants, the BSM/WS36A records under [`bsm/`](documentation/chargeIT/bsm) — ten of them **deliberately forged**, one value at a time: the meter id, the user id, the measured value, its scale, its unit, the start time, the end time — and the same data packed as `zip`, `tar`, `tar.gz` and `tgz` |
+| [`documentation/GraphDefined`](documentation/GraphDefined) | A single session and a collection of sessions |
+| [`documentation/XML`](documentation/XML) | An XML charge transparency container |
+
+The forged and failing records are the interesting ones: a transparency software that accepts them is broken, so they are the quickest way to see that verification actually verifies.
+
+These files are for manual use. The automated test suite has its own fixtures under `tests/fixtures/`.
+
+
 ## Charge Transparency Live Links
 
 A charge transparency record describes a charging session that has **finished**. A charge transparency live link describes one that is still **running**: it carries what is already known — the station, the meter, the public keys, the signed meter values measured so far — and says where the next version of itself can be fetched.
