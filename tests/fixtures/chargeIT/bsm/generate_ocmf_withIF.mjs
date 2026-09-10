@@ -1,18 +1,27 @@
 // Generates ocmf_withIF.xml from ocmf.xml.
 //
 // The real BSM WS36A document in ocmf.xml carries no Identification Flags,
-// so this fixture supplies the IF branch. IF sits inside the signed payload,
-// therefore the document must be regenerated and signed rather than edited.
+// so the "IF" branch of the OCMF parser had no fixture at all: ocmf_withIF.xml
+// supplies one. IF sits inside the signed payload, so the document cannot be
+// edited by hand — adding the field invalidates the vendor signature, and the
+// BSM private key is not available. This regenerates a complete document and
+// signs it with a key created here, which is why the public key in the
+// resulting fixture differs from the vendor one.
 //
 // Run from the repository root:
 //
 //     node tests/fixtures/chargeIT/bsm/generate_ocmf_withIF.mjs
+//
+// Deterministic apart from the key pair, so re-running it only changes the
+// signature and the public key.
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { generateKeyPairSync, sign as signData } from "node:crypto";
 
 const directory = new URL(".", import.meta.url);
 const source    = readFileSync(new URL("ocmf.xml", directory), "utf8");
+
+// The two signed OCMF documents of the original: Transaction.Begin and .End.
 const documents = [ ...source.matchAll(
                         /<signedData format="OCMF" encoding="plain">(OCMF\|.*?)<\/signedData>/gs
                     ) ].map(match => match[1]);
@@ -21,8 +30,13 @@ if (documents.length !== 2)
     throw new Error(`Expected two OCMF documents in ocmf.xml, found ${documents.length}!`);
 
 const { privateKey, publicKey } = generateKeyPairSync("ec", { namedCurve: "prime256v1" });
-const publicKeyHEX              = publicKey.export({ format: "der", type: "spki" }).toString("hex");
 
+const publicKeyHEX = publicKey.export({ format: "der", type: "spki" }).toString("hex");
+
+// The payload is signed as the exact string it appears as, so it is assembled
+// by hand rather than through JSON.stringify of a reordered object. IF is
+// placed between IS and IT, which is the order the OCMF specification lists
+// the identification fields in.
 function withIdentificationFlags(ocmfDocument) {
 
     const [ , rawPayload ] = ocmfDocument.split("|");
@@ -49,7 +63,8 @@ function withIdentificationFlags(ocmfDocument) {
 }
 
 const contexts = [ "Transaction.Begin", "Transaction.End" ];
-const values   = documents.map((ocmfDocument, index) =>
+
+const values = documents.map((ocmfDocument, index) =>
     `  <value transactionId="1" context="${contexts[index]}">\n` +
     `    <signedData format="OCMF" encoding="plain">${withIdentificationFlags(ocmfDocument)}</signedData>\n` +
     `    <publicKey encoding="hex">${publicKeyHEX}</publicKey>\n` +

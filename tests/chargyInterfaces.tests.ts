@@ -80,3 +80,62 @@ describe('Chargy multilanguage handling', () => {
     });
 
 });
+
+
+describe('Merging charge transparency records', () => {
+
+    function makeChargy(): Chargy {
+        return new Chargy({}, [ "en" ], elliptic, moment, asn1, base32Decode, () => "");
+    }
+
+    // The merge enumerates every top-level array by hand, so a property added
+    // to IChargeTransparencyRecord without being added here is dropped without
+    // a word - the record merges, it is just missing a party afterwards.
+    test('keeps the parties of every record, grid operators included', () => {
+
+        const merged = makeChargy().MergeChargeTransparencyRecords([
+            {
+                "@id":              "ctr-1",
+                "@context":         "https://open.charging.cloud/contexts/CTR+json",
+                certainty:           1,
+                gridOperators:     [ { "@id": "DE*VEN" } ],
+                eMobilityProviders:[ { "@id": "DE*GDF", description: { en: "GraphDefined" }, chargingTariffs: [] } ]
+            },
+            {
+                "@id":              "ctr-2",
+                "@context":         "https://open.charging.cloud/contexts/CTR+json",
+                certainty:           1,
+                gridOperators:     [ { "@id": "DE*50H" } ],
+                mediationServices: [ { "@id": "DE*MED", description: { en: "Mediation" } } ]
+            }
+        ]);
+
+        expect(merged.gridOperators?.map(gridOperator => gridOperator["@id"])).
+            toEqual([ "DE*VEN", "DE*50H" ]);
+
+        expect(merged.eMobilityProviders).toHaveLength(1);
+        expect(merged.mediationServices).toHaveLength(1);
+
+    });
+
+    test('takes the grid operators of the second record when the first has none', () => {
+
+        const merged = makeChargy().MergeChargeTransparencyRecords([
+            {
+                "@id":          "ctr-1",
+                "@context":     "https://open.charging.cloud/contexts/CTR+json",
+                certainty:       1
+            },
+            {
+                "@id":          "ctr-2",
+                "@context":     "https://open.charging.cloud/contexts/CTR+json",
+                certainty:       1,
+                gridOperators: [ { "@id": "DE*VEN" } ]
+            }
+        ]);
+
+        expect(merged.gridOperators?.map(gridOperator => gridOperator["@id"])).toEqual([ "DE*VEN" ]);
+
+    });
+
+});

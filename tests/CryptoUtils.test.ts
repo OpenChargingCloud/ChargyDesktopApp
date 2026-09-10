@@ -5,6 +5,7 @@ import {
     SignMessage,
     type SignedJSONMessage,
     generateSignatureKeyPair,
+    getSignatureSuite,
     parseAndVerifyJSONSignatures,
     signJSONMessage,
     signMessage,
@@ -15,6 +16,135 @@ import {
 import { parseSignedJSONMessage } from "./chargyTestRuntime";
 
 describe("CryptoUtils", () => {
+
+    test.each([
+        "ECDSA-secp256k1",
+        "ECDSA-P256",
+        "ECDSA-P384",
+        "ECDSA-P521",
+        "Ed25519",
+        "Ed25519ctx",
+        "Ed25519ph",
+        "Ed448",
+        "Ed448ph",
+        "ML-DSA-44",
+        "ML-DSA-65",
+        "ML-DSA-87"
+    ] as const)("signs and verifies with the %s provider", algorithm => {
+
+        const suite     = getSignatureSuite(algorithm);
+        const keyPair   = suite.generateKeyPair();
+        const message   = new TextEncoder().encode("Chargy signature provider test");
+        const signature = suite.sign(message, keyPair.privateKey);
+        const publicKey = keyPair.publicKey ?? suite.getPublicKey(keyPair.privateKey);
+
+        expect(suite.isValidPublicKey(publicKey)).toBe(true);
+        expect(suite.verify(message, signature, publicKey)).toBe(true);
+        expect(suite.verify(new TextEncoder().encode("tampered"), signature, publicKey)).toBe(false);
+
+    });
+
+    test.each([ "Ed25519", "ML-DSA-65" ] as const)("round-trips %s signatures through JSON", async algorithm => {
+
+        const message: SignedJSONMessage = { chargingSession: "DE*TEST*E1", energy: 12.5 };
+        const keyPair = generateSignatureKeyPair(algorithm);
+
+        await expect(signMessage(message, keyPair)).resolves.toBe(true);
+        expect(message.signatures?.[0]).toMatchObject({
+            algorithm,
+            publicKeyEncoding: "raw",
+            signatureEncoding: "raw"
+        });
+        await expect(verifyJSONMessageSignatures(JSON.stringify(message))).resolves.toBe(true);
+
+    });
+
+    test("persists an Ed25519ctx domain-separation context", async () => {
+
+        const message: SignedJSONMessage = { chargingSession: "context-bound" };
+        const keyPair = generateSignatureKeyPair("Ed25519ctx");
+        const context = new TextEncoder().encode("ChargyCore/session-signature/v1");
+
+        await expect(signJSONMessage(message, [ keyPair ], { context })).resolves.toBe(true);
+        expect(message.signatures?.[0]?.contextHEX).toBe(Buffer.from(context).toString("hex"));
+        await expect(verifyJSONMessageSignatures(JSON.stringify(message))).resolves.toBe(true);
+
+    });
+
+    describe.each([
+        { algorithm: "Ed25519" as const,   publicKeyLength: 32,   signatureLength: 64 },
+        { algorithm: "ML-DSA-65" as const, publicKeyLength: 1952, signatureLength: 3309 }
+    ])("ECDSA lifecycle copied to $algorithm", ({ algorithm, publicKeyLength, signatureLength }) => {
+
+        test("re-signs the canonical ECDSA payload", async () => {
+
+            const keyPair = generateSignatureKeyPair(algorithm);
+            const message: SignedJSONMessage = {
+                z: 1,
+                a: {
+                    b: true,
+                    a: "text"
+                }
+            };
+
+            await expect(signMessage(message, keyPair)).resolves.toBe(true);
+
+            const signature = message.signatures?.[0];
+            expect(signature).toMatchObject({
+                algorithm,
+                publicKeyEncoding: "raw",
+                signatureEncoding: "raw"
+            });
+            expect(Buffer.from(signature?.publicKeyHEX ?? "", "hex")).toHaveLength(publicKeyLength);
+            expect(Buffer.from(signature?.signatureHEX ?? "", "hex")).toHaveLength(signatureLength);
+
+            if (signature === undefined)
+                throw new Error("Missing re-signed signature");
+
+            await expect(verifyJSONSignature(message, signature)).resolves.toBe(true);
+            await expect(verifyJSONMessageSignatures(JSON.stringify(message))).resolves.toBe(true);
+
+        });
+
+        test("keeps two re-signatures independent of the signatures array", async () => {
+
+            const keyPair1 = generateSignatureKeyPair(algorithm);
+            const keyPair2 = generateSignatureKeyPair(algorithm);
+            const message: SignedJSONMessage = { b: 2, a: 1 };
+
+            await expect(signJSONMessage(message, [ keyPair1, keyPair2 ])).resolves.toBe(true);
+            expect(message.signatures).toHaveLength(2);
+
+            for (const signature of message.signatures ?? [])
+                await expect(verifyJSONSignature(message, signature)).resolves.toBe(true);
+
+            await expect(parseAndVerifyJSONSignatures(JSON.stringify(message))).resolves.toBe(true);
+
+        });
+
+        test("rejects the same payload manipulation as the ECDSA test", async () => {
+
+            const keyPair = generateSignatureKeyPair(algorithm);
+            const message: SignedJSONMessage = { a: 1, b: 2 };
+
+            await expect(signMessage(message, keyPair)).resolves.toBe(true);
+
+            const tamperedMessage = parseSignedJSONMessage(JSON.stringify(message));
+            tamperedMessage["b"] = 3;
+
+            await expect(verifyJSONMessageSignatures(tamperedMessage)).resolves.toBe(false);
+            await expect(verifyJSONMessageSignatureResults(tamperedMessage)).resolves.toMatchObject({
+                status: JSONSignatureVerificationStatus.False,
+                signatures: {
+                    "0": {
+                        status: JSONSignatureVerificationStatus.False
+                    }
+                }
+            });
+
+        });
+
+    });
 
     test("adds a P-256 ECDSA signature over canonical JSON without existing signatures", async () => {
 
@@ -30,11 +160,8 @@ describe("CryptoUtils", () => {
         await expect(signMessage(message, keyPair)).resolves.toBe(true);
 
         expect(message.signatures).toHaveLength(1);
-        const publicKey = keyPair.publicKey;
-        if (publicKey === undefined)
-            throw new Error("Missing public key");
-        expect(message.signatures?.[0]?.publicKeyHEX).toBe(Buffer.from(publicKey).toString("hex"));
-        expect(message.signatures?.[0]?.publicKey).toBe(Buffer.from(publicKey).toString("base64"));
+        expect(message.signatures?.[0]?.publicKeyHEX).toBe(Buffer.from(keyPair.publicKey ?? []).toString("hex"));
+        expect(message.signatures?.[0]?.publicKey).toBe(Buffer.from(keyPair.publicKey ?? []).toString("base64"));
         expect(message.signatures?.[0]?.signatureHEX).toMatch(/^30[0-9a-f]+$/);
 
         if (message.signatures && message.signatures.length > 0)
@@ -203,6 +330,8 @@ describe("CryptoUtils", () => {
         };
         const message: SignedJSONMessage = { a: 1 };
 
+        // Signing must not report success when it produced no signature at all,
+        // otherwise a caller could mistake an unsigned message for a signed one.
         await expect(SignMessage(message, invalidKey)).resolves.toBe(false);
         expect(message.signatures).toBeUndefined();
 

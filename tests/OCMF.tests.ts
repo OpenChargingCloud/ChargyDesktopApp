@@ -6,7 +6,7 @@ describe('OCMF Tests', () => {
 
     test("OCMF Testdata 01", async () => {
         await expectVerificationReportWithPublicKey(
-            "OCMF/OCMF-Testdata-01.txt",
+            "OCMF/OCMF-Testdata-01.ocmf",
             "OCMF/OCMF-Testdata-01_publicKey.txt",
             "OCMF/OCMF-Testdata-01.expected.txt"
         );
@@ -22,7 +22,7 @@ describe('OCMF Tests', () => {
     // Two OCMF strings with two readings each!
     test("OCMF DZG Testdata 01", async () => {
         await expectVerificationReport(
-            "OCMF/OCMF-DZG-01.txt",
+            "OCMF/OCMF-DZG-01.ocmf",
             "OCMF/OCMF-DZG-01.expected.txt"
         );
     });

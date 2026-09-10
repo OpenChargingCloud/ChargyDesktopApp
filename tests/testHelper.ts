@@ -77,6 +77,9 @@ function archiveMimeType(fileName: string): string {
     if (fileName.endsWith(".xml"))
         return "application/xml";
 
+    if (fileName.endsWith(".ocmf"))
+        return "application/ocmf";
+
     if (fileName.endsWith(".zip"))
         return "application/zip";
 

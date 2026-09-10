@@ -146,7 +146,7 @@ function normalizeRecord(record: IOCMFChargeTransparencyRecord): unknown {
 
 async function parseFixture(fixtureName: string): Promise<IOCMFChargeTransparencyRecord> {
 
-    const ocmfFileName = fixtureName + '.txt';
+    const ocmfFileName = fixtureName + '.ocmf';
     const ocmfDocument = readTextFixture(ocmfFileName);
 
     verifyOCMFSignature(ocmfDocument);

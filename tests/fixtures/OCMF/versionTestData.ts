@@ -109,7 +109,7 @@ function hashSeed(seed: string): number {
 }
 
 
-function createDeterministicP256Key(random: SeededRandom): KeyObject {
+function createDeterministicP256Key(random: SeededRandom): { privateKey: KeyObject, publicKey: KeyObject } {
 
     const privateKeyBytes = random.bytes(32);
 
@@ -123,16 +123,33 @@ function createDeterministicP256Key(random: SeededRandom): KeyObject {
 
     const publicPoint = ecdh.getPublicKey(undefined, "uncompressed");
 
-    return createPrivateKey({
-        key: {
-            kty: "EC",
-            crv: "P-256",
-            d:   privateKeyBytes.     toString("base64url"),
-            x:   publicPoint.subarray(1,  33).toString("base64url"),
-            y:   publicPoint.subarray(33, 65).toString("base64url")
-        },
-        format: "jwk"
-    });
+    const x = publicPoint.subarray(1,  33).toString("base64url");
+    const y = publicPoint.subarray(33, 65).toString("base64url");
+
+    // Both keys are built from the same JWK: @types/node no longer offers a
+    // createPublicKey() overload taking a private KeyObject, and deriving the
+    // public key here keeps the helper free of casts.
+    return {
+        privateKey: createPrivateKey({
+            key: {
+                kty: "EC",
+                crv: "P-256",
+                d:   privateKeyBytes.toString("base64url"),
+                x,
+                y
+            },
+            format: "jwk"
+        }),
+        publicKey: createPublicKey({
+            key: {
+                kty: "EC",
+                crv: "P-256",
+                x,
+                y
+            },
+            format: "jwk"
+        })
+    };
 
 }
 
@@ -315,16 +332,16 @@ export function createOCMFVersionTestData(version:               SupportedOCMFVe
     payload["RD"] = [ beginReading, endReading ];
 
     const rawPayload = JSON.stringify(payload);
-    const privateKey = createDeterministicP256Key(random);
+    const keyPair    = createDeterministicP256Key(random);
     const signature  = signData(
         "sha256",
         Buffer.from(rawPayload, "utf8"),
         {
-            key:         privateKey,
+            key:         keyPair.privateKey,
             dsaEncoding: "der"
         }
     );
-    const publicKey = createPublicKey(privateKey).export({
+    const publicKey = keyPair.publicKey.export({
         format: "der",
         type:   "spki"
     });

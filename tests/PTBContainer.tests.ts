@@ -42,7 +42,7 @@ describe('PTB Container Tests', () => {
         const container = readPTBFixture("ptb-ocmf-testdata-01.json");
         const result    = await detectPTBContainer(container);
 
-        const sourceOCMF      = readFileSync(new URL("fixtures/OCMF/OCMF-Testdata-01.txt",           import.meta.url), "utf8").trim();
+        const sourceOCMF      = readFileSync(new URL("fixtures/OCMF/OCMF-Testdata-01.ocmf",           import.meta.url), "utf8").trim();
         const sourcePublicKey = readFileSync(new URL("fixtures/OCMF/OCMF-Testdata-01_publicKey.txt", import.meta.url), "utf8").trim();
 
         expect(container.ocmfBegin).toBe(sourceOCMF);

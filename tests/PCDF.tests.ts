@@ -1,6 +1,5 @@
 import { readFileSync } from "node:fs";
 import { createSign, generateKeyPairSync } from "node:crypto";
-import { DOMParser } from "@oozcitak/dom";
 import { describe, expect, test, vi } from 'vitest';
 import { Chargy } from '@open-charging-cloud/chargy-core';
 import {
@@ -24,13 +23,7 @@ import {
     validatePCDFFields,
     verifyPCDFDocument
 } from '@open-charging-cloud/chargy-core';
-import { createTestChargy } from './chargyTestRuntime';
-
-vi.mock('pdfjs-dist', async () => {
-    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
-    pdfjs.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/legacy/build/pdf.worker.mjs';
-    return pdfjs;
-});
+import { createTestChargy, ensureChargyTestDOM } from './chargyTestRuntime';
 
 vi.stubGlobal('window', {
     navigator: {
@@ -38,7 +31,7 @@ vi.stubGlobal('window', {
     }
 });
 
-vi.stubGlobal('DOMParser', DOMParser);
+ensureChargyTestDOM();
 
 type TestPCDFFields = Record<typeof PCDF_FIELD_ORDER[number], string>;
 
@@ -246,6 +239,88 @@ describe('PCDF crypto', () => {
 });
 
 describe('PCDF Chargy integration', () => {
+
+    const readPCDFFixture = (name: string): string =>
+        readFileSync(new URL("fixtures/PCDF/" + name, import.meta.url), "utf8");
+
+    test("imports a complete PCDF fixture with a valid signature", async () => {
+
+        const fileInfo: IFileInfo = {
+            name: "pcdf-valid-session-01.pcdf",
+            type: "text/plain",
+            data: new TextEncoder().encode(readPCDFFixture("pcdf-valid-session-01.pcdf"))
+        };
+
+        const result = await createTestChargy(Chargy).DetectAndConvertContentFormat([ fileInfo ]);
+
+        expect(IsAChargeTransparencyRecord(result)).toBe(true);
+
+        if (!IsAChargeTransparencyRecord(result))
+            return;
+
+        const session = result.chargingSessions?.[0];
+        const value   = session?.measurements?.[0]?.values[0];
+
+        expect(session?.verificationResult?.status).toBe(SessionVerificationResult.ValidSignature);
+        expect(session?.begin).toBe("2025-04-15T08:30:15.000Z");
+        expect(session?.end).toBe("2025-04-15T09:17:45.000Z");
+        expect(session?.authorizationStart?.["@id"]).toBe("DE");
+        expect(value?.value.toString()).toBe("12.345");
+        expect(value?.result?.status).toBe(VerificationResult.ValidSignature);
+
+    });
+
+    test("imports a valid STX/ETX-wrapped PCDF fixture", async () => {
+
+        const fileInfo: IFileInfo = {
+            name: "pcdf-valid-session-02-wrapped.pcdf",
+            type: "text/plain",
+            data: new TextEncoder().encode(readPCDFFixture("pcdf-valid-session-02-wrapped.pcdf"))
+        };
+
+        const result = await createTestChargy(Chargy).DetectAndConvertContentFormat([ fileInfo ]);
+
+        expect(IsAChargeTransparencyRecord(result)).toBe(true);
+
+        if (!IsAChargeTransparencyRecord(result))
+            return;
+
+        const session = result.chargingSessions?.[0];
+        const value   = session?.measurements?.[0]?.values[0];
+
+        expect(session?.verificationResult?.status).toBe(SessionVerificationResult.ValidSignature);
+        expect(session?.authorizationStart?.["@id"]).toBe("RFID-4711");
+        expect(value?.value.toString()).toBe("3.21");
+        expect(value?.result?.status).toBe(VerificationResult.ValidSignature);
+        const pcdfValue = value as { pcdfDocument?: { data: { dcMeterType: number } } } | undefined;
+        expect(pcdfValue?.pcdfDocument?.data.dcMeterType).toBe(1);
+
+    });
+
+    test("detects a tampered real fixture as invalid", async () => {
+
+        const tampered = readPCDFFixture("pcdf-valid-session-01.pcdf").
+            replace("0012.345*kWh", "0012.346*kWh");
+
+        const fileInfo: IFileInfo = {
+            name: "pcdf-valid-session-01-tampered.pcdf",
+            type: "text/plain",
+            data: new TextEncoder().encode(tampered)
+        };
+
+        const result = await createTestChargy(Chargy).DetectAndConvertContentFormat([ fileInfo ]);
+
+        expect(IsAChargeTransparencyRecord(result)).toBe(true);
+
+        if (!IsAChargeTransparencyRecord(result))
+            return;
+
+        expect(result.chargingSessions?.[0]?.verificationResult?.status).
+            toBe(SessionVerificationResult.InvalidSignature);
+        expect(result.chargingSessions?.[0]?.measurements?.[0]?.values[0]?.result?.status).
+            toBe(VerificationResult.InvalidSignature);
+
+    });
 
     test("detects and converts a valid PCDF record", async () => {
 

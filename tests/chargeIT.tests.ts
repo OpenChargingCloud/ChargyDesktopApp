@@ -58,6 +58,9 @@ describe('chargeIT BSM Tests', () => {
         );
     });
 
+    // The real BSM document in ocmf.xml carries no Identification Flags, so this
+    // one supplies the IF branch. Generated and signed by generate_ocmf_withIF.mjs,
+    // because IF sits inside the signed payload and cannot be added by hand.
     test("ocmf_withIF", async () => {
         await expectVerificationReport(
             "chargeIT/bsm/ocmf_withIF.xml",
@@ -65,6 +68,10 @@ describe('chargeIT BSM Tests', () => {
         );
     });
 
+    // The verification report does not list the identification flags, so passing
+    // the two tests above would not actually show that IF was read. Asserted
+    // directly instead: flags that are present have to reach the record, and an
+    // absent IF has to become the empty array the OCMF specification asks for.
     test("ocmf_withIF carries the identification flags into the record", async () => {
         await expectVerificationReportInline(
             "chargeIT/bsm/ocmf_withIF.xml",

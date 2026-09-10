@@ -40,9 +40,9 @@ describe("BET tariff cost calculation", () => {
 
     test("calculates costs from the real 001-03 CTR measurement", async () => {
 
-        const fixtureURL  = new URL("fixtures/OCMF/BET_TariffTextExtension/001/001-03.txt", import.meta.url);
+        const fixtureURL  = new URL("fixtures/OCMF/BET_TariffTextExtension/001/001-03.ocmf", import.meta.url);
         const fixtureText = (await import("node:fs/promises")).readFile(fixtureURL, "utf8");
-        const result      = await verifyChargeData("001-03.txt", new TextEncoder().encode(await fixtureText), "text/plain");
+        const result      = await verifyChargeData("001-03.ocmf", new TextEncoder().encode(await fixtureText), "text/plain");
 
         expect(IsAChargeTransparencyRecord(result)).toBe(true);
         if (!IsAChargeTransparencyRecord(result))
