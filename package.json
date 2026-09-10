@@ -72,7 +72,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.3.1",
     "@noble/hashes": "^2.4.0",
-    "@open-charging-cloud/chargy-core": "^0.15.1",
+    "@open-charging-cloud/chargy-core": "^0.16.1",
     "@open-charging-cloud/totp": "^0.3.1",
     "@vanaheimr/cose": "^0.9.0",
     "@vanaheimr/metrological-cbor": "^0.11.0",

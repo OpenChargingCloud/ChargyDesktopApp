@@ -3,9 +3,9 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "version": 1,
-  "serialNumber": "urn:uuid:ebf59c5f-6560-40f7-ac15-99ae58d9093f",
+  "serialNumber": "urn:uuid:b5d1058a-7c7b-43ac-af39-b0dcec769e6c",
   "metadata": {
-    "timestamp": "2026-09-07T12:27:37.950Z",
+    "timestamp": "2026-09-09T14:44:34.298Z",
     "tools": {
       "components": [
         {
@@ -406,8 +406,8 @@
       "type": "library",
       "name": "chargy-core",
       "group": "@open-charging-cloud",
-      "version": "0.15.1",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.15.1",
+      "version": "0.16.1",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.16.1",
       "licenses": [
         {
           "license": {
@@ -416,15 +416,15 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40open-charging-cloud/chargy-core@0.15.1",
+      "purl": "pkg:npm/%40open-charging-cloud/chargy-core@0.16.1",
       "externalReferences": [
         {
-          "url": "https://registry.npmjs.org/@open-charging-cloud/chargy-core/-/chargy-core-0.15.1.tgz",
+          "url": "https://registry.npmjs.org/@open-charging-cloud/chargy-core/-/chargy-core-0.16.1.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "e65b80568825ab0e93122ea8d72156663f586169bf1b58143f50118b7ef16a73c31b72149a366e38e124e036dfa2838b29f7f3f1dd816c4ad1348cc686320df7"
+              "content": "2ac96fba140766e9c7cadad15a33bfb7048f6651eee85cbdc62d04a33055aa9afebda2143e28a3b8cf212f4a4f2945aa3a1a1385ce60322ee58250457b3e6c80"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -7869,8 +7869,8 @@
     {
       "type": "library",
       "name": "js-yaml",
-      "version": "4.3.1",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|js-yaml@4.3.1",
+      "version": "4.3.2",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|js-yaml@4.3.2",
       "licenses": [
         {
           "license": {
@@ -7879,15 +7879,15 @@
           }
         }
       ],
-      "purl": "pkg:npm/js-yaml@4.3.1",
+      "purl": "pkg:npm/js-yaml@4.3.2",
       "externalReferences": [
         {
-          "url": "https://registry.npmjs.org/js-yaml/-/js-yaml-4.3.1.tgz",
+          "url": "https://registry.npmjs.org/js-yaml/-/js-yaml-4.3.2.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "098e9cac6ab7d77317f06930bc1eedce0a7df6f8d0c58d7efb9cb5d3f04a37f1947c7a9668e19030d66406fa92cec64a5a4fe28f01e55b3ce42ee96c18786359"
+              "content": "48534ebd227e0e07fff409fdd38631f828129483c2908a5aa38aa8e7596979edb94c845e8dd1f7ae1478119306a0dc77fd33f73bec335ae893165e2ca9b96dcc"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -27053,7 +27053,7 @@
         "chargytransparenzsoftware@1.4.7|@fortawesome/fontawesome-free@7.3.1",
         "chargytransparenzsoftware@1.4.7|@noble/hashes@2.4.0",
         "chargytransparenzsoftware@1.4.7|@oozcitak/dom@3.0.0",
-        "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.15.1",
+        "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.16.1",
         "chargytransparenzsoftware@1.4.7|@open-charging-cloud/totp@0.3.1",
         "chargytransparenzsoftware@1.4.7|@types/elliptic@6.4.18",
         "chargytransparenzsoftware@1.4.7|@types/leaflet@1.9.22",
@@ -27134,7 +27134,7 @@
       "ref": "chargytransparenzsoftware@1.4.7|@oozcitak/dom@3.0.0|@oozcitak/util@11.0.0"
     },
     {
-      "ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.15.1",
+      "ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.16.1",
       "dependsOn": [
         "chargytransparenzsoftware@1.4.7|@napi-rs/canvas@1.0.8",
         "chargytransparenzsoftware@1.4.7|@noble/curves@2.4.0",
@@ -27496,7 +27496,7 @@
         "chargytransparenzsoftware@1.4.7|envinfo@7.21.0",
         "chargytransparenzsoftware@1.4.7|import-local@3.2.0",
         "chargytransparenzsoftware@1.4.7|interpret@3.1.1",
-        "chargytransparenzsoftware@1.4.7|js-yaml@4.3.1",
+        "chargytransparenzsoftware@1.4.7|js-yaml@4.3.2",
         "chargytransparenzsoftware@1.4.7|json5@2.2.3",
         "chargytransparenzsoftware@1.4.7|rechoir@0.8.0",
         "chargytransparenzsoftware@1.4.7|webpack-merge@6.0.1",
@@ -27657,7 +27657,7 @@
         "chargytransparenzsoftware@1.4.7|xmlbuilder2@4.0.3|@oozcitak/dom@2.0.2",
         "chargytransparenzsoftware@1.4.7|@oozcitak/infra@2.0.2",
         "chargytransparenzsoftware@1.4.7|@oozcitak/util@10.0.0",
-        "chargytransparenzsoftware@1.4.7|js-yaml@4.3.1"
+        "chargytransparenzsoftware@1.4.7|js-yaml@4.3.2"
       ]
     },
     {
@@ -27874,7 +27874,7 @@
         "chargytransparenzsoftware@1.4.7|hosted-git-info@4.1.0",
         "chargytransparenzsoftware@1.4.7|isbinaryfile@5.0.7",
         "chargytransparenzsoftware@1.4.7|jiti@2.7.0",
-        "chargytransparenzsoftware@1.4.7|js-yaml@4.3.1",
+        "chargytransparenzsoftware@1.4.7|js-yaml@4.3.2",
         "chargytransparenzsoftware@1.4.7|json5@2.2.3",
         "chargytransparenzsoftware@1.4.7|lazy-val@1.0.5",
         "chargytransparenzsoftware@1.4.7|minimatch@10.2.6",
@@ -27950,7 +27950,7 @@
         "chargytransparenzsoftware@1.4.7|fs-extra@10.1.0",
         "chargytransparenzsoftware@1.4.7|http-proxy-agent@7.0.2",
         "chargytransparenzsoftware@1.4.7|https-proxy-agent@7.0.6",
-        "chargytransparenzsoftware@1.4.7|js-yaml@4.3.1",
+        "chargytransparenzsoftware@1.4.7|js-yaml@4.3.2",
         "chargytransparenzsoftware@1.4.7|sanitize-filename@1.6.4",
         "chargytransparenzsoftware@1.4.7|source-map-support@0.5.21",
         "chargytransparenzsoftware@1.4.7|stat-mode@1.0.0",
@@ -27974,7 +27974,7 @@
         "chargytransparenzsoftware@1.4.7|app-builder-lib@26.15.3",
         "chargytransparenzsoftware@1.4.7|builder-util@26.15.3",
         "chargytransparenzsoftware@1.4.7|fs-extra@10.1.0",
-        "chargytransparenzsoftware@1.4.7|js-yaml@4.3.1"
+        "chargytransparenzsoftware@1.4.7|js-yaml@4.3.2"
       ]
     },
     {
@@ -28482,7 +28482,7 @@
       "ref": "chargytransparenzsoftware@1.4.7|interpret@3.1.1"
     },
     {
-      "ref": "chargytransparenzsoftware@1.4.7|js-yaml@4.3.1",
+      "ref": "chargytransparenzsoftware@1.4.7|js-yaml@4.3.2",
       "dependsOn": [
         "chargytransparenzsoftware@1.4.7|argparse@2.0.1"
       ]
