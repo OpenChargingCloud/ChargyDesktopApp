@@ -1,0 +1,10 @@
+[
+    {
+        "@context":                  "https://open.charging.cloud/contexts/legallyRelevantLogMessages/gridPowerConstraints/1.0",
+        "timestamp":                 "+00:24",
+        "code":                      "LimitationOfPowerConsumption",
+        "text":                      { "en": "The grid operator has requested a limitation of charging power consumption!" },
+        "data":                      { "maxPower": "6 kW", "start": "+01:02", "duration": "1 min" },
+        "signatures":                []
+    }
+]

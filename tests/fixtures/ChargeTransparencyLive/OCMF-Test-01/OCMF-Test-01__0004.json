@@ -1,0 +1,305 @@
+{
+
+    "@id":                "5f2c8a10-7b64-4e19-9d3a-1c8e05b4a7f2",
+    "@context":           "https://open.charging.cloud/contexts/chargeTransparency/live/link/1.0",
+    "created":            "2026-09-09T00:50:40Z",
+    "lastUpdated":        "2026-09-09T00:51:05Z",
+    "updates":            "6926A1482546F921062B5806BDE66B67819922B81FFA7E45199E1C297D8969CC",
+    "description":        {
+                              "en": "OCMF-Test-01 Transparency Live-Link",
+                              "de": "OCMF-Test-01 Transparenz Live-Link"
+                          },
+
+    "keyIdGeneration":    [ "SubjectPublicKeyInfo", "DER", "SHA-256", "hex" ],
+    "docRefIdGeneration": [ "SHA-256", "hex" ],
+
+    "timeSource": {
+
+        "isLegalTime":          true,
+        "authority":            "Physikalisch-Technische Bundesanstalt",
+        "accuracy":             "+-2 ms",
+        "stratum":              2,
+        "syncInterval":         "PT1H",
+        "lastSynchronization":  "2026-09-09T00:05:08Z",
+        "minServers":           2,
+        "serversURL":           "https://time.ptb.de/files/ptb-ntp-services.json",
+
+        "servers": [
+            { "server": "nts://ptbtime1.ptb.de", "priority": 1 },
+            { "server": "nts://ptbtime2.ptb.de", "priority": 1 },
+            { "server": "nts://ptbtime4.ptb.de", "priority": 1 },
+            { "server": "ntp://ptbtime3.ptb.de", "priority": 2 }
+        ]
+
+    },
+
+    "gridOperator": {
+        "@id":           "DE*VEN",
+        "name":          { "en": "Vanaheimr Electric" },
+        "publicKeys": [
+            {
+                 "keyUsage":  [ "signGridPowerConstraints" ],
+                 "algorithm":   "ECDSA-secp256r1",
+                 "encodings": [ "SubjectPublicKeyInfo", "DER", "hex" ],
+                 "value":       "3059301306072A8648CE3D020106082A8648CE3D030107034200043FCDF7CCE6FF42E8F12C7D126B5A69F82647D2826957CDF702ECA6B9CACB64C4307793F1C521A52C8B505C6FAFBFDBA0B887478CE8AC55E0C5F8E14BB3C694FD"
+            },
+            {
+                 "keyUsage":  [ "signGridPowerConstraints" ],
+                 "algorithm":   "EdDSA-Ed25519",
+                 "encodings": [ "raw", "hex" ],
+                 "value":       "0B442D1044571F14182EE7AE07A1400C3CDE5D6AD2C180F313E9EA66885C0F9F"
+            }
+        ]
+    },
+
+    "chargingStationOperator": {
+        "@id":           "DE*GEF",
+        "name":          { "en": "GraphDefined" },
+        "publicKeys": [
+            {
+                 "keyUsage":  [ "signCTRs" ],
+                 "algorithm":   "ECDSA-secp256r1",
+                 "encodings": [ "SubjectPublicKeyInfo", "DER", "hex" ],
+                 "value":       "3059301306072A8648CE3D020106082A8648CE3D03010703420004BC73F4E05F377C4E5EE43773AA2B2AD08195564C2C72E0299200E712A0F4DA15D572484BED222682E3645319FBA1CB0D3DE19D9717C9FD9652D32A6371378FAC"
+            },
+            {
+                 "keyUsage":  [ "signCTRs" ],
+                 "algorithm":   "EdDSA-Ed25519",
+                 "encodings": [ "raw", "hex" ],
+                 "value":       "F4C38373AC3C64FC5EE1F4CC9FA0D5CF9E60D49AD3D1E0029A14FBFFC73BD68B"
+            },
+            {
+                 "keyUsage":  [ "signEnergyMeterValues" ],
+                 "algorithm":   "ECDSA-secp256r1",
+                 "encodings": [ "SubjectPublicKeyInfo", "DER", "hex" ],
+                 "value":       "3059301306072A8648CE3D020106082A8648CE3D030107034200045BDD1B19FBCC4C15C306E0550F30A78557D31744D521080A1CFEBD411AA2D59AA9AFFBA5692CBC242A94BEADAC77983DCB9DAE3D5D9EC5F0895C9C782ADFC320"
+            }
+        ]
+    },
+
+    "chargingStation": {
+
+        "@id":              "DE*GEF*S12345678",
+        "@context":         "",
+        "description":      {},
+
+        "manufacturer":     {},
+        "model":            {},
+        "hardware":         {},
+        "firmware":         {},
+        "legalCompliance":  {},
+
+        "geoLocation":      {
+                                "lat": 50.9279287,
+                                "lng": 11.5731785
+                            },
+
+        "address":          {
+                                "street":         "Biberweg 18",
+                                "town":           "Jena",
+                                "zipCode":        "04479"
+                            },
+
+        "EVSE":             {
+
+                                "@id":              "DE*GEF*E12345678*1",
+                                "@context":         "",
+
+                                "powerType":        "AC",
+                                "maxPower":         "22 kW",
+
+                                "energyMeter":      {
+                                                        "@id":               "GD-METER-OCMF-TEST-01",
+                                                        "@context":          "",
+
+                                                        "manufacturer":      {
+                                                                                 "name": "GraphDefined"
+                                                                             },
+                                                        "model":             {
+                                                                                 "name": "GD-OCMF-AC22"
+                                                                             },
+                                                        "hardware":          {
+                                                                                 "revision": "1.0.0"
+                                                                             },
+                                                        "firmware":          {
+                                                                                 "version": "1.0.0"
+                                                                             },
+                                                        "legalCompliance":   {},
+                                                        "signatureInfos":    {},
+                                                        "signatureFormat":   "https://open.charging.cloud/contexts/EnergyMeterSignatureFormats/OCMF",
+                                                        "publicKeys": [
+                                                            {
+                                                                "keyUsage":  [ "signMeterValues" ],
+                                                                "algorithm":   "ECDSA-secp256r1",
+                                                                "encodings": [ "SubjectPublicKeyInfo", "DER", "hex" ],
+                                                                "value":       "3059301306072A8648CE3D020106082A8648CE3D03010703420004DE3FF5C28F12D79B0273E600113499285A0BCB1DBB31C32FF1618760B58F8B027F457EF35A37BC48E0CD96ED806760D0CE42818E04D6DA33F44CCA67055E811D"
+                                                            }
+                                                        ]
+                                                    },
+
+                                "connector":        {
+                                                        "@id":            "1",
+                                                        "standard":       "Type 2",
+                                                        "format":         "Socket",
+                                                        "powerType":      "AC",
+                                                        "maxPower":       "22 kW",
+                                                        "cable": {
+                                                            "length": 1
+                                                        }
+                                                    }
+
+                            }
+
+    },
+
+    "contract": {
+        "@id":      "04A9B7C21E5D80",
+        "type":     "rfid"
+    },
+
+
+    "liveTransports": [
+                         {
+                             "type":         "https",
+                             "urls":         [ "https://api1.example.com/chargingSessions/OCMF-Test-01/transparency/live?token=abcdef" ],
+                             "refresh":       10,
+                             "customHeaders": {
+
+                                 "X-Key1":  "headerValue1",
+
+                                 "X-TOTP":  {
+                                                "valueProvider":  "TOTP",
+                                                "parameters":   { "sharedSecret": "abcdefghijklmnopqrstuvwxyz1234567890" }
+                                            }
+
+                             }
+                         },
+                         {
+                             "type": "websocket",
+                             "urls": [
+                                 {
+                                     "url":      "wss://api1.example.com/chargingSessions/OCMF-Test-01/transparency/live",
+                                     "priority":  10,
+                                     "weight":    60
+                                 },
+                                 {
+                                     "url":      "wss://api2.example.com/chargingSessions/OCMF-Test-01/transparency/live",
+                                     "priority":  10,
+                                     "weight":    40
+                                 }
+                             ],
+                             "totp": {
+                                 "sharedSecret": "abcdefghijklmnopqrstuvwxyz1234567890",
+                                 "timeStep":      10
+                             }
+                         },
+                         {
+                             "type": "httpSSE",
+                             "urls": [
+                                 "https://api1.example.com/chargingSessions/OCMF-Test-01/transparency/live",
+                                 "https://api2.example.com/chargingSessions/OCMF-Test-01/transparency/live"
+                             ],
+                             "totp": {
+                                 "sharedSecret": "abcdefghijklmnopqrstuvwxyz1234567890",
+                                 "timeStep":      10
+                             }
+                         }
+    ],
+
+
+    "signedMeterValues": {
+        "encodings": [ "OCMF", "plain" ],
+        "values": [
+            "OCMF|{\"FV\":\"1.4\",\"GI\":\"GraphDefined Charging Station\",\"GS\":\"CS-OCMF-TEST-01\",\"GV\":\"1.0.0\",\"PG\":\"T1\",\"MV\":\"GraphDefined\",\"MM\":\"GD-OCMF-AC22\",\"MS\":\"GD-METER-OCMF-TEST-01\",\"MF\":\"1.0.0\",\"IS\":true,\"IL\":\"TRUSTED\",\"IF\":[\"RFID_PLAIN\"],\"IT\":\"ISO14443\",\"ID\":\"04A9B7C21E5D80\",\"CT\":\"EVSEID\",\"CI\":\"DE*GEF*E12345678*1\",\"TT\":\"001;EUR;0;35;0;0\",\"CF\":\"1.0.0\",\"RD\":[{\"TM\":\"2026-09-09T02:50:41,000+0200 S\",\"TX\":\"B\",\"RV\":1234.0000,\"RI\":\"1-0:1.8.0*255\",\"RU\":\"kWh\",\"RT\":\"AC\",\"EF\":\"\",\"ST\":\"G\"}]}|{\"SA\":\"ECDSA-secp256r1-SHA256\",\"SE\":\"hex\",\"SM\":\"application/x-der\",\"SD\":\"3044021F5A5DE233CC4D054E405ED76BF2AEBB9E32CB60346A8B4E99F35D4B5D12BF1A022100A5FE99491E5D705A6A3002ED16668634E7C4060AEE02613543BF001906A8FC09\"}",
+            "OCMF|{\"FV\":\"1.4\",\"GI\":\"GraphDefined Charging Station\",\"GS\":\"CS-OCMF-TEST-01\",\"GV\":\"1.0.0\",\"PG\":\"T2\",\"MV\":\"GraphDefined\",\"MM\":\"GD-OCMF-AC22\",\"MS\":\"GD-METER-OCMF-TEST-01\",\"MF\":\"1.0.0\",\"IS\":true,\"IL\":\"TRUSTED\",\"IF\":[\"RFID_PLAIN\"],\"IT\":\"ISO14443\",\"ID\":\"04A9B7C21E5D80\",\"CT\":\"EVSEID\",\"CI\":\"DE*GEF*E12345678*1\",\"TT\":\"001;EUR;0;35;0;0\",\"CF\":\"1.0.0\",\"RD\":[{\"TM\":\"2026-09-09T02:50:51,000+0200 S\",\"TX\":\"C\",\"RV\":1234.0342,\"RI\":\"1-0:1.8.0*255\",\"RU\":\"kWh\",\"RT\":\"AC\",\"EF\":\"\",\"ST\":\"G\"}]}|{\"SA\":\"ECDSA-secp256r1-SHA256\",\"SE\":\"hex\",\"SM\":\"application/x-der\",\"SD\":\"304402205E2C0DCA73ACE38C244C3AC65821354744673EB3C8698B26C12960F34669214202203AA7AB47DB04A884EB4163F62074720261CEB0BAFDEB0F065B21125966ACC6CE\"}",
+            "OCMF|{\"FV\":\"1.4\",\"GI\":\"GraphDefined Charging Station\",\"GS\":\"CS-OCMF-TEST-01\",\"GV\":\"1.0.0\",\"PG\":\"T3\",\"MV\":\"GraphDefined\",\"MM\":\"GD-OCMF-AC22\",\"MS\":\"GD-METER-OCMF-TEST-01\",\"MF\":\"1.0.0\",\"IS\":true,\"IL\":\"TRUSTED\",\"IF\":[\"RFID_PLAIN\"],\"IT\":\"ISO14443\",\"ID\":\"04A9B7C21E5D80\",\"CT\":\"EVSEID\",\"CI\":\"DE*GEF*E12345678*1\",\"TT\":\"001;EUR;0;35;0;0\",\"CF\":\"1.0.0\",\"RD\":[{\"TM\":\"2026-09-09T02:51:01,000+0200 S\",\"TX\":\"C\",\"RV\":1234.0963,\"RI\":\"1-0:1.8.0*255\",\"RU\":\"kWh\",\"RT\":\"AC\",\"EF\":\"\",\"ST\":\"G\"}]}|{\"SA\":\"ECDSA-secp256r1-SHA256\",\"SE\":\"hex\",\"SM\":\"application/x-der\",\"SD\":\"3046022100ABE9095E0CED5538A8DB48DB045CC2927D95821E522762EABF2D7462C230D2A7022100AD50EBC3051BADC02278E87681D6EE4329A4562A65522D6A6807E09AF78442A3\"}"
+        ]
+    },
+
+    "chargingPeriods": [
+        {
+            "startTimestamp": "2026-09-09T00:50:41Z",
+            "chargingTariffId": "DE*GEF*T-AC22",
+            "activeChargingTariffElement": {
+                "price_components": [
+                    {
+                        "type": "ENERGY",
+                        "price": 0.35,
+                        "step_size": 1
+                    }
+                ]
+            },
+            "costs": {
+                "total": 0.0337,
+                "currency": "EUR",
+                "energy": {
+                    "amount": 0.0963,
+                    "unit": "kWh",
+                    "cost": 0.0337
+                }
+            }
+        }
+    ],
+
+    "legallyRelevantLogMessages": [
+        {
+            "@context": "https://open.charging.cloud/contexts/legallyRelevantLogMessages/gridPowerConstraints/1.0",
+            "timestamp": "2026-09-09T00:51:05Z",
+            "code": "LimitationOfPowerConsumption",
+            "text": {
+                "en": "The grid operator has requested a limitation of charging power consumption!"
+            },
+            "data": {
+                "maxPower": "6 kW",
+                "start": "2026-09-09T00:51:43Z",
+                "duration": "1 min"
+            },
+            "signatures": [
+                {
+                    "keyId": "A6346E58D78BE0C49CCD9CEE3BE21743E4FC51170679F1C16337AF4FF2155693",
+                    "algorithm": "ECDSA-secp256r1-SHA256",
+                    "signedData": {
+                        "excludedProperties": [ "signatures" ],
+                        "encodings": [ "JSON", "JCS", "UTF-8" ]
+                    },
+                    "encodings": [ "Ecdsa-Sig-Value", "DER", "hex" ],
+                    "value": "3045022100E185811974AF6DCEB54E1ABF2D5340FBED7D977CC2EE28565C2BFDE6E0953DBD02202BD8C5E6DDFB494345F92F9E32C66357E75549D959A8BAC250D84F74462C57A3"
+                },
+                {
+                    "keyId": "A48E0EE1B9BDBE41637EF4059B68B698A0F28948280CD12FEA29800BB53646D6",
+                    "algorithm": "EdDSA-Ed25519",
+                    "signedData": {
+                        "excludedProperties": [ "signatures" ],
+                        "encodings": [ "JSON", "JCS", "UTF-8" ]
+                    },
+                    "encodings": [ "raw", "hex" ],
+                    "value": "78DFB27E5CBBE52EFD8E0641AE9F49692F7F5AAB59EB69CE31359A700B1FAF09E2153432296F72D65F7C325A08FBEF076F1C17A5A858877458C82A01B92EBB0B"
+                }
+            ]
+        }
+    ],
+
+    "signatures":    [
+        {
+            "keyId": "2D5BEE2B13118410C5FF9D6DDC0EEE2E03AB978FA1BC838AEE3655EB7095B9F1",
+            "algorithm": "ECDSA-secp256r1-SHA256",
+            "signedData": {
+                "excludedProperties": [ "signatures" ],
+                "encodings": [ "JSON", "JCS", "UTF-8" ]
+            },
+            "encodings": [ "Ecdsa-Sig-Value", "DER", "hex" ],
+            "value": "30440220651E9573BB0427AC12EA19347E3894CD3184B32573200994987620352820D63D02203B202AC6EC8CFDE25A0315F6F27B1E3EA3BE1B4F05BCF4FFC7489CEE8E34E408"
+        },
+        {
+            "keyId": "A2F94A58FB75E25BC2CECDF582819B6D44F3705D0C3BADD6391E9D536D5671E8",
+            "algorithm": "EdDSA-Ed25519",
+            "signedData": {
+                "excludedProperties": [ "signatures" ],
+                "encodings": [ "JSON", "JCS", "UTF-8" ]
+            },
+            "encodings": [ "raw", "hex" ],
+            "value": "BFEEE10160CC6EFE5CD563691AFA77F1330FE195B5475193A7132A84DB2F87B28C154B572C844BD63169A96688AB8D6D2E3AB1BD367F2AE07BC2E3167F47B708"
+        }
+    ]
+
+}
