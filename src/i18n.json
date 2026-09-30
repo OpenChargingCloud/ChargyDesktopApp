@@ -352,9 +352,38 @@
             "en": "Do not allow"
         },
         "liveReloadActive": {
-            "de": "Live-Aktualisierung aktiv",
-            "en": "Live reload active"
+            "de": "Live-Abruf erlaubt",
+            "en": "Live requests allowed"
         },
+
+        "livePollWaiting": { "de": "Live-Abruf vorbereitet", "en": "Live request scheduled" },
+        "livePollLoading": { "de": "Live-Daten werden abgerufen …", "en": "Fetching live data …" },
+        "livePollUpdated": { "de": "Neue Live-Daten übernommen", "en": "New live data applied" },
+        "livePollUnchanged": { "de": "Abruf erfolgreich – keine neuere Dokumentversion", "en": "Request successful – no newer document version" },
+        "livePollNetworkError": { "de": "Live-Daten momentan nicht abrufbar", "en": "Live data cannot currently be fetched" },
+        "livePollTimeout": { "de": "Live-Abruf nach 30 Sekunden abgebrochen", "en": "Live request timed out after 30 seconds" },
+        "livePollHTTPError": { "de": "Live-Abruf fehlgeschlagen – HTTP %p", "en": "Live request failed – HTTP %p" },
+        "livePollUnauthorized": { "de": "Anmeldung erforderlich oder Zugangsdaten ungültig", "en": "Authentication required or credentials invalid" },
+        "livePollForbidden": { "de": "Zugriff vom Server verweigert", "en": "Access denied by the server" },
+        "livePollReadError": { "de": "Die Übertragung der Live-Daten ist fehlgeschlagen", "en": "Live data transfer failed" },
+        "livePollSizeError": { "de": "Die Live-Daten überschreiten die erlaubte Größe", "en": "Live data exceeds the allowed size" },
+        "livePollJSONError": { "de": "Server erreichbar, aber die Antwort ist kein gültiges JSON", "en": "Server reachable, but the response is not valid JSON" },
+        "livePollDocumentError": { "de": "Die Antwort enthält keinen Live-Link für diesen Ladevorgang", "en": "The response does not contain a live link for this charging session" },
+        "livePollConversionError": { "de": "Live-Daten empfangen, aber nicht verarbeitbar", "en": "Live data received, but could not be processed" },
+        "livePollLastFetch": { "de": "Letzter erfolgreicher Abruf", "en": "Last successful request" },
+        "livePollLastUpdate": { "de": "Letzte Datenübernahme", "en": "Last data update" },
+        "livePollNextAttempt": { "de": "Nächster Versuch", "en": "Next attempt" },
+        "livePollNever": { "de": "noch keiner", "en": "none yet" },
+        "livePollRetry": { "de": "Jetzt erneut versuchen", "en": "Retry now" },
+        "livePollDetails": { "de": "Details", "en": "Details" },
+        "livePollReceived": { "de": "Antwort erfolgreich empfangen", "en": "Response received successfully" },
+        "livePollUnchangedHint": { "de": "Die Antwort wurde nicht übernommen, weil lastUpdated nicht neuer ist als beim angezeigten Dokument.", "en": "The response was not applied because lastUpdated is not newer than in the displayed document." },
+        "livePollNetworkHint": { "de": "Mögliche Ursachen sind eine Verbindungsstörung, ein DNS- oder TLS-Problem oder eine Zugriffssperre. Prüfen Sie die Verbindung, die Serveradresse und die Transportfreigaben dieser Installation.", "en": "Possible causes include a connection problem, a DNS or TLS issue, or an access restriction. Check the connection, the server address and this installation’s transport permissions." },
+        "The given OCMF meter value does not have a valid time format!": {
+            "de": "Der OCMF-Messwert enthält keinen gültigen Zeitstempel mit Synchronisationsstatus.",
+            "en": "The OCMF meter value does not contain a valid timestamp with synchronization status."
+        },
+
         "liveReloadBlocked": {
             "de": "Live-Aktualisierung blockiert",
             "en": "Live reload blocked"
