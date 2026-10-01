@@ -3494,6 +3494,11 @@ export class ChargyApp {
                                            preservePollState: boolean = false) : void
     {
 
+        const previousMapLocation: L.LatLng|undefined = this.currentChargeTransparencyLiveLink != null &&
+                                                       this.markers.length === 1
+                                                           ? (this.markers[0] as L.Marker).getLatLng()
+                                                           : undefined;
+
         if (!preservePollState && this.currentChargeTransparencyLiveLink !== LiveLink)
         {
             this.liveLinkPollResult          = null;
@@ -3636,13 +3641,32 @@ export class ChargyApp {
         const latitude             = geoLocation?.lat;
         const longitude            = geoLocation?.lng;
 
-        if (latitude != null && longitude != null)
+        if (typeof latitude  === "number" && Number.isFinite(latitude)  && Math.abs(latitude)  <= 90 &&
+            typeof longitude === "number" && Number.isFinite(longitude) && Math.abs(longitude) <= 180)
+        {
             this.appendLiveLinkInfoRow(
                 tableDiv,
                 "locationInfos",
                 '<i class="fas fa-map-marker-alt"></i>',
                 "Position " + latitude.toString() + ", " + longitude.toString()
             );
+
+            // This marker represents the station's location, independently of
+            // whether the live link already contains verifiable meter values.
+            const marker = L.marker([latitude, longitude]);
+            const popup  = document.createElement('div');
+            popup.textContent = this.chargy.GetLocalizedText(chargingStation?.description) ??
+                                chargingStation?.["@id"] ?? "Position " + latitude.toString() + ", " + longitude.toString();
+            marker.bindPopup(popup).addTo(this.map);
+            this.markers.push(marker);
+
+            // Keep the user's zoom and pan when a poll or language change
+            // redraws the same location; move to a newly supplied location.
+            if (previousMapLocation?.lat !== latitude || previousMapLocation.lng !== longitude)
+                this.map.setView([latitude, longitude], 16);
+        }
+        else
+            this.map.setView([0, 0], 1);
 
         const transports = this.liveLinkTransports(LiveLink);
 
