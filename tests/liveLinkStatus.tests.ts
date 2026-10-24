@@ -90,7 +90,7 @@ describe("The verdict over a whole live link", () => {
         test("an unknown or absent verdict is unvalidated, never invalid", () => {
             expect(meterValueSessionState(SessionResult.Unvalidated)).toBe("unvalidated");
             expect(meterValueSessionState(undefined)).toBe("unvalidated");
-            expect(meterValueSessionState("SomethingALaterCoreAdded" as chargyInterfaces.SessionVerificationResult)).toBe("unvalidated");
+            expect(meterValueSessionState("SomethingALaterCoreAdded")).toBe("unvalidated");
         });
 
     });

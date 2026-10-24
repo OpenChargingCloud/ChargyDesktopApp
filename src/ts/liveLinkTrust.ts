@@ -567,7 +567,6 @@ function embeddedIPv4(hostname: string): number[] | null {
     const high = parseInt(hex[1] as string, 16);
     const low  = parseInt(hex[2] as string, 16);
 
-    // eslint-disable-next-line no-bitwise
     return [ (high >> 8) & 0xff, high & 0xff, (low >> 8) & 0xff, low & 0xff ];
 
 }

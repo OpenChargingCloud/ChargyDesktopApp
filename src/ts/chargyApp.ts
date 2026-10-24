@@ -516,6 +516,27 @@ function showChargingTariff(parent:   HTMLElement,
 }
 
 
+// The desktop release manifest also carries platform information and legacy
+// hash names that are not part of ChargyCore's generic version interfaces.
+type AppVersionSignature = chargyInterfaces.IVersionSignature & {
+    comment?: unknown;
+};
+type AppVersionPackage = Omit<chargyInterfaces.IVersionPackage, "signatures"> & {
+    platform?: string;
+    platforms?: string[];
+    isInstaller?: boolean | null;
+    // Preserve the historical field when constructing signed manifest bytes.
+    additonalInfo?: unknown;
+    cryptoHashes: chargyInterfaces.ICryptoHashes & { SHA512?: string };
+    signatures?: AppVersionSignature[] | null;
+};
+type AppVersion = Omit<chargyInterfaces.IVersion, "packages"> & {
+    packages: AppVersionPackage[];
+};
+type AppVersions = Omit<chargyInterfaces.IVersions, "versions"> & {
+    versions: AppVersion[];
+};
+
 interface ChargyElectronAPI {
 
     getAppContext(): {
@@ -564,8 +585,8 @@ interface ChargyElectronAPI {
     readExternalURLConfig():                             Promise<string>;
     fetchLiveLink(url: string, maxPayloadBytes: number, prefix?: string, headers?: Record<string, string>, requestId?: string): Promise<LiveLinkFetchResult>;
     cancelLiveLink(requestId: string): void;
-    completeHttpRequest(requestId: string, result: any):  void;
-    setVerificationResult(result: any):                   boolean;
+    completeHttpRequest(requestId: string, result: unknown):  void;
+    setVerificationResult(result: unknown):                   boolean;
 
     on(channel: 'receiveReadClipboard', listener: ()                              => void): () => void;
     on(channel: 'receiveFileToOpen',    listener: (filename:  string)             => void): () => void;
@@ -621,9 +642,9 @@ export class ChargyApp {
     private readonly commandLineArguments:               Array<string>                     = [];
     private readonly platform:                           string                            = "";
 
-    private          currentAppInfos:                    chargyInterfaces.IVersions|null   = null;
-    private          currentVersionInfos:                any                               = null;
-    private          currentPackage:                     any                               = null;
+    private          currentAppInfos:                    AppVersions | null                = null;
+    private          currentVersionInfos:                AppVersion | null                 = null;
+    private          currentPackage:                     AppVersionPackage | null          = null;
     private          applicationHash:                    string                            = "";
 
     private readonly markers:                            L.Marker[]                        = [];
@@ -1201,7 +1222,7 @@ export class ChargyApp {
 
                                 try
                                 {
-                                    this.currentAppInfos = JSON.parse(GetListOfVersions.responseText) as chargyInterfaces.IVersions;
+                                    this.currentAppInfos = JSON.parse(GetListOfVersions.responseText) as AppVersions;
                                 }
                                 catch (exception)
                                 {
@@ -1231,13 +1252,13 @@ export class ChargyApp {
 
                                             this.currentVersionInfos = version;
 
-                                            if (this.currentVersionInfos.packages && this.currentVersionInfos.packages.length > 0)
+                                            if (this.currentVersionInfos.packages.length > 0)
                                             {
                                                 for (const _package of this.currentVersionInfos.packages)
                                                 {
                                                     if (_package.isInstaller == null &&
                                                        (_package.platform === this.platform ||
-                                                       (_package.platforms != null && Array.isArray(_package.platforms) && _package.platforms.indexOf(this.platform) > -1)))
+                                                       (_package.platforms != null && Array.isArray(_package.platforms) && _package.platforms.includes(this.platform))))
                                                     {
                                                         this.currentPackage = _package;
                                                     }
@@ -1347,7 +1368,7 @@ export class ChargyApp {
                                                 const signaturesDiv = packageDiv.appendChild(document.createElement('div'));
                                                 signaturesDiv.className = "signatures";
 
-                                                for (const signature of versionpackage.signatures)
+                                                for (const signature of versionpackage.signatures ?? [])
                                                 {
 
                                                     const signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
@@ -1386,7 +1407,7 @@ export class ChargyApp {
                                                         downloadURLAnchor.onclick = (ev: MouseEvent): void => {
                                                             ev.preventDefault();
                                                             const link = downloadURLAnchor.dataset["externalUrl"];
-                                                            if (link?.startsWith("https://"))
+                                                            if (link?.startsWith("https://") === true)
                                                                 void this.electron.openExternal(link);
                                                         };
                                                     }
@@ -1532,7 +1553,7 @@ export class ChargyApp {
                 {
 
                     // Bad hash value
-                    if (this.currentPackage.cryptoHashes.SHA512.replace("0x", "") !== this.applicationHash)
+                    if ((this.currentPackage.cryptoHashes.SHA512 ?? this.currentPackage.cryptoHashes.sha512 ?? "").replace("0x", "") !== this.applicationHash)
                         sigHeadDiv.innerHTML = "<i class=\"fas fa-times-circle\"></i> " + this.chargy.GetLocalizedMessage("invalidHashValue");
 
                     // At least the same hash value...
@@ -1559,8 +1580,7 @@ export class ChargyApp {
 
                                     const signatureDiv = signaturesDiv.appendChild(document.createElement('div'));
 
-                                    if (signatureDiv != null)
-                                        signatureDiv.innerHTML = await this.checkApplicationHashSignature(this.currentAppInfos,
+                                    signatureDiv.innerHTML = await this.checkApplicationHashSignature(this.currentAppInfos,
                                                                                                           this.currentVersionInfos,
                                                                                                           this.currentPackage,
                                                                                                           signature);
@@ -2357,7 +2377,7 @@ export class ChargyApp {
 
     private async updateQRCodeScannerAvailability(): Promise<void> {
 
-        const mediaDevices = navigator.mediaDevices;
+        const mediaDevices = navigator.mediaDevices as Partial<MediaDevices> | undefined;
 
         if (mediaDevices?.getUserMedia == null)
         {
@@ -2801,7 +2821,7 @@ export class ChargyApp {
     }
 
     private async readFilesFromDisk(files: string[]|FileList|File[]): Promise<void> {
-        if (files != null && files.length > 0)
+        if (files.length > 0)
         {
 
             //#region Map file names
@@ -2810,15 +2830,10 @@ export class ChargyApp {
 
             for (const file of files)
             {
-
-                if (file != undefined)
-                {
-                    if (typeof file == 'string')
-                        filesToLoad.push({ name: file });
-                    else
-                        filesToLoad.push(file)
-                }
-
+                if (typeof file === 'string')
+                    filesToLoad.push({ name: file });
+                else
+                    filesToLoad.push(file);
             }
 
             //#endregion
@@ -2835,7 +2850,8 @@ export class ChargyApp {
                         const fileData = filename instanceof File
                                              ? await filename.arrayBuffer()
                                              : await this.electron.readFile((filename.path ?? filename.name).replace("file://", ""));
-                        const fileType = filename.type?.trim() ||
+                        const suppliedFileType = filename.type?.trim();
+                        const fileType = suppliedFileType != null && suppliedFileType !== "" ? suppliedFileType :
                                          getMimeTypeFromFileName(filename.path ?? filename.name);
 
                         loadedFiles.push({
@@ -2923,10 +2939,10 @@ export class ChargyApp {
 
     //#region checkApplicationHashSignature(...)
 
-    private async checkApplicationHashSignature(app:        any,
-                                                version:    any,
-                                                _package:   any,
-                                                signature:  any): Promise<string>
+    private async checkApplicationHashSignature(app:        AppVersions | null | undefined,
+                                                version:    AppVersion | null | undefined,
+                                                _package:   AppVersionPackage | null | undefined,
+                                                signature:  AppVersionSignature | null | undefined): Promise<string>
     {
 
         if (app == null || version == null || _package == null || signature == null)
@@ -3025,12 +3041,10 @@ export class ChargyApp {
 
             const serializedResult = stringify(result);
 
-            if (serializedResult == null)
-                throw new Error("Invalid transparency format!");
-
+            const parsedResult: unknown = JSON.parse(serializedResult);
             this.electron.completeHttpRequest(request.id, {
                 ok:      true,
-                result:  JSON.parse(serializedResult),
+                result:  parsedResult,
                 ...(verificationResults !== null ? { verificationResults } : {})
             });
 
@@ -3292,7 +3306,7 @@ export class ChargyApp {
             if (typeof publicKey.format === "string" && publicKey.format !== "")
                 this.appendPublicKeyInfoRow(tableDiv, "fa-file-code", "publicKeyFormatLabel", publicKey.format);
 
-            if (publicKey.encoding)
+            if (publicKey.encoding != null && publicKey.encoding !== "")
                 this.appendPublicKeyInfoRow(tableDiv, "fa-code", "publicKeyEncodingLabel", publicKey.encoding);
 
             if (publicKey.value)
@@ -3370,7 +3384,11 @@ export class ChargyApp {
                          .join(" · ");
         }
 
-        return value == null ? "" : String(value);
+        if (typeof value === "number" || typeof value === "boolean" ||
+            typeof value === "bigint" || typeof value === "symbol")
+            return String(value);
+
+        return "";
 
     }
 
@@ -5321,7 +5339,7 @@ export class ChargyApp {
                 }
                 catch (exception)
                 { 
-                    console.log("Could not show session time infos of charging session '" + chargingSession["@id"] + "':" + exception);
+                    console.log("Could not show session time infos of charging session '" + chargingSession["@id"] + "':" , exception);
                 }
 
                 //#endregion
@@ -5351,11 +5369,11 @@ export class ChargyApp {
                         const duration = this.moment.duration(chargyLib.parseUTC(chargingSession.end).valueOf() - chargyLib.parseUTC(chargingSession.begin).valueOf());
 
                         productDiv.innerHTML += "Ladedauer ";
-                        if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days()    + " Tage "    + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                        else if (Math.floor(duration.asDays())    > 0) productDiv.innerHTML += duration.days()    + " Tag "     + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                        else if (Math.floor(duration.asHours())   > 0) productDiv.innerHTML += duration.hours()   + " Std. "    + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                        else if (Math.floor(duration.asMinutes()) > 0) productDiv.innerHTML += duration.minutes() + " Minuten " + duration.seconds() + " Sekunden";
-                        else if (Math.floor(duration.asSeconds()) > 0) productDiv.innerHTML += duration.seconds() + " Sekunden";
+                        if      (Math.floor(duration.asDays())    > 1) productDiv.innerHTML += duration.days().toString()    + " Tage "    + duration.hours().toString()   + " Std. " + duration.minutes().toString() + " Min. " + duration.seconds().toString() + " Sek.";
+                        else if (Math.floor(duration.asDays())    > 0) productDiv.innerHTML += duration.days().toString()    + " Tag "     + duration.hours().toString()   + " Std. " + duration.minutes().toString() + " Min. " + duration.seconds().toString() + " Sek.";
+                        else if (Math.floor(duration.asHours())   > 0) productDiv.innerHTML += duration.hours().toString()   + " Std. "    + duration.minutes().toString() + " Min. " + duration.seconds().toString() + " Sek.";
+                        else if (Math.floor(duration.asMinutes()) > 0) productDiv.innerHTML += duration.minutes().toString() + " Minuten " + duration.seconds().toString() + " Sekunden";
+                        else if (Math.floor(duration.asSeconds()) > 0) productDiv.innerHTML += duration.seconds().toString() + " Sekunden";
 
 
                         if (chargingSession.chargingProductRelevance?.time != undefined)
@@ -5363,12 +5381,12 @@ export class ChargyApp {
                             switch (chargingSession.chargingProductRelevance.time)
                             {
 
-                                case chargyInterfaces.InformationRelevance.Unknown:
-                                case chargyInterfaces.InformationRelevance.Ignored:
-                                case chargyInterfaces.InformationRelevance.Important:
+                                case "Unknown":
+                                case "Ignored":
+                                case "Important":
                                     break;
 
-                                case chargyInterfaces.InformationRelevance.Informative:
+                                case "Informative":
                                     productDiv.innerHTML += " <span class=\"relevance\">(informativ)</span>";
                                     break;
 
@@ -5430,12 +5448,12 @@ export class ChargyApp {
                                 switch (chargingSession.chargingProductRelevance.energy)
                                 {
 
-                                    case chargyInterfaces.InformationRelevance.Unknown:
-                                    case chargyInterfaces.InformationRelevance.Ignored:
-                                    case chargyInterfaces.InformationRelevance.Important:
+                                    case "Unknown":
+                                    case "Ignored":
+                                    case "Important":
                                         break;
 
-                                    case chargyInterfaces.InformationRelevance.Informative:
+                                    case "Informative":
                                         productDiv.innerHTML += " <span class=\"relevance\">(informativ)</span>";
                                         break;
 
@@ -5453,7 +5471,7 @@ export class ChargyApp {
                 }
                 catch (exception)
                 { 
-                    console.log("Could not show energy infos of charging session '" + chargingSession["@id"] + "':" + exception);
+                    console.log("Could not show energy infos of charging session '" + chargingSession["@id"] + "':" , exception);
                 }
 
                 //#endregion
@@ -5487,11 +5505,11 @@ export class ChargyApp {
                             const duration     = this.moment.duration(parkingEnd.valueOf() - parkingBegin.valueOf());
 
                             parkingDiv.innerHTML += "Parkdauer ";
-                            if      (Math.floor(duration.asDays())    > 1) parkingDiv.innerHTML += duration.days()    + " Tage " + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                            else if (Math.floor(duration.asDays())    > 0) parkingDiv.innerHTML += duration.days()    + " Tag "  + duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                            else if (Math.floor(duration.asHours())   > 0) parkingDiv.innerHTML += duration.hours()   + " Std. " + duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                            else if (Math.floor(duration.asMinutes()) > 0) parkingDiv.innerHTML += duration.minutes() + " Min. " + duration.seconds() + " Sek.";
-                            else if (Math.floor(duration.asSeconds()) > 0) parkingDiv.innerHTML += duration.seconds();
+                            if      (Math.floor(duration.asDays())    > 1) parkingDiv.innerHTML += duration.days().toString()    + " Tage " + duration.hours().toString()   + " Std. " + duration.minutes().toString() + " Min. " + duration.seconds().toString() + " Sek.";
+                            else if (Math.floor(duration.asDays())    > 0) parkingDiv.innerHTML += duration.days().toString()    + " Tag "  + duration.hours().toString()   + " Std. " + duration.minutes().toString() + " Min. " + duration.seconds().toString() + " Sek.";
+                            else if (Math.floor(duration.asHours())   > 0) parkingDiv.innerHTML += duration.hours().toString()   + " Std. " + duration.minutes().toString() + " Min. " + duration.seconds().toString() + " Sek.";
+                            else if (Math.floor(duration.asMinutes()) > 0) parkingDiv.innerHTML += duration.minutes().toString() + " Min. " + duration.seconds().toString() + " Sek.";
+                            else if (Math.floor(duration.asSeconds()) > 0) parkingDiv.innerHTML += duration.seconds().toString();
 
 
                             if (chargingSession.chargingProductRelevance?.parking != undefined)
@@ -5499,12 +5517,12 @@ export class ChargyApp {
                                 switch (chargingSession.chargingProductRelevance.parking)
                                 {
 
-                                    case chargyInterfaces.InformationRelevance.Unknown:
-                                    case chargyInterfaces.InformationRelevance.Ignored:
-                                    case chargyInterfaces.InformationRelevance.Important:
+                                    case "Unknown":
+                                    case "Ignored":
+                                    case "Important":
                                         break;
 
-                                    case chargyInterfaces.InformationRelevance.Informative:
+                                    case "Informative":
                                         parkingDiv.innerHTML += " <span class=\"relevance\">(informativ)</span>";
                                         break;
 
@@ -5522,7 +5540,7 @@ export class ChargyApp {
                 }
                 catch (exception)
                 { 
-                    console.log("Could not show parking infos of charging session '" + chargingSession["@id"] + "':" + exception);
+                    console.log("Could not show parking infos of charging session '" + chargingSession["@id"] + "':" , exception);
                 }
 
                 //#endregion
@@ -5598,7 +5616,7 @@ export class ChargyApp {
 
                 } catch (exception)
                 {
-                    console.log("Could not show authorization start/stop infos of charging session '" + chargingSession["@id"] + "':" + exception);
+                    console.log("Could not show authorization start/stop infos of charging session '" + chargingSession["@id"] + "':" , exception);
                 }
 
                 //#endregion
@@ -5608,9 +5626,9 @@ export class ChargyApp {
                 try
                 {
 
-                    if (chargingSession.EVSEId            || chargingSession.EVSE            ||
-                        chargingSession.chargingStationId || chargingSession.chargingStation ||
-                        chargingSession.chargingPoolId    || chargingSession.chargingPool)
+                    if ((chargingSession.EVSEId != null && chargingSession.EVSEId !== "")            || chargingSession.EVSE            ||
+                        (chargingSession.chargingStationId != null && chargingSession.chargingStationId !== "") || chargingSession.chargingStation ||
+                        (chargingSession.chargingPoolId != null && chargingSession.chargingPoolId !== "")    || chargingSession.chargingPool)
 
                          //chargingSession.EVSEId            != "DE*GEF*EVSE*CHARGY*1" &&
                          //chargingSession.chargingStationId != "DE*GEF*STATION*CHARGY*1")
@@ -5627,7 +5645,7 @@ export class ChargyApp {
                         const chargingStationDiv                = chargingStationInfoDiv.appendChild(document.createElement('div'));
                         chargingStationDiv.classList.add("text");
 
-                        if (chargingSession.EVSEId || chargingSession.EVSE) {
+                        if ((chargingSession.EVSEId != null && chargingSession.EVSEId !== "") || chargingSession.EVSE) {
 
                             // if (chargingSession.EVSE == null || typeof chargingSession.EVSE !== 'object')
                             //     chargingSession.EVSE = this.chargy.GetEVSE(chargingSession.EVSEId);
@@ -5643,11 +5661,9 @@ export class ChargyApp {
 
                             chargingStationDiv.classList.add("EVSE");
                             chargingStationDiv.innerHTML      = (chargingSession.EVSE?.description != null
-                                                                    ? this.chargy.GetLocalizedText(chargingSession.EVSE.description) + "<br />"
+                                                                    ? (this.chargy.GetLocalizedText(chargingSession.EVSE.description) ?? "") + "<br />"
                                                                     : "") +
-                                                                (chargingSession.EVSEId !== undefined
-                                                                    ? chargingSession.EVSEId
-                                                                    : chargingSession.EVSE?.["@id"] ?? "");
+                                                                (chargingSession.EVSEId ?? chargingSession.EVSE?.["@id"] ?? "");
 
                             if (chargingSession.EVSE)
                             {
@@ -5666,7 +5682,7 @@ export class ChargyApp {
 
                         }
 
-                        else if (chargingSession.chargingStationId || chargingSession.chargingStation) {
+                        else if ((chargingSession.chargingStationId != null && chargingSession.chargingStationId !== "") || chargingSession.chargingStation) {
 
                             // if (chargingSession.chargingStation == null || chargingSession.chargingStation == undefined || typeof chargingSession.chargingStation !== 'object')
                             //     chargingSession.chargingStation = this.chargy.GetChargingStation(chargingSession.chargingStationId ?? "");
@@ -5681,12 +5697,10 @@ export class ChargyApp {
                             {
 
                                 chargingStationDiv.classList.add("chargingStation");
-                                chargingStationDiv.innerHTML      = (chargingSession.chargingStation?.description != null
-                                                                        ? this.chargy.GetLocalizedText(chargingSession.chargingStation.description) + "<br />"
+                                chargingStationDiv.innerHTML      = (chargingSession.chargingStation.description != null
+                                                                        ? (this.chargy.GetLocalizedText(chargingSession.chargingStation.description) ?? "") + "<br />"
                                                                         : "") +
-                                                                    (chargingSession.chargingStationId != null
-                                                                        ? chargingSession.chargingStationId
-                                                                        : chargingSession.chargingStation["@id"]);
+                                                                    (chargingSession.chargingStationId ?? chargingSession.chargingStation["@id"]);
 
                                 chargingSession.chargingPool      = chargingSession.chargingStation.chargingPool;
                                 chargingSession.chargingPoolId    = chargingSession.chargingStation.chargingPoolId;
@@ -5697,7 +5711,7 @@ export class ChargyApp {
 
                         }
 
-                        else if (chargingSession.chargingPoolId || chargingSession.chargingPool) {
+                        else if ((chargingSession.chargingPoolId != null && chargingSession.chargingPoolId !== "") || chargingSession.chargingPool) {
 
                             // if (chargingSession.chargingPool == null || chargingSession.chargingPool == undefined || typeof chargingSession.chargingPool !== 'object')
                             //     chargingSession.chargingPool = this.chargy.GetChargingPool(chargingSession.chargingPoolId ?? "");
@@ -5712,12 +5726,10 @@ export class ChargyApp {
                             {
 
                                 chargingStationDiv.classList.add("chargingPool");
-                                chargingStationDiv.innerHTML      = (chargingSession.chargingPool?.description != null
-                                                                        ? this.chargy.GetLocalizedText(chargingSession.chargingPool.description) + "<br />"
+                                chargingStationDiv.innerHTML      = (chargingSession.chargingPool.description != null
+                                                                        ? (this.chargy.GetLocalizedText(chargingSession.chargingPool.description) ?? "") + "<br />"
                                                                         : "") +
-                                                                    (chargingSession.chargingPoolId != null
-                                                                        ? chargingSession.chargingPoolId
-                                                                        : chargingSession.chargingPool["@id"]);
+                                                                    (chargingSession.chargingPoolId ?? chargingSession.chargingPool["@id"]);
 
                             }
                             else
@@ -5729,7 +5741,7 @@ export class ChargyApp {
 
                 } catch (exception)
                 {
-                    console.log("Could not show charging station infos of charging session '" + chargingSession["@id"] + "':" + exception);
+                    console.log("Could not show charging station infos of charging session '" + chargingSession["@id"] + "':" , exception);
                 }
 
                 //#endregion
@@ -5770,7 +5782,7 @@ export class ChargyApp {
 
                 } catch (exception)
                 {
-                    console.log("Could not show location infos of charging session '" + chargingSession["@id"] + "':" + exception);
+                    console.log("Could not show location infos of charging session '" + chargingSession["@id"] + "':" , exception);
                 }
 
                 //#endregion
@@ -5816,7 +5828,7 @@ export class ChargyApp {
 
                 } catch (exception)
                 {
-                    console.log("Could not show costs of charging session '" + chargingSession["@id"] + "':" + exception);
+                    console.log("Could not show costs of charging session '" + chargingSession["@id"] + "':" , exception);
                 }
 
                 //#endregion
@@ -5879,6 +5891,9 @@ export class ChargyApp {
 
                         case chargyInterfaces.SessionVerificationResult.ValidSignature:
                             markerIcon = greenMarker;
+                            break;
+
+                        default:
                             break;
 
                     }
@@ -5954,6 +5969,9 @@ export class ChargyApp {
 
                             case chargyInterfaces.SessionVerificationResult.ValidSignature:
                                 marker.bindPopup(this.chargy.GetLocalizedMessage("ValidChargingSession"));
+                                break;
+
+                            default:
                                 break;
 
                         }
@@ -6235,12 +6253,12 @@ export class ChargyApp {
                 if      (measurementValue.errors                    &&
                          measurementValue.errors.length         > 0 &&
                          measurementValue.errors[0]            != null)
-                    return measurementValue.errors[0].toString();
+                    return getTextFromMultilanguageText(measurementValue.errors[0].message, this.UILanguage, this.chargy.GetLocalizedMessage("GeneralError"));
 
                 else if (measurementValue.result.errors             &&
                          measurementValue.result.errors.length  > 0 &&
                          measurementValue.result.errors[0]     != null)
-                    return measurementValue.result.errors[0].toString();
+                    return getTextFromMultilanguageText(measurementValue.result.errors[0].message, this.UILanguage, this.chargy.GetLocalizedMessage("GeneralError"));
 
                 return this.chargy.GetLocalizedMessage("GeneralError");
 
@@ -6716,8 +6734,8 @@ export class ChargyApp {
                        (measurement.chargingSession.chargingStation["@id"] !== "DE*GEF*STATION*CHARGY*1" ||
                         measurement.chargingSession.chargingStation.manufacturer                         ||
                         measurement.chargingSession.chargingStation.model                                ||
-                        measurement.chargingSession.chargingStation.hardware?.serialNumber                ||
-                        measurement.chargingSession.chargingStation.firmware?.version                     ||
+                        (measurement.chargingSession.chargingStation.hardware?.serialNumber != null && measurement.chargingSession.chargingStation.hardware.serialNumber !== "")                ||
+                        (measurement.chargingSession.chargingStation.firmware?.version != null && measurement.chargingSession.chargingStation.firmware.version !== "")                     ||
                         measurement.chargingSession.chargingStation.legalCompliance))
                     {
 
@@ -6750,7 +6768,7 @@ export class ChargyApp {
                                                  model);
                         }
 
-                        if (measurement.chargingSession.chargingStation.hardware?.serialNumber &&
+                        if (measurement.chargingSession.chargingStation.hardware?.serialNumber != null &&
                             measurement.chargingSession.chargingStation.hardware.serialNumber.length > 0)
                         {
                             chargyLib.CreateDiv2(chargingStationInfosDiv, "serialNumber",
@@ -6758,7 +6776,7 @@ export class ChargyApp {
                                                  measurement.chargingSession.chargingStation.hardware.serialNumber);
                         }
 
-                        if (measurement.chargingSession.chargingStation.firmware?.version &&
+                        if (measurement.chargingSession.chargingStation.firmware?.version != null &&
                             measurement.chargingSession.chargingStation.firmware.version.length > 0)
                         {
                             chargyLib.CreateDiv2(chargingStationInfosDiv, "firmwareVersion",
@@ -6766,7 +6784,7 @@ export class ChargyApp {
                                                  measurement.chargingSession.chargingStation.firmware.version);
                         }
 
-                        if (measurement.chargingSession.chargingStation.legalCompliance?.freeText &&
+                        if (measurement.chargingSession.chargingStation.legalCompliance?.freeText != null &&
                             measurement.chargingSession.chargingStation.legalCompliance.freeText.length > 0)
                         {
                             chargyLib.CreateDiv2(chargingStationInfosDiv, "legalCompliance",
@@ -6776,8 +6794,8 @@ export class ChargyApp {
 
                         if (measurement.chargingSession.chargingStation.legalCompliance?.conformity &&
                             measurement.chargingSession.chargingStation.legalCompliance.conformity.length > 0 &&
-                            measurement.chargingSession.chargingStation.legalCompliance.conformity[0]?.freeText &&
-                            measurement.chargingSession.chargingStation.legalCompliance.conformity[0]?.freeText.length > 0)
+                            measurement.chargingSession.chargingStation.legalCompliance.conformity[0]?.freeText != null &&
+                            measurement.chargingSession.chargingStation.legalCompliance.conformity[0].freeText.length > 0)
                         {
                             chargyLib.CreateDiv2(chargingStationInfosDiv, "conformity",
                                                  this.chargy.GetLocalizedMessage("Conformity"),
@@ -6786,8 +6804,8 @@ export class ChargyApp {
 
                         if (measurement.chargingSession.chargingStation.legalCompliance?.calibration &&
                             measurement.chargingSession.chargingStation.legalCompliance.calibration.length > 0 &&
-                            measurement.chargingSession.chargingStation.legalCompliance.calibration[0]?.freeText &&
-                            measurement.chargingSession.chargingStation.legalCompliance.calibration[0]?.freeText.length > 0)
+                            measurement.chargingSession.chargingStation.legalCompliance.calibration[0]?.freeText != null &&
+                            measurement.chargingSession.chargingStation.legalCompliance.calibration[0].freeText.length > 0)
                         {
                             chargyLib.CreateDiv2(chargingStationInfosDiv, "calibration",
                                                  this.chargy.GetLocalizedMessage("Calibration"),
@@ -6826,12 +6844,14 @@ export class ChargyApp {
                                                  this.chargy.GetLocalizedMessage("Model"),
                                                  meterModel);
 
-                        if (meter.hardware?.revision && meter.hardware.revision.length > 0)
+                        if (meter.hardware?.revision != null &&
+                            meter.hardware.revision.length > 0)
                             chargyLib.CreateDiv2(energyMeterInfosDiv, "meterHardwareVersion",
                                                  this.chargy.GetLocalizedMessage("Hardware Version"),
                                                  meter.hardware.revision);
 
-                        if (meter.firmware?.version && meter.firmware.version.length > 0)
+                        if (meter.firmware?.version != null &&
+                            meter.firmware.version.length > 0)
                             chargyLib.CreateDiv2(energyMeterInfosDiv, "meterFirmwareVersion",
                                                  this.chargy.GetLocalizedMessage("Firmware Version"),
                                                  meter.firmware.version);
@@ -6895,8 +6915,8 @@ export class ChargyApp {
                             const tariffShortName        = chargingPeriodRow.appendChild(document.createElement('div'));
                             tariffShortName.classList.add("shortName");
                             tariffShortName.innerHTML  = tariff.shortName && Object.keys(tariff.shortName).length > 0
-                                                                ? tariff.shortName[this.UILanguage] ?? tariff["@id"] ?? ""
-                                                                : tariff["@id"] ?? "";
+                                                                ? tariff.shortName[this.UILanguage] ?? tariff["@id"]
+                                                                : tariff["@id"];
 
                             if (tariff.summary && Object.keys(tariff.summary).length > 0)
                             {
@@ -6978,7 +6998,7 @@ export class ChargyApp {
 
                                 const durationDiv            = chargingPeriodRow.appendChild(document.createElement('div'));
                                 durationDiv.classList.add("duration");
-                                durationDiv.innerHTML        = duration.hours() + "h " + duration.minutes() + "m" + duration.seconds() + "s";
+                                durationDiv.innerHTML        = duration.hours().toString() + "h " + duration.minutes().toString() + "m" + duration.seconds().toString() + "s";
 
                             }
 
@@ -7201,8 +7221,8 @@ export class ChargyApp {
 
                             // Display the energy value differently from its native energy meter representation.
                             // This can be a regulatory requirement based on the calibration law.
-                            if (measurementValue.value_displayPrefix &&
-                                measurementValue.value_displayPrecision)
+                            if (measurementValue.value_displayPrefix != null &&
+                                measurementValue.value_displayPrecision != null)
                             {
                                 if (measurement.unit === "kWh" || measurement.unit === "KILO_WATT_HOURS")
                                 {
@@ -7254,7 +7274,7 @@ export class ChargyApp {
 
                             // Display the energy unit differently from its native energy meter representation.
                             // This can be a regulatory requirement based on the calibration law.
-                            if (measurementValue.value_displayPrefix)
+                            if (measurementValue.value_displayPrefix != null)
                             {
                                 switch (measurementValue.value_displayPrefix)
                                 {
@@ -7303,17 +7323,17 @@ export class ChargyApp {
                             chargyLib.CreateDiv(measurementValueDiv, "value2",
                                       measurementCounter > 1
                                           ? (currentValue.minus(previousValue).toNumber() >= 0 ? "+" : "") +
-                                            (measurementValue.value_displayPrecision
+                                            (measurementValue.value_displayPrecision != null
                                                  ? parseFloat((currentValue.minus(previousValue)).toFixed(Math.abs(measurementValue.value_displayPrecision)))
                                                  //: parseFloat((currentValue.minus(previousValue)).toFixed(Math.abs(measurementValue.measurement.scale))))
-                                                 : parseFloat((currentValue.minus(previousValue)).toString()))
-                                          : "0");
+                                                 : parseFloat((currentValue.minus(previousValue)).toString())).toString()
+                                           : "0");
 
                             // Unit
                             if (measurementCounter <= 1)
                                 chargyLib.CreateDiv(measurementValueDiv, "unit2",  "");
 
-                            else if (measurementValue.value_displayPrefix)
+                            else if (measurementValue.value_displayPrefix != null)
                             {
                                 switch (measurementValue.value_displayPrefix)
                                 {
@@ -7370,20 +7390,9 @@ export class ChargyApp {
 
                                         icon = '<i class="fas fa-times-circle"></i> ';
 
-                                        // Format validation errors...
-                                        if      (measurementValue.errors                    &&
-                                                 measurementValue.errors.length         > 0 &&
-                                                 measurementValue.errors[0]            != null)
-                                            icon += measurementValue.errors[0];
-
-                                        // Validation errors...
-                                        else if (measurementValue.result?.errors             &&
-                                                 measurementValue.result.errors.length  > 0 &&
-                                                 measurementValue.result.errors[0]     != null)
-                                            icon += measurementValue.result.errors[0];
-
-                                        else
-                                            icon += this.chargy.GetLocalizedMessage("GeneralError");
+                                        const errorMessage = document.createElement('span');
+                                        errorMessage.textContent = this.getMeasurementValueSignatureStatusText(measurementValue);
+                                        icon += errorMessage.outerHTML;
 
                                         break;
 
@@ -7452,6 +7461,9 @@ export class ChargyApp {
 
                                     case chargyInterfaces.VerificationResult.ValidStopValue:
                                         icon = '<i class="fas fa-check-circle"></i> ' + this.chargy.GetLocalizedMessage("Valid stop value");
+                                        break;
+
+                                    default:
                                         break;
 
                                 }
@@ -7670,7 +7682,7 @@ export class ChargyApp {
 
         //#endregion
 
-        if (!measurementValue?.measurement ||
+        if (!measurementValue.measurement ||
             !measurementValue.method)
         {
             doError(this.chargy.GetLocalizedMessage("Unknown meter data record format!"));

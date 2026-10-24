@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   verify:
-    # Node 22.13 is the minimum required by ChargyCore. Node 26 covers current
+    # Node 22.18 is the minimum required by ChargyCore. Node 26 covers current
     # development, while Windows and macOS exercise the platform-sensitive
     # Electron packaging and path handling.
     strategy:
@@ -26,8 +26,8 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            node: '22.13'
-            leg: ubuntu-node-22.13
+            node: '22.18'
+            leg: ubuntu-node-22.18
           - os: ubuntu-latest
             node: '26'
             leg: ubuntu-node-26

@@ -65,7 +65,7 @@ export function documentSignatureState(verification: IDocumentSignaturesResult):
  * they are the everyday case, and the meter values that do exist still speak
  * for themselves.
  */
-export function meterValueSessionState(status: chargyInterfaces.SessionVerificationResult | undefined): LiveLinkOverallState | null {
+export function meterValueSessionState(status: unknown): LiveLinkOverallState | null {
 
     switch (status)
     {

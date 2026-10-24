@@ -496,7 +496,7 @@ describe("Live link trust", () => {
             Math.min(Math.max(refresh, minimumRefreshSeconds), maximumRefreshSeconds);
 
         expect(clamp(1)).toBe(minimumRefreshSeconds);
-        expect(clamp(1e309)).toBe(maximumRefreshSeconds);   // 1e309 parses to Infinity
+        expect(clamp(Number.POSITIVE_INFINITY)).toBe(maximumRefreshSeconds);   // An overflowing server value is Infinity
         expect(clamp(1e308)).toBe(maximumRefreshSeconds);
         expect(clamp(600)).toBe(600);
 

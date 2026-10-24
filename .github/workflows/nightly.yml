@@ -24,8 +24,8 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            node: '22.13'
-            leg: ubuntu-node-22.13
+            node: '22.18'
+            leg: ubuntu-node-22.18
           - os: ubuntu-latest
             node: '26'
             leg: ubuntu-node-26
