@@ -1,0 +1,56 @@
+{
+  "@context": "https://open.charging.cloud/contexts/wwcp/witnessPublicationPolicy/v1",
+  "requiredOrganizations": 2,
+  "witnesses": [
+    {
+      "id": "DEMO-WITNESS-A",
+      "organization": "Demo independent organization A",
+      "role": "price-publication-and-time",
+      "networks": [
+        "CHARGY-POI-DEMO"
+      ],
+      "keys": [
+        {
+          "@id": "594102c1312294c04b27c5f9603572a1270289fd78cb8cc2307bf61503b666e0",
+          "key": "owEBIAYhWCCR6i24JgA5BJvTsW2w9CdVhh59I49MeNBk2aIgGi4TUA==",
+          "notBefore": "2026-01-01T00:00:00.000Z",
+          "notAfter": "2030-01-01T00:00:00.000Z"
+        },
+        {
+          "@id": "0f326b0db3234d429a74cdf67b6d6422ff1bde705b0818bd7bafd2c6c7b10282",
+          "key": "owEBIAYhWCBG/UhbZG1gamEQI1MeKBDc4ZB3gpS//PIbRG7HuwQrAQ==",
+          "notBefore": "2026-01-01T00:00:00.000Z",
+          "notAfter": "2030-01-01T00:00:00.000Z"
+        }
+      ],
+      "notBefore": "2026-01-01T00:00:00.000Z",
+      "notAfter": "2030-01-01T00:00:00.000Z",
+      "clockErrorMs": 2000,
+      "endpoints": [
+        "https://witness-a.example/publication-receipts"
+      ]
+    },
+    {
+      "id": "DEMO-WITNESS-B",
+      "organization": "Demo independent organization B",
+      "role": "price-publication-and-time",
+      "networks": [
+        "CHARGY-POI-DEMO"
+      ],
+      "keys": [
+        {
+          "@id": "11bc59b1d0bcaa364678ee18959eb7b0c449f6d7fb9b99b84eb9eef8a5ff5fe2",
+          "key": "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",
+          "notBefore": "2026-01-01T00:00:00.000Z",
+          "notAfter": "2030-01-01T00:00:00.000Z"
+        }
+      ],
+      "notBefore": "2026-01-01T00:00:00.000Z",
+      "notAfter": "2030-01-01T00:00:00.000Z",
+      "clockErrorMs": 2000,
+      "endpoints": [
+        "https://witness-b.example/publication-receipts"
+      ]
+    }
+  ]
+}

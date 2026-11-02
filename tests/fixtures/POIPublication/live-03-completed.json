@@ -1,0 +1,108 @@
+{
+  "@id": "CHARGY-LIVE-POI-81",
+  "@context": "https://open.charging.cloud/contexts/chargeTransparency/live/link/1.0",
+  "created": "2026-11-01T00:04:50.000Z",
+  "lastUpdated": "2026-11-01T00:15:01.000Z",
+  "description": {
+    "en": "POI verified live charging session",
+    "de": "POI-geprüfter Live-Ladevorgang"
+  },
+  "keyIdGeneration": [
+    "SubjectPublicKeyInfo",
+    "DER",
+    "SHA-256",
+    "hex"
+  ],
+  "docRefIdGeneration": [
+    "SHA-256",
+    "hex"
+  ],
+  "chargingSessionId": "ADHOC-LIVE-POI",
+  "chargingStationOperator": {
+    "@id": "DE*POI",
+    "name": {
+      "en": "Demo CPO"
+    },
+    "publicKeys": [
+      {
+        "keyUsage": [
+          "signCTRs"
+        ],
+        "algorithm": "EdDSA-Ed25519",
+        "encodings": [
+          "SubjectPublicKeyInfo",
+          "DER",
+          "hex"
+        ],
+        "value": "302A300506032B6570032100BC7CBCB5636375FA1D82434D466724D92377F53B980695DD49D26D0CE12205A5"
+      }
+    ]
+  },
+  "chargingStation": {
+    "@id": "DE*POI*S1",
+    "geoLocation": {
+      "lat": 50.9271,
+      "lng": 11.5892
+    },
+    "EVSE": {
+      "@id": "DE*POI*E1*1",
+      "energyMeter": {
+        "serialNumber": "CHARGY-POI-METER-001",
+        "publicKeys": [
+          {
+            "algorithm": "ECDSA-secp256r1",
+            "encodings": [
+              "SubjectPublicKeyInfo",
+              "DER",
+              "base64"
+            ],
+            "value": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3j/1wo8S15sCc+YAETSZKFoLyx27McMv8WGHYLWPiwJ/RX7zWje8SODNlu2AZ2DQzkKBjgTW2jP0TMpnBV6BHQ==",
+            "keyUsage": [
+              "signEnergyMeterValues"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "liveTransports": [
+    {
+      "type": "https",
+      "urls": [
+        "https://live.poi.example/sessions/CHARGY-LIVE-POI-81"
+      ],
+      "refresh": 5
+    }
+  ],
+  "updates": "2448EDA79799C8CD2B2D92E8EDC29C5E6AE45C547AAC360A300816E3C911E957",
+  "signedMeterValues": {
+    "encodings": [
+      "OCMF"
+    ],
+    "values": [
+      "OCMF|{\"FV\":\"1.0\",\"GI\":\"Chargy POI demo\",\"GS\":\"DEMO-GATEWAY-001\",\"GV\":\"1.0\",\"PG\":\"T81\",\"MV\":\"Chargy\",\"MM\":\"Demo meter\",\"MS\":\"CHARGY-POI-METER-001\",\"MF\":\"1.0\",\"IS\":true,\"IL\":\"VERIFIED\",\"IF\":[\"OCPP_AUTH\"],\"IT\":\"NONE\",\"ID\":\"ADHOC-LIVE-POI\",\"CT\":\"EVSEID\",\"CI\":\"DE*POI*E1*1\",\"TT\":\"001;EUR;0;35;0;0\",\"RD\":[{\"TM\":\"2026-11-01T00:05:00,000+0000 S\",\"TX\":\"B\",\"RV\":1000,\"RI\":\"1-b:1.8.0\",\"RU\":\"kWh\",\"RT\":\"AC\",\"EF\":\"\",\"ST\":\"G\"}]}|{\"SA\":\"ECDSA-secp256r1-SHA256\",\"SE\":\"hex\",\"SD\":\"304402203D910E652E1614515D5E93FFD0445032E4F20FB6E6E3FD2411FD71B0D06045700220388B95652720F5299BD1B1F4B19BF71EC4BDB626CA445740D720B796888D3B14\"}",
+      "OCMF|{\"FV\":\"1.0\",\"GI\":\"Chargy POI demo\",\"GS\":\"DEMO-GATEWAY-001\",\"GV\":\"1.0\",\"PG\":\"T81\",\"MV\":\"Chargy\",\"MM\":\"Demo meter\",\"MS\":\"CHARGY-POI-METER-001\",\"MF\":\"1.0\",\"IS\":true,\"IL\":\"VERIFIED\",\"IF\":[\"OCPP_AUTH\"],\"IT\":\"NONE\",\"ID\":\"ADHOC-LIVE-POI\",\"CT\":\"EVSEID\",\"CI\":\"DE*POI*E1*1\",\"TT\":\"001;EUR;0;35;0;0\",\"RD\":[{\"TM\":\"2026-11-01T00:10:00,000+0000 S\",\"TX\":\"C\",\"RV\":1005,\"RI\":\"1-b:1.8.0\",\"RU\":\"kWh\",\"RT\":\"AC\",\"EF\":\"\",\"ST\":\"G\"}]}|{\"SA\":\"ECDSA-secp256r1-SHA256\",\"SE\":\"hex\",\"SD\":\"3045022100EA80514BED9BB9DB16C299E4A316CD039CE3EA8CE5E976968728ED8EBC607D2B02203DC50F22CEDA86CF1D63F5A2E47BC2C77D0DFA75F8E404C243B4D0E868BCFE99\"}",
+      "OCMF|{\"FV\":\"1.0\",\"GI\":\"Chargy POI demo\",\"GS\":\"DEMO-GATEWAY-001\",\"GV\":\"1.0\",\"PG\":\"T81\",\"MV\":\"Chargy\",\"MM\":\"Demo meter\",\"MS\":\"CHARGY-POI-METER-001\",\"MF\":\"1.0\",\"IS\":true,\"IL\":\"VERIFIED\",\"IF\":[\"OCPP_AUTH\"],\"IT\":\"NONE\",\"ID\":\"ADHOC-LIVE-POI\",\"CT\":\"EVSEID\",\"CI\":\"DE*POI*E1*1\",\"TT\":\"001;EUR;0;35;0;0\",\"RD\":[{\"TM\":\"2026-11-01T00:15:00,000+0000 S\",\"TX\":\"E\",\"RV\":1011,\"RI\":\"1-b:1.8.0\",\"RU\":\"kWh\",\"RT\":\"AC\",\"EF\":\"\",\"ST\":\"G\"}]}|{\"SA\":\"ECDSA-secp256r1-SHA256\",\"SE\":\"hex\",\"SD\":\"3046022100B869833B759FA265E7677AD3C85E133B16B22C1E99D70178F9540B83D5B5E064022100B6244B4C296F52C60ECD63BAB5C825F7B61C30F5D21156B5F9935C49B74CC446\"}"
+    ]
+  },
+  "signatures": [
+    {
+      "keyId": "9064B45B3E0FB33B851A2E994E8BBF6F60EF5C1579301E88719CC13AE3153AEC",
+      "algorithm": "EdDSA-Ed25519",
+      "signedData": {
+        "excludedProperties": [
+          "signatures"
+        ],
+        "encodings": [
+          "JSON",
+          "JCS",
+          "UTF-8"
+        ]
+      },
+      "encodings": [
+        "hex"
+      ],
+      "value": "D60AAB313FEFDCD042EE9DEC3ED9DE0BCEA60019F775FEB1B6F1962018E0C8F449DD4742CAD33D6EBF2C9CE420C3D7C536716B10788DC9F492FBE7DC3DE0080F"
+    }
+  ]
+}

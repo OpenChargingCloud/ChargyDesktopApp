@@ -1,0 +1,215 @@
+{
+  "source": "OpenChargingCloud/WWCP_POI.TS tests/vectors/poi-trust.json, trust-valid (AGPL-3.0-only)",
+  "sourceSHA256": "c3bb7b9eaf6a1a4e280bf5f0718fa17a3ad4f3e9f465f4f6c91d2a24daa96996",
+  "at": "2026-10-17T18:05:00.000Z",
+  "evseId": "DE*GEF*E1*1",
+  "trustAnchor": {
+    "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/trustAnchor/v2",
+    "@id": "rn1",
+    "keys": [
+      "1ef48003e1c482f88fa9f4ecb3d9cdeeb2037d3be4550ad6ee1854a2c5b0b802",
+      "a287cebcd93b836a712b6393a914a86e63516d401285f3c642f734a28146f83f"
+    ],
+    "minConsensus": 2,
+    "name": {
+      "en": "Example"
+    },
+    "urls": [
+      "https://hub.example/poi/RNs/rn1",
+      "https://mirror.example/poi/RNs/rn1"
+    ]
+  },
+  "proof": {
+    "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/proof/v1",
+    "attestations": [
+      {
+        "algorithm": "Ed25519",
+        "commitId": "a87b12861fc240698fbb2bfad4124e28ac4dab0a1c029502454c484c3e0db25a",
+        "eTag": [
+          "effectiveTree",
+          "sha256",
+          "hex",
+          "ccb80f2f7772a15b5efae0ddb4f067856667304b79f46c8c1b9d3b2881821a20"
+        ],
+        "keyId": "ea671729aa29c6140b5129b8d59e13fd9fbd4b96e37b3c5185fb11c3eeeac554",
+        "revision": 0,
+        "roamingNetworkId": "rn1",
+        "role": "roamingNetworkOperator",
+        "signedAt": "2026-10-17T18:00:00.000Z",
+        "signer": "DE*RNO",
+        "validUntil": "2026-10-17T18:15:00.000Z",
+        "value": "oKsian6lgCRq22ZugUw0fO+DenCogHZD2j0hw7/4VcsfU7Pm2UWA9rd5PxPjZLKa9PXPMgKKuUdBgSZhPEdDBg=="
+      },
+      {
+        "algorithm": "Ed25519",
+        "commitId": "a87b12861fc240698fbb2bfad4124e28ac4dab0a1c029502454c484c3e0db25a",
+        "eTag": [
+          "effectiveTree",
+          "sha256",
+          "hex",
+          "ccb80f2f7772a15b5efae0ddb4f067856667304b79f46c8c1b9d3b2881821a20"
+        ],
+        "keyId": "e09c2d45bc06a188c125646025d93f10dc74ee726ce2bb5e4b5e68b5591a9dd1",
+        "revision": 0,
+        "roamingNetworkId": "rn1",
+        "role": "roamingNetworkOperator",
+        "signedAt": "2026-10-17T18:00:00.000Z",
+        "signer": "DE*RNO",
+        "validUntil": "2026-10-17T18:15:00.000Z",
+        "value": "emBA+uE7nc6jMJrp637a4QtGtbQ9MQya0u67AqgEwT/ViZB33ijHurCXZCmAROKy6GKs+hCspFodii5SUX/MAQ=="
+      }
+    ],
+    "commitId": "a87b12861fc240698fbb2bfad4124e28ac4dab0a1c029502454c484c3e0db25a",
+    "hashAlgorithm": "sha256",
+    "revision": 0,
+    "roamingNetwork": {
+      "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/v1",
+      "@id": "rn1",
+      "chargingStationOperators": {
+        "@leaves": [
+          {
+            "@auditPath": [],
+            "@entity": {
+              "@id": "DE*GEF",
+              "chargingPools": {
+                "@leaves": [
+                  {
+                    "@auditPath": [],
+                    "@entity": {
+                      "@id": "DE*GEF*P1",
+                      "chargingStations": {
+                        "@leaves": [
+                          {
+                            "@auditPath": [],
+                            "@entity": {
+                              "@id": "DE*GEF*S1",
+                              "EVSEs": [
+                                {
+                                  "@id": "DE*GEF*E1*1",
+                                  "created": "2026-01-01T00:00:00.000Z",
+                                  "lastChange": "2026-01-01T00:00:00.000Z",
+                                  "maxPower": 22000,
+                                  "maxVoltage": 230.5
+                                }
+                              ],
+                              "created": "2026-01-01T00:00:00.000Z",
+                              "lastChange": "2026-01-01T00:00:00.000Z"
+                            },
+                            "@index": 0
+                          }
+                        ],
+                        "@size": 1
+                      },
+                      "created": "2026-01-01T00:00:00.000Z",
+                      "lastChange": "2026-01-01T00:00:00.000Z"
+                    },
+                    "@index": 0
+                  }
+                ],
+                "@size": 1
+              },
+              "created": "2026-01-01T00:00:00.000Z",
+              "lastChange": "2026-01-01T00:00:00.000Z",
+              "name": {
+                "en": "Charging Station Operator 'DE*GEF'"
+              }
+            },
+            "@index": 0
+          }
+        ],
+        "@size": 1
+      },
+      "created": "2026-01-01T00:00:00.000Z",
+      "lastChange": "2026-01-01T00:00:00.000Z",
+      "name": {
+        "en": "Example"
+      },
+      "operator": {
+        "@id": "DE*RNO",
+        "created": "2026-01-01T00:00:00.000Z",
+        "identityKeys": [
+          {
+            "@id": "1ef48003e1c482f88fa9f4ecb3d9cdeeb2037d3be4550ad6ee1854a2c5b0b802",
+            "holder": "Alpha",
+            "key": "owEBIAYhWCCLsE4cG4Pd3zEfW83ffFDt48CAL0fseW4qExz0EpjZ8w=="
+          },
+          {
+            "@id": "a287cebcd93b836a712b6393a914a86e63516d401285f3c642f734a28146f83f",
+            "holder": "Beta",
+            "key": "owEBIAYhWCAc5WpIyC/5kWKhS8VEYSZ05dYfuTF+ZdQFV4D9vLTcNQ=="
+          }
+        ],
+        "keyStatement": {
+          "identityKeys": [
+            {
+              "@id": "1ef48003e1c482f88fa9f4ecb3d9cdeeb2037d3be4550ad6ee1854a2c5b0b802",
+              "holder": "Alpha",
+              "key": "owEBIAYhWCCLsE4cG4Pd3zEfW83ffFDt48CAL0fseW4qExz0EpjZ8w=="
+            },
+            {
+              "@id": "a287cebcd93b836a712b6393a914a86e63516d401285f3c642f734a28146f83f",
+              "holder": "Beta",
+              "key": "owEBIAYhWCAc5WpIyC/5kWKhS8VEYSZ05dYfuTF+ZdQFV4D9vLTcNQ=="
+            }
+          ],
+          "minConsensus": 2,
+          "roamingNetworkId": "rn1",
+          "roamingNetworkOperatorId": "DE*RNO",
+          "signatures": [
+            {
+              "algorithm": "Ed25519",
+              "keyId": "1ef48003e1c482f88fa9f4ecb3d9cdeeb2037d3be4550ad6ee1854a2c5b0b802",
+              "value": "FZyTQgtDgx3qvcVnBwQU0c4iyNT4CLIWXg1Lr/oF/YLMyRNwZXuWIhwusnDim5eW7++hApGcyrbeGruURLGQAg=="
+            },
+            {
+              "algorithm": "Ed25519",
+              "keyId": "a287cebcd93b836a712b6393a914a86e63516d401285f3c642f734a28146f83f",
+              "value": "IAYgeNI2NS/atdxYZW8ty/1IjBUTTqmkjE0tgW3fjs+3xDbaIhZrsHLWVV9y7MyMrD2K8zKpJ2w1P0DNzjo1Dw=="
+            }
+          ],
+          "signedAt": "2026-10-17T00:00:00.000Z",
+          "validUntil": "2026-11-16T00:00:00.000Z"
+        },
+        "lastChange": "2026-01-01T00:00:00.000Z",
+        "minConsensus": 2,
+        "name": {
+          "en": "Roaming Network Operator"
+        },
+        "signingKeyCertificates": [
+          {
+            "algorithm": "Ed25519",
+            "keyId": "1ef48003e1c482f88fa9f4ecb3d9cdeeb2037d3be4550ad6ee1854a2c5b0b802",
+            "roamingNetworkOperatorId": "DE*RNO",
+            "signedAt": "2026-10-17T00:00:00.000Z",
+            "signingKey": {
+              "@id": "ea671729aa29c6140b5129b8d59e13fd9fbd4b96e37b3c5185fb11c3eeeac554",
+              "holder": "Alpha",
+              "key": "owEBIAYhWCAprLrhQbzK8LIuGpTTTQvHNh5SbQv+EsiXlLyTIpZt1w==",
+              "notAfter": "2027-10-17T00:00:00.000Z",
+              "usages": [
+                "party"
+              ]
+            },
+            "value": "QndT4IDJA/YPtnq47eZKRvELDUDEiXkEe9qHTzgIkjwNYPhkKuaTksr8iOb4aqahqS/+QSzcjJVx0M6bz5jICg=="
+          },
+          {
+            "algorithm": "Ed25519",
+            "keyId": "a287cebcd93b836a712b6393a914a86e63516d401285f3c642f734a28146f83f",
+            "roamingNetworkOperatorId": "DE*RNO",
+            "signedAt": "2026-10-17T00:00:00.000Z",
+            "signingKey": {
+              "@id": "e09c2d45bc06a188c125646025d93f10dc74ee726ce2bb5e4b5e68b5591a9dd1",
+              "holder": "Beta",
+              "key": "owEBIAYhWCA/dwjV9cwrxjO1nSs6LtkudHkiDG8IreIIvrzYWAq5Ow==",
+              "notAfter": "2027-10-17T00:00:00.000Z",
+              "usages": [
+                "party"
+              ]
+            },
+            "value": "YCQowRLIGYhA7b/fh55wRRyisswQ/HT63QoFhztWya0XUghJMZythD7JdretqUJlrJHjrhVFlJbSJi7bG+/TDw=="
+          }
+        ]
+      }
+    }
+  }
+}

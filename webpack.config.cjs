@@ -63,6 +63,11 @@ module.exports = [
       module: {
         rules: [
           {
+            test: /trusted-public-keys\.jsonl$/,
+            type: 'asset/source',
+            use: [path.resolve(__dirname, 'build-tools/trustedPublicKeysLoader.cjs')]
+          },
+          {
             test: /\.js$/,
             enforce: 'pre',
             include: path.resolve(__dirname, 'node_modules/@open-charging-cloud/chargy-core'),

@@ -3,9 +3,9 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "version": 1,
-  "serialNumber": "urn:uuid:0962de41-5514-4193-b073-235521c86e0e",
+  "serialNumber": "urn:uuid:bec1bdb2-c5e2-4d43-9770-5bc55bcfb796",
   "metadata": {
-    "timestamp": "2026-10-30T17:06:27.495Z",
+    "timestamp": "2026-11-02T09:27:06.076Z",
     "tools": {
       "components": [
         {
@@ -330,8 +330,8 @@
       "type": "library",
       "name": "chargy-core",
       "group": "@open-charging-cloud",
-      "version": "0.17.0",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.17.0",
+      "version": "0.18.0",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.18.0",
       "licenses": [
         {
           "license": {
@@ -340,15 +340,15 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40open-charging-cloud/chargy-core@0.17.0",
+      "purl": "pkg:npm/%40open-charging-cloud/chargy-core@0.18.0",
       "externalReferences": [
         {
-          "url": "https://registry.npmjs.org/@open-charging-cloud/chargy-core/-/chargy-core-0.17.0.tgz",
+          "url": "https://registry.npmjs.org/@open-charging-cloud/chargy-core/-/chargy-core-0.18.0.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "1b13e6ae289d1727dbfd42753834a3724d7c6ea7bc16e42e0b2448b90e62b8481b59d00b5235e9e480115f56d0a454999b4ca8389b6e14dae37a926bd492ca37"
+              "content": "c5122aa8c238198e1047c2f4e7c34ba3e2bd28c4070fad3c9386db773c115de2d11e77c6cc91ea39f9c93d6db1c78a0a904adba1338fb968a841610d6707a265"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -358,80 +358,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/@open-charging-cloud/chargy-core"
-        }
-      ],
-      "components": [
-        {
-          "type": "library",
-          "name": "cose",
-          "group": "@vanaheimr",
-          "version": "0.9.0",
-          "bom-ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.17.0|@vanaheimr/cose@0.9.0",
-          "licenses": [
-            {
-              "license": {
-                "id": "Apache-2.0",
-                "acknowledgement": "declared"
-              }
-            }
-          ],
-          "purl": "pkg:npm/%40vanaheimr/cose@0.9.0",
-          "externalReferences": [
-            {
-              "url": "https://registry.npmjs.org/@vanaheimr/cose/-/cose-0.9.0.tgz",
-              "type": "distribution",
-              "hashes": [
-                {
-                  "alg": "SHA-512",
-                  "content": "aa1067385dcebeb5a2be2f0573b74fa41323d00b492ac687ae9cfa909fc8199403d72cf93f25d3ca55d02eef057f87ffc17aee603e18255a7d0757b4d1af1241"
-                }
-              ],
-              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-            }
-          ],
-          "properties": [
-            {
-              "name": "cdx:npm:package:path",
-              "value": "node_modules/@open-charging-cloud/chargy-core/node_modules/@vanaheimr/cose"
-            }
-          ],
-          "components": [
-            {
-              "type": "library",
-              "name": "metrological-cbor",
-              "group": "@vanaheimr",
-              "version": "0.10.0",
-              "bom-ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.17.0|@vanaheimr/cose@0.9.0|@vanaheimr/metrological-cbor@0.10.0",
-              "licenses": [
-                {
-                  "license": {
-                    "id": "Apache-2.0",
-                    "acknowledgement": "declared"
-                  }
-                }
-              ],
-              "purl": "pkg:npm/%40vanaheimr/metrological-cbor@0.10.0",
-              "externalReferences": [
-                {
-                  "url": "https://registry.npmjs.org/@vanaheimr/metrological-cbor/-/metrological-cbor-0.10.0.tgz",
-                  "type": "distribution",
-                  "hashes": [
-                    {
-                      "alg": "SHA-512",
-                      "content": "1bdbb84345d94289b8052e223457575620f060a43183eec310d3311221d76df7de6ef3693f0bad43c6814519a69602e755add7f67baa27fddb967bee311b15bc"
-                    }
-                  ],
-                  "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-                }
-              ],
-              "properties": [
-                {
-                  "name": "cdx:npm:package:path",
-                  "value": "node_modules/@open-charging-cloud/chargy-core/node_modules/@vanaheimr/cose/node_modules/@vanaheimr/metrological-cbor"
-                }
-              ]
-            }
-          ]
         }
       ]
     },
@@ -467,6 +393,41 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/@open-charging-cloud/totp"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "wwcp-poi",
+      "group": "@open-charging-cloud",
+      "version": "0.2.0",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/wwcp-poi@0.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "AGPL-3.0-only",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40open-charging-cloud/wwcp-poi@0.2.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@open-charging-cloud/wwcp-poi/-/wwcp-poi-0.2.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "564d75fe47ebe10f560fa1beae704c297eb37806bbc271b57f91a935f2c1dbf88c1d54a1e3c3fc657b5431f0319ae68c072734fa748fee1e50c950daf327bb03"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@open-charging-cloud/wwcp-poi"
         }
       ]
     },
@@ -591,8 +552,8 @@
       "type": "library",
       "name": "cose",
       "group": "@vanaheimr",
-      "version": "0.10.0",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|@vanaheimr/cose@0.10.0",
+      "version": "0.12.0",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|@vanaheimr/cose@0.12.0",
       "licenses": [
         {
           "license": {
@@ -601,15 +562,15 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40vanaheimr/cose@0.10.0",
+      "purl": "pkg:npm/%40vanaheimr/cose@0.12.0",
       "externalReferences": [
         {
-          "url": "https://registry.npmjs.org/@vanaheimr/cose/-/cose-0.10.0.tgz",
+          "url": "https://registry.npmjs.org/@vanaheimr/cose/-/cose-0.12.0.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "d4fcf638f3d3820bc4c6c5610902805818a2c2f0aa5bd344ad74c6d2b6ff25b87829bf9162c5886563fa5d5f58d0db00ca3f76714e3fab0027be8b9d9ff33f01"
+              "content": "c4e9dc46696647288d75f09c1222a55ecde1c0608719c4cbffca74372fa81ef4ab07a0f0e2551b7df0650452e9c6054013808a90f44d5bd9596e4ab50bbb8b90"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -626,8 +587,8 @@
       "type": "library",
       "name": "metrological-cbor",
       "group": "@vanaheimr",
-      "version": "0.11.1",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|@vanaheimr/metrological-cbor@0.11.1",
+      "version": "0.12.0",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|@vanaheimr/metrological-cbor@0.12.0",
       "licenses": [
         {
           "license": {
@@ -636,15 +597,15 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40vanaheimr/metrological-cbor@0.11.1",
+      "purl": "pkg:npm/%40vanaheimr/metrological-cbor@0.12.0",
       "externalReferences": [
         {
-          "url": "https://registry.npmjs.org/@vanaheimr/metrological-cbor/-/metrological-cbor-0.11.1.tgz",
+          "url": "https://registry.npmjs.org/@vanaheimr/metrological-cbor/-/metrological-cbor-0.12.0.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "febfe4d33cfe7a593fe67e553d8a38350f187e518d732eed043af3b04a35d032171cfd1bb1dc7e6424e08d987b5689730314701013f1f1d245b5a982f77ab419"
+              "content": "af957a2bb93feea0b213719d2fd3e0bdf5de295629ea99889f3e1830552c148054fb24deaa7cce6a1a88eb3d8daab02f3a60e7db8237fe29a184f8aa73353d9b"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -1506,6 +1467,40 @@
     },
     {
       "type": "library",
+      "name": "path-browserify",
+      "version": "1.0.1",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|path-browserify@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/path-browserify@1.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/path-browserify/-/path-browserify-1.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "6fbba8d9409439865c9c5ff7203d25ba53898bf6da7f16b5c4f7bb64fb1a9a6052a634964248cdc65b7adf96064b632247d1a3bee5c2b73d9e9abde36eccfdf2"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/path-browserify"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "safe-stable-stringify",
       "version": "3.0.0",
       "bom-ref": "chargytransparenzsoftware@1.4.7|safe-stable-stringify@3.0.0",
@@ -1649,6 +1644,74 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/source-map-loader"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "stream-browserify",
+      "version": "3.0.0",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|stream-browserify@3.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/stream-browserify@3.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/stream-browserify/-/stream-browserify-3.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "1fbdd1007b1505aa5b8a6d2d536270c0e897523f9f8a47e26a86002871775497c0d297b6042ce48401c194b1ba444cc4fb658d65cc4e5e32bb964b28fbd7ae2c"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/stream-browserify"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "stream-http",
+      "version": "3.2.0",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|stream-http@3.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/stream-http@3.2.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/stream-http/-/stream-http-3.2.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "3aad5b2ea8ac4f22b74d2097a4f6d3e2c75e60d766c9926fd4bc69126dafbb56612bcf64484e585f065cddc5a4d0c6a019a2ab88187d98215b546b4efaf636f4"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/stream-http"
         }
       ]
     },
@@ -1808,6 +1871,110 @@
     },
     {
       "type": "library",
+      "name": "url",
+      "version": "0.11.4",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|url@0.11.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/url@0.11.4",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/url/-/url-0.11.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "a02c1d542ee64ee5a23f28cb533fc23b3e532e4eb0829d110ac37ec076761249de69cf70f2eb95d278dc6db89ed8c13e56cf9de9dbb0998b91dc78105ecd5f3a"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/url"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "punycode",
+          "version": "1.4.1",
+          "bom-ref": "chargytransparenzsoftware@1.4.7|url@0.11.4|punycode@1.4.1",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/punycode@1.4.1",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/punycode/-/punycode-1.4.1.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "8e660d1255bbcaf3bb4d5df70a34a6bd2884db2728ddb576733bbf3b30ca74c35565059fc426e55112e17fee3bb32411067b637cb75dfc7d1e82bcc81bea1a15"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/url/node_modules/punycode"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uuid",
+      "version": "14.0.3",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|uuid@14.0.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/uuid@14.0.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/uuid/-/uuid-14.0.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "49ce6ed555659fddf2d579f3e11f82ba739973b47d2d47139a18fb45cec48371d571feeb567d853a86bcd767ded16f29de30fbc5ea064986dfa821861f607ac7"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/uuid"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "vitest",
       "version": "5.0.5",
       "bom-ref": "chargytransparenzsoftware@1.4.7|vitest@5.0.5",
@@ -1841,6 +2008,40 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/vitest"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vm-browserify",
+      "version": "1.1.2",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|vm-browserify@1.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/vm-browserify@1.1.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/vm-browserify/-/vm-browserify-1.1.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "da16a6f173d64ce35a8ce474a2138a3875e49b7fa0681986baddd246ebbbe712ddfd145a63abea821f0d058624efe456deee40b733d0646f05d742c7925d2501"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/vm-browserify"
         }
       ]
     },
@@ -3177,8 +3378,8 @@
     {
       "type": "library",
       "name": "pdfjs-dist",
-      "version": "6.4.299",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|pdfjs-dist@6.4.299",
+      "version": "6.5.438",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|pdfjs-dist@6.5.438",
       "licenses": [
         {
           "license": {
@@ -3187,15 +3388,15 @@
           }
         }
       ],
-      "purl": "pkg:npm/pdfjs-dist@6.4.299",
+      "purl": "pkg:npm/pdfjs-dist@6.5.438",
       "externalReferences": [
         {
-          "url": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.4.299.tgz",
+          "url": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.5.438.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "015975dfccc02ed7da00fbc00ee944d0f65385b6330814bbf672f8a4e48bffa4a6ff8007e40db5043f551edf7b3a50aecc9b82a66799b40b648a78ac17855bd6"
+              "content": "be0f0fc35c7e0052b2e00303be1b9697970e615f1debdf14a0400da0516173bf61a970e7650aa7397a31c371c6f74ed61ce8352583af2e13fbe7a6e875d171a4"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -6907,6 +7108,108 @@
     },
     {
       "type": "library",
+      "name": "readable-stream",
+      "version": "3.6.2",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|readable-stream@3.6.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/readable-stream@3.6.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/readable-stream/-/readable-stream-3.6.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "f6efec9e20ab6370f959db04447cc71381b66025eaa06e454c7522082e1221bafa5dc2d9058d39c9af442a361e93d3b9c4e0308c6abed497460404bb43d49ca0"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/readable-stream"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "builtin-status-codes",
+      "version": "3.0.0",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|builtin-status-codes@3.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/builtin-status-codes@3.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/builtin-status-codes/-/builtin-status-codes-3.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "1e9185c35f038055a59dc0df8d36b6adc4385bcf0ed660bc7bcc99d80bd06392836a4b524f0a3e2917fa9c72ba1512391724726ffe53ebe4d2c5f3fb4321ac99"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/builtin-status-codes"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "xtend",
+      "version": "4.0.2",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|xtend@4.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/xtend@4.0.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/xtend/-/xtend-4.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "2ca614d620172575200179fd5118e2bbe3168725171ecbdfa7b99cb989bd75250a2b4fc28edad4c050310fcdbf98259bb4bb068c521a774c08b28778ceb4c011"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/xtend"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "picomatch",
       "version": "4.0.7",
       "bom-ref": "chargytransparenzsoftware@1.4.7|picomatch@4.0.7",
@@ -7136,6 +7439,40 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/@typescript-eslint/utils"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "qs",
+      "version": "6.17.1",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|qs@6.17.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/qs@6.17.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/qs/-/qs-6.17.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8dddc23a468a5601945be647c841c21bd6c7ed1a1a6a25ae320cec2018d43158cb01a5865a9a14015c258d5bc11f146eff6a841e769d2c666b92eb585013d024"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/qs"
         }
       ]
     },
@@ -13789,6 +14126,74 @@
     },
     {
       "type": "library",
+      "name": "string_decoder",
+      "version": "1.3.0",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|string_decoder@1.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/string_decoder@1.3.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/string_decoder/-/string_decoder-1.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "864457f14d568c915df0bb03276c90ff0596c5aa2912c0015355df90cf00fa3d3ef392401a9a6dd7a72bd56860e8a21b6f8a2453a32a97a04e8febaea7fc0a78"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/string_decoder"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "util-deprecate",
+      "version": "1.0.2",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|util-deprecate@1.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/util-deprecate@1.0.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "10f0f9ab5b97c85c49a42acb9c27359c79eade039ae83641a1c008888d93692080ed5089d5424331a802cc891736c5187c3d5d68afff2d3110f318886eb1ed73"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/util-deprecate"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "scope-manager",
       "group": "@typescript-eslint",
       "version": "8.72.1",
@@ -14056,6 +14461,74 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/@typescript-eslint/tsconfig-utils"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "es-define-property",
+      "version": "1.0.1",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|es-define-property@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/es-define-property@1.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/es-define-property/-/es-define-property-1.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7b79d17e07d4678acd18bdb7da05205f4e90372c9ecf4e0a76316b17e2d34683979ab3a014a0e0e0109db235bc1274faf5ea9d606991a49c223d560dac2696de"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/es-define-property"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "side-channel",
+      "version": "1.1.1",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|side-channel@1.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/side-channel@1.1.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/side-channel/-/side-channel-1.1.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "eb1e9d2bacc97694f3178b1078d631c2dbc1cdfe848381ad95eb12f781cebd3b9d51ec8ad965c06887e60e0b32b2562b441785225b22e78018b05194ba19afad"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/side-channel"
         }
       ]
     },
@@ -16329,44 +16802,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/cssesc"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "util-deprecate",
-      "version": "1.0.2",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|util-deprecate@1.0.2",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/util-deprecate@1.0.2",
-      "externalReferences": [
-        {
-          "url": "https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "10f0f9ab5b97c85c49a42acb9c27359c79eade039ae83641a1c008888d93692080ed5089d5424331a802cc891736c5187c3d5d68afff2d3110f318886eb1ed73"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/util-deprecate"
         }
       ]
     },
@@ -19203,6 +19638,210 @@
     },
     {
       "type": "library",
+      "name": "safe-buffer",
+      "version": "5.2.1",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|safe-buffer@5.2.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/safe-buffer@5.2.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/safe-buffer/-/safe-buffer-5.2.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ae9dd2a34eca71d9a629b1af81a37141226bedb1954959394bd12ad45fa9a5b468ef4f9879a0f1930e4377c34f37e183e9b8e7626d95b8fb825e6a6e62f9825d"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/safe-buffer"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "es-errors",
+      "version": "1.3.0",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|es-errors@1.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/es-errors@1.3.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/es-errors/-/es-errors-1.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "65fe47d8ac6ddb18d3bdb26f3f66562c4202c40ea3fa1026333225ca9cb8c5c060d6f2959f1f3d5b2d066d2fa47f9730095145cdd0858765d20853542d2e9cb3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/es-errors"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "object-inspect",
+      "version": "1.13.4",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|object-inspect@1.13.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/object-inspect@1.13.4",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/object-inspect/-/object-inspect-1.13.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "5baee22e5e09d845c41936df78709f7eb8c37e2b6f2c0360d14957df01545124f1f762974457a0307515812a84fb0be101b8b85aa8c683d733cac4d5d84a5b7b"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/object-inspect"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "side-channel-list",
+      "version": "1.0.1",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|side-channel-list@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/side-channel-list@1.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/side-channel-list/-/side-channel-list-1.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "9a39ffd1b8bfa145118dce5797b21a5a2fce24926e9aea0915025f0c3c8ee3afa1056b1f69533ae53047ab67a864187397d11c8713a28e991b442f12541414d3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/side-channel-list"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "side-channel-map",
+      "version": "1.0.1",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|side-channel-map@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/side-channel-map@1.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/side-channel-map/-/side-channel-map-1.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "5428c235f80cb1bcb7b53768d369db8ed33f7b0adaea33c79a94e17a7913621f291bdb9c67fd4ff12a38bb814605e93f063a4e56c0c23282c0fe2b8128815744"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/side-channel-map"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "side-channel-weakmap",
+      "version": "1.0.2",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|side-channel-weakmap@1.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/side-channel-weakmap@1.0.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/side-channel-weakmap/-/side-channel-weakmap-1.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "58f4bf1ef1d04d89c78ac2e8f4c72a0473899361641cefed969be5772ae77a6e1a790a7885a8b7832b61b3083aa74d684a84e5e7cadca621408c5d9baf6024d8"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/side-channel-weakmap"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "resolve-uri",
       "group": "@jridgewell",
       "version": "3.1.2",
@@ -21676,45 +22315,6 @@
     },
     {
       "type": "library",
-      "name": "safe-buffer",
-      "version": "5.2.1",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|safe-buffer@5.2.1",
-      "scope": "optional",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/safe-buffer@5.2.1",
-      "externalReferences": [
-        {
-          "url": "https://registry.npmjs.org/safe-buffer/-/safe-buffer-5.2.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "ae9dd2a34eca71d9a629b1af81a37141226bedb1954959394bd12ad45fa9a5b468ef4f9879a0f1930e4377c34f37e183e9b8e7626d95b8fb825e6a6e62f9825d"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/safe-buffer"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "fs.realpath",
       "version": "1.0.0",
       "bom-ref": "chargytransparenzsoftware@1.4.7|fs.realpath@1.0.0",
@@ -23128,10 +23728,6 @@
       ],
       "properties": [
         {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
           "name": "cdx:npm:package:path",
           "value": "node_modules/hasown"
         }
@@ -23516,6 +24112,74 @@
               "value": "node_modules/qified/node_modules/hookified"
             }
           ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "call-bound",
+      "version": "1.0.4",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|call-bound@1.0.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/call-bound@1.0.4",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/call-bound/-/call-bound-1.0.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "fb2b3df7b53dea9a382b1fc0069042aa103d12ec49690583420ef6f791f8841a61bf72198346e804abb0629b78617a7a319e4099942753fb72313951a5a49e8e"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/call-bound"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "get-intrinsic",
+      "version": "1.3.0",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|get-intrinsic@1.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/get-intrinsic@1.3.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/get-intrinsic/-/get-intrinsic-1.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "f5f4a349aa2cfdf448548a7ec5226513a95fc21112ecb36d29a08121a987b23af69dad418800493e8d263a38f3f062435116ab9823c6a9a89583999f8dbf7c09"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/get-intrinsic"
         }
       ]
     },
@@ -24261,45 +24925,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/fs-constants"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "readable-stream",
-      "version": "3.6.2",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|readable-stream@3.6.2",
-      "scope": "optional",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/readable-stream@3.6.2",
-      "externalReferences": [
-        {
-          "url": "https://registry.npmjs.org/readable-stream/-/readable-stream-3.6.2.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "f6efec9e20ab6370f959db04447cc71381b66025eaa06e454c7522082e1221bafa5dc2d9058d39c9af442a361e93d3b9c4e0308c6abed497460404bb43d49ca0"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/readable-stream"
         }
       ]
     },
@@ -25230,82 +25855,6 @@
     },
     {
       "type": "library",
-      "name": "es-errors",
-      "version": "1.3.0",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|es-errors@1.3.0",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/es-errors@1.3.0",
-      "externalReferences": [
-        {
-          "url": "https://registry.npmjs.org/es-errors/-/es-errors-1.3.0.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "65fe47d8ac6ddb18d3bdb26f3f66562c4202c40ea3fa1026333225ca9cb8c5c060d6f2959f1f3d5b2d066d2fa47f9730095145cdd0858765d20853542d2e9cb3"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/es-errors"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "get-intrinsic",
-      "version": "1.3.0",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|get-intrinsic@1.3.0",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/get-intrinsic@1.3.0",
-      "externalReferences": [
-        {
-          "url": "https://registry.npmjs.org/get-intrinsic/-/get-intrinsic-1.3.0.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "f5f4a349aa2cfdf448548a7ec5226513a95fc21112ecb36d29a08121a987b23af69dad418800493e8d263a38f3f062435116ab9823c6a9a89583999f8dbf7c09"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/get-intrinsic"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "has-tostringtag",
       "version": "1.0.2",
       "bom-ref": "chargytransparenzsoftware@1.4.7|has-tostringtag@1.0.2",
@@ -25370,10 +25919,6 @@
         }
       ],
       "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/function-bind"
@@ -25645,6 +26190,210 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/@keyv/serialize"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "call-bind-apply-helpers",
+      "version": "1.0.2",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|call-bind-apply-helpers@1.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/call-bind-apply-helpers@1.0.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/call-bind-apply-helpers/-/call-bind-apply-helpers-1.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "4a9d5a6e52748af0e44b38dc68977112e9cde7f5ef92c149dac30115fabac74af285057fd9bfcac057b6d5c329987b4f3928a3f0af7dff049fa04b9339b9ae31"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/call-bind-apply-helpers"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "es-object-atoms",
+      "version": "1.1.2",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|es-object-atoms@1.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/es-object-atoms@1.1.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/es-object-atoms/-/es-object-atoms-1.1.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "1d6701a0de8d8a57aab52c9d2b616a1db4bf2e80ddda9aab9d01cbc89cc18f890ea7f932d8c58c37af78c4e7e42bcfd29d4b16d831fb11fc9597274a0ac9b567"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/es-object-atoms"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "get-proto",
+      "version": "1.0.1",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|get-proto@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/get-proto@1.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/get-proto/-/get-proto-1.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "b1349f063a17069f3d26f20a21e7eac3b53608279bb1cef892263a6b0886a202ada1219b823604fc6ffe97db05dcc5853cd73d21ca0e0b83837ca1dfc459a9d2"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/get-proto"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "gopd",
+      "version": "1.2.0",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|gopd@1.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/gopd@1.2.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/gopd/-/gopd-1.2.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "65429187afe4505a0089302d4d83d9277870f70371c7e04804e8a39e51bd3e7ac9b027128ecd70cb20fabc9a5a62d827cc3aca6114aa7f738ee917daf77c6c46"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/gopd"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "has-symbols",
+      "version": "1.1.0",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|has-symbols@1.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/has-symbols@1.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/has-symbols/-/has-symbols-1.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "d5c0cd77027625aa2199bdec8383a629a301c2e0b8f2c6278b91d4c360efb02f0b8c64cb2bd87e79bd57e91cae3877b8853d142c25baf22a26863528294aa53d"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/has-symbols"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "math-intrinsics",
+      "version": "1.1.0",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|math-intrinsics@1.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/math-intrinsics@1.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/math-intrinsics/-/math-intrinsics-1.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "fc85ed6f0124e474cfc84c32297ea11a4617c4cf676e3eb807e8a55499c2fd1e81d291f91b85776f4a556cbec3063e2d921040a696d05257fa17a5e5f4b1eed6"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/math-intrinsics"
         }
       ]
     },
@@ -25966,45 +26715,6 @@
     },
     {
       "type": "library",
-      "name": "string_decoder",
-      "version": "1.3.0",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|string_decoder@1.3.0",
-      "scope": "optional",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/string_decoder@1.3.0",
-      "externalReferences": [
-        {
-          "url": "https://registry.npmjs.org/string_decoder/-/string_decoder-1.3.0.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "864457f14d568c915df0bb03276c90ff0596c5aa2912c0015355df90cf00fa3d3ef392401a9a6dd7a72bd56860e8a21b6f8a2453a32a97a04e8febaea7fc0a78"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/string_decoder"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "define-properties",
       "version": "1.2.1",
       "bom-ref": "chargytransparenzsoftware@1.4.7|define-properties@1.2.1",
@@ -26039,44 +26749,6 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/define-properties"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "gopd",
-      "version": "1.2.0",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|gopd@1.2.0",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/gopd@1.2.0",
-      "externalReferences": [
-        {
-          "url": "https://registry.npmjs.org/gopd/-/gopd-1.2.0.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "65429187afe4505a0089302d4d83d9277870f70371c7e04804e8a39e51bd3e7ac9b027128ecd70cb20fabc9a5a62d827cc3aca6114aa7f738ee917daf77c6c46"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/gopd"
         }
       ]
     },
@@ -26120,47 +26792,9 @@
     },
     {
       "type": "library",
-      "name": "call-bind-apply-helpers",
-      "version": "1.0.2",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|call-bind-apply-helpers@1.0.2",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/call-bind-apply-helpers@1.0.2",
-      "externalReferences": [
-        {
-          "url": "https://registry.npmjs.org/call-bind-apply-helpers/-/call-bind-apply-helpers-1.0.2.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "4a9d5a6e52748af0e44b38dc68977112e9cde7f5ef92c149dac30115fabac74af285057fd9bfcac057b6d5c329987b4f3928a3f0af7dff049fa04b9339b9ae31"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/call-bind-apply-helpers"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "es-define-property",
+      "name": "dunder-proto",
       "version": "1.0.1",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|es-define-property@1.0.1",
+      "bom-ref": "chargytransparenzsoftware@1.4.7|dunder-proto@1.0.1",
       "licenses": [
         {
           "license": {
@@ -26169,15 +26803,15 @@
           }
         }
       ],
-      "purl": "pkg:npm/es-define-property@1.0.1",
+      "purl": "pkg:npm/dunder-proto@1.0.1",
       "externalReferences": [
         {
-          "url": "https://registry.npmjs.org/es-define-property/-/es-define-property-1.0.1.tgz",
+          "url": "https://registry.npmjs.org/dunder-proto/-/dunder-proto-1.0.1.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "7b79d17e07d4678acd18bdb7da05205f4e90372c9ecf4e0a76316b17e2d34683979ab3a014a0e0e0109db235bc1274faf5ea9d606991a49c223d560dac2696de"
+              "content": "28837f9c3241411717c3430b561644f62407986ebca80548060f42aa65188e64088608a3f54e4c16faea9142f915bb72cb366e39e3add3375e45ee1463b72df8"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -26185,164 +26819,8 @@
       ],
       "properties": [
         {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
           "name": "cdx:npm:package:path",
-          "value": "node_modules/es-define-property"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "es-object-atoms",
-      "version": "1.1.2",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|es-object-atoms@1.1.2",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/es-object-atoms@1.1.2",
-      "externalReferences": [
-        {
-          "url": "https://registry.npmjs.org/es-object-atoms/-/es-object-atoms-1.1.2.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "1d6701a0de8d8a57aab52c9d2b616a1db4bf2e80ddda9aab9d01cbc89cc18f890ea7f932d8c58c37af78c4e7e42bcfd29d4b16d831fb11fc9597274a0ac9b567"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/es-object-atoms"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "get-proto",
-      "version": "1.0.1",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|get-proto@1.0.1",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/get-proto@1.0.1",
-      "externalReferences": [
-        {
-          "url": "https://registry.npmjs.org/get-proto/-/get-proto-1.0.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "b1349f063a17069f3d26f20a21e7eac3b53608279bb1cef892263a6b0886a202ada1219b823604fc6ffe97db05dcc5853cd73d21ca0e0b83837ca1dfc459a9d2"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/get-proto"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "has-symbols",
-      "version": "1.1.0",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|has-symbols@1.1.0",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/has-symbols@1.1.0",
-      "externalReferences": [
-        {
-          "url": "https://registry.npmjs.org/has-symbols/-/has-symbols-1.1.0.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "d5c0cd77027625aa2199bdec8383a629a301c2e0b8f2c6278b91d4c360efb02f0b8c64cb2bd87e79bd57e91cae3877b8853d142c25baf22a26863528294aa53d"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/has-symbols"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "math-intrinsics",
-      "version": "1.1.0",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|math-intrinsics@1.1.0",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/math-intrinsics@1.1.0",
-      "externalReferences": [
-        {
-          "url": "https://registry.npmjs.org/math-intrinsics/-/math-intrinsics-1.1.0.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "fc85ed6f0124e474cfc84c32297ea11a4617c4cf676e3eb807e8a55499c2fd1e81d291f91b85776f4a556cbec3063e2d921040a696d05257fa17a5e5f4b1eed6"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/math-intrinsics"
+          "value": "node_modules/dunder-proto"
         }
       ]
     },
@@ -26859,44 +27337,6 @@
     },
     {
       "type": "library",
-      "name": "dunder-proto",
-      "version": "1.0.1",
-      "bom-ref": "chargytransparenzsoftware@1.4.7|dunder-proto@1.0.1",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/dunder-proto@1.0.1",
-      "externalReferences": [
-        {
-          "url": "https://registry.npmjs.org/dunder-proto/-/dunder-proto-1.0.1.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "28837f9c3241411717c3430b561644f62407986ebca80548060f42aa65188e64088608a3f54e4c16faea9142f915bb72cb366e39e3add3375e45ee1463b72df8"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:development",
-          "value": "true"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/dunder-proto"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "p-try",
       "version": "2.2.0",
       "bom-ref": "chargytransparenzsoftware@1.4.7|p-try@2.2.0",
@@ -27099,13 +27539,14 @@
         "chargytransparenzsoftware@1.4.7|@fortawesome/fontawesome-free@7.3.1",
         "chargytransparenzsoftware@1.4.7|@noble/hashes@2.4.0",
         "chargytransparenzsoftware@1.4.7|@oozcitak/dom@3.0.0",
-        "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.17.0",
+        "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.18.0",
         "chargytransparenzsoftware@1.4.7|@open-charging-cloud/totp@0.3.1",
+        "chargytransparenzsoftware@1.4.7|@open-charging-cloud/wwcp-poi@0.2.0",
         "chargytransparenzsoftware@1.4.7|@types/elliptic@6.4.18",
         "chargytransparenzsoftware@1.4.7|@types/leaflet@1.9.22",
         "chargytransparenzsoftware@1.4.7|@types/node@26.6.6",
-        "chargytransparenzsoftware@1.4.7|@vanaheimr/cose@0.10.0",
-        "chargytransparenzsoftware@1.4.7|@vanaheimr/metrological-cbor@0.11.1",
+        "chargytransparenzsoftware@1.4.7|@vanaheimr/cose@0.12.0",
+        "chargytransparenzsoftware@1.4.7|@vanaheimr/metrological-cbor@0.12.0",
         "chargytransparenzsoftware@1.4.7|asn1.js@5.4.1",
         "chargytransparenzsoftware@1.4.7|base32-decode@1.0.0",
         "chargytransparenzsoftware@1.4.7|buffer@6.0.3",
@@ -27123,14 +27564,20 @@
         "chargytransparenzsoftware@1.4.7|mini-css-extract-plugin@2.10.2",
         "chargytransparenzsoftware@1.4.7|minimizer-webpack-plugin@5.14.0",
         "chargytransparenzsoftware@1.4.7|moment@2.31.0",
+        "chargytransparenzsoftware@1.4.7|path-browserify@1.0.1",
         "chargytransparenzsoftware@1.4.7|safe-stable-stringify@3.0.0",
         "chargytransparenzsoftware@1.4.7|sass-loader@17.1.0",
         "chargytransparenzsoftware@1.4.7|sass@1.107.0",
         "chargytransparenzsoftware@1.4.7|source-map-loader@5.0.0",
+        "chargytransparenzsoftware@1.4.7|stream-browserify@3.0.0",
+        "chargytransparenzsoftware@1.4.7|stream-http@3.2.0",
         "chargytransparenzsoftware@1.4.7|ts-loader@9.6.2",
         "chargytransparenzsoftware@1.4.7|typescript-eslint@8.72.1",
         "chargytransparenzsoftware@1.4.7|typescript@6.0.3",
+        "chargytransparenzsoftware@1.4.7|url@0.11.4",
+        "chargytransparenzsoftware@1.4.7|uuid@14.0.3",
         "chargytransparenzsoftware@1.4.7|vitest@5.0.5",
+        "chargytransparenzsoftware@1.4.7|vm-browserify@1.1.2",
         "chargytransparenzsoftware@1.4.7|webpack-cli@7.3.0",
         "chargytransparenzsoftware@1.4.7|webpack@5.112.2"
       ]
@@ -27171,14 +27618,14 @@
       ]
     },
     {
-      "ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.17.0",
+      "ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.18.0",
       "dependsOn": [
         "chargytransparenzsoftware@1.4.7|@napi-rs/canvas@1.1.0",
         "chargytransparenzsoftware@1.4.7|@noble/curves@2.4.0",
         "chargytransparenzsoftware@1.4.7|@noble/hashes@2.4.0",
         "chargytransparenzsoftware@1.4.7|@noble/post-quantum@0.7.1",
-        "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.17.0|@vanaheimr/cose@0.9.0",
-        "chargytransparenzsoftware@1.4.7|@vanaheimr/metrological-cbor@0.11.1",
+        "chargytransparenzsoftware@1.4.7|@vanaheimr/cose@0.12.0",
+        "chargytransparenzsoftware@1.4.7|@vanaheimr/metrological-cbor@0.12.0",
         "chargytransparenzsoftware@1.4.7|asn1.js@5.4.1",
         "chargytransparenzsoftware@1.4.7|base32-decode@1.0.0",
         "chargytransparenzsoftware@1.4.7|buffer@6.0.3",
@@ -27189,25 +27636,9 @@
         "chargytransparenzsoftware@1.4.7|jpeg-js@0.4.4",
         "chargytransparenzsoftware@1.4.7|jsqr@1.4.0",
         "chargytransparenzsoftware@1.4.7|moment@2.31.0",
-        "chargytransparenzsoftware@1.4.7|pdfjs-dist@6.4.299",
+        "chargytransparenzsoftware@1.4.7|pdfjs-dist@6.5.438",
         "chargytransparenzsoftware@1.4.7|pngjs@7.0.0",
         "chargytransparenzsoftware@1.4.7|seek-bzip@2.0.0",
-        "chargytransparenzsoftware@1.4.7|typescript@6.0.3"
-      ]
-    },
-    {
-      "ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.17.0|@vanaheimr/cose@0.9.0",
-      "dependsOn": [
-        "chargytransparenzsoftware@1.4.7|@noble/ciphers@2.4.0",
-        "chargytransparenzsoftware@1.4.7|@noble/curves@2.4.0",
-        "chargytransparenzsoftware@1.4.7|@noble/hashes@2.4.0",
-        "chargytransparenzsoftware@1.4.7|@noble/post-quantum@0.7.1",
-        "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.17.0|@vanaheimr/cose@0.9.0|@vanaheimr/metrological-cbor@0.10.0"
-      ]
-    },
-    {
-      "ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/chargy-core@0.17.0|@vanaheimr/cose@0.9.0|@vanaheimr/metrological-cbor@0.10.0",
-      "dependsOn": [
         "chargytransparenzsoftware@1.4.7|typescript@6.0.3"
       ]
     },
@@ -27215,6 +27646,14 @@
       "ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/totp@0.3.1",
       "dependsOn": [
         "chargytransparenzsoftware@1.4.7|@noble/hashes@2.4.0"
+      ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|@open-charging-cloud/wwcp-poi@0.2.0",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|@noble/hashes@2.4.0",
+        "chargytransparenzsoftware@1.4.7|@vanaheimr/cose@0.12.0",
+        "chargytransparenzsoftware@1.4.7|@vanaheimr/metrological-cbor@0.12.0"
       ]
     },
     {
@@ -27236,17 +27675,17 @@
       ]
     },
     {
-      "ref": "chargytransparenzsoftware@1.4.7|@vanaheimr/cose@0.10.0",
+      "ref": "chargytransparenzsoftware@1.4.7|@vanaheimr/cose@0.12.0",
       "dependsOn": [
         "chargytransparenzsoftware@1.4.7|@noble/ciphers@2.4.0",
         "chargytransparenzsoftware@1.4.7|@noble/curves@2.4.0",
         "chargytransparenzsoftware@1.4.7|@noble/hashes@2.4.0",
         "chargytransparenzsoftware@1.4.7|@noble/post-quantum@0.7.1",
-        "chargytransparenzsoftware@1.4.7|@vanaheimr/metrological-cbor@0.11.1"
+        "chargytransparenzsoftware@1.4.7|@vanaheimr/metrological-cbor@0.12.0"
       ]
     },
     {
-      "ref": "chargytransparenzsoftware@1.4.7|@vanaheimr/metrological-cbor@0.11.1",
+      "ref": "chargytransparenzsoftware@1.4.7|@vanaheimr/metrological-cbor@0.12.0",
       "dependsOn": [
         "chargytransparenzsoftware@1.4.7|typescript@6.0.3"
       ]
@@ -27449,6 +27888,9 @@
       "ref": "chargytransparenzsoftware@1.4.7|moment@2.31.0"
     },
     {
+      "ref": "chargytransparenzsoftware@1.4.7|path-browserify@1.0.1"
+    },
+    {
       "ref": "chargytransparenzsoftware@1.4.7|safe-stable-stringify@3.0.0"
     },
     {
@@ -27473,6 +27915,22 @@
         "chargytransparenzsoftware@1.4.7|iconv-lite@0.6.3",
         "chargytransparenzsoftware@1.4.7|source-map-js@1.2.2",
         "chargytransparenzsoftware@1.4.7|webpack@5.112.2"
+      ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|stream-browserify@3.0.0",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|inherits@2.0.4",
+        "chargytransparenzsoftware@1.4.7|readable-stream@3.6.2"
+      ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|stream-http@3.2.0",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|builtin-status-codes@3.0.0",
+        "chargytransparenzsoftware@1.4.7|inherits@2.0.4",
+        "chargytransparenzsoftware@1.4.7|readable-stream@3.6.2",
+        "chargytransparenzsoftware@1.4.7|xtend@4.0.2"
       ]
     },
     {
@@ -27504,6 +27962,19 @@
       "ref": "chargytransparenzsoftware@1.4.7|typescript@6.0.3"
     },
     {
+      "ref": "chargytransparenzsoftware@1.4.7|url@0.11.4",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|url@0.11.4|punycode@1.4.1",
+        "chargytransparenzsoftware@1.4.7|qs@6.17.1"
+      ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|url@0.11.4|punycode@1.4.1"
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|uuid@14.0.3"
+    },
+    {
       "ref": "chargytransparenzsoftware@1.4.7|vitest@5.0.5",
       "dependsOn": [
         "chargytransparenzsoftware@1.4.7|@types/chai@5.2.3",
@@ -27522,6 +27993,9 @@
         "chargytransparenzsoftware@1.4.7|vite@8.3.5",
         "chargytransparenzsoftware@1.4.7|why-is-node-running@3.2.1"
       ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|vm-browserify@1.1.2"
     },
     {
       "ref": "chargytransparenzsoftware@1.4.7|webpack-cli@7.3.0",
@@ -27778,7 +28252,7 @@
       "ref": "chargytransparenzsoftware@1.4.7|jsqr@1.4.0"
     },
     {
-      "ref": "chargytransparenzsoftware@1.4.7|pdfjs-dist@6.4.299",
+      "ref": "chargytransparenzsoftware@1.4.7|pdfjs-dist@6.5.438",
       "dependsOn": [
         "chargytransparenzsoftware@1.4.7|@napi-rs/canvas@1.1.0"
       ]
@@ -28367,6 +28841,20 @@
       ]
     },
     {
+      "ref": "chargytransparenzsoftware@1.4.7|readable-stream@3.6.2",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|inherits@2.0.4",
+        "chargytransparenzsoftware@1.4.7|string_decoder@1.3.0",
+        "chargytransparenzsoftware@1.4.7|util-deprecate@1.0.2"
+      ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|builtin-status-codes@3.0.0"
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|xtend@4.0.2"
+    },
+    {
       "ref": "chargytransparenzsoftware@1.4.7|picomatch@4.0.7"
     },
     {
@@ -28424,6 +28912,13 @@
         "chargytransparenzsoftware@1.4.7|@typescript-eslint/typescript-estree@8.72.1",
         "chargytransparenzsoftware@1.4.7|eslint@10.14.0",
         "chargytransparenzsoftware@1.4.7|typescript@6.0.3"
+      ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|qs@6.17.1",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|es-define-property@1.0.1",
+        "chargytransparenzsoftware@1.4.7|side-channel@1.1.1"
       ]
     },
     {
@@ -29332,6 +29827,15 @@
       "ref": "chargytransparenzsoftware@1.4.7|readdirp@5.1.1"
     },
     {
+      "ref": "chargytransparenzsoftware@1.4.7|string_decoder@1.3.0",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|safe-buffer@5.2.1"
+      ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|util-deprecate@1.0.2"
+    },
+    {
       "ref": "chargytransparenzsoftware@1.4.7|@typescript-eslint/scope-manager@8.72.1",
       "dependsOn": [
         "chargytransparenzsoftware@1.4.7|@typescript-eslint/types@8.72.1",
@@ -29379,6 +29883,19 @@
       "ref": "chargytransparenzsoftware@1.4.7|@typescript-eslint/tsconfig-utils@8.72.1",
       "dependsOn": [
         "chargytransparenzsoftware@1.4.7|typescript@6.0.3"
+      ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|es-define-property@1.0.1"
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|side-channel@1.1.1",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|es-errors@1.3.0",
+        "chargytransparenzsoftware@1.4.7|object-inspect@1.13.4",
+        "chargytransparenzsoftware@1.4.7|side-channel-list@1.0.1",
+        "chargytransparenzsoftware@1.4.7|side-channel-map@1.0.1",
+        "chargytransparenzsoftware@1.4.7|side-channel-weakmap@1.0.2"
       ]
     },
     {
@@ -29714,9 +30231,6 @@
     },
     {
       "ref": "chargytransparenzsoftware@1.4.7|cssesc@3.0.0"
-    },
-    {
-      "ref": "chargytransparenzsoftware@1.4.7|util-deprecate@1.0.2"
     },
     {
       "ref": "chargytransparenzsoftware@1.4.7|glob@7.2.3",
@@ -30123,6 +30637,41 @@
       ]
     },
     {
+      "ref": "chargytransparenzsoftware@1.4.7|safe-buffer@5.2.1"
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|es-errors@1.3.0"
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|object-inspect@1.13.4"
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|side-channel-list@1.0.1",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|es-errors@1.3.0",
+        "chargytransparenzsoftware@1.4.7|object-inspect@1.13.4"
+      ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|side-channel-map@1.0.1",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|call-bound@1.0.4",
+        "chargytransparenzsoftware@1.4.7|es-errors@1.3.0",
+        "chargytransparenzsoftware@1.4.7|get-intrinsic@1.3.0",
+        "chargytransparenzsoftware@1.4.7|object-inspect@1.13.4"
+      ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|side-channel-weakmap@1.0.2",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|call-bound@1.0.4",
+        "chargytransparenzsoftware@1.4.7|es-errors@1.3.0",
+        "chargytransparenzsoftware@1.4.7|get-intrinsic@1.3.0",
+        "chargytransparenzsoftware@1.4.7|object-inspect@1.13.4",
+        "chargytransparenzsoftware@1.4.7|side-channel-map@1.0.1"
+      ]
+    },
+    {
       "ref": "chargytransparenzsoftware@1.4.7|@jridgewell/resolve-uri@3.1.2"
     },
     {
@@ -30397,9 +30946,6 @@
       ]
     },
     {
-      "ref": "chargytransparenzsoftware@1.4.7|safe-buffer@5.2.1"
-    },
-    {
       "ref": "chargytransparenzsoftware@1.4.7|fs.realpath@1.0.0"
     },
     {
@@ -30652,6 +31198,28 @@
       "ref": "chargytransparenzsoftware@1.4.7|qified@0.10.1|hookified@2.2.0"
     },
     {
+      "ref": "chargytransparenzsoftware@1.4.7|call-bound@1.0.4",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|call-bind-apply-helpers@1.0.2",
+        "chargytransparenzsoftware@1.4.7|get-intrinsic@1.3.0"
+      ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|get-intrinsic@1.3.0",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|call-bind-apply-helpers@1.0.2",
+        "chargytransparenzsoftware@1.4.7|es-define-property@1.0.1",
+        "chargytransparenzsoftware@1.4.7|es-errors@1.3.0",
+        "chargytransparenzsoftware@1.4.7|es-object-atoms@1.1.2",
+        "chargytransparenzsoftware@1.4.7|function-bind@1.1.2",
+        "chargytransparenzsoftware@1.4.7|get-proto@1.0.1",
+        "chargytransparenzsoftware@1.4.7|gopd@1.2.0",
+        "chargytransparenzsoftware@1.4.7|has-symbols@1.1.0",
+        "chargytransparenzsoftware@1.4.7|hasown@2.0.4",
+        "chargytransparenzsoftware@1.4.7|math-intrinsics@1.1.0"
+      ]
+    },
+    {
       "ref": "chargytransparenzsoftware@1.4.7|isobject@3.0.1"
     },
     {
@@ -30745,14 +31313,6 @@
     },
     {
       "ref": "chargytransparenzsoftware@1.4.7|fs-constants@1.0.0"
-    },
-    {
-      "ref": "chargytransparenzsoftware@1.4.7|readable-stream@3.6.2",
-      "dependsOn": [
-        "chargytransparenzsoftware@1.4.7|inherits@2.0.4",
-        "chargytransparenzsoftware@1.4.7|string_decoder@1.3.0",
-        "chargytransparenzsoftware@1.4.7|util-deprecate@1.0.2"
-      ]
     },
     {
       "ref": "chargytransparenzsoftware@1.4.7|concat-map@0.0.1"
@@ -30849,24 +31409,6 @@
       "ref": "chargytransparenzsoftware@1.4.7|delayed-stream@1.0.0"
     },
     {
-      "ref": "chargytransparenzsoftware@1.4.7|es-errors@1.3.0"
-    },
-    {
-      "ref": "chargytransparenzsoftware@1.4.7|get-intrinsic@1.3.0",
-      "dependsOn": [
-        "chargytransparenzsoftware@1.4.7|call-bind-apply-helpers@1.0.2",
-        "chargytransparenzsoftware@1.4.7|es-define-property@1.0.1",
-        "chargytransparenzsoftware@1.4.7|es-errors@1.3.0",
-        "chargytransparenzsoftware@1.4.7|es-object-atoms@1.1.2",
-        "chargytransparenzsoftware@1.4.7|function-bind@1.1.2",
-        "chargytransparenzsoftware@1.4.7|get-proto@1.0.1",
-        "chargytransparenzsoftware@1.4.7|gopd@1.2.0",
-        "chargytransparenzsoftware@1.4.7|has-symbols@1.1.0",
-        "chargytransparenzsoftware@1.4.7|hasown@2.0.4",
-        "chargytransparenzsoftware@1.4.7|math-intrinsics@1.1.0"
-      ]
-    },
-    {
       "ref": "chargytransparenzsoftware@1.4.7|has-tostringtag@1.0.2",
       "dependsOn": [
         "chargytransparenzsoftware@1.4.7|has-symbols@1.1.0"
@@ -30903,6 +31445,35 @@
     },
     {
       "ref": "chargytransparenzsoftware@1.4.7|@keyv/serialize@1.1.1"
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|call-bind-apply-helpers@1.0.2",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|es-errors@1.3.0",
+        "chargytransparenzsoftware@1.4.7|function-bind@1.1.2"
+      ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|es-object-atoms@1.1.2",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|es-errors@1.3.0"
+      ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|get-proto@1.0.1",
+      "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|dunder-proto@1.0.1",
+        "chargytransparenzsoftware@1.4.7|es-object-atoms@1.1.2"
+      ]
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|gopd@1.2.0"
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|has-symbols@1.1.0"
+    },
+    {
+      "ref": "chargytransparenzsoftware@1.4.7|math-intrinsics@1.1.0"
     },
     {
       "ref": "chargytransparenzsoftware@1.4.7|socks@2.8.10",
@@ -30948,12 +31519,6 @@
       ]
     },
     {
-      "ref": "chargytransparenzsoftware@1.4.7|string_decoder@1.3.0",
-      "dependsOn": [
-        "chargytransparenzsoftware@1.4.7|safe-buffer@5.2.1"
-      ]
-    },
-    {
       "ref": "chargytransparenzsoftware@1.4.7|define-properties@1.2.1",
       "dependsOn": [
         "chargytransparenzsoftware@1.4.7|define-data-property@1.1.4",
@@ -30962,39 +31527,15 @@
       ]
     },
     {
-      "ref": "chargytransparenzsoftware@1.4.7|gopd@1.2.0"
-    },
-    {
       "ref": "chargytransparenzsoftware@1.4.7|json-buffer@3.0.1"
     },
     {
-      "ref": "chargytransparenzsoftware@1.4.7|call-bind-apply-helpers@1.0.2",
+      "ref": "chargytransparenzsoftware@1.4.7|dunder-proto@1.0.1",
       "dependsOn": [
+        "chargytransparenzsoftware@1.4.7|call-bind-apply-helpers@1.0.2",
         "chargytransparenzsoftware@1.4.7|es-errors@1.3.0",
-        "chargytransparenzsoftware@1.4.7|function-bind@1.1.2"
+        "chargytransparenzsoftware@1.4.7|gopd@1.2.0"
       ]
-    },
-    {
-      "ref": "chargytransparenzsoftware@1.4.7|es-define-property@1.0.1"
-    },
-    {
-      "ref": "chargytransparenzsoftware@1.4.7|es-object-atoms@1.1.2",
-      "dependsOn": [
-        "chargytransparenzsoftware@1.4.7|es-errors@1.3.0"
-      ]
-    },
-    {
-      "ref": "chargytransparenzsoftware@1.4.7|get-proto@1.0.1",
-      "dependsOn": [
-        "chargytransparenzsoftware@1.4.7|dunder-proto@1.0.1",
-        "chargytransparenzsoftware@1.4.7|es-object-atoms@1.1.2"
-      ]
-    },
-    {
-      "ref": "chargytransparenzsoftware@1.4.7|has-symbols@1.1.0"
-    },
-    {
-      "ref": "chargytransparenzsoftware@1.4.7|math-intrinsics@1.1.0"
     },
     {
       "ref": "chargytransparenzsoftware@1.4.7|ip-address@10.7.5"
@@ -31063,14 +31604,6 @@
     },
     {
       "ref": "chargytransparenzsoftware@1.4.7|object-keys@1.1.1"
-    },
-    {
-      "ref": "chargytransparenzsoftware@1.4.7|dunder-proto@1.0.1",
-      "dependsOn": [
-        "chargytransparenzsoftware@1.4.7|call-bind-apply-helpers@1.0.2",
-        "chargytransparenzsoftware@1.4.7|es-errors@1.3.0",
-        "chargytransparenzsoftware@1.4.7|gopd@1.2.0"
-      ]
     },
     {
       "ref": "chargytransparenzsoftware@1.4.7|p-try@2.2.0"

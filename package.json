@@ -75,10 +75,11 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.3.1",
     "@noble/hashes": "^2.4.0",
-    "@open-charging-cloud/chargy-core": "^0.17.0",
+    "@open-charging-cloud/chargy-core": "0.18.0",
     "@open-charging-cloud/totp": "^0.3.1",
-    "@vanaheimr/cose": "^0.10.0",
-    "@vanaheimr/metrological-cbor": "^0.11.1",
+    "@open-charging-cloud/wwcp-poi": "0.2.0",
+    "@vanaheimr/cose": "^0.12.0",
+    "@vanaheimr/metrological-cbor": "^0.12.0",
     "asn1.js": "^5.4.1",
     "base32-decode": "^1.0.0",
     "buffer": "^6.0.3",
@@ -88,7 +89,13 @@
     "leaflet": "^1.9.4",
     "leaflet.awesome-markers": "^2.0.5",
     "moment": "^2.31.0",
-    "safe-stable-stringify": "^3.0.0"
+    "path-browserify": "^1.0.1",
+    "safe-stable-stringify": "^3.0.0",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "url": "^0.11.4",
+    "uuid": "^14.0.3",
+    "vm-browserify": "^1.1.2"
   },
   "build": {
     "appId": "cloud.charging.open.chargy.desktop",

@@ -1,0 +1,1101 @@
+{
+  "format": "ptb",
+  "formatVersion": "1.0",
+  "publicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3j/1wo8S15sCc+YAETSZKFoLyx27McMv8WGHYLWPiwJ/RX7zWje8SODNlu2AZ2DQzkKBjgTW2jP0TMpnBV6BHQ==",
+  "chargeboxIdentifier": "DE*POI*E1*1",
+  "address": {
+    "street": "Demo Street 1",
+    "city": "Jena",
+    "postalCode": "07743",
+    "country": "DE"
+  },
+  "geoLocation": {
+    "lat": 50.9271,
+    "lng": 11.5892
+  },
+  "ocmfBegin": "OCMF|{\"FV\":\"1.0\",\"GI\":\"Chargy POI demo\",\"GS\":\"DEMO-GATEWAY-001\",\"GV\":\"1.0\",\"PG\":\"T42\",\"MV\":\"Chargy\",\"MM\":\"Demo meter\",\"MS\":\"CHARGY-POI-METER-001\",\"MF\":\"1.0\",\"IS\":true,\"IL\":\"VERIFIED\",\"IF\":[\"OCPP_AUTH\"],\"IT\":\"NONE\",\"ID\":\"ADHOC-PRICE-DEMO\",\"CT\":\"EVSEID\",\"CI\":\"DE*POI*E1*1\",\"TT\":\"001;EUR;0;35;0;0\",\"RD\":[{\"TM\":\"2026-06-01T10:00:00,000+0000 S\",\"TX\":\"B\",\"RV\":1000,\"RI\":\"1-b:1.8.0\",\"RU\":\"kWh\",\"RT\":\"AC\",\"EF\":\"\",\"ST\":\"G\"}]}|{\"SA\":\"ECDSA-secp256r1-SHA256\",\"SE\":\"hex\",\"SD\":\"3045022100BED3E92DFCE2B3C63F3335140F3CAB1DF2E242BDD3B715AA9F4CB0ED6D8F2379022017336A534BE0E86893CE9664EE05A5555AC658021B8F73F9C5204CBA934A8071\"}",
+  "ocmfEnd": "OCMF|{\"FV\":\"1.0\",\"GI\":\"Chargy POI demo\",\"GS\":\"DEMO-GATEWAY-001\",\"GV\":\"1.0\",\"PG\":\"T42\",\"MV\":\"Chargy\",\"MM\":\"Demo meter\",\"MS\":\"CHARGY-POI-METER-001\",\"MF\":\"1.0\",\"IS\":true,\"IL\":\"VERIFIED\",\"IF\":[\"OCPP_AUTH\"],\"IT\":\"NONE\",\"ID\":\"ADHOC-PRICE-DEMO\",\"CT\":\"EVSEID\",\"CI\":\"DE*POI*E1*1\",\"TT\":\"001;EUR;0;35;0;0\",\"RD\":[{\"TM\":\"2026-06-01T10:30:00,000+0000 S\",\"TX\":\"E\",\"RV\":1011,\"RI\":\"1-b:1.8.0\",\"RU\":\"kWh\",\"RT\":\"AC\",\"EF\":\"\",\"ST\":\"G\"}]}|{\"SA\":\"ECDSA-secp256r1-SHA256\",\"SE\":\"hex\",\"SD\":\"304602210098E1E674FEAB52C1EE8EF1A48F1CBF9FF30D9117E825E40E51F4E61B4FBF2F70022100C2C47D0A771C5A6CFCF38152641A0184FA9B41536C5DDD705CCBC6934465F31E\"}",
+  "poiEvidence": {
+    "@context": "https://open.charging.cloud/contexts/chargy/poiEvidence/v1",
+    "EVSEId": "DE*POI*E1*1",
+    "roamingNetworkId": "CHARGY-POI-DEMO",
+    "bootstrap": {
+      "trustAnchor": "WWCP/TA-2:P1LJ68GVCYM8RB8+09ZW521ANW5BY8T1A/PD-FFNLG344WMHA 5V75U0HNXFX:AYMA0 CXZHU%VAULQK5R7MRPE:Y23AR*64PPK93RB/6P07/BI1R7ZGNANHZ7CN0R:POE$PR8F1W487JJBI..DF$DZNK6VCQ8FLN8GECT3D$3421ANW50$C-3E QEVKEBWE-3E.245UA QEJQE29DNXOZQE: CJA51$CL8FLN8GECT3D$3421AC440$C-3E QEVKEBWE-3E.247WE QEJ44C$C6PEMVC.KE4REO8FA9DIWENPEJ/5S9EGDDB$CBECP9ESZCAIACPEYM8RB8+09ZW521ANW5BY8X1AD68-3E7WEBAFB9FA9DIWENPEJ/5/3E1$C+%5 8D$KEZED:1DRPC34E.TCUPCG/DB$CLWE10684F98E0LEBECZEDV2D7$CK4F-KE/:56LE QEAC8NPC04E006%G6J$DC.D-3ELQEF/D7%E20",
+      "keyStatement": {
+        "@id": "CHARGY-DEMO-RNO",
+        "name": {
+          "en": "Chargy demo roaming operator"
+        },
+        "minConsensus": 2,
+        "identityKeys": [
+          {
+            "@id": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+            "key": "owEBIAYhWCBFCKB6qUFwfz6y25TIiXqAssEZdHa23iE6wnPffYbE/w==",
+            "holder": "Demo holder B",
+            "notBefore": "2026-01-01T00:00:00.000Z",
+            "notAfter": "2030-01-01T00:00:00.000Z"
+          },
+          {
+            "@id": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+            "key": "owEBIAYhWCD6SDQUf25pDDaT7/YTNgRkA82K4qFPMbPEBzWFaSOVZQ==",
+            "holder": "Demo holder A",
+            "notBefore": "2026-01-01T00:00:00.000Z",
+            "notAfter": "2030-01-01T00:00:00.000Z"
+          }
+        ],
+        "keyStatement": {
+          "roamingNetworkId": "CHARGY-POI-DEMO",
+          "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+          "minConsensus": 2,
+          "identityKeys": [
+            {
+              "@id": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+              "key": "owEBIAYhWCBFCKB6qUFwfz6y25TIiXqAssEZdHa23iE6wnPffYbE/w==",
+              "holder": "Demo holder B",
+              "notBefore": "2026-01-01T00:00:00.000Z",
+              "notAfter": "2030-01-01T00:00:00.000Z"
+            },
+            {
+              "@id": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+              "key": "owEBIAYhWCD6SDQUf25pDDaT7/YTNgRkA82K4qFPMbPEBzWFaSOVZQ==",
+              "holder": "Demo holder A",
+              "notBefore": "2026-01-01T00:00:00.000Z",
+              "notAfter": "2030-01-01T00:00:00.000Z"
+            }
+          ],
+          "signedAt": "2026-01-01T00:00:00.000Z",
+          "validUntil": "2030-01-01T00:00:00.000Z",
+          "signatures": [
+            {
+              "algorithm": "Ed25519",
+              "keyId": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+              "value": "HNOCxPLO8KC8WfaLrSNO5pXkRiXrq0+7BN02196gNuGHbhSNz0LfvvLC/P7Rpr1fgcufggOIrmNaV4NPvFOoBw=="
+            },
+            {
+              "algorithm": "Ed25519",
+              "keyId": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+              "value": "SDK1KmiTT7oP9EkbvbJ9xu4ZLDtRCpntEYTD05JiA+lbhqr8notyra9SRdqJws3F5LqnNtVrHZplFTI0ZfA9Cw=="
+            }
+          ]
+        },
+        "signingKeyCertificates": [
+          {
+            "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+            "signingKey": {
+              "@id": "b6b112c5e7c8b3e9f630ceba38a7b2b46828d0cf3d932b7b0d992fb2299026c6",
+              "key": "owEBIAYhWCAZf2sj4WyFMsaryDj6zV6nib4MdrKSAzQDm/qLPTaNYQ==",
+              "holder": "Demo holder A",
+              "notBefore": "2026-01-01T00:00:00.000Z",
+              "notAfter": "2030-01-01T00:00:00.000Z"
+            },
+            "signedAt": "2026-01-01T00:00:00.000Z",
+            "algorithm": "Ed25519",
+            "keyId": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+            "value": "zCS97I3AmgWiACZFboccjkA0RhSKoE4b8+rrIdQuoRHVqVJYNVpyILCMQ/H4otibvK31VF0NqHx3Bo0Ko6agCA=="
+          },
+          {
+            "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+            "signingKey": {
+              "@id": "e390e8d9949a5bd60b036132621265eeb93474b5b8da1ae3660740eaad5e8ae7",
+              "key": "owEBIAYhWCCUdcbPDto0BXUo2GlHgezJKtY51+K9J3Ye0+90kkvrBw==",
+              "holder": "Demo holder B",
+              "notBefore": "2026-01-01T00:00:00.000Z",
+              "notAfter": "2030-01-01T00:00:00.000Z"
+            },
+            "signedAt": "2026-01-01T00:00:00.000Z",
+            "algorithm": "Ed25519",
+            "keyId": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+            "value": "3wx39roj9GLYm/aIDh9dbpN+TSG+nnkn5RN0xbGgOLC3hHOndZTC5nF1sT5unafPWzV08cfaUEIfteivqg3AAA=="
+          }
+        ],
+        "created": "2026-01-01T00:00:00.000Z",
+        "lastChange": "2026-01-01T00:00:00.000Z"
+      }
+    },
+    "historicalEvidence": {
+      "@context": "https://open.charging.cloud/contexts/wwcp/historicalMeterEvidence/v1",
+      "EVSEId": "DE*POI*E1*1",
+      "versions": [
+        {
+          "chargingStationProof": {
+            "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/proof/v1",
+            "hashAlgorithm": "sha256",
+            "commitId": "614422ca105b063b41b96d8a7e4aeafc7b2c004efd0b2bd55ff66961def2942e",
+            "revision": 0,
+            "roamingNetwork": {
+              "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/v1",
+              "@id": "CHARGY-POI-DEMO",
+              "name": {
+                "en": "Chargy POI demonstration (test keys)",
+                "de": "Chargy POI-Demonstration (Testschlüssel)"
+              },
+              "operator": {
+                "@id": "CHARGY-DEMO-RNO",
+                "name": {
+                  "en": "Chargy demo roaming operator"
+                },
+                "minConsensus": 2,
+                "identityKeys": [
+                  {
+                    "@id": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                    "key": "owEBIAYhWCBFCKB6qUFwfz6y25TIiXqAssEZdHa23iE6wnPffYbE/w==",
+                    "holder": "Demo holder B",
+                    "notBefore": "2026-01-01T00:00:00.000Z",
+                    "notAfter": "2030-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "@id": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                    "key": "owEBIAYhWCD6SDQUf25pDDaT7/YTNgRkA82K4qFPMbPEBzWFaSOVZQ==",
+                    "holder": "Demo holder A",
+                    "notBefore": "2026-01-01T00:00:00.000Z",
+                    "notAfter": "2030-01-01T00:00:00.000Z"
+                  }
+                ],
+                "keyStatement": {
+                  "roamingNetworkId": "CHARGY-POI-DEMO",
+                  "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+                  "minConsensus": 2,
+                  "identityKeys": [
+                    {
+                      "@id": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                      "key": "owEBIAYhWCBFCKB6qUFwfz6y25TIiXqAssEZdHa23iE6wnPffYbE/w==",
+                      "holder": "Demo holder B",
+                      "notBefore": "2026-01-01T00:00:00.000Z",
+                      "notAfter": "2030-01-01T00:00:00.000Z"
+                    },
+                    {
+                      "@id": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                      "key": "owEBIAYhWCD6SDQUf25pDDaT7/YTNgRkA82K4qFPMbPEBzWFaSOVZQ==",
+                      "holder": "Demo holder A",
+                      "notBefore": "2026-01-01T00:00:00.000Z",
+                      "notAfter": "2030-01-01T00:00:00.000Z"
+                    }
+                  ],
+                  "signedAt": "2026-05-31T10:00:00.000Z",
+                  "validUntil": "2026-06-01T14:00:00.000Z",
+                  "signatures": [
+                    {
+                      "algorithm": "Ed25519",
+                      "keyId": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                      "value": "fWP8aI7oVXkceyXrhUoQdIukaPBQojQcqSJKkQ64bARhm8S+SRiVCkWKfFUl+lAnW9wgaS3P8UDtGPIax2zeCA=="
+                    },
+                    {
+                      "algorithm": "Ed25519",
+                      "keyId": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                      "value": "DBthz5j+6vnyVQhQuo7qfb/PgIuH3BrUrQtuypr50a+IxeG+aVYnQ2PgCilKJuRIIAlCctohKuKAMiUltijOAQ=="
+                    }
+                  ]
+                },
+                "signingKeyCertificates": [
+                  {
+                    "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+                    "signingKey": {
+                      "@id": "e46e676b85515c73e626404cbaaf31150943ed73ed20722465f079c17cf031b8",
+                      "key": "owEBIAYhWCCrP6L9q3f5hwbHZpe0K8mde1+WfK3NWcGWM+pQL9Hc8w==",
+                      "holder": "Demo holder A",
+                      "notBefore": "2026-05-30T10:00:00.000Z",
+                      "notAfter": "2026-06-01T14:00:00.000Z"
+                    },
+                    "signedAt": "2026-05-31T10:00:00.000Z",
+                    "algorithm": "Ed25519",
+                    "keyId": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                    "value": "xYFQxrztv69zlkm/pDTv+jsLJmx1C+fCnlFLX6UnhqlanfTqqBz1DQwiYDnOnVcgV3cweadzcwTV8yd2sREUCA=="
+                  },
+                  {
+                    "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+                    "signingKey": {
+                      "@id": "3b2420873134ac1aa5e9cb3ec2529cfdfa3ace466eee01da9f6c02174aeee44f",
+                      "key": "owEBIAYhWCAaOBh5+KjclzYdAS47RyIHzHMT7RqByRjuv6hyuTQU2Q==",
+                      "holder": "Demo holder B",
+                      "notBefore": "2026-05-30T10:00:00.000Z",
+                      "notAfter": "2026-06-01T14:00:00.000Z"
+                    },
+                    "signedAt": "2026-05-31T10:00:00.000Z",
+                    "algorithm": "Ed25519",
+                    "keyId": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                    "value": "WgId5pNvz2gE14upFs8gpolh+H1+adl1kgBvJbicHoPdsmQF60ivCcqWN79tmEOyFaqSIDcMRLZxEbWqYPTTDA=="
+                  }
+                ],
+                "created": "2026-01-01T00:00:00.000Z",
+                "lastChange": "2026-01-01T00:00:00.000Z"
+              },
+              "chargingStationOperators": [
+                {
+                  "@id": "DE*POI",
+                  "name": {
+                    "en": "Chargy demo CPO"
+                  },
+                  "chargingTariffs": [
+                    {
+                      "@id": "DE*POI*T1",
+                      "name": {
+                        "en": "Demo AC tariff",
+                        "de": "Demo-AC-Tarif"
+                      },
+                      "currency": "EUR",
+                      "elements": [
+                        {
+                          "priceComponents": [
+                            {
+                              "type": "ENERGY",
+                              "price": 0.35,
+                              "stepSize": 1
+                            }
+                          ]
+                        }
+                      ],
+                      "created": "2026-01-01T00:00:00.000Z",
+                      "lastChange": "2026-01-01T00:00:00.000Z"
+                    }
+                  ],
+                  "chargingPools": [
+                    {
+                      "@id": "DE*POI*P1",
+                      "name": {
+                        "en": "Demo pool"
+                      },
+                      "chargingStations": {
+                        "@size": 2,
+                        "@leaves": [
+                          {
+                            "@index": 0,
+                            "@auditPath": [
+                              "a7d05e753cfb57b4bb7f4a8d07ef8eac911319738c446d0ce43806a1bbedd9fb"
+                            ],
+                            "@entity": {
+                              "@id": "DE*POI*S1",
+                              "name": {
+                                "en": "Chargy POI demo station",
+                                "de": "Chargy-POI-Demoladestation"
+                              },
+                              "address": {
+                                "street": "Demo Street 1",
+                                "city": "Jena",
+                                "postalCode": "07743",
+                                "country": "DE"
+                              },
+                              "geoLocation": {
+                                "lat": 50.9271,
+                                "lng": 11.5892
+                              },
+                              "EVSEs": [
+                                {
+                                  "@id": "DE*POI*E1*1",
+                                  "currentTypes": [
+                                    "AC_3_PHASE"
+                                  ],
+                                  "maxPower": 22000,
+                                  "chargingConnectors": [
+                                    {
+                                      "@id": "1",
+                                      "type": "IEC_62196_T2",
+                                      "format": "SOCKET"
+                                    }
+                                  ],
+                                  "energyMeter": {
+                                    "@id": "DE*POI*M1",
+                                    "role": "evse",
+                                    "serialNumber": "CHARGY-POI-METER-001",
+                                    "signatureMethods": [
+                                      "OCMF"
+                                    ],
+                                    "publicKeys": [
+                                      {
+                                        "@id": "0cfefc81f7537db1d2b85ae423bfa45835e664d6f4e77021f6adbc5b83c7e89c",
+                                        "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3j/1wo8S15sCc+YAETSZKFoLyx27McMv8WGHYLWPiwJ/RX7zWje8SODNlu2AZ2DQzkKBjgTW2jP0TMpnBV6BHQ=="
+                                      }
+                                    ],
+                                    "created": "2026-01-01T00:00:00.000Z",
+                                    "lastChange": "2026-01-01T00:00:00.000Z"
+                                  },
+                                  "chargingTariffIds": [
+                                    "DE*POI*T1"
+                                  ],
+                                  "created": "2026-01-01T00:00:00.000Z",
+                                  "lastChange": "2026-01-01T00:00:00.000Z"
+                                }
+                              ],
+                              "created": "2026-01-01T00:00:00.000Z",
+                              "lastChange": "2026-01-01T00:00:00.000Z"
+                            }
+                          }
+                        ]
+                      },
+                      "created": "2026-01-01T00:00:00.000Z",
+                      "lastChange": "2026-01-01T00:00:00.000Z"
+                    }
+                  ],
+                  "created": "2026-01-01T00:00:00.000Z",
+                  "lastChange": "2026-01-01T00:00:00.000Z",
+                  "signingKeys": [
+                    {
+                      "@id": "2749b749be99c5be35411428e90ee9a5771db19626c4f014eba23ae2666996d2",
+                      "key": "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",
+                      "usages": [
+                        "priceStatements"
+                      ],
+                      "notBefore": "2026-01-01T00:00:00.000Z",
+                      "notAfter": "2030-01-01T00:00:00.000Z"
+                    }
+                  ]
+                }
+              ],
+              "created": "2026-01-01T00:00:00.000Z",
+              "lastChange": "2026-01-01T00:00:00.000Z"
+            },
+            "attestations": [
+              {
+                "roamingNetworkId": "CHARGY-POI-DEMO",
+                "commitId": "614422ca105b063b41b96d8a7e4aeafc7b2c004efd0b2bd55ff66961def2942e",
+                "revision": 0,
+                "eTag": [
+                  "effectiveTree",
+                  "sha256",
+                  "hex",
+                  "2009d3dc0a97a862dad2ea3c1a86c62aedc9d0474619a40356b09320873e2576"
+                ],
+                "role": "roamingNetworkOperator",
+                "signer": "CHARGY-DEMO-RNO",
+                "signedAt": "2026-06-01T09:59:00.000Z",
+                "validUntil": "2026-06-01T11:00:00.000Z",
+                "algorithm": "Ed25519",
+                "keyId": "e46e676b85515c73e626404cbaaf31150943ed73ed20722465f079c17cf031b8",
+                "value": "aHqSV2uwmgByFs6xtREaGF4EUQRPgvURsA9SrWbC55VpS2oAOhs0Flv+618S/QPsanmzOcfXpWLAiwHtZfnZAg=="
+              },
+              {
+                "roamingNetworkId": "CHARGY-POI-DEMO",
+                "commitId": "614422ca105b063b41b96d8a7e4aeafc7b2c004efd0b2bd55ff66961def2942e",
+                "revision": 0,
+                "eTag": [
+                  "effectiveTree",
+                  "sha256",
+                  "hex",
+                  "2009d3dc0a97a862dad2ea3c1a86c62aedc9d0474619a40356b09320873e2576"
+                ],
+                "role": "roamingNetworkOperator",
+                "signer": "CHARGY-DEMO-RNO",
+                "signedAt": "2026-06-01T09:59:00.000Z",
+                "validUntil": "2026-06-01T11:00:00.000Z",
+                "algorithm": "Ed25519",
+                "keyId": "3b2420873134ac1aa5e9cb3ec2529cfdfa3ace466eee01da9f6c02174aeee44f",
+                "value": "ZB5nIh+xdU8U38v6YG82jD2WJirh/LnWKOYveDDfLdzqdVVfAFFwbm0orMqJE5Tdr4Zoel2RMieApNYR32VCDw=="
+              }
+            ]
+          },
+          "commitProof": {
+            "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/checkpointProof/v1",
+            "checkpointId": "215215da9d028d463923fdeed0f335fbd8cd555485ebc5782a7b8dedb18664ff",
+            "leaf": {
+              "commitId": "614422ca105b063b41b96d8a7e4aeafc7b2c004efd0b2bd55ff66961def2942e",
+              "eTags": [
+                [
+                  "json",
+                  "sha256",
+                  "hex",
+                  "4b686b7bc936001ab8f566f52a8cd899cc5e0f48f15a507dc396a3e2785500ef"
+                ],
+                [
+                  "cbor",
+                  "sha256",
+                  "hex",
+                  "3bd316e023bc13c99ea511b790a4325306213581c61a79daa68dab065826970e"
+                ],
+                [
+                  "effectiveTree",
+                  "sha256",
+                  "hex",
+                  "2009d3dc0a97a862dad2ea3c1a86c62aedc9d0474619a40356b09320873e2576"
+                ]
+              ],
+              "revision": 0
+            },
+            "@index": 0,
+            "@size": 1,
+            "@auditPath": []
+          },
+          "checkpoints": [
+            {
+              "checkpoint": {
+                "@id": "215215da9d028d463923fdeed0f335fbd8cd555485ebc5782a7b8dedb18664ff",
+                "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/checkpoint/v1",
+                "roamingNetworkId": "CHARGY-POI-DEMO",
+                "epoch": 1,
+                "sequence": 0,
+                "commitId": "614422ca105b063b41b96d8a7e4aeafc7b2c004efd0b2bd55ff66961def2942e",
+                "revision": 0,
+                "eTags": [
+                  [
+                    "json",
+                    "sha256",
+                    "hex",
+                    "4b686b7bc936001ab8f566f52a8cd899cc5e0f48f15a507dc396a3e2785500ef"
+                  ],
+                  [
+                    "cbor",
+                    "sha256",
+                    "hex",
+                    "3bd316e023bc13c99ea511b790a4325306213581c61a79daa68dab065826970e"
+                  ],
+                  [
+                    "effectiveTree",
+                    "sha256",
+                    "hex",
+                    "2009d3dc0a97a862dad2ea3c1a86c62aedc9d0474619a40356b09320873e2576"
+                  ]
+                ],
+                "commits": {
+                  "@merkleRoot": "63925546657945b4001aa94b9688748757ce164677a5e31c97694e27184712aa",
+                  "@size": 1
+                },
+                "priceStatements": {
+                  "@merkleRoot": "5fbf3e128b0f14c948adbeb668a44c7a1bb9bd433de9ecdf3aec7e07109c8284",
+                  "@size": 1
+                },
+                "createdAt": "2026-06-02T10:00:00.000Z",
+                "signatures": [
+                  {
+                    "role": "roamingNetworkOperator",
+                    "signer": "CHARGY-DEMO-RNO",
+                    "signedAt": "2026-06-02T10:00:00.000Z",
+                    "algorithm": "Ed25519",
+                    "keyId": "b6b112c5e7c8b3e9f630ceba38a7b2b46828d0cf3d932b7b0d992fb2299026c6",
+                    "value": "ttyf30Q5/pZjo7YHkBbCmjlbTMF86zm+W633pWAseXgOFRo/HpdsA1Yhwxx0XJ8pkaFbk/72equXZC61yQeLBQ=="
+                  },
+                  {
+                    "role": "roamingNetworkOperator",
+                    "signer": "CHARGY-DEMO-RNO",
+                    "signedAt": "2026-06-02T10:00:00.000Z",
+                    "algorithm": "Ed25519",
+                    "keyId": "e390e8d9949a5bd60b036132621265eeb93474b5b8da1ae3660740eaad5e8ae7",
+                    "value": "DnJecIy2+QnxIXds7E4P0D91eONRAHttQpXK1e4FY7guxA5dA/HiO/J8KAn4RVWxf8ls9xC96N15MjMzHYYUBQ=="
+                  },
+                  {
+                    "role": "witness",
+                    "signer": "CHARGY-DEMO-WITNESS",
+                    "signedAt": "2026-06-02T10:00:00.000Z",
+                    "algorithm": "Ed25519",
+                    "keyId": "3a3d7c5d05402ef4b7f95bb77e37b2b7084912abda42a446d26e6e046131405d",
+                    "value": "mc/nhhASjmOxmacu3J+zWN3i9SNnH9NlK44WYuXLLPhRh3aHd1XDAtyk2oozT3pyKqIN+oEv2bmMLU+sFODnBA=="
+                  }
+                ]
+              },
+              "operator": {
+                "@id": "CHARGY-DEMO-RNO",
+                "name": {
+                  "en": "Chargy demo roaming operator"
+                },
+                "minConsensus": 2,
+                "identityKeys": [
+                  {
+                    "@id": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                    "key": "owEBIAYhWCBFCKB6qUFwfz6y25TIiXqAssEZdHa23iE6wnPffYbE/w==",
+                    "holder": "Demo holder B",
+                    "notBefore": "2026-01-01T00:00:00.000Z",
+                    "notAfter": "2030-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "@id": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                    "key": "owEBIAYhWCD6SDQUf25pDDaT7/YTNgRkA82K4qFPMbPEBzWFaSOVZQ==",
+                    "holder": "Demo holder A",
+                    "notBefore": "2026-01-01T00:00:00.000Z",
+                    "notAfter": "2030-01-01T00:00:00.000Z"
+                  }
+                ],
+                "keyStatement": {
+                  "roamingNetworkId": "CHARGY-POI-DEMO",
+                  "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+                  "minConsensus": 2,
+                  "identityKeys": [
+                    {
+                      "@id": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                      "key": "owEBIAYhWCBFCKB6qUFwfz6y25TIiXqAssEZdHa23iE6wnPffYbE/w==",
+                      "holder": "Demo holder B",
+                      "notBefore": "2026-01-01T00:00:00.000Z",
+                      "notAfter": "2030-01-01T00:00:00.000Z"
+                    },
+                    {
+                      "@id": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                      "key": "owEBIAYhWCD6SDQUf25pDDaT7/YTNgRkA82K4qFPMbPEBzWFaSOVZQ==",
+                      "holder": "Demo holder A",
+                      "notBefore": "2026-01-01T00:00:00.000Z",
+                      "notAfter": "2030-01-01T00:00:00.000Z"
+                    }
+                  ],
+                  "signedAt": "2026-01-01T00:00:00.000Z",
+                  "validUntil": "2030-01-01T00:00:00.000Z",
+                  "signatures": [
+                    {
+                      "algorithm": "Ed25519",
+                      "keyId": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                      "value": "HNOCxPLO8KC8WfaLrSNO5pXkRiXrq0+7BN02196gNuGHbhSNz0LfvvLC/P7Rpr1fgcufggOIrmNaV4NPvFOoBw=="
+                    },
+                    {
+                      "algorithm": "Ed25519",
+                      "keyId": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                      "value": "SDK1KmiTT7oP9EkbvbJ9xu4ZLDtRCpntEYTD05JiA+lbhqr8notyra9SRdqJws3F5LqnNtVrHZplFTI0ZfA9Cw=="
+                    }
+                  ]
+                },
+                "signingKeyCertificates": [
+                  {
+                    "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+                    "signingKey": {
+                      "@id": "b6b112c5e7c8b3e9f630ceba38a7b2b46828d0cf3d932b7b0d992fb2299026c6",
+                      "key": "owEBIAYhWCAZf2sj4WyFMsaryDj6zV6nib4MdrKSAzQDm/qLPTaNYQ==",
+                      "holder": "Demo holder A",
+                      "notBefore": "2026-01-01T00:00:00.000Z",
+                      "notAfter": "2030-01-01T00:00:00.000Z"
+                    },
+                    "signedAt": "2026-01-01T00:00:00.000Z",
+                    "algorithm": "Ed25519",
+                    "keyId": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                    "value": "zCS97I3AmgWiACZFboccjkA0RhSKoE4b8+rrIdQuoRHVqVJYNVpyILCMQ/H4otibvK31VF0NqHx3Bo0Ko6agCA=="
+                  },
+                  {
+                    "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+                    "signingKey": {
+                      "@id": "e390e8d9949a5bd60b036132621265eeb93474b5b8da1ae3660740eaad5e8ae7",
+                      "key": "owEBIAYhWCCUdcbPDto0BXUo2GlHgezJKtY51+K9J3Ye0+90kkvrBw==",
+                      "holder": "Demo holder B",
+                      "notBefore": "2026-01-01T00:00:00.000Z",
+                      "notAfter": "2030-01-01T00:00:00.000Z"
+                    },
+                    "signedAt": "2026-01-01T00:00:00.000Z",
+                    "algorithm": "Ed25519",
+                    "keyId": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                    "value": "3wx39roj9GLYm/aIDh9dbpN+TSG+nnkn5RN0xbGgOLC3hHOndZTC5nF1sT5unafPWzV08cfaUEIfteivqg3AAA=="
+                  }
+                ],
+                "created": "2026-01-01T00:00:00.000Z",
+                "lastChange": "2026-01-01T00:00:00.000Z"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "priceEvidence": {
+      "@context": "https://open.charging.cloud/contexts/wwcp/sessionPriceEvidence/v1",
+      "EVSEId": "DE*POI*E1*1",
+      "chargingStationProof": {
+        "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/proof/v1",
+        "hashAlgorithm": "sha256",
+        "commitId": "614422ca105b063b41b96d8a7e4aeafc7b2c004efd0b2bd55ff66961def2942e",
+        "revision": 0,
+        "roamingNetwork": {
+          "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/v1",
+          "@id": "CHARGY-POI-DEMO",
+          "name": {
+            "en": "Chargy POI demonstration (test keys)",
+            "de": "Chargy POI-Demonstration (Testschlüssel)"
+          },
+          "operator": {
+            "@id": "CHARGY-DEMO-RNO",
+            "name": {
+              "en": "Chargy demo roaming operator"
+            },
+            "minConsensus": 2,
+            "identityKeys": [
+              {
+                "@id": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                "key": "owEBIAYhWCBFCKB6qUFwfz6y25TIiXqAssEZdHa23iE6wnPffYbE/w==",
+                "holder": "Demo holder B",
+                "notBefore": "2026-01-01T00:00:00.000Z",
+                "notAfter": "2030-01-01T00:00:00.000Z"
+              },
+              {
+                "@id": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                "key": "owEBIAYhWCD6SDQUf25pDDaT7/YTNgRkA82K4qFPMbPEBzWFaSOVZQ==",
+                "holder": "Demo holder A",
+                "notBefore": "2026-01-01T00:00:00.000Z",
+                "notAfter": "2030-01-01T00:00:00.000Z"
+              }
+            ],
+            "keyStatement": {
+              "roamingNetworkId": "CHARGY-POI-DEMO",
+              "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+              "minConsensus": 2,
+              "identityKeys": [
+                {
+                  "@id": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                  "key": "owEBIAYhWCBFCKB6qUFwfz6y25TIiXqAssEZdHa23iE6wnPffYbE/w==",
+                  "holder": "Demo holder B",
+                  "notBefore": "2026-01-01T00:00:00.000Z",
+                  "notAfter": "2030-01-01T00:00:00.000Z"
+                },
+                {
+                  "@id": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                  "key": "owEBIAYhWCD6SDQUf25pDDaT7/YTNgRkA82K4qFPMbPEBzWFaSOVZQ==",
+                  "holder": "Demo holder A",
+                  "notBefore": "2026-01-01T00:00:00.000Z",
+                  "notAfter": "2030-01-01T00:00:00.000Z"
+                }
+              ],
+              "signedAt": "2026-05-31T10:00:00.000Z",
+              "validUntil": "2026-06-01T14:00:00.000Z",
+              "signatures": [
+                {
+                  "algorithm": "Ed25519",
+                  "keyId": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                  "value": "fWP8aI7oVXkceyXrhUoQdIukaPBQojQcqSJKkQ64bARhm8S+SRiVCkWKfFUl+lAnW9wgaS3P8UDtGPIax2zeCA=="
+                },
+                {
+                  "algorithm": "Ed25519",
+                  "keyId": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                  "value": "DBthz5j+6vnyVQhQuo7qfb/PgIuH3BrUrQtuypr50a+IxeG+aVYnQ2PgCilKJuRIIAlCctohKuKAMiUltijOAQ=="
+                }
+              ]
+            },
+            "signingKeyCertificates": [
+              {
+                "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+                "signingKey": {
+                  "@id": "e46e676b85515c73e626404cbaaf31150943ed73ed20722465f079c17cf031b8",
+                  "key": "owEBIAYhWCCrP6L9q3f5hwbHZpe0K8mde1+WfK3NWcGWM+pQL9Hc8w==",
+                  "holder": "Demo holder A",
+                  "notBefore": "2026-05-30T10:00:00.000Z",
+                  "notAfter": "2026-06-01T14:00:00.000Z"
+                },
+                "signedAt": "2026-05-31T10:00:00.000Z",
+                "algorithm": "Ed25519",
+                "keyId": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                "value": "xYFQxrztv69zlkm/pDTv+jsLJmx1C+fCnlFLX6UnhqlanfTqqBz1DQwiYDnOnVcgV3cweadzcwTV8yd2sREUCA=="
+              },
+              {
+                "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+                "signingKey": {
+                  "@id": "3b2420873134ac1aa5e9cb3ec2529cfdfa3ace466eee01da9f6c02174aeee44f",
+                  "key": "owEBIAYhWCAaOBh5+KjclzYdAS47RyIHzHMT7RqByRjuv6hyuTQU2Q==",
+                  "holder": "Demo holder B",
+                  "notBefore": "2026-05-30T10:00:00.000Z",
+                  "notAfter": "2026-06-01T14:00:00.000Z"
+                },
+                "signedAt": "2026-05-31T10:00:00.000Z",
+                "algorithm": "Ed25519",
+                "keyId": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                "value": "WgId5pNvz2gE14upFs8gpolh+H1+adl1kgBvJbicHoPdsmQF60ivCcqWN79tmEOyFaqSIDcMRLZxEbWqYPTTDA=="
+              }
+            ],
+            "created": "2026-01-01T00:00:00.000Z",
+            "lastChange": "2026-01-01T00:00:00.000Z"
+          },
+          "chargingStationOperators": [
+            {
+              "@id": "DE*POI",
+              "name": {
+                "en": "Chargy demo CPO"
+              },
+              "chargingTariffs": [
+                {
+                  "@id": "DE*POI*T1",
+                  "name": {
+                    "en": "Demo AC tariff",
+                    "de": "Demo-AC-Tarif"
+                  },
+                  "currency": "EUR",
+                  "elements": [
+                    {
+                      "priceComponents": [
+                        {
+                          "type": "ENERGY",
+                          "price": 0.35,
+                          "stepSize": 1
+                        }
+                      ]
+                    }
+                  ],
+                  "created": "2026-01-01T00:00:00.000Z",
+                  "lastChange": "2026-01-01T00:00:00.000Z"
+                }
+              ],
+              "chargingPools": [
+                {
+                  "@id": "DE*POI*P1",
+                  "name": {
+                    "en": "Demo pool"
+                  },
+                  "chargingStations": {
+                    "@size": 2,
+                    "@leaves": [
+                      {
+                        "@index": 0,
+                        "@auditPath": [
+                          "a7d05e753cfb57b4bb7f4a8d07ef8eac911319738c446d0ce43806a1bbedd9fb"
+                        ],
+                        "@entity": {
+                          "@id": "DE*POI*S1",
+                          "name": {
+                            "en": "Chargy POI demo station",
+                            "de": "Chargy-POI-Demoladestation"
+                          },
+                          "address": {
+                            "street": "Demo Street 1",
+                            "city": "Jena",
+                            "postalCode": "07743",
+                            "country": "DE"
+                          },
+                          "geoLocation": {
+                            "lat": 50.9271,
+                            "lng": 11.5892
+                          },
+                          "EVSEs": [
+                            {
+                              "@id": "DE*POI*E1*1",
+                              "currentTypes": [
+                                "AC_3_PHASE"
+                              ],
+                              "maxPower": 22000,
+                              "chargingConnectors": [
+                                {
+                                  "@id": "1",
+                                  "type": "IEC_62196_T2",
+                                  "format": "SOCKET"
+                                }
+                              ],
+                              "energyMeter": {
+                                "@id": "DE*POI*M1",
+                                "role": "evse",
+                                "serialNumber": "CHARGY-POI-METER-001",
+                                "signatureMethods": [
+                                  "OCMF"
+                                ],
+                                "publicKeys": [
+                                  {
+                                    "@id": "0cfefc81f7537db1d2b85ae423bfa45835e664d6f4e77021f6adbc5b83c7e89c",
+                                    "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3j/1wo8S15sCc+YAETSZKFoLyx27McMv8WGHYLWPiwJ/RX7zWje8SODNlu2AZ2DQzkKBjgTW2jP0TMpnBV6BHQ=="
+                                  }
+                                ],
+                                "created": "2026-01-01T00:00:00.000Z",
+                                "lastChange": "2026-01-01T00:00:00.000Z"
+                              },
+                              "chargingTariffIds": [
+                                "DE*POI*T1"
+                              ],
+                              "created": "2026-01-01T00:00:00.000Z",
+                              "lastChange": "2026-01-01T00:00:00.000Z"
+                            }
+                          ],
+                          "created": "2026-01-01T00:00:00.000Z",
+                          "lastChange": "2026-01-01T00:00:00.000Z"
+                        }
+                      }
+                    ]
+                  },
+                  "created": "2026-01-01T00:00:00.000Z",
+                  "lastChange": "2026-01-01T00:00:00.000Z"
+                }
+              ],
+              "created": "2026-01-01T00:00:00.000Z",
+              "lastChange": "2026-01-01T00:00:00.000Z",
+              "signingKeys": [
+                {
+                  "@id": "2749b749be99c5be35411428e90ee9a5771db19626c4f014eba23ae2666996d2",
+                  "key": "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",
+                  "usages": [
+                    "priceStatements"
+                  ],
+                  "notBefore": "2026-01-01T00:00:00.000Z",
+                  "notAfter": "2030-01-01T00:00:00.000Z"
+                }
+              ]
+            }
+          ],
+          "created": "2026-01-01T00:00:00.000Z",
+          "lastChange": "2026-01-01T00:00:00.000Z"
+        },
+        "attestations": [
+          {
+            "roamingNetworkId": "CHARGY-POI-DEMO",
+            "commitId": "614422ca105b063b41b96d8a7e4aeafc7b2c004efd0b2bd55ff66961def2942e",
+            "revision": 0,
+            "eTag": [
+              "effectiveTree",
+              "sha256",
+              "hex",
+              "2009d3dc0a97a862dad2ea3c1a86c62aedc9d0474619a40356b09320873e2576"
+            ],
+            "role": "roamingNetworkOperator",
+            "signer": "CHARGY-DEMO-RNO",
+            "signedAt": "2026-06-01T09:59:00.000Z",
+            "validUntil": "2026-06-01T11:00:00.000Z",
+            "algorithm": "Ed25519",
+            "keyId": "e46e676b85515c73e626404cbaaf31150943ed73ed20722465f079c17cf031b8",
+            "value": "aHqSV2uwmgByFs6xtREaGF4EUQRPgvURsA9SrWbC55VpS2oAOhs0Flv+618S/QPsanmzOcfXpWLAiwHtZfnZAg=="
+          },
+          {
+            "roamingNetworkId": "CHARGY-POI-DEMO",
+            "commitId": "614422ca105b063b41b96d8a7e4aeafc7b2c004efd0b2bd55ff66961def2942e",
+            "revision": 0,
+            "eTag": [
+              "effectiveTree",
+              "sha256",
+              "hex",
+              "2009d3dc0a97a862dad2ea3c1a86c62aedc9d0474619a40356b09320873e2576"
+            ],
+            "role": "roamingNetworkOperator",
+            "signer": "CHARGY-DEMO-RNO",
+            "signedAt": "2026-06-01T09:59:00.000Z",
+            "validUntil": "2026-06-01T11:00:00.000Z",
+            "algorithm": "Ed25519",
+            "keyId": "3b2420873134ac1aa5e9cb3ec2529cfdfa3ace466eee01da9f6c02174aeee44f",
+            "value": "ZB5nIh+xdU8U38v6YG82jD2WJirh/LnWKOYveDDfLdzqdVVfAFFwbm0orMqJE5Tdr4Zoel2RMieApNYR32VCDw=="
+          }
+        ]
+      },
+      "priceStatements": [
+        {
+          "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/priceStatement/v1",
+          "roamingNetworkId": "CHARGY-POI-DEMO",
+          "entityType": "EVSE",
+          "entityId": "DE*POI*E1*1",
+          "priceStatus": {
+            "prices": [
+              {
+                "chargingTariffId": "DE*POI*T1",
+                "elements": [
+                  {
+                    "priceComponents": [
+                      {
+                        "type": "ENERGY",
+                        "price": 0.35,
+                        "stepSize": 1
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "signedAt": "2026-06-01T09:55:00.000Z",
+          "validFrom": "2026-06-01T09:59:00.000Z",
+          "validUntil": "2026-06-01T10:05:00.000Z",
+          "sequence": 0,
+          "role": "chargingStationOperator",
+          "signer": "DE*POI",
+          "algorithm": "ML-DSA-65",
+          "keyId": "2749b749be99c5be35411428e90ee9a5771db19626c4f014eba23ae2666996d2",
+          "value": "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"
+        }
+      ],
+      "agreement": {
+        "@context": "https://open.charging.cloud/contexts/wwcp/sessionPriceAgreement/v1",
+        "roamingNetworkId": "CHARGY-POI-DEMO",
+        "EVSEId": "DE*POI*E1*1",
+        "meterSerialNumber": "CHARGY-POI-METER-001",
+        "chargingStarted": "2026-06-01T10:00:00.000Z",
+        "startDocumentSHA256": "78ed1376177c1ff317844721dc31b01a54d30a0224ed87ad93892e5cd5b0c43a",
+        "chargingMode": "adhoc",
+        "chargingTariffId": "DE*POI*T1",
+        "priceStatementDigest": "b64d5e0eacd749ecfcaa1c787a2768537d6e8b1ee65e41fc916bff54807fee57",
+        "priceBinding": "fixed-at-start",
+        "pricingProfile": "chargy-gross-rates/v1",
+        "role": "chargingStationOperator",
+        "signer": "DE*POI",
+        "signedAt": "2026-06-01T10:01:00.000Z",
+        "algorithm": "ML-DSA-65",
+        "keyId": "2749b749be99c5be35411428e90ee9a5771db19626c4f014eba23ae2666996d2",
+        "value": "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"
+      },
+      "priceStatementProofs": [
+        {
+          "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/priceStatementProof/v1",
+          "checkpointId": "215215da9d028d463923fdeed0f335fbd8cd555485ebc5782a7b8dedb18664ff",
+          "priceStatement": {
+            "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/priceStatement/v1",
+            "roamingNetworkId": "CHARGY-POI-DEMO",
+            "entityType": "EVSE",
+            "entityId": "DE*POI*E1*1",
+            "priceStatus": {
+              "prices": [
+                {
+                  "chargingTariffId": "DE*POI*T1",
+                  "elements": [
+                    {
+                      "priceComponents": [
+                        {
+                          "type": "ENERGY",
+                          "price": 0.35,
+                          "stepSize": 1
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "signedAt": "2026-06-01T09:55:00.000Z",
+            "validFrom": "2026-06-01T09:59:00.000Z",
+            "validUntil": "2026-06-01T10:05:00.000Z",
+            "sequence": 0,
+            "role": "chargingStationOperator",
+            "signer": "DE*POI",
+            "algorithm": "ML-DSA-65",
+            "keyId": "2749b749be99c5be35411428e90ee9a5771db19626c4f014eba23ae2666996d2",
+            "value": "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"
+          },
+          "@index": 0,
+          "@size": 1,
+          "@auditPath": []
+        }
+      ],
+      "checkpoints": [
+        {
+          "checkpoint": {
+            "@id": "215215da9d028d463923fdeed0f335fbd8cd555485ebc5782a7b8dedb18664ff",
+            "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/checkpoint/v1",
+            "roamingNetworkId": "CHARGY-POI-DEMO",
+            "epoch": 1,
+            "sequence": 0,
+            "commitId": "614422ca105b063b41b96d8a7e4aeafc7b2c004efd0b2bd55ff66961def2942e",
+            "revision": 0,
+            "eTags": [
+              [
+                "json",
+                "sha256",
+                "hex",
+                "4b686b7bc936001ab8f566f52a8cd899cc5e0f48f15a507dc396a3e2785500ef"
+              ],
+              [
+                "cbor",
+                "sha256",
+                "hex",
+                "3bd316e023bc13c99ea511b790a4325306213581c61a79daa68dab065826970e"
+              ],
+              [
+                "effectiveTree",
+                "sha256",
+                "hex",
+                "2009d3dc0a97a862dad2ea3c1a86c62aedc9d0474619a40356b09320873e2576"
+              ]
+            ],
+            "commits": {
+              "@merkleRoot": "63925546657945b4001aa94b9688748757ce164677a5e31c97694e27184712aa",
+              "@size": 1
+            },
+            "priceStatements": {
+              "@merkleRoot": "5fbf3e128b0f14c948adbeb668a44c7a1bb9bd433de9ecdf3aec7e07109c8284",
+              "@size": 1
+            },
+            "createdAt": "2026-06-02T10:00:00.000Z",
+            "signatures": [
+              {
+                "role": "roamingNetworkOperator",
+                "signer": "CHARGY-DEMO-RNO",
+                "signedAt": "2026-06-02T10:00:00.000Z",
+                "algorithm": "Ed25519",
+                "keyId": "b6b112c5e7c8b3e9f630ceba38a7b2b46828d0cf3d932b7b0d992fb2299026c6",
+                "value": "ttyf30Q5/pZjo7YHkBbCmjlbTMF86zm+W633pWAseXgOFRo/HpdsA1Yhwxx0XJ8pkaFbk/72equXZC61yQeLBQ=="
+              },
+              {
+                "role": "roamingNetworkOperator",
+                "signer": "CHARGY-DEMO-RNO",
+                "signedAt": "2026-06-02T10:00:00.000Z",
+                "algorithm": "Ed25519",
+                "keyId": "e390e8d9949a5bd60b036132621265eeb93474b5b8da1ae3660740eaad5e8ae7",
+                "value": "DnJecIy2+QnxIXds7E4P0D91eONRAHttQpXK1e4FY7guxA5dA/HiO/J8KAn4RVWxf8ls9xC96N15MjMzHYYUBQ=="
+              },
+              {
+                "role": "witness",
+                "signer": "CHARGY-DEMO-WITNESS",
+                "signedAt": "2026-06-02T10:00:00.000Z",
+                "algorithm": "Ed25519",
+                "keyId": "3a3d7c5d05402ef4b7f95bb77e37b2b7084912abda42a446d26e6e046131405d",
+                "value": "mc/nhhASjmOxmacu3J+zWN3i9SNnH9NlK44WYuXLLPhRh3aHd1XDAtyk2oozT3pyKqIN+oEv2bmMLU+sFODnBA=="
+              }
+            ]
+          },
+          "operator": {
+            "@id": "CHARGY-DEMO-RNO",
+            "name": {
+              "en": "Chargy demo roaming operator"
+            },
+            "minConsensus": 2,
+            "identityKeys": [
+              {
+                "@id": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                "key": "owEBIAYhWCBFCKB6qUFwfz6y25TIiXqAssEZdHa23iE6wnPffYbE/w==",
+                "holder": "Demo holder B",
+                "notBefore": "2026-01-01T00:00:00.000Z",
+                "notAfter": "2030-01-01T00:00:00.000Z"
+              },
+              {
+                "@id": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                "key": "owEBIAYhWCD6SDQUf25pDDaT7/YTNgRkA82K4qFPMbPEBzWFaSOVZQ==",
+                "holder": "Demo holder A",
+                "notBefore": "2026-01-01T00:00:00.000Z",
+                "notAfter": "2030-01-01T00:00:00.000Z"
+              }
+            ],
+            "keyStatement": {
+              "roamingNetworkId": "CHARGY-POI-DEMO",
+              "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+              "minConsensus": 2,
+              "identityKeys": [
+                {
+                  "@id": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                  "key": "owEBIAYhWCBFCKB6qUFwfz6y25TIiXqAssEZdHa23iE6wnPffYbE/w==",
+                  "holder": "Demo holder B",
+                  "notBefore": "2026-01-01T00:00:00.000Z",
+                  "notAfter": "2030-01-01T00:00:00.000Z"
+                },
+                {
+                  "@id": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                  "key": "owEBIAYhWCD6SDQUf25pDDaT7/YTNgRkA82K4qFPMbPEBzWFaSOVZQ==",
+                  "holder": "Demo holder A",
+                  "notBefore": "2026-01-01T00:00:00.000Z",
+                  "notAfter": "2030-01-01T00:00:00.000Z"
+                }
+              ],
+              "signedAt": "2026-01-01T00:00:00.000Z",
+              "validUntil": "2030-01-01T00:00:00.000Z",
+              "signatures": [
+                {
+                  "algorithm": "Ed25519",
+                  "keyId": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                  "value": "HNOCxPLO8KC8WfaLrSNO5pXkRiXrq0+7BN02196gNuGHbhSNz0LfvvLC/P7Rpr1fgcufggOIrmNaV4NPvFOoBw=="
+                },
+                {
+                  "algorithm": "Ed25519",
+                  "keyId": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                  "value": "SDK1KmiTT7oP9EkbvbJ9xu4ZLDtRCpntEYTD05JiA+lbhqr8notyra9SRdqJws3F5LqnNtVrHZplFTI0ZfA9Cw=="
+                }
+              ]
+            },
+            "signingKeyCertificates": [
+              {
+                "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+                "signingKey": {
+                  "@id": "b6b112c5e7c8b3e9f630ceba38a7b2b46828d0cf3d932b7b0d992fb2299026c6",
+                  "key": "owEBIAYhWCAZf2sj4WyFMsaryDj6zV6nib4MdrKSAzQDm/qLPTaNYQ==",
+                  "holder": "Demo holder A",
+                  "notBefore": "2026-01-01T00:00:00.000Z",
+                  "notAfter": "2030-01-01T00:00:00.000Z"
+                },
+                "signedAt": "2026-01-01T00:00:00.000Z",
+                "algorithm": "Ed25519",
+                "keyId": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+                "value": "zCS97I3AmgWiACZFboccjkA0RhSKoE4b8+rrIdQuoRHVqVJYNVpyILCMQ/H4otibvK31VF0NqHx3Bo0Ko6agCA=="
+              },
+              {
+                "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+                "signingKey": {
+                  "@id": "e390e8d9949a5bd60b036132621265eeb93474b5b8da1ae3660740eaad5e8ae7",
+                  "key": "owEBIAYhWCCUdcbPDto0BXUo2GlHgezJKtY51+K9J3Ye0+90kkvrBw==",
+                  "holder": "Demo holder B",
+                  "notBefore": "2026-01-01T00:00:00.000Z",
+                  "notAfter": "2030-01-01T00:00:00.000Z"
+                },
+                "signedAt": "2026-01-01T00:00:00.000Z",
+                "algorithm": "Ed25519",
+                "keyId": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+                "value": "3wx39roj9GLYm/aIDh9dbpN+TSG+nnkn5RN0xbGgOLC3hHOndZTC5nF1sT5unafPWzV08cfaUEIfteivqg3AAA=="
+              }
+            ],
+            "created": "2026-01-01T00:00:00.000Z",
+            "lastChange": "2026-01-01T00:00:00.000Z"
+          }
+        }
+      ]
+    }
+  }
+}

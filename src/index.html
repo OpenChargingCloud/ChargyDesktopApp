@@ -33,10 +33,7 @@
         base-uri 'self';
         object-src 'none';
         form-action 'none';
-        connect-src 'self'
-        https://chargy.charging.cloud
-        https://open.charging.cloud/chargy/
-        https://raw.githubusercontent.com/OpenChargingCloud/ChargyDesktopApp/master/;
+        connect-src 'self' https: wss:;
         img-src 'self' data: blob: https:;
         script-src 'self';
         style-src 'self' 'unsafe-inline';
@@ -328,6 +325,14 @@
                             <h1 data-i18n-key="settingsLabel">Einstellungen</h1>
 
                             <div id="settingsMenu">
+                                <button id="settingsTrustManagementEntry" class="settingsEntry">
+                                    <i class="fas fa-shield-halved"></i>
+                                    <div class="text">
+                                        <div class="title" data-i18n-key="trustManagementTitle">Trust Management</div>
+                                        <div class="description" data-i18n-key="trustManagementDescription">Trust Anchors und mitgelieferte Public Keys verwalten.</div>
+                                    </div>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
                                 <button id="settingsTrustedOriginsEntry" class="settingsEntry">
                                     <i class="fas fa-satellite-dish"></i>
                                     <div class="text">
@@ -337,6 +342,8 @@
                                     <i class="fas fa-chevron-right"></i>
                                 </button>
                             </div>
+
+                            <div id="settingsTrustManagement" class="trustManagement" hidden></div>
 
                             <div id="settingsTrustedOrigins">
                                 <div id="text" data-i18n-key="trustedOriginsLabel">Für das Nachladen von Live-Daten gemerkte Entscheidungen:</div>
@@ -655,8 +662,11 @@
                         <div id="qrCodeScannerStatus" data-i18n-key="cameraStarting">Kamera wird gestartet...</div>
 
                         <div id="qrCodeScannerResult">
-                            <div id="qrCodeScannerResultLabel" data-i18n-key="recognizedContent">Erkannter Inhalt</div>
-                            <pre id="qrCodeScannerResultText"></pre>
+                            <div id="qrCodeScannerTrustAnchorPreview" hidden></div>
+                            <div id="qrCodeScannerRawContent">
+                                <div id="qrCodeScannerResultLabel" data-i18n-key="recognizedContent">Erkannter Inhalt</div>
+                                <pre id="qrCodeScannerResultText"></pre>
+                            </div>
                             <div id="qrCodeScannerURLActions">
                                 <button id="qrCodeScannerOpenURLButton"><i class="fas fa-external-link-alt"></i> <span data-i18n-key="openURLLabel">URL öffnen</span></button>
                             </div>
@@ -667,6 +677,7 @@
                     <div class="spacer"></div>
 
                     <div class="footer">
+                        <div id="qrCodeScannerTrustAnchorActions" hidden></div>
                         <button class="overlayLeftButton"><i class="fas fa-arrow-alt-circle-left"></i></button>
                     </div>
 

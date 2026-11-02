@@ -1,0 +1,361 @@
+{
+  "@context": "https://open.charging.cloud/contexts/wwcp/trustTransition/v1",
+  "sequence": 0,
+  "fromPolicyId": "c4ce17559f5bf995b414ca03428b20d2012d181defecd82cd87b946b16d697dd",
+  "fromStatementDigest": "f6ca6f926bf309ccb0a97982f28b788237f1cd669dc702805c3776365ff775d8",
+  "toAnchor": "WWCP/TA-2:P1LJ68GVCYM8RB8+09ZW521ANW5BY8T1A/PD-FFNLG344WMHA 5V75U0HNXFX:AYMA0 CXZHU%VAULQK5R7MRPE:Y23AR*64PPK93RB/6P07/BI1R7ZGNANHZ7CN0R:POE$PR8F1W487JJBI..DF$DZNK6VCQ8FLN8GECT3D$3421ANW50$C-3E QEVKEBWE-3E.245UA QEJQE29DNXOZQE: CJA51$CL8FLN8GECT3D$3421AC440$C-3E QEVKEBWE-3E.247WE QEJ44C$C6PEMVC.KE4REO8FA9DIWENPEJ/5S9EGDDB$CBECP9ESZCAIACPEYM8RB8+09ZW521ANW5BY8X1AD68-3E7WEBAFB9FA9DIWENPEJ/5/3E1$C+%5 8D$KEZED:1DRPC34E.TCUPCG/DB$CLWE10684F98E0LEBECZEDV2D7$CK4F-KE/:56LE QEAC8NPC04E006%G6J$DC.D-3ELQEF/D7%E20",
+  "toOperator": {
+    "@id": "CHARGY-DEMO-RNO",
+    "name": {
+      "en": "Chargy demo roaming operator"
+    },
+    "minConsensus": 2,
+    "identityKeys": [
+      {
+        "@id": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+        "key": "owEBIAYhWCBFCKB6qUFwfz6y25TIiXqAssEZdHa23iE6wnPffYbE/w==",
+        "holder": "Demo holder B",
+        "notBefore": "2026-01-01T00:00:00.000Z",
+        "notAfter": "2030-01-01T00:00:00.000Z"
+      },
+      {
+        "@id": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+        "key": "owEBIAYhWCD6SDQUf25pDDaT7/YTNgRkA82K4qFPMbPEBzWFaSOVZQ==",
+        "holder": "Demo holder A",
+        "notBefore": "2026-01-01T00:00:00.000Z",
+        "notAfter": "2030-01-01T00:00:00.000Z"
+      }
+    ],
+    "keyStatement": {
+      "roamingNetworkId": "CHARGY-POI-DEMO",
+      "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+      "minConsensus": 2,
+      "identityKeys": [
+        {
+          "@id": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+          "key": "owEBIAYhWCBFCKB6qUFwfz6y25TIiXqAssEZdHa23iE6wnPffYbE/w==",
+          "holder": "Demo holder B",
+          "notBefore": "2026-01-01T00:00:00.000Z",
+          "notAfter": "2030-01-01T00:00:00.000Z"
+        },
+        {
+          "@id": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+          "key": "owEBIAYhWCD6SDQUf25pDDaT7/YTNgRkA82K4qFPMbPEBzWFaSOVZQ==",
+          "holder": "Demo holder A",
+          "notBefore": "2026-01-01T00:00:00.000Z",
+          "notAfter": "2030-01-01T00:00:00.000Z"
+        }
+      ],
+      "signedAt": "2026-01-01T00:00:00.000Z",
+      "validUntil": "2030-01-01T00:00:00.000Z",
+      "signatures": [
+        {
+          "algorithm": "Ed25519",
+          "keyId": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+          "value": "HNOCxPLO8KC8WfaLrSNO5pXkRiXrq0+7BN02196gNuGHbhSNz0LfvvLC/P7Rpr1fgcufggOIrmNaV4NPvFOoBw=="
+        },
+        {
+          "algorithm": "Ed25519",
+          "keyId": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+          "value": "SDK1KmiTT7oP9EkbvbJ9xu4ZLDtRCpntEYTD05JiA+lbhqr8notyra9SRdqJws3F5LqnNtVrHZplFTI0ZfA9Cw=="
+        }
+      ]
+    },
+    "signingKeyCertificates": [
+      {
+        "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+        "signingKey": {
+          "@id": "b6b112c5e7c8b3e9f630ceba38a7b2b46828d0cf3d932b7b0d992fb2299026c6",
+          "key": "owEBIAYhWCAZf2sj4WyFMsaryDj6zV6nib4MdrKSAzQDm/qLPTaNYQ==",
+          "holder": "Demo holder A",
+          "notBefore": "2026-01-01T00:00:00.000Z",
+          "notAfter": "2030-01-01T00:00:00.000Z"
+        },
+        "signedAt": "2026-01-01T00:00:00.000Z",
+        "algorithm": "Ed25519",
+        "keyId": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+        "value": "zCS97I3AmgWiACZFboccjkA0RhSKoE4b8+rrIdQuoRHVqVJYNVpyILCMQ/H4otibvK31VF0NqHx3Bo0Ko6agCA=="
+      },
+      {
+        "roamingNetworkOperatorId": "CHARGY-DEMO-RNO",
+        "signingKey": {
+          "@id": "e390e8d9949a5bd60b036132621265eeb93474b5b8da1ae3660740eaad5e8ae7",
+          "key": "owEBIAYhWCCUdcbPDto0BXUo2GlHgezJKtY51+K9J3Ye0+90kkvrBw==",
+          "holder": "Demo holder B",
+          "notBefore": "2026-01-01T00:00:00.000Z",
+          "notAfter": "2030-01-01T00:00:00.000Z"
+        },
+        "signedAt": "2026-01-01T00:00:00.000Z",
+        "algorithm": "Ed25519",
+        "keyId": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+        "value": "3wx39roj9GLYm/aIDh9dbpN+TSG+nnkn5RN0xbGgOLC3hHOndZTC5nF1sT5unafPWzV08cfaUEIfteivqg3AAA=="
+      }
+    ],
+    "created": "2026-01-01T00:00:00.000Z",
+    "lastChange": "2026-01-01T00:00:00.000Z"
+  },
+  "signedAt": "2026-11-01T00:15:45.000Z",
+  "validUntil": "2030-01-01T00:00:00.000Z",
+  "checkpoints": [
+    {
+      "@id": "a6cd608f305f52a58ecc0da51db5e4020c26ba1c7ef4e03ebf428d4a7b43968e",
+      "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/checkpoint/v1",
+      "roamingNetworkId": "CHARGY-POI-DEMO",
+      "epoch": 1,
+      "sequence": 0,
+      "commitId": "53ec0e7a130d4850cba4a8ea67ba606387c76ca17d618589d86238a3ed0e51fb",
+      "revision": 0,
+      "eTags": [
+        [
+          "json",
+          "sha256",
+          "hex",
+          "6f5cc4733f7aea1f0edd9fca09d5799d5372f5ddb10ceb1faceda2f3830dd089"
+        ],
+        [
+          "cbor",
+          "sha256",
+          "hex",
+          "341b7c4e56e913e5c1ce988d0f7292ad75bb86c14ad8584445110eae3d4dcc63"
+        ],
+        [
+          "effectiveTree",
+          "sha256",
+          "hex",
+          "0392e62b8ecdfc5397ba7ab2b26fc27357af2d98fcd78ce75b10bf29a878472d"
+        ]
+      ],
+      "commits": {
+        "@merkleRoot": "e1e3998bbe474654eb615a2693f05a7db463094147316e14d044ad2d79090148",
+        "@size": 1
+      },
+      "createdAt": "2026-11-01T00:10:00.000Z",
+      "signatures": [
+        {
+          "role": "roamingNetworkOperator",
+          "signer": "CHARGY-DEMO-RNO",
+          "signedAt": "2026-11-01T00:10:00.000Z",
+          "algorithm": "Ed25519",
+          "keyId": "b6b112c5e7c8b3e9f630ceba38a7b2b46828d0cf3d932b7b0d992fb2299026c6",
+          "value": "zEFFOg232tncSQQ4CSLoCGyiyKmD2hsiZIujG35VhXsfa8aq+PsqtK7PBJozZos2Bk85xPbUlR/eOe2JTZVZBw=="
+        },
+        {
+          "role": "roamingNetworkOperator",
+          "signer": "CHARGY-DEMO-RNO",
+          "signedAt": "2026-11-01T00:10:00.000Z",
+          "algorithm": "Ed25519",
+          "keyId": "e390e8d9949a5bd60b036132621265eeb93474b5b8da1ae3660740eaad5e8ae7",
+          "value": "MaU/RhktK50t9uSaKQEDXkGg6myGTPVylTSRgRFDZ7xvjOX7bSpGfGEsPULfk4g3ptg70H53dntkZ10EgRqhBw=="
+        }
+      ]
+    },
+    {
+      "@id": "34afc4a9282b7ffcc25be98b704e521ed45dc4e6bf47c8b33d723bf8797a63c8",
+      "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/checkpoint/v1",
+      "roamingNetworkId": "CHARGY-POI-DEMO",
+      "epoch": 1,
+      "sequence": 1,
+      "previousId": "a6cd608f305f52a58ecc0da51db5e4020c26ba1c7ef4e03ebf428d4a7b43968e",
+      "commitId": "53ec0e7a130d4850cba4a8ea67ba606387c76ca17d618589d86238a3ed0e51fb",
+      "revision": 0,
+      "eTags": [
+        [
+          "json",
+          "sha256",
+          "hex",
+          "6f5cc4733f7aea1f0edd9fca09d5799d5372f5ddb10ceb1faceda2f3830dd089"
+        ],
+        [
+          "cbor",
+          "sha256",
+          "hex",
+          "341b7c4e56e913e5c1ce988d0f7292ad75bb86c14ad8584445110eae3d4dcc63"
+        ],
+        [
+          "effectiveTree",
+          "sha256",
+          "hex",
+          "0392e62b8ecdfc5397ba7ab2b26fc27357af2d98fcd78ce75b10bf29a878472d"
+        ]
+      ],
+      "commits": {
+        "@merkleRoot": "e1e3998bbe474654eb615a2693f05a7db463094147316e14d044ad2d79090148",
+        "@size": 1
+      },
+      "createdAt": "2026-11-01T00:11:00.000Z",
+      "final": true,
+      "next": {
+        "epoch": 2,
+        "profiles": {
+          "canonicalization": "styx-canonical-json-v1",
+          "identificationHash": "sha256",
+          "commit": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/commit/v3",
+          "checkpoint": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/checkpoint/v1",
+          "priceStatement": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/priceStatement/v1",
+          "signatureAlgorithms": [
+            "Ed25519"
+          ]
+        }
+      },
+      "signatures": [
+        {
+          "role": "roamingNetworkOperator",
+          "signer": "CHARGY-DEMO-RNO",
+          "signedAt": "2026-11-01T00:11:00.000Z",
+          "algorithm": "Ed25519",
+          "keyId": "b6b112c5e7c8b3e9f630ceba38a7b2b46828d0cf3d932b7b0d992fb2299026c6",
+          "value": "MALM/OqmSmgwFO2tcOTRjbQXN9LiPHQqJR6DffOsOd5fDZZd8Q+Wa/AASSKWg8vuGcfvWlQlYb5vgAvA9GRlBw=="
+        },
+        {
+          "role": "roamingNetworkOperator",
+          "signer": "CHARGY-DEMO-RNO",
+          "signedAt": "2026-11-01T00:11:00.000Z",
+          "algorithm": "Ed25519",
+          "keyId": "e390e8d9949a5bd60b036132621265eeb93474b5b8da1ae3660740eaad5e8ae7",
+          "value": "JT3rGG08rmkezmVngctWR/hcdyItMJa2XnAVaOn7v24Zx5R3GXrr85y+1JrsbtmGMNi7TnboK7IWWT+3mK3gBg=="
+        }
+      ]
+    }
+  ],
+  "signatures": [
+    {
+      "side": "old",
+      "algorithm": "Ed25519",
+      "keyId": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+      "value": "Yh62b900M00+eEGxJfhrK5WcJkztIV7G1FqcyAThUhINSEAfyaQRBjhhQnEOfEKRlpon22uTls4ANfFLYtYnCQ=="
+    },
+    {
+      "side": "old",
+      "algorithm": "Ed25519",
+      "keyId": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+      "value": "mLsBDmvujI35QIRe7yobYm55BNnDh6EhUuTZkTFNeiLDGBhocUuTgER5V1fggM8qVzd2ihdD+otcMRvTVsAPAg=="
+    },
+    {
+      "side": "new",
+      "algorithm": "Ed25519",
+      "keyId": "d9a2b2d62337103778907c3c1fb8e28a8e604ad5aac269cc50782a2545978e90",
+      "value": "T9DlRYMf7an09xolrUkJtH+nEYlVH1K+S8U6IWuq0x11/rxTM5Ab+vDCsEvrWVWxpRytizbVSl/nCy5PEgY5CA=="
+    },
+    {
+      "side": "new",
+      "algorithm": "Ed25519",
+      "keyId": "5b8a772deb28e786977c8b56f7531a65408cc1fc03ab6d2b2baf5c733e15f8d7",
+      "value": "Vw5M71DLlfJkBVgEFtdPlju5BnMgEMvaEVl2m+A1W24ueM/nYM1uPec454gmHOn0ujw/588tJCMdrWkOsLNJBg=="
+    }
+  ],
+  "epochChange": {
+    "genesis": {
+      "@id": "a1be60cf2ab87021369d647f28e9f42a329ecfb85e7d9a0edac7a308a4e64723",
+      "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/commit/v3",
+      "roamingNetworkId": "CHARGY-POI-DEMO",
+      "revision": 0,
+      "eTags": [
+        [
+          "json",
+          "sha256",
+          "hex",
+          "6f5cc4733f7aea1f0edd9fca09d5799d5372f5ddb10ceb1faceda2f3830dd089"
+        ],
+        [
+          "cbor",
+          "sha256",
+          "hex",
+          "341b7c4e56e913e5c1ce988d0f7292ad75bb86c14ad8584445110eae3d4dcc63"
+        ],
+        [
+          "effectiveTree",
+          "sha256",
+          "hex",
+          "0392e62b8ecdfc5397ba7ab2b26fc27357af2d98fcd78ce75b10bf29a878472d"
+        ]
+      ],
+      "epoch": 2,
+      "profiles": {
+        "canonicalization": "styx-canonical-json-v1",
+        "identificationHash": "sha256",
+        "commit": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/commit/v3",
+        "checkpoint": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/checkpoint/v1",
+        "priceStatement": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/priceStatement/v1",
+        "signatureAlgorithms": [
+          "Ed25519"
+        ]
+      }
+    },
+    "firstCheckpoint": {
+      "@id": "50dc18ed2d332ef999c19ef2e64206f8f77b15a00b78aa79930d308e361804f7",
+      "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/checkpoint/v1",
+      "roamingNetworkId": "CHARGY-POI-DEMO",
+      "epoch": 2,
+      "sequence": 0,
+      "commitId": "a1be60cf2ab87021369d647f28e9f42a329ecfb85e7d9a0edac7a308a4e64723",
+      "revision": 0,
+      "eTags": [
+        [
+          "json",
+          "sha256",
+          "hex",
+          "6f5cc4733f7aea1f0edd9fca09d5799d5372f5ddb10ceb1faceda2f3830dd089"
+        ],
+        [
+          "cbor",
+          "sha256",
+          "hex",
+          "341b7c4e56e913e5c1ce988d0f7292ad75bb86c14ad8584445110eae3d4dcc63"
+        ],
+        [
+          "effectiveTree",
+          "sha256",
+          "hex",
+          "0392e62b8ecdfc5397ba7ab2b26fc27357af2d98fcd78ce75b10bf29a878472d"
+        ]
+      ],
+      "commits": {
+        "@merkleRoot": "644eb02d444e5912f1ec719dd34507bf02abd8d148d97a0acc57345acfeb2032",
+        "@size": 1
+      },
+      "createdAt": "2026-11-01T00:11:40.000Z",
+      "previous": {
+        "epoch": 1,
+        "checkpointId": "34afc4a9282b7ffcc25be98b704e521ed45dc4e6bf47c8b33d723bf8797a63c8",
+        "eTags": [
+          [
+            "json",
+            "sha256",
+            "hex",
+            "6f5cc4733f7aea1f0edd9fca09d5799d5372f5ddb10ceb1faceda2f3830dd089"
+          ],
+          [
+            "cbor",
+            "sha256",
+            "hex",
+            "341b7c4e56e913e5c1ce988d0f7292ad75bb86c14ad8584445110eae3d4dcc63"
+          ],
+          [
+            "effectiveTree",
+            "sha256",
+            "hex",
+            "0392e62b8ecdfc5397ba7ab2b26fc27357af2d98fcd78ce75b10bf29a878472d"
+          ]
+        ]
+      },
+      "signatures": [
+        {
+          "role": "roamingNetworkOperator",
+          "signer": "CHARGY-DEMO-RNO",
+          "signedAt": "2026-11-01T00:11:40.000Z",
+          "algorithm": "Ed25519",
+          "keyId": "b6b112c5e7c8b3e9f630ceba38a7b2b46828d0cf3d932b7b0d992fb2299026c6",
+          "value": "FeaYM9SBhCFyEq5zWZMfQKVQ2dssKnazWsTukACRcCpQzHv9Mus2uNOGvcIMvJjwuGH4G2poz/fQVeyTtTkoDA=="
+        },
+        {
+          "role": "roamingNetworkOperator",
+          "signer": "CHARGY-DEMO-RNO",
+          "signedAt": "2026-11-01T00:11:40.000Z",
+          "algorithm": "Ed25519",
+          "keyId": "e390e8d9949a5bd60b036132621265eeb93474b5b8da1ae3660740eaad5e8ae7",
+          "value": "+soghXv+qJQM9dEZ8GoqH6pyOYvbcAnFiEMwHrWYwAkkIiEx3vy+Jzoe60zFdKbjr5Z4nDkuAN4U9Ri5mq3WBA=="
+        }
+      ]
+    }
+  }
+}

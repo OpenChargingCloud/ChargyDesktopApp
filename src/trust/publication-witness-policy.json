@@ -1,0 +1,5 @@
+{
+    "@context": "https://open.charging.cloud/contexts/wwcp/witnessPublicationPolicy/v1",
+    "requiredOrganizations": 2,
+    "witnesses": []
+}

@@ -1,0 +1,26 @@
+{
+  "generator": "build-tools/generateLivePOIExample.mjs",
+  "evaluatedAt": "2026-11-01T00:16:21.000Z",
+  "chargingStarted": "2026-11-01T00:05:00.000Z",
+  "evseId": "DE*POI*E1*1",
+  "priceDigest": "d38f73afc8e76e55ac8d80e811b3c8e1c93d89eb163875c7d4d17f55690de2c7",
+  "testKeys": "PUBLIC TEST KEYS: meter existing P-256 fixture; CPO Ed25519 seed161; RNO42/44",
+  "files": {
+    "00-waiting.json": "33a4f295dd0ca7c8f676fecd2116f6d3020ae825d353fe57048d4b4ce35f5022",
+    "01-start.json": "058cbbfbcad1d30d0576140318a349263ee2db057a61c8e52ca7002258f72e7b",
+    "02-intermediate.json": "6e5035378ec557f8d13fb784a40bee30019de7f15abb1af6c1af95a3630b9e1d",
+    "03-completed.json": "9a8662e987ea79f80b50026dac8912225aa12a439c0a14020d4a2ac5a7c9de12",
+    "same-time-fork.json": "17943c3ce026e2794c039d2bfc5389c364fe831882e2bc5881f218987699e200",
+    "replayed-waiting.json": "33a4f295dd0ca7c8f676fecd2116f6d3020ae825d353fe57048d4b4ce35f5022",
+    "bad-predecessor.json": "d1ed30c3742c25c42a3b1e342a34d36ef321096c0df317c51c2f74e1855c8128",
+    "wrong-evse.json": "d3fcecc7cb842fed824d9bb5060e76b28d4449168e5a162ae35407e167f82373",
+    "replaced-start.json": "e4de5412bad6d79bcfe9a7adc65524ca8e39d20c99d8ac2c1f402493c74c1662",
+    "removed-start.json": "039649529e9b9e96d247c67af031b9355cfbd238db12d672348d914055872d62",
+    "invalid-intermediate.json": "a5fd35bd25a530105a28eff94010143be50bdb15b605b1ac744409fdf806a86f",
+    "foreign-meter.json": "e091891bca1b5085a61204c5d1e8051ed888d801c0a3d718821181f48eb623d3",
+    "rate-conflict.json": "9aae604e85d83c69923495a5ba8230e39c655a04503202764674c1df6ba382a8",
+    "repriced.json": "36caa2cdfd0748b92e0bf9d0d87cf51c1b38bc6ad0b0cf0835466ebb99a9a6d4",
+    "repriced-completed.json": "26defad93155c5a4a0b9659a8cc011e35949aa71cb13d055b280df314007b4ff",
+    "invalid-document.json": "d7845f2e0470333a91f1489c0d68e6c6ebc8d6dd8a215664044e7ecbdf965c73"
+  }
+}

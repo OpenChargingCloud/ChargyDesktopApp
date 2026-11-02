@@ -1,0 +1,12 @@
+[
+  {
+    "witness": "CHARGY-DEMO-WITNESS",
+    "key": {
+      "@id": "3a3d7c5d05402ef4b7f95bb77e37b2b7084912abda42a446d26e6e046131405d",
+      "key": "owEBIAYhWCDhtxq/0yMoBCYeQj82VW9rQYW+1B/f0A12nOFaOU9Dzg==",
+      "holder": "Public demo witness",
+      "notBefore": "2026-01-01T00:00:00.000Z",
+      "notAfter": "2030-01-01T00:00:00.000Z"
+    }
+  }
+]

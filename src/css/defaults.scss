@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2018-2026 GraphDefined GmbH <achim.friedland@graphdefined.com>
  * This file is part of Chargy Desktop App <https://github.com/OpenChargingCloud/ChargyDesktopApp>
  *
@@ -15,7 +15,122 @@
  * limitations under the License.
  */
 
- body {
+@mixin trust-validation {
+    padding: 12px;
+    border: 1px solid #d7e3eb;
+    border-radius: 4px;
+    background: #f8fafb;
+    h3 { margin: 0 0 6px; font-size: 100%; }
+    &[data-state="valid"] { background: #edf7e8; border-color: #a6ce94; }
+    .trustAnchorValidationSuccessIcon { margin-right: 6px; font-size: 140%; vertical-align: middle; }
+    ul { margin: 12px 0; padding: 0; list-style: none; }
+    li { display: flex; gap: 10px; margin-top: 12px; line-height: 145%; }
+    .trustAnchorCheckIcon { flex: 0 0 18px; color: #626b73; font-size: 125%; }
+    li[data-state="valid"] .trustAnchorCheckIcon { color: #5ab337; }
+    li[data-state="invalid"] .trustAnchorCheckIcon { color: #cc0000; }
+    li p { margin: 3px 0 0; color: #535d65; }
+    .trustAnchorTrustPolicy { margin: 14px 0 0; line-height: 145%; color: #535d65; }
+}
+
+@mixin poi-station-panel {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    .poiStationForm {
+        display: grid;
+        gap: 8px;
+        label { font-weight: bold; }
+        input { box-sizing: border-box; width: 100%; min-width: 0; padding: 10px; border: 1px solid #b8cbd8; border-radius: 4px; font: inherit; }
+    }
+    .poiStaticTariffCheck { color: #367327; font-weight: bold; }
+    .poiStationMessage { color: #39576c; }
+    .poiStationVerdict {
+        @include trust-validation;
+        h3 i { margin-right: 6px; }
+        &[data-state="warning"] { background: #fff7e5; border-color: #d5b568; }
+    }
+    .poiStationFailure { padding: 12px; border: 1px solid #d39393; border-radius: 4px; background: #fff1f1; }
+    .poiStationResult { margin: 18px 0; }
+    .poiStationResult > details { margin: 14px 0; border-top: 1px solid #d4dde4; padding-top: 10px; }
+    summary { cursor: pointer; font-weight: bold; }
+    dl { display: grid; grid-template-columns: minmax(0, 140px) minmax(0, 1fr); gap: 7px 12px; }
+    dt { font-weight: bold; }
+    dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .poiEntityCard, .poiSavedProof { margin: 12px 0; padding: 12px; border: 1px solid #cddbe4; border-radius: 4px; background: #fff; }
+    .poiEntityCard[data-selected="true"] { border-color: #6698ba; background: #f0f7fb; }
+    h4 { margin: 0 0 8px; }
+    .poiStationRaw { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 340px; overflow: auto; font-size: 12px; line-height: 1.5; background: #f4f7f9; padding: 10px; }
+    .poiStationHistory { margin-top: 24px; border-top: 1px solid #cddbe4; }
+    button { min-height: 40px; }
+    @media (max-width: 600px) {
+        dl { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+        dd { margin-bottom: 7px; }
+    }
+}
+
+
+body {
+
+    .securityFingerprint {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 224px;
+        min-width: 0;
+        margin: 0;
+        padding: 10px;
+        border: 1px solid #d4dde4;
+        border-radius: 6px;
+        background: #ffffff;
+        color: #263542;
+        .securityFingerprintImage { display: block; width: 100%; height: auto; background: #f1f6fa; border-radius: 3px; }
+        .fingerprintDensity1 { fill: #dae8f1; }
+        .fingerprintDensity2 { fill: #b7d1e2; }
+        .fingerprintDensity3 { fill: #89b4cf; }
+        .fingerprintDensity4 { fill: #5e94b9; }
+        .fingerprintDensity5 { fill: #39759f; }
+        .fingerprintDensity6 { fill: #24577e; }
+        .fingerprintDensity7 { fill: #163b60; }
+        .securityFingerprintShort { display: block; margin-top: 8px; font: 12px/1.5 monospace; color: #485e6f; overflow-wrap: anywhere; }
+        .securityFingerprintFull { display: block; margin-top: 8px; font: 12px/1.5 monospace; overflow-wrap: anywhere; user-select: text; }
+        figcaption > details { margin-top: 6px; }
+        summary { font: 12px/1.5 Arial, sans-serif; color: #315f82; cursor: pointer; }
+        button { margin: 8px 6px 0 0; padding: 6px 10px; border: 1px solid #c6d5df; border-radius: 3px; background: #eaf1f6; cursor: pointer; }
+        .securityFingerprintCopyStatus { display: inline-block; font-size: 12px; line-height: 1.5; }
+    }
+    .securityFingerprintGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; align-items: start; }
+    .trustAnchorFingerprintHolders { display: flex; flex-wrap: wrap; gap: 16px; align-items: start; }
+    .trustAnchorFingerprintHolders > .trustAnchorHolder { min-width: 0; max-width: 100%; }
+
+    .trustAnchorLoadedData {
+        overflow-wrap: anywhere;
+        dt { margin-top: 12px; font-weight: bold; }
+        dd { margin: 5px 0 0; overflow-wrap: anywhere; }
+        pre { max-height: 150px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+        details { margin-top: 14px; }
+        summary { cursor: pointer; }
+        .trustAnchorValidation { @include trust-validation; }
+    }
+
+    .anchorKeyTrust {
+        margin-top: 20px;
+        padding-top: 12px;
+        border-top: 1px solid #d4dde4;
+        line-height: 150%;
+        overflow-wrap: anywhere;
+        .anchorKeyTrustKey { display: grid; grid-template-columns: minmax(150px, 184px) minmax(0, 1fr); gap: 14px; margin: 10px 0; padding: 10px; border: 1px solid #d7e3eb; border-radius: 4px; }
+        .anchorKeyTrustContent { min-width: 0; }
+        .trustManualConfirmation .securityFingerprint { margin-top: 12px; }
+        p { margin: 6px 0; }
+        .trustManagementIdentifier { font-family: monospace; overflow-wrap: anywhere; }
+        .trustManualConfirmation { margin-top: 12px; padding: 12px; background: #fff6df; border-left: 3px solid #bf8e28; }
+        .trustManagementError { color: #ab1e1e; }
+        button { white-space: normal; max-width: 100%; margin: 8px 6px 0 0; }
+        button:disabled { opacity: .55; cursor: default; }
+        [data-key-trust="manual"], [data-key-trust="bundled"] { color: #367327; }
+    }
+    @media (max-width: 600px) {
+        .anchorKeyTrust .anchorKeyTrustKey { grid-template-columns: minmax(0, 1fr); }
+        .securityFingerprintGrid { grid-template-columns: minmax(0, 1fr); }
+    }
 
     margin:             0;
     padding:            0;
@@ -441,6 +556,56 @@
                         // column here, so the left margin lives on this screen
                         // alone instead of on the shared base rule above.
                         margin-left:        10px;
+                        box-sizing: border-box;
+                        padding-bottom: 70px;
+                        scroll-padding-bottom: 70px;
+                        overflow-anchor: none;
+
+                        #settingsMenu .settingsEntry, .trustManagement .settingsEntry { margin-bottom: 10px; }
+                        .trustManagement {
+                            h2 { margin: 12px 0 16px; }
+                            h3 { font-size: 110%; }
+                            p { line-height: 150%; }
+                            .trustManagementCard {
+                                box-sizing: border-box;
+                                margin: 12px 0;
+                                padding: 14px;
+                                border: 1px solid #d4dde4;
+                                border-radius: 6px;
+                                background: #ffffff;
+                                overflow-wrap: anywhere;
+                                h4 { margin: 0 0 8px; }
+                                p { margin: 6px 0; }
+                                details { margin: 12px 0; }
+                                summary { cursor: pointer; }
+                                &[data-state="deleted"] { background: #f2f2f2; }
+                            }
+                            .trustManagementIdentifier { font-family: monospace; overflow-wrap: anywhere; }
+                            button:not(.settingsEntry) {
+                                padding: 8px 12px;
+                                margin: 8px 6px 0 0;
+                                border: 1px solid #c6d5df;
+                                border-radius: 4px;
+                                background: #eaf1f6;
+                                cursor: pointer;
+                            }
+                            button.trustManagementDelete { background: #fbeaea; border-color: #e1b5b5; color: #8a1717; }
+                            button:disabled { opacity: .55; cursor: default; }
+                            .trustManagementError { color: #ab1e1e; }
+                            .trustAnchorValidation { @include trust-validation; }
+                            .trustNetworkEntry { box-sizing: border-box; width: 100%; }
+                            .trustNetworkEntry p { margin: 5px 0 0; }
+                            .trustNetworkKeyStatement { margin: 18px 0; }
+                            .trustNetworkKeyStatus {
+                                margin-top: 0;
+                                font-size: 90%;
+                                color: #626b73;
+                                &[data-key-trust="trusted"] { color: #367327; }
+                                &[data-key-trust="deleted"], &[data-key-trust="expired"] { color: #ab1e1e; }
+                            }
+                            .trustNetworkRemoval { margin-top: 20px; padding-top: 10px; border-top: 1px solid #d4dde4; }
+                            .poiStationPanel { @include poi-station-panel; }
+                        }
 
                         h1 {
                             font-size:          130%;
@@ -2316,18 +2481,38 @@
 
             display:                none;
 
+            &.showingTrustAnchor #scannerViewport {
+                display: none;
+            }
+
+            &.showingTrustAnchor .footer .overlayLeftButton { display: none; }
+            #qrCodeScannerTrustAnchorActions:not([hidden]) {
+                width: 100%;
+                .trustAnchorPreviewActions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; padding: 10px 0 4px; }
+                button { border: 0; border-radius: 3px; padding: 10px 14px; background: #e8e8e8; cursor: pointer; }
+                button.trustAnchorImport { background: #c6e0f5; }
+                button:disabled { opacity: .55; cursor: default; }
+            }
+
             .overlayText {
 
                 max-width:              650px;
                 height:                 auto;
                 min-height:             0;
                 overflow-y:             auto;
+                max-height:             calc(90vh - 50px);
+
+                .headline, .footer {
+                    flex-shrink: 0;
+                }
 
                 .data {
 
                     display:                flex;
                     flex-direction:         column;
                     gap:                    14px;
+                    min-height:             0;
+                    overflow-y:             auto;
 
                     #scannerViewport {
 
@@ -2337,6 +2522,7 @@
                         background-color:       #111111;
                         border-radius:          6px;
                         overflow:               hidden;
+                        flex-shrink:            0;
 
                         #qrCodeScannerVideo {
                             width:                  100%;
@@ -2374,9 +2560,56 @@
                         display:                none;
                         flex-direction:         column;
                         gap:                    10px;
+                        flex-shrink:            0;
 
                         #qrCodeScannerResultLabel {
                             font-weight:            bold;
+                            margin-bottom:          8px;
+                        }
+
+                        .trustAnchorPreview {
+                            padding: 16px;
+                            border: 1px solid #d7e3eb;
+                            border-radius: 6px;
+                            background: #ffffff;
+                            color: #333333;
+
+                            h2 { margin: 0 0 12px; font-size: 130%; }
+                            .trustAnchorPreviewNotice {
+                                margin: 0 0 18px;
+                                padding: 10px 12px;
+                                border-left: 3px solid #519ad0;
+                                background: #f0f6fa;
+                                line-height: 150%;
+                            }
+                            .trustAnchorValidation {
+                                @include trust-validation;
+                            }
+                            dl { margin: 0; }
+                            dt { margin-top: 14px; font-weight: bold; }
+                            dd { margin: 5px 0 0; line-height: 150%; overflow-wrap: anywhere; }
+                            dd > div + div { margin-top: 6px; }
+                            .trustAnchorMonospace { font-family: monospace; overflow-wrap: anywhere; }
+                            details { margin-top: 18px; }
+                            summary { cursor: pointer; line-height: 150%; }
+                            .trustAnchorHolder { margin-top: 12px; }
+                            h3 { margin: 0 0 6px; font-size: 100%; }
+                            pre {
+                                max-height: 150px;
+                                overflow: auto;
+                                white-space: pre-wrap;
+                                overflow-wrap: anywhere;
+                                font-size: 85%;
+                            }
+                            .trustAnchorPreviewActions:empty { display: none; }
+                            .trustAnchorPreviewActions {
+                                display: flex;
+                                flex-wrap: wrap;
+                                gap: 8px;
+                                margin-top: 18px;
+                                .trustAnchorImport { background: #c6e0f5; }
+                                button:disabled { opacity: .55; cursor: default; }
+                            }
                         }
 
                         #qrCodeScannerResultText {
@@ -3160,4 +3393,196 @@
 
 .fa-question-circle-orange {
     color:          #c38029;
+}
+
+// Keep configuration readable on phones while its screen is open.
+@media (max-width: 700px) {
+    body #app:has(#settingsScreen[style*="display: block"]) {
+        #headline {
+            flex-shrink: 0;
+            #logo {
+                display: flex;
+                align-items: center;
+                min-height: 60px;
+                background-size: 38px auto;
+                font-size: 80%;
+                line-height: 130%;
+                span { padding-left: 44px; }
+            }
+            #windowButtons { flex-shrink: 0; }
+        }
+        #verifyframe {
+            min-height: 0;
+            max-height: none !important; // The compact header supersedes the startup inline height limit.
+            #rightbar { display: none; }
+            #leftbar {
+                width: 100%;
+                min-width: 0;
+                overflow: hidden;
+                #input {
+                    flex-direction: column;
+                    min-height: 0;
+                    padding-bottom: 66px;
+                    #settingsScreen {
+                        flex: 1;
+                        min-height: 0;
+                        margin: 0;
+                        width: 100%;
+                        padding-bottom: 12px;
+                        scroll-padding-bottom: 12px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.sessionPOI {
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 16px;
+    margin: 0 0 20px;
+    border: 1px solid #b8cbd8;
+    border-radius: 6px;
+    background: #f5f8fa;
+    overflow-wrap: anywhere;
+    h3 { margin-top: 0; }
+    label { display: block; margin-top: 14px; font-weight: bold; }
+    select { box-sizing: border-box; width: 100%; max-width: 100%; padding: 10px; margin: 8px 0 16px; font: inherit; }
+    button { padding: 10px; cursor: pointer; margin-right: 8px; margin-bottom: 8px; }
+    .poiStationPanel { @include poi-station-panel; }
+}
+
+.sessionPOIStatus {
+    @include trust-validation;
+    p { margin: 4px 0; }
+    &[data-state="warning"] { background: #fff7e5; border-color: #d5b568; }
+    &[data-state="invalid"] { background: #fff1f1; border-color: #d39393; }
+}
+.sessionPOIDetails { margin-top: 12px; summary { cursor: pointer; font-weight: bold; } }
+
+// The session evidence and signed readings must remain readable on narrow screens.
+@media (max-width: 700px) {
+    body #app:has(.sessionPOI) {
+        #headline {
+            flex-shrink: 0;
+            #logo {
+                display: flex; align-items: center; min-height: 60px;
+                background-size: 38px auto; font-size: 80%; line-height: 130%;
+                span { padding-left: 44px; }
+            }
+            #windowButtons { flex-shrink: 0; }
+        }
+        #verifyframe {
+            display: block; min-height: 0; max-height: none !important; overflow-y: auto;
+            #leftbar {
+                width: 100%; overflow: visible; display: block;
+                #input {
+                    flex-grow: 0;
+                    #chargingSessionScreen {
+                        overflow: visible;
+                        #chargingSessions {
+                            height: auto;
+                            .chargingSession .verificationStatus {
+                                position: static; width: auto; text-align: left; margin-top: 8px;
+                                flex-direction: row; justify-content: flex-start;
+                            }
+                            .chargingSession .verificationStatus i { font-size: 130%; margin-right: 6px; }
+                        }
+                    }
+                }
+            }
+            #rightbar {
+                width: calc(100% - 30px); margin: 0 15px 15px; display: block;
+                #map { display: none; }
+                #detailedInfos {
+                    overflow: visible;
+                    .measurementValueRows { display: block; max-width: 100%; overflow-x: auto; }
+                }
+            }
+        }
+    }
+}
+
+.sessionMeterKey { margin-top: 12px; font-size: 95%; }
+.sessionMeterKeyResult {
+    @include trust-validation;
+    margin: 12px 0;
+    p { margin: 5px 0; }
+    > p:first-child { font-weight: bold; }
+    &[data-state="warning"] { background: #fff7e5; border-color: #d5b568; }
+    &[data-state="invalid"] { background: #fff1f1; border-color: #d39393; }
+    .poiMeterHistorical { color: #635729; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+    button { display: block; max-width: 100%; }
+}
+
+.historicalSessionResult {
+    @include trust-validation;
+    margin: 12px 0;
+    p { margin: 7px 0; }
+    &[data-state="warning"], &[data-state="pending"] { background: #fff7e5; border-color: #d5b568; }
+    &[data-state="invalid"] { background: #fff1f1; border-color: #d39393; }
+    > p[data-state="warning"] { color: #635729; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+    button { display: block; max-width: 100%; margin-top: 8px; }
+}
+.trustManagementCard pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.sessionPrices { margin-top: 16px; }
+.sessionPriceResult {
+    @include trust-validation;
+    overflow-wrap: anywhere;
+    margin: 12px 0;
+    p { margin: 7px 0; }
+    &[data-state="warning"], &[data-state="pending"], &[data-state="idle"] { background: #fff7e5; border-color: #d5b568; }
+    &[data-state="invalid"] { background: #fff1f1; border-color: #d39393; }
+    > p[data-state="warning"] { color: #635729; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 380px; overflow-y: auto; }
+    button { display: block; max-width: 100%; margin-top: 8px; }
+    .sessionPriceSelected { font-weight: bold; }
+    .sessionPriceComponents { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; }
+    dd { margin: 0; overflow-wrap: anywhere; }
+    .securityFingerprint { max-width: 320px; }
+}
+
+.livePOIResult {
+    @include trust-validation;
+    margin: 12px 0;
+    overflow-wrap: anywhere;
+    p { margin: 7px 0; }
+    &[data-state="warning"], &[data-state="pending"], &[data-state="idle"] { background: #fff7e5; border-color: #d5b568; }
+    &[data-state="invalid"] { background: #fff1f1; border-color: #d39393; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+}
+
+.poiConsistency { margin: 10px 0; padding: 8px; border: 1px solid #c4d4df; border-radius: 4px; overflow-wrap: anywhere;
+    &[data-state="invalid"] { background: #fff1f1; border-color: #d39393; }
+    p { margin: 4px 0; }
+}
+.trustManagementCard pre { max-height: 380px; overflow: auto; }
+.trustTransitionManager { margin: 16px 0; padding: 14px; border: 1px solid #c4d4df; border-radius: 4px; overflow-wrap: anywhere;
+    textarea { display: block; width: 100%; box-sizing: border-box; margin: 8px 0; }
+    input[type="file"] { display: block; width: 100%; margin: 8px 0; }
+    pre { max-height: 300px; overflow: auto; white-space: pre-wrap; }
+    .trustTransitionResult[data-state="valid"] { background: #edf8e8; padding: 12px; margin-top: 10px; }
+    .trustTransitionResult[data-state="invalid"] { background: #fff1f1; padding: 12px; margin-top: 10px; }
+}
+.poiCPOKeyList { display: flex; flex-wrap: wrap; gap: 8px; .securityFingerprint { max-width: 220px; } }
+.poiWitnessManagement, .poiPricePublication { min-width: 0; overflow-wrap: anywhere; }
+.poiWitnessPolicyEditor {
+    margin-top: 18px; padding: 14px; border: 1px solid #c4d4df; border-radius: 4px;
+    textarea { display: block; width: 100%; box-sizing: border-box; margin: 8px 0; }
+    input[type="file"] { display: block; max-width: 100%; margin: 8px 0; }
+    pre { white-space: pre-wrap; max-height: 300px; overflow: auto; }
+}
+.poiWitnessPolicyPreview[data-state="review"] { margin-top: 12px; background: #fff9e9; padding: 10px; }
+.poiWitnessPolicyPreview[data-state="invalid"] { margin-top: 12px; background: #fff1f1; padding: 10px; }
+.poiPricePublication {
+    margin: 10px 0; padding: 10px; border: 1px solid #e4c276; border-radius: 4px; background: #fff9e9;
+    &[data-state="valid"] { border-color: #88c971; background: #edf8e8; }
+    &[data-state="invalid"] { border-color: #d39393; background: #fff1f1; }
+    .poiPublicationReceipt { border-top: 1px solid #c4d4df; margin-top: 10px; padding-top: 6px; }
+    .poiPublicationReceipts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 12px; }
+    .securityFingerprint { max-width: 220px; }
 }

@@ -1,0 +1,34 @@
+{
+  "roamingNetworkId": "CHARGY-TA-TEST",
+  "identityKeyIds": [
+    "01565176601c895cad856c02c18a1c14eb9f49b26e2fdcae7040c2530350982b",
+    "dd2fb4e18b5e1ce30c4633aaa5f681da79c3b32998cc5aa21b1149c37231a6ac",
+    "72d16fafc7e5497618246178631d650fef01a4aca770c965dd8b551760bad6dc"
+  ],
+  "minConsensus": 2,
+  "uri": "https://poi.example/RNs/CHARGY-TA-TEST?keys=01565176601c895cad856c02c18a1c14eb9f49b26e2fdcae7040c2530350982b;dd2fb4e18b5e1ce30c4633aaa5f681da79c3b32998cc5aa21b1149c37231a6ac,72d16fafc7e5497618246178631d650fef01a4aca770c965dd8b551760bad6dc&minConsensus=2&alsoAt=https%3A%2F%2Fmirror.example%2FRNs%2FCHARGY-TA-TEST",
+  "qrCode": "WWCP/TA-2:B7LJ68FVCYM8RB8+09*W5ZA8ITA2OACVCC$C5RENLG3242-AJ/EFR3AWB1*GUF0VKH0T276K3PMC26G2MI88BMAM8AQL5/64H164NSH+BTVSG*8ZPLF7V*RREXOSB5O$P9MKF82*VOKC6KZLQ44KLQ:9MH:S$-E/Q4*9FAW3T02F909$LSBEM*CTRH:.2+RNZ%R..DF$DZNK6VC/2E 8D$KEGEF5UA QE1/DSWEYJCF/DLN8GECT3DS446$CSUE1/DPWE04E.PD6%E/VDAMGM%4MWEW9E0G7*:5 3E.%5$9FQ$DTVD9:5D-9*/52693IAECBETA*W5HY8OUAPA5MWEW9E0G7 :5*ED0LEPJEB$CBECP9ESZCAIACPEYM8RB8+09*W5ZA8ITA2OA38DUPCG/DB$CQWEA19MWEW9E0G7%:5I9E -DNPCGECD3D3/D+%5*VD$$EQ:5-3E7WEBAFCPES4FVPC-:5S3EJ$D3/D:+9PWE04EYODKWE7%EGVE:.D59DQJEI.E.PD6$CXPC$EDBWE-3E4IK1$C-8FW7A-JCOEDS446$CSUER.CBAF6%ERZCZ349$C5$CT44LQES44+8DLQEJ44C$C.OEZEDO440LEMVCZPC ED -D$VDZEDSN8F/D1$C$QECOE",
+  "trustAnchor": {
+    "@id": "CHARGY-TA-TEST",
+    "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/trustAnchor/v2",
+    "urls": [
+      "https://poi.example/RNs/CHARGY-TA-TEST",
+      "https://mirror.example/RNs/CHARGY-TA-TEST"
+    ],
+    "keys": [
+      [
+        "01565176601c895cad856c02c18a1c14eb9f49b26e2fdcae7040c2530350982b",
+        "dd2fb4e18b5e1ce30c4633aaa5f681da79c3b32998cc5aa21b1149c37231a6ac"
+      ],
+      "72d16fafc7e5497618246178631d650fef01a4aca770c965dd8b551760bad6dc"
+    ],
+    "name": {
+      "de": "Chargy-Testnetz",
+      "en": "Chargy test network"
+    },
+    "description": {
+      "en": "Public test fixture. Never use these keys in production."
+    },
+    "minConsensus": 2
+  }
+}

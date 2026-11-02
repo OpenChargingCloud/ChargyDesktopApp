@@ -1,0 +1,42 @@
+{
+  "@id": "CHARGY-TA-TEST",
+  "@context": "https://open.charging.cloud/contexts/wwcp/roamingNetwork/trustAnchor/v2",
+  "urls": [
+    "https://poi.example/RNs/CHARGY-TA-TEST",
+    "https://mirror.example/RNs/CHARGY-TA-TEST"
+  ],
+  "keys": [
+    [
+      "01565176601c895cad856c02c18a1c14eb9f49b26e2fdcae7040c2530350982b",
+      "dd2fb4e18b5e1ce30c4633aaa5f681da79c3b32998cc5aa21b1149c37231a6ac"
+    ],
+    "72d16fafc7e5497618246178631d650fef01a4aca770c965dd8b551760bad6dc"
+  ],
+  "name": {
+    "de": "Chargy-Testnetz",
+    "en": "Chargy test network"
+  },
+  "description": {
+    "en": "Public test fixture. Never use these keys in production."
+  },
+  "minConsensus": 2,
+  "trustedKeys": [
+    {
+      "id": "01565176601c895cad856c02c18a1c14eb9f49b26e2fdcae7040c2530350982b",
+      "acceptedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "dd2fb4e18b5e1ce30c4633aaa5f681da79c3b32998cc5aa21b1149c37231a6ac",
+      "acceptedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "72d16fafc7e5497618246178631d650fef01a4aca770c965dd8b551760bad6dc",
+      "acceptedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "validation": {
+    "signatures": "valid",
+    "signers": "valid",
+    "quorum": "valid"
+  }
+}

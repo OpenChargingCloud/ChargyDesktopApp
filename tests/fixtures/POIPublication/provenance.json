@@ -1,0 +1,26 @@
+{
+  "generator": "build-tools/generatePOIPublicationExample.mjs",
+  "now": "2026-11-01T00:16:21.000Z",
+  "chargingStarted": "2026-06-01T10:00:00.000Z",
+  "keySeeds": "PUBLIC TEST KEYS ONLY: witness A Ed25519 181/184 (one organization); witness B ML-DSA-65 183; RNO 42/44; original CPO/meter keys unchanged",
+  "claim": "Experimental public retrieval before signed start under explicitly approved witness organizations and clocks; actual charging time and customer agreement are not independently proven",
+  "files": {
+    "session-before-start.chargy": "426e29b305f784a32093ee0cbc282fa5cb6b885cb0755fad16e669d175675afd",
+    "no-receipts.chargy": "4e7243930381d1e7b6b857b2a93f18c28a06e29a1a84746a1088b7d05c5399f3",
+    "late-receipt.chargy": "8f4f650f3af6ecddeea53d0a37724e5526b8ae286054ba480c5304f97ffcc4f3",
+    "clock-overlap.chargy": "528be55759f95e88e11ddac5153c87513c9110b2ac93943d7f587a113b3b7807",
+    "wrong-price.chargy": "2ed898ab9c986fb96726f884d682c4fa5b0017215f5dcccf41df9ff2f57f0fbc",
+    "wrong-signed-price.chargy": "15b5f91ee5aafa0b66bbcfaecfa0d21322750775fab4b929017b129b6c476947",
+    "wrong-tariff.chargy": "dd0ec4a0686edbbef152597d6f4c5c39f5bc30c5cf5f76bc4fcad9d0e587e011",
+    "wrong-checkpoint.chargy": "15a01a6c4010fce35d0cd2b86276db229374cfb9d495c6c5406606f6e8bca5ac",
+    "tampered-receipt.chargy": "2214e971741e89b87deb986725c12ee2a83b32d160b4836ddc20ca9de43db660",
+    "same-organization.chargy": "5a8aad8b329c9799992790c8ea6fbd1a35a0a3752862cbd0b24e5af24a4bb7e1",
+    "unknown-witness.chargy": "9abb464546179611011fdd4b521b8e93cf260b69bbf21f780f8e3baac1a1876d",
+    "future-receipt.chargy": "804435a8e3855feedb9f0a39446bfea3fcaa9af0dc12629e36a637c905962e8c",
+    "private-source.chargy": "7d94d4b0307f2188137f521ebe2a33c44b7e233f27da0f23a8ac2b8853172140",
+    "live-00-waiting.json": "4126b2c65af3b2ca2d96de4172b7c9aff89f45e798801e3987e3a278fe8c8209",
+    "live-01-start.json": "c592029292608c1aadabbf7052542da1cb178903e74463a9d94d329e9435b9a4",
+    "live-02-intermediate.json": "38dba7988508da679c04a3b82957eacc13e77bcb142a8e8e3249e0628e4d7aae",
+    "live-03-completed.json": "20015a4ab82ee6a954028921fbefa20180e6fd4446a05887cf3c79e0ade4d1e7"
+  }
+}

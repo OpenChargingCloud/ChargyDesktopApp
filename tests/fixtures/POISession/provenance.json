@@ -1,0 +1,50 @@
+{
+  "generator": "build-tools/generatePOISessionExample.mjs",
+  "generatedAt": "2026-11-01T00:16:21.000Z",
+  "begin": "2026-10-31T23:41:21.000Z",
+  "end": "2026-11-01T00:11:21.000Z",
+  "attestationsValidUntil": "2026-11-01T23:16:21.000Z",
+  "networkId": "CHARGY-POI-DEMO",
+  "evseId": "DE*POI*E1*1",
+  "meterSerial": "CHARGY-POI-METER-001",
+  "meterKeyId": "0cfefc81f7537db1d2b85ae423bfa45835e664d6f4e77021f6adbc5b83c7e89c",
+  "meterKeySource": "tests/fixtures/ChargeTransparencyLive/OCMF-Test-01/privateKey_energyMeter.pem",
+  "identityKeySeeds": [
+    41,
+    43
+  ],
+  "operationalKeySeeds": [
+    42,
+    44
+  ],
+  "keys": "PUBLIC TEST KEYS ONLY; never production trust roots",
+  "consumedKWh": 11,
+  "pricePerKWh": "0.35",
+  "tariffClaim": "Static definition inclusion; no PriceStatement or publication claim",
+  "files": {
+    "completed-session-with-evse-proof.chargy": {
+      "sha256": "1bd82a3ba65e73d50d7dd36ae5b401d525514788c0f91e8aca171dac61ae6d95"
+    },
+    "trust-anchor.txt": {
+      "sha256": "48e9f768e1a9bd3ba5633317bb9f5cb7a5ec036749a69d50e72b13a22bfca939"
+    },
+    "key-statement.json": {
+      "sha256": "ebc67af966be55ef86e75fc39a6bf6d84cba021e2acc2707ca8c556c9077b61a"
+    },
+    "container-key-conflict.chargy": {
+      "sha256": "bd32d3aea57cdb94841273c7200e158daa394cecd3c0068966da284b097f53ea"
+    },
+    "foreign-meter-key-proof.chargy": {
+      "sha256": "6d0a24dfacc480d8a6f73dbf57db187f0a338f7f5738f5ee3de7e676a3a6d306"
+    },
+    "wrong-meter-proof.chargy": {
+      "sha256": "8d21e55b1ba5c1c13ab12daa3efd333778e5c8a29a5cfefd18f267c9438d0eef"
+    },
+    "ambiguous-meter-keys.chargy": {
+      "sha256": "6a7508138ddd46011d8937ce652126f3b7466f2bf200c665f49e93ccaedbda58"
+    },
+    "tampered-end-reading.chargy": {
+      "sha256": "7a56907730a4ff8dbe02475b002c56c74f01a0c240f40dbd4bd1f1c9fc13d952"
+    }
+  }
+}

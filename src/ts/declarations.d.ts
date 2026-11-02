@@ -1,6 +1,11 @@
 declare module "*.css";
 declare module "*.scss";
 
+declare module "*.jsonl?raw" {
+    const source: string;
+    export default source;
+}
+
 declare module "asn1.js" {
     interface Asn1Builder {
         bitstr(): Asn1Builder;
