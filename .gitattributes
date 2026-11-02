@@ -1,0 +1,4 @@
+# Provenance hashes require stable LF bytes, including Windows checkouts.
+/tests/fixtures/POISession/*.chargy text eol=lf
+/tests/fixtures/POISession/*.json text eol=lf
+/tests/fixtures/POISession/*.txt text eol=lf
