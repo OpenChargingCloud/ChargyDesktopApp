@@ -47,6 +47,13 @@ export class TrustManagement {
     public open(): void { this.root.hidden = false; this.page = "menu"; this.selectedNetworkId = null; void this.render(); }
     public hide(): void { this.root.hidden = true; this.generation++; this.disposeStationPanel(); }
     public refresh(): void { if (this.root.hidden === false) void this.render(); }
+    public observationsChanged(): void {
+        if(this.root.hidden!==false||this.page!=='stationProof'&&this.page!=='observations')return;
+        // Preserve an explicit reset confirmation while its transaction is pending.
+        // Verification still reads the actual journal; this view grants no authority.
+        if(this.page==='observations'&&this.root.querySelector('[data-action=confirm-reset-observations]')!==null)return;
+        this.refresh();
+    }
     public back(): boolean {
         if (this.page === "menu")
             return false;

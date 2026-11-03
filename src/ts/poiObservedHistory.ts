@@ -51,7 +51,11 @@ function notifyReset():void {
 }
 function resetChannel():void {
     if(channel===undefined&&typeof window!=='undefined'&&typeof window.addEventListener==='function'&&typeof BroadcastChannel!=='undefined'){
-        channel=new BroadcastChannel('chargy-poi-history');channel.onmessage=(event:MessageEvent<unknown>):void=>{if(event.data==='reset')notifyReset();if(event.data==='policy-change')notifyPolicyChange();if(event.data==='witness-change')notifyWitnessChange();};
+        channel=new BroadcastChannel('chargy-poi-history');channel.onmessage=(event:MessageEvent<unknown>):void=>{if(event.data==='reset')notifyReset();if(event.data==='policy-change')notifyPolicyChange();if(event.data==='witness-change')notifyWitnessChange();
+            // A message only invalidates local work. It carries no trusted state or verdict.
+            if(event.data!==null&&typeof event.data==='object'&&'type' in event.data&&event.data.type==='observations')
+                window.dispatchEvent(new Event('chargy-poi-observations-changed'));
+        };
     }
 }
 function notifyPolicyChange():void{if(typeof window!=='undefined'&&typeof window.dispatchEvent==='function')window.dispatchEvent(new Event('chargy-poi-policy-change'));}
@@ -60,10 +64,13 @@ function notifyWitnessChange():void{if(typeof window!=='undefined'&&typeof windo
 export function broadcastWitnessPolicyChange():void{resetChannel();notifyWitnessChange();channel?.postMessage('witness-change');}
 export class POIObservedHistoryStore implements ObservedHistoryRepository {
     public async transition(scope:ObservationScope,generation:string,verified:VerifiedTrustTransition,at:number):Promise<VersionComparison>{
-        return this.transaction('readwrite',(store,done,fail)=>{const request=store.get(scope.id);request.onsuccess=():void=>{try{
+        const result=await this.transaction<{report:VersionComparison;changed:boolean}>('readwrite',(store,done,fail)=>{const request=store.get(scope.id);request.onsuccess=():void=>{try{
             const record=checked(request.result);apply(record,scope,generation,[],'historical',at);
-            const report=applyVerifiedTrustTransition(record.state,verified,at);store.put(seal({...record,state:report.state,updatedAt:at}));done(report);
+            const report=applyVerifiedTrustTransition(record.state,verified,at);
+            store.put(seal({...record,state:report.state,updatedAt:at}));done({report,changed:JSON.stringify(record.state)!==JSON.stringify(report.state)});
         }catch(error){fail(error);}};});
+        if(result.changed)channel?.postMessage({type:'observations',scopeId:scope.id});
+        return result.report;
     }
     private async open():Promise<IDBDatabase> {
         resetChannel();
@@ -95,9 +102,17 @@ export class POIObservedHistoryStore implements ObservedHistoryRepository {
     }
     public async observe(scope:ObservationScope,generation:string,points:readonly VersionObservation[],mode:'current'|'historical',at:number,
         live?:{readonly chain:string;readonly evidence:string},signal?:AbortSignal):Promise<VersionComparison> {
-        return this.transaction('readwrite',(store,done,fail)=>{
-            const request=store.get(scope.id);request.onsuccess=():void=>{try{const result=apply(checked(request.result),scope,generation,points,mode,at,live);store.put(result.record);done(result.comparison);}catch(error){fail(error);}};
+        const result=await this.transaction<{report:VersionComparison;changed:boolean}>('readwrite',(store,done,fail)=>{
+            const request=store.get(scope.id);request.onsuccess=():void=>{try{
+                const before=checked(request.result),result=apply(before,scope,generation,points,mode,at,live);
+                // Include newly supplied links and succession, not timestamps/live audit exports.
+                const changed=JSON.stringify(before.state)!==JSON.stringify(result.record.state);
+                store.put(result.record);done({report:result.comparison,changed});
+            }catch(error){fail(error);}};
         },signal);
+        // Only other documents receive the hint, after commit. Identical rechecks cannot echo.
+        if(result.changed)channel?.postMessage({type:'observations',scopeId:scope.id});
+        return result.report;
     }
     public async list():Promise<readonly StoredObservedHistory[]> {
         return this.transaction('readonly',(store,done,fail)=>{const request=store.getAll();request.onsuccess=():void=>{try{done((request.result as unknown[]).map(checked));}catch(error){fail(error);}};});

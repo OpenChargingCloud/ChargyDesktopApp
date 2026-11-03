@@ -536,6 +536,7 @@
     "poiObservedResetWarning": {"de":"Nur nach unabhängiger Prüfung zurücksetzen. Ohne diese Historie können alte Versionen und bereits beobachtete Forks erneut unentdeckt bleiben. Schlüsselvertrauen und Archive bleiben erhalten. Laufende Prüfungen werden abgebrochen.","en":"Reset only after independent verification. Without this history, old versions and previously observed forks may go undetected again. Key trust and archives remain. Running checks are cancelled."},
     "poiObservedResetConfirm": {"de":"Gespeicherte Beobachtungen jetzt zurücksetzen","en":"Reset stored observations now"},
     "poiObservedResetDone": {"de":"Beobachtete Historie zurückgesetzt. Daten zum erneuten Prüfen wieder öffnen.","en":"Observed history reset. Reopen data to check again."},
+    "poiObservedChanged": {"de": "Die Versionshistorie wurde in einem anderen Fenster geändert. Die vorhandenen Originalnachweise werden neu geprüft; Live-Abfragen wurden gestoppt.", "en": "Version history changed in another window. The retained original evidence is being checked again; live requests were stopped."},
     "poiObservedOpenLive": {"de":"Letzten beobachteten Live-Stand öffnen und neu prüfen","en":"Open last observed live data and recheck"},
     "poiObservedOpenFailed": {"de":"Gespeicherter Live-Stand konnte unter dem aktuellen Vertrauen nicht geöffnet werden.","en":"The saved live version could not be opened under current trust."},
     "poiLiveChecking": {"de":"Live-Nachweise werden vor der Übernahme geprüft …","en":"Checking live evidence before adoption …"},

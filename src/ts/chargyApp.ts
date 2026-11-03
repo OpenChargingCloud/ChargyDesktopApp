@@ -924,6 +924,15 @@ export class ChargyApp {
         window.addEventListener('chargy-poi-history-reset',()=>{++this.inputDetectionGeneration;this.clearRenderedChargeData();this.detailedInfosDiv.appendChild(document.createElement('p')).textContent=this.chargy.GetLocalizedMessage('poiObservedResetDone');});
         window.addEventListener('chargy-poi-policy-change',()=>{++this.inputDetectionGeneration;this.clearRenderedChargeData();this.detailedInfosDiv.appendChild(document.createElement('p')).textContent=this.chargy.GetLocalizedMessage('poiTransitionApplied');this.trustManagement.refresh();});
         window.addEventListener('chargy-poi-witness-change',()=>{++this.inputDetectionGeneration;this.clearRenderedChargeData();this.detailedInfosDiv.appendChild(document.createElement('p')).textContent=this.chargy.GetLocalizedMessage('poiWitnessChanged');this.trustManagement.refresh();});
+        window.addEventListener('chargy-poi-observations-changed',()=>{
+            // Keep independent original decoding: its new panel must check the committed journal.
+            // Dropping that input could hide a concurrently supplied authenticated contradiction.
+            this.stopLiveLinkRefresh();
+            this.closeLiveLinkTrustDialog();
+            this.sessionPOIPanel?.recheckAfterObservations();
+            this.renderLiveLinkPollStatus();
+            this.trustManagement.observationsChanged();
+        });
         new MutationObserver(() => {
             if (this.chargingSessionScreenDiv.style.display === 'none') {
                 this.sessionPOIPanel?.dispose(); this.sessionPOIPanel = null;

@@ -26,6 +26,7 @@ export class SessionPOIPanel {
     private historyPanel: HistoricalSessionPanel | null = null;
     private pricePanel:SessionPricePanel|null=null;
     private liveController:AbortController|null=null;
+    private selectedPolicy:string|undefined;
     public constructor(private readonly root: HTMLElement, private readonly store: TrustStore,
         private readonly keys: readonly POIPublicKey[], private readonly evseId: string,
         private readonly evidence: SessionPOIEvidence | undefined, private readonly localize: (key: string) => string,
@@ -45,14 +46,19 @@ export class SessionPOIPanel {
 
     private cancelMeterCheck(): void { ++this.meterGeneration; this.meterController?.abort(); this.meterController = null; }
 
-    public async mount(): Promise<void> {
+    /** Abort and clear synchronously, then recheck retained originals under current local authority. */
+    public recheckAfterObservations(): void { if(!this.disposed)void this.mount(true); }
+
+    public async mount(observationsChanged=false): Promise<void> {
         this.panel?.dispose(); this.panel = null;
         this.cancelMeterCheck();
         this.historyPanel?.dispose(); this.historyPanel = null;
         this.pricePanel?.dispose();this.pricePanel=null;
+        this.liveController?.abort();this.liveController=null;
         const generation = ++this.generation;
         this.root.replaceChildren();
         this.root.appendChild(document.createElement('h3')).textContent = this.localize('poiSessionTitle');
+        if(observationsChanged){const notice=this.root.appendChild(document.createElement('p'));notice.className='poiObservedChangeNotice';notice.setAttribute('role','status');notice.textContent=this.localize('poiObservedChanged');}
         const status = this.root.appendChild(document.createElement('section'));
         status.className = 'sessionPOIStatus'; status.dataset['state'] = 'idle'; status.setAttribute('role', 'status');
         status.textContent = this.localize('poiChoosePolicy');
@@ -149,6 +155,7 @@ export class SessionPOIPanel {
             const host = controls.appendChild(document.createElement('div'));
             const open = async (): Promise<void> => {
                 selectedPolicy=select.value;
+                this.selectedPolicy=select.value;
                 this.panel?.dispose(); this.panel = null; host.replaceChildren();
                 this.cancelMeterCheck(); meter.replaceChildren(); meter.textContent = this.localize(meterPending);
                 status.dataset['state'] = 'idle'; status.textContent = this.localize('poiChoosePolicy');
@@ -182,7 +189,8 @@ export class SessionPOIPanel {
                 await panel.mount();
             };
             select.onchange = (): void => { void open(); };
-            if(this.live!==undefined&&this.live.policyId!==''&&records.some(record=>record.id===this.live?.policyId)){select.value=this.live.policyId;await open();}
+            if(this.selectedPolicy!==undefined){select.value=records.some(record=>record.id===this.selectedPolicy)?this.selectedPolicy:'';await open();}
+            else if(this.live!==undefined&&this.live.policyId!==''&&records.some(record=>record.id===this.live?.policyId)){select.value=this.live.policyId;await open();}
             else if (matches.length === 1) { select.value = matches[0] ?? ''; await open(); }
         }
         catch {
